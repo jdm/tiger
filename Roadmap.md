@@ -147,6 +147,7 @@
 ## Post 1.0
 
 - [ ] Tiger CLI
+- [ ] Root motion
 - [ ] Onion skin?
 - [ ] Import frames from single sheet image
 - [ ] Import animation data from other software (Asesprite, TBD)
