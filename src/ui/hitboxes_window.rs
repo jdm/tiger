@@ -37,8 +37,9 @@ fn draw_hitboxes<'a>(
 }
 
 pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &mut CommandBuffer) {
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
-    Window::new(im_str!("Hitboxes"))
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
+    Window::new("Hitboxes")
         .position(rect.min().to_array(), Condition::Always)
         .size(rect.size.to_array(), Condition::Always)
         .collapsible(false)
@@ -53,5 +54,4 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &
                 }
             }
         });
-    styles.pop(ui);
 }

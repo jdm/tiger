@@ -1,3 +1,4 @@
+use imgui::draw_list::DrawListMut;
 use imgui::StyleVar::*;
 use imgui::*;
 use std::time::Duration;
@@ -40,7 +41,7 @@ fn draw_timeline_ticks<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: 
     }
 
     let clicked = ui.invisible_button(
-        im_str!("timeline_ticks"),
+        "timeline_ticks",
         [max_draw_x - cursor_start[0], h + padding],
     );
     if ui.is_item_hovered()
@@ -59,7 +60,7 @@ fn draw_timeline_ticks<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: 
     ui.set_cursor_screen_pos([cursor_start[0], cursor_start[1] + h + padding]);
 }
 
-fn draw_insert_marker<'a>(ui: &Ui<'a>, draw_list: &WindowDrawList<'_>, height: f32) {
+fn draw_insert_marker<'a>(ui: &Ui<'a>, draw_list: &DrawListMut<'_>, height: f32) {
     let position = ui.cursor_screen_pos();
     let insert_marker_size = 8.0; // TODO DPI?
     let insert_marker_color = [249.0 / 255.0, 40.0 / 255.0, 50.0 / 255.0];
@@ -405,8 +406,9 @@ fn handle_drag_and_drop<'a>(
 }
 
 pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &mut CommandBuffer) {
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
-    Window::new(im_str!("Timeline"))
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
+    Window::new("Timeline")
         .position(rect.origin.to_array(), Condition::Always)
         .size(rect.size.to_array(), Condition::Always)
         .collapsible(false)
@@ -419,12 +421,12 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &
                     &document.view.workbench_item
                 {
                     if let Some(animation) = document.sheet.get_animation(animation_name) {
-                        if ui.small_button(im_str!("Play/Pause")) {
+                        if ui.small_button("Play/Pause") {
                             commands.toggle_playback();
                         }
-                        ui.same_line(0.0);
+                        ui.same_line();
                         let mut looping = animation.is_looping();
-                        if ui.checkbox(im_str!("Loop"), &mut looping) {
+                        if ui.checkbox("Loop", &mut looping) {
                             commands.toggle_looping();
                         }
 
@@ -478,5 +480,4 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &
                 }
             }
         });
-    styles.pop(ui);
 }

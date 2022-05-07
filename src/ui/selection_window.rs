@@ -142,8 +142,9 @@ fn draw_keyframe<'a>(ui: &Ui<'a>, texture_cache: &TextureCache, keyframe: &Keyfr
 }
 
 pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, texture_cache: &TextureCache) {
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
-    Window::new(im_str!("Selection"))
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
+    Window::new("Selection")
         .position(rect.origin.to_array(), Condition::Always)
         .size(rect.size.to_array(), Condition::Always)
         .collapsible(false)
@@ -189,5 +190,4 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, texture_cac
                 }
             }
         });
-    styles.pop(ui);
 }

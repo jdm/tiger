@@ -131,7 +131,7 @@ fn draw_hitbox<'a>(
     let space: Vector2D<f32> = ui.window_size().into();
     let rectangle = hitbox.get_rectangle();
     let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
-    let drag_delta: Vector2D<f32> = ui.mouse_drag_delta(MouseButton::Left).into();
+    let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
     let is_shift_down = ui.io().key_shift;
 
     let cursor_pos = workbench_offset
@@ -284,7 +284,7 @@ fn draw_frame<'a>(
                 && ui.is_window_hovered()
                 && is_mouse_dragging
             {
-                let drag_delta: Vector2D<f32> = ui.mouse_drag_delta(MouseButton::Left).into();
+                let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
                 commands.create_hitbox(mouse_position_in_workbench - drag_delta / zoom);
             }
         }
@@ -322,7 +322,7 @@ fn draw_keyframe<'a>(
             Image::new(texture.id, draw_size.to_array()).build(ui);
 
             ui.set_cursor_pos(cursor_pos.to_array());
-            if ui.invisible_button(im_str!("current_keyframe"), draw_size.to_array()) {
+            if ui.invisible_button("current_keyframe", draw_size.to_array()) {
                 if document.transient.is_none() {
                     commands.select_keyframes(&MultiSelection::new(vec![keyframe_index]));
                 }
@@ -403,7 +403,7 @@ fn draw_animation<'a>(
             for selected_frame_index in &selected_frame_indexes.items {
                 if *selected_frame_index != keyframe_index {
                     if let Some(keyframe) = animation.get_frame(*selected_frame_index) {
-                        let styles = ui.push_style_var(StyleVar::Alpha(0.05));
+                        let _style_alpha = ui.push_style_var(StyleVar::Alpha(0.05));
                         draw_keyframe(
                             ui,
                             commands,
@@ -413,13 +413,12 @@ fn draw_animation<'a>(
                             *selected_frame_index,
                             true,
                         );
-                        styles.pop(ui);
                     }
                 }
             }
             if document.is_moving_keyframe() && is_mouse_dragging {
                 ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
-                let delta = ui.mouse_drag_delta(MouseButton::Left).into();
+                let delta = ui.mouse_drag_delta().into();
                 commands.update_keyframe_offset_drag(delta, !is_shift_down);
             }
         }
@@ -568,8 +567,9 @@ pub fn draw<'a>(
     commands: &mut CommandBuffer,
     texture_cache: &TextureCache,
 ) {
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
-    Window::new(im_str!("Workbench"))
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
+    Window::new("Workbench")
         .position(rect.origin.to_array(), Condition::Always)
         .size(rect.size.to_array(), Condition::Always)
         .collapsible(false)
@@ -587,7 +587,7 @@ pub fn draw<'a>(
                 ui.set_cursor_pos([0.0, 0.0]);
 
                 if document.transient.is_none() {
-                    if ui.invisible_button(im_str!("workbench_dead_zone"), rect.size.to_array()) {
+                    if ui.invisible_button("workbench_dead_zone", rect.size.to_array()) {
                         commands.clear_selection();
                     }
                     ui.set_item_allow_overlap();
@@ -635,5 +635,4 @@ pub fn draw<'a>(
                 }
             }
         });
-    styles.pop(ui);
 }

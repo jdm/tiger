@@ -7,17 +7,17 @@ use crate::state::*;
 use crate::ui::Rect;
 
 fn draw_tabs<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer) {
-    if ui.small_button(im_str!("Frames")) {
+    if ui.small_button("Frames") {
         commands.switch_to_content_tab(ContentTab::Frames);
     }
-    ui.same_line(0.0);
-    if ui.small_button(im_str!("Animations")) {
+    ui.same_line();
+    if ui.small_button("Animations") {
         commands.switch_to_content_tab(ContentTab::Animations);
     }
 }
 
 fn draw_frames<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: &Document) {
-    if ui.small_button(im_str!("Import…")) {
+    if ui.small_button("Import…") {
         commands.import(document);
     }
     let mut frames: Vec<(&OsStr, &Frame)> = document
@@ -72,7 +72,7 @@ fn draw_frames<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: &Documen
 }
 
 fn draw_animations<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: &Document) {
-    if ui.small_button(im_str!("Add")) {
+    if ui.small_button("Add") {
         commands.create_animation();
     }
     let mut animations: Vec<&Animation> = document.sheet.animations_iter().collect();
@@ -105,8 +105,9 @@ fn draw_animations<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: &Doc
 }
 
 pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &mut CommandBuffer) {
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
-    Window::new(im_str!("Content"))
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
+    Window::new("Content")
         .position(rect.min().to_array(), Condition::Always)
         .size(rect.size.to_array(), Condition::Always)
         .collapsible(false)
@@ -123,5 +124,4 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &
                 }
             }
         });
-    styles.pop(ui);
 }

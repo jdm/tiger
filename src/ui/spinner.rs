@@ -1,11 +1,12 @@
 use euclid::default::*;
 use euclid::vec2;
+use imgui::draw_list::DrawListMut;
 use imgui::*;
 use std::f32::consts::PI;
 
 use crate::utils;
 
-pub fn draw_spinner<'a>(ui: &Ui<'a>, draw_list: &WindowDrawList<'_>, space: Vector2D<f32>) {
+pub fn draw_spinner<'a>(ui: &Ui<'a>, draw_list: &DrawListMut<'_>, space: Vector2D<f32>) {
     let size = 20.0; // TODO dpi?
     let color = [0.8, 1.0, 0.1, 1.0]; // TODO.style
     let spin_duration = 3.0; // seconds

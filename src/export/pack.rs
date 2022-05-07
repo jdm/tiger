@@ -47,6 +47,7 @@ pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, Error> {
         texture_padding: 0, // TODO configurable?
         trim: false,        // TODO support trimming?
         texture_outlines: false,
+        texture_extrusion: 0, // TODO configurable?
     };
 
     let mut packer = TexturePacker::new_skyline(config);

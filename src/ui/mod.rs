@@ -4,7 +4,6 @@ use glium::glutin::event::VirtualKeyCode;
 use imgui::StyleVar::*;
 use imgui::*;
 
-use crate::sheet::constants::*;
 use crate::sheet::ExportFormat;
 use crate::state::*;
 use crate::streamer::{TextureCache, TextureCacheResult};
@@ -112,24 +111,19 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
     let mut size = [0.0, 0.0];
     let has_document = app_state.get_current_document().is_some();
 
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
     ui.main_menu_bar(|| {
-        ui.menu(im_str!("File"), true, || {
-            if MenuItem::new(im_str!("New Sheet…"))
-                .shortcut(im_str!("Ctrl+N"))
-                .build(ui)
-            {
+        ui.menu("File", || {
+            if MenuItem::new("New Sheet…").shortcut("Ctrl+N").build(ui) {
                 commands.begin_new_document();
             }
-            if MenuItem::new(im_str!("Open Sheet…"))
-                .shortcut(im_str!("Ctrl+O"))
-                .build(ui)
-            {
+            if MenuItem::new("Open Sheet…").shortcut("Ctrl+O").build(ui) {
                 commands.begin_open_document();
             }
             ui.separator();
-            if MenuItem::new(im_str!("Save"))
-                .shortcut(im_str!("Ctrl+S"))
+            if MenuItem::new("Save")
+                .shortcut("Ctrl+S")
                 .enabled(has_document)
                 .build(ui)
             {
@@ -137,8 +131,8 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
                     commands.save(&document.source, &document.sheet, document.get_version());
                 }
             }
-            if MenuItem::new(im_str!("Save As…"))
-                .shortcut(im_str!("Ctrl+Shift+S"))
+            if MenuItem::new("Save As…")
+                .shortcut("Ctrl+Shift+S")
                 .enabled(has_document)
                 .build(ui)
             {
@@ -146,15 +140,15 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
                     commands.save_as(&document.source, &document.sheet, document.get_version());
                 }
             }
-            if MenuItem::new(im_str!("Save All"))
-                .shortcut(im_str!("Ctrl+Alt+S"))
+            if MenuItem::new("Save All")
+                .shortcut("Ctrl+Alt+S")
                 .enabled(has_document)
                 .build(ui)
             {
                 save_all(app_state, commands);
             }
-            if MenuItem::new(im_str!("Export"))
-                .shortcut(im_str!("Ctrl+E"))
+            if MenuItem::new("Export")
+                .shortcut("Ctrl+E")
                 .enabled(has_document)
                 .build(ui)
             {
@@ -162,23 +156,23 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
                     commands.export(&document.sheet);
                 }
             }
-            if MenuItem::new(im_str!("Export As…"))
-                .shortcut(im_str!("Ctrl+Shift+E"))
+            if MenuItem::new("Export As…")
+                .shortcut("Ctrl+Shift+E")
                 .enabled(has_document)
                 .build(ui)
             {
                 commands.begin_export_as();
             }
             ui.separator();
-            if MenuItem::new(im_str!("Close"))
-                .shortcut(im_str!("Ctrl+W"))
+            if MenuItem::new("Close")
+                .shortcut("Ctrl+W")
                 .enabled(has_document)
                 .build(ui)
             {
                 commands.close_current_document();
             }
-            if MenuItem::new(im_str!("Close All"))
-                .shortcut(im_str!("Ctrl+Shift+W"))
+            if MenuItem::new("Close All")
+                .shortcut("Ctrl+Shift+W")
                 .enabled(has_document)
                 .build(ui)
             {
@@ -186,7 +180,7 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
             }
         });
 
-        ui.menu(im_str!("Edit"), true, || {
+        ui.menu("Edit", || {
             let undo_command_name = app_state
                 .get_current_document()
                 .and_then(|d| d.get_undo_command())
@@ -194,7 +188,7 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
             if MenuItem::new(&ImString::new(
                 undo_command_name.clone().unwrap_or("Undo".to_owned()),
             ))
-            .shortcut(im_str!("Ctrl+Z"))
+            .shortcut("Ctrl+Z")
             .enabled(undo_command_name.is_some())
             .build(ui)
             {
@@ -208,7 +202,7 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
             if MenuItem::new(&ImString::new(
                 redo_command_name.clone().unwrap_or("Redo".to_owned()),
             ))
-            .shortcut(im_str!("Ctrl+Shift+Z"))
+            .shortcut("Ctrl+Shift+Z")
             .enabled(redo_command_name.is_some())
             .build(ui)
             {
@@ -216,46 +210,46 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
             }
         });
 
-        ui.menu(im_str!("View"), true, || {
-            if MenuItem::new(im_str!("Center Workbench"))
-                .shortcut(im_str!("Ctrl+Space"))
+        ui.menu("View", || {
+            if MenuItem::new("Center Workbench")
+                .shortcut("Ctrl+Space")
                 .build(ui)
             {
                 commands.workbench_center();
             }
-            if MenuItem::new(im_str!("Zoom In (Workbench)"))
-                .shortcut(im_str!("Ctrl++"))
+            if MenuItem::new("Zoom In (Workbench)")
+                .shortcut("Ctrl++")
                 .build(ui)
             {
                 commands.workbench_zoom_in();
             }
-            if MenuItem::new(im_str!("Zoom Out (Workbench)"))
-                .shortcut(im_str!("Ctrl+-"))
+            if MenuItem::new("Zoom Out (Workbench)")
+                .shortcut("Ctrl+-")
                 .build(ui)
             {
                 commands.workbench_zoom_out();
             }
-            if MenuItem::new(im_str!("Reset Zoom (Workbench)"))
-                .shortcut(im_str!("Ctrl+0"))
+            if MenuItem::new("Reset Zoom (Workbench)")
+                .shortcut("Ctrl+0")
                 .build(ui)
             {
                 commands.workbench_reset_zoom();
             }
             ui.separator();
-            if MenuItem::new(im_str!("Zoom In (Timeline)"))
-                .shortcut(im_str!("Ctrl+Alt++"))
+            if MenuItem::new("Zoom In (Timeline)")
+                .shortcut("Ctrl+Alt++")
                 .build(ui)
             {
                 commands.timeline_zoom_in();
             }
-            if MenuItem::new(im_str!("Zoom Out (Timeline)"))
-                .shortcut(im_str!("Ctrl+Alt+-"))
+            if MenuItem::new("Zoom Out (Timeline)")
+                .shortcut("Ctrl+Alt+-")
                 .build(ui)
             {
                 commands.timeline_zoom_out();
             }
-            if MenuItem::new(im_str!("Reset Zoom (Timeline)"))
-                .shortcut(im_str!("Ctrl+Alt+0"))
+            if MenuItem::new("Reset Zoom (Timeline)")
+                .shortcut("Ctrl+Alt+0")
                 .build(ui)
             {
                 commands.timeline_reset_zoom();
@@ -265,7 +259,6 @@ fn draw_main_menu<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandB
         size = ui.window_size();
     });
 
-    styles.pop(ui);
     size
 }
 
@@ -276,9 +269,10 @@ fn draw_documents_window<'a>(
     commands: &mut CommandBuffer,
 ) -> [f32; 2] {
     let mut size = [0.0, 0.0];
-    let styles = ui.push_style_vars(&[WindowRounding(0.0), WindowBorderSize(0.0)]);
+    let _style_rounding = ui.push_style_var(WindowRounding(0.0));
+    let _style_border = ui.push_style_var(WindowBorderSize(0.0));
 
-    Window::new(im_str!("Documents"))
+    Window::new("Documents")
         .position(rect.origin.to_array(), Condition::Always)
         .always_auto_resize(true)
         .collapsible(false)
@@ -295,12 +289,11 @@ fn draw_documents_window<'a>(
                 if ui.small_button(&ImString::new(document_name)) {
                     commands.focus_document(document);
                 }
-                ui.same_line(0.0);
+                ui.same_line();
             }
             size = ui.window_size();
         });
 
-    styles.pop(ui);
     size
 }
 
@@ -354,77 +347,70 @@ fn draw_export_popup<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
         if let Some(settings) = &document.persistent.export_settings_edit {
             let relative_settings = settings.with_relative_paths(&document.source);
             let relative_settings = relative_settings.as_ref().unwrap_or(settings);
-            let popup_id = im_str!("Export Options");
+            let popup_id = "Export Options";
             Window::new(&popup_id)
                 .collapsible(false)
                 .resizable(true)
                 .always_auto_resize(true)
                 .build(ui, || {
                     {
-                        let token = ui.push_id(0);
+                        let _token = ui.push_id(0);
                         ui.label_text(
                             &ImString::new(relative_settings.texture_destination.to_string_lossy()),
-                            im_str!("Texture atlas destination:"),
+                            "Texture atlas destination:",
                         );
-                        ui.same_line(0.0);
+                        ui.same_line();
 
-                        if ui.small_button(im_str!("Browse…")) {
+                        if ui.small_button("Browse…") {
                             commands.begin_set_export_texture_destination(document);
                         }
-                        token.pop(ui);
                     }
 
                     {
-                        let token = ui.push_id(1);
+                        let _token = ui.push_id(1);
                         ui.label_text(
                             &ImString::new(
                                 relative_settings.metadata_destination.to_string_lossy(),
                             ),
-                            im_str!("Metadata destination:"),
+                            "Metadata destination:",
                         );
-                        ui.same_line(0.0);
-                        if ui.small_button(im_str!("Browse…")) {
+                        ui.same_line();
+                        if ui.small_button("Browse…") {
                             commands.begin_set_export_metadata_destination(document);
                         }
-                        token.pop(ui);
                     }
 
                     {
-                        let token = ui.push_id(2);
+                        let _token = ui.push_id(2);
                         ui.label_text(
                             &ImString::new(relative_settings.metadata_paths_root.to_string_lossy()),
-                            im_str!("Store paths relative to:"),
+                            "Store paths relative to:",
                         );
-                        ui.same_line(0.0);
-                        if ui.small_button(im_str!("Browse…")) {
+                        ui.same_line();
+                        if ui.small_button("Browse…") {
                             commands.begin_set_export_metadata_paths_root(document);
                         }
-                        token.pop(ui);
                     }
 
                     {
-                        let token = ui.push_id(3);
+                        let _token = ui.push_id(3);
                         match &relative_settings.format {
                             ExportFormat::Template(p) => {
-                                ui.label_text(
-                                    &ImString::new(p.to_string_lossy()),
-                                    im_str!("Data Format:"),
-                                );
-                                ui.same_line(0.0);
-                                if ui.small_button(im_str!("Browse…")) {
+                                ui.label_text(&ImString::new(p.to_string_lossy()), "Data Format:");
+                                ui.same_line();
+                                if ui.small_button("Browse…") {
                                     commands.begin_set_export_format(document);
                                 }
                             }
                         };
-                        token.pop(ui);
                     }
 
                     // TODO grey out and disable if bad settings
-                    if ui.small_button(im_str!("Ok")) {
+                    if ui.small_button("Ok") {
                         commands.end_export_as(&document.sheet, settings.clone());
                     }
-                    ui.same_line(0.0);
-                    if ui.small_button(im_str!("Cancel")) {
+                    ui.same_line();
+                    if ui.small_button("Cancel") {
                         commands.cancel_export_as();
                     }
                 });
@@ -435,26 +421,19 @@ fn draw_export_popup<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
 fn draw_rename_popup<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut CommandBuffer) {
     if let Some(document) = app_state.get_current_document() {
         if let Some(Transient::Rename(rename)) = &document.transient {
-            let max_length = match &document.view.selection {
-                Some(Selection::Animation(_)) => MAX_ANIMATION_NAME_LENGTH,
-                Some(Selection::Hitbox(_)) => MAX_HITBOX_NAME_LENGTH,
-                _ => return,
-            };
-
-            let popup_id = im_str!("Rename");
+            let popup_id = "Rename";
             // TODO position modal where selectable is
             ui.popup_modal(&popup_id)
                 .title_bar(false)
                 .resizable(false)
                 .always_auto_resize(true)
-                .build(|| {
-                    let mut s = ImString::with_capacity(max_length);
-                    s.push_str(&rename.new_name);
+                .build(ui, || {
+                    let mut new_name = rename.new_name.clone();
                     let end_rename = ui
-                        .input_text(im_str!(""), &mut s)
+                        .input_text("", &mut new_name)
                         .enter_returns_true(true)
                         .build();
-                    commands.update_rename_selection(s.to_str());
+                    commands.update_rename_selection(&new_name);
                     if end_rename {
                         commands.end_rename_selection();
                     }
@@ -474,7 +453,7 @@ fn draw_unsaved_changes_popup<'a>(
         match document.persistent.close_state {
             Some(CloseState::Saving) | Some(CloseState::Allowed) | None => (),
             Some(CloseState::Requested) => {
-                let popup_id = im_str!("Unsaved Changes");
+                let popup_id = "Unsaved Changes";
                 Window::new(&popup_id)
                     .title_bar(true)
                     .collapsible(false)
@@ -492,7 +471,7 @@ fn draw_unsaved_changes_popup<'a>(
                             document.get_display_name()
                         );
                         ui.text(&ImString::new(popup_text));
-                        if ui.small_button(im_str!("Save")) {
+                        if ui.small_button("Save") {
                             commands.save(
                                 &document.source,
                                 &document.sheet,
@@ -500,12 +479,12 @@ fn draw_unsaved_changes_popup<'a>(
                             );
                             commands.close_after_saving();
                         }
-                        ui.same_line(0.0);
-                        if ui.small_button(im_str!("Don't Save")) {
+                        ui.same_line();
+                        if ui.small_button("Don't Save") {
                             commands.close_without_saving();
                         }
-                        ui.same_line(0.0);
-                        if ui.small_button(im_str!("Cancel")) {
+                        ui.same_line();
+                        if ui.small_button("Cancel") {
                             commands.cancel_close();
                             commands.cancel_exit();
                         }
@@ -520,7 +499,7 @@ fn draw_saving_popup<'a>(ui: &Ui<'a>, app_state: &AppState, window_size: (f32, f
         match document.persistent.close_state {
             Some(CloseState::Requested) | None => (),
             Some(CloseState::Saving) | Some(CloseState::Allowed) => {
-                let popup_id = im_str!("Saving");
+                let popup_id = "Saving";
                 Window::new(&popup_id)
                     .title_bar(false)
                     .resizable(false)
@@ -553,7 +532,7 @@ fn draw_error_popup<'a>(
     match app_state.get_error() {
         None => (),
         Some(error) => {
-            let popup_id = im_str!("Error");
+            let popup_id = "Error";
             Window::new(&popup_id)
                 .resizable(false)
                 .collapsible(false)
@@ -565,7 +544,7 @@ fn draw_error_popup<'a>(
                 .position_pivot([0.5, 0.5])
                 .build(ui, || {
                     ui.text(&ImString::new(format!("{}", error)));
-                    if ui.small_button(im_str!("Ok")) {
+                    if ui.small_button("Ok") {
                         commands.clear_error();
                     }
                 });
@@ -580,13 +559,13 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
 
     // Global shortcuts
     if !ui.io().key_ctrl {
-        if ui.is_key_pressed(VirtualKeyCode::Delete as _) {
+        if ui.is_key_pressed(Key::Delete) {
             commands.delete_selection();
         }
-        if ui.is_key_pressed(VirtualKeyCode::F2 as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::F2 as _) {
             commands.begin_rename_selection();
         }
-        if ui.is_key_pressed(VirtualKeyCode::Space as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::Space as _) {
             commands.toggle_playback();
         }
     }
@@ -594,30 +573,30 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
     // Arrow shortcuts
     if ui.io().key_ctrl {
         let large_nudge = ui.io().key_shift;
-        if ui.is_key_pressed(VirtualKeyCode::Left as _) {
+        if ui.is_key_pressed(Key::LeftArrow) {
             commands.nudge_selection_left(large_nudge);
         }
-        if ui.is_key_pressed(VirtualKeyCode::Right as _) {
+        if ui.is_key_pressed(Key::RightArrow) {
             commands.nudge_selection_right(large_nudge);
         }
-        if ui.is_key_pressed(VirtualKeyCode::Up as _) {
+        if ui.is_key_pressed(Key::UpArrow) {
             commands.nudge_selection_up(large_nudge);
         }
-        if ui.is_key_pressed(VirtualKeyCode::Down as _) {
+        if ui.is_key_pressed(Key::DownArrow) {
             commands.nudge_selection_down(large_nudge);
         }
     } else {
-        if ui.is_key_pressed(VirtualKeyCode::Left as _) {
+        if ui.is_key_pressed(Key::LeftArrow) {
             commands.snap_to_previous_frame();
         }
-        if ui.is_key_pressed(VirtualKeyCode::Right as _) {
+        if ui.is_key_pressed(Key::RightArrow) {
             commands.snap_to_next_frame();
         }
     }
 
     // Menu commands
     if ui.io().key_ctrl {
-        if ui.is_key_pressed(VirtualKeyCode::Z as _) {
+        if ui.is_key_pressed(Key::Z) {
             if ui.io().key_shift {
                 commands.redo();
             } else {
@@ -625,13 +604,13 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
             }
         }
 
-        if ui.is_key_pressed(VirtualKeyCode::N as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::N as _) {
             commands.begin_new_document();
         }
-        if ui.is_key_pressed(VirtualKeyCode::O as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::O as _) {
             commands.begin_open_document();
         }
-        if ui.is_key_pressed(VirtualKeyCode::S as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::S as _) {
             if ui.io().key_shift {
                 if let Some(document) = app_state.get_current_document() {
                     commands.save_as(&document.source, &document.sheet, document.get_version());
@@ -642,22 +621,22 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
                 commands.save(&document.source, &document.sheet, document.get_version());
             }
         }
-        if ui.is_key_pressed(VirtualKeyCode::E as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::E as _) {
             if ui.io().key_shift {
                 commands.begin_export_as();
             } else if let Some(document) = app_state.get_current_document() {
                 commands.export(&document.sheet);
             }
         }
-        if ui.is_key_pressed(VirtualKeyCode::W as _) {
+        if ui.is_key_index_pressed(VirtualKeyCode::W as _) {
             if ui.io().key_shift {
                 commands.close_all_documents();
             } else {
                 commands.close_current_document();
             }
         }
-        if ui.is_key_pressed(VirtualKeyCode::NumpadAdd as _)
-            || ui.is_key_pressed(VirtualKeyCode::Equals as _)
+        if ui.is_key_index_pressed(VirtualKeyCode::NumpadAdd as _)
+            || ui.is_key_index_pressed(VirtualKeyCode::Equals as _)
         {
             if ui.io().key_alt {
                 commands.timeline_zoom_in();
@@ -665,8 +644,8 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
                 commands.workbench_zoom_in();
             }
         }
-        if ui.is_key_pressed(VirtualKeyCode::NumpadSubtract as _)
-            || ui.is_key_pressed(VirtualKeyCode::Minus as _)
+        if ui.is_key_index_pressed(VirtualKeyCode::NumpadSubtract as _)
+            || ui.is_key_index_pressed(VirtualKeyCode::Minus as _)
         {
             if ui.io().key_alt {
                 commands.timeline_zoom_out();
@@ -674,8 +653,8 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
                 commands.workbench_zoom_out();
             }
         }
-        if ui.is_key_pressed(VirtualKeyCode::Key0 as _)
-            || ui.is_key_pressed(VirtualKeyCode::Numpad0 as _)
+        if ui.is_key_index_pressed(VirtualKeyCode::Key0 as _)
+            || ui.is_key_index_pressed(VirtualKeyCode::Numpad0 as _)
         {
             if ui.io().key_alt {
                 commands.timeline_reset_zoom();
@@ -683,7 +662,7 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
                 commands.workbench_reset_zoom();
             }
         }
-        if ui.is_key_pressed(VirtualKeyCode::Space as _) {
+        if ui.is_key_pressed(Key::Space) {
             commands.workbench_center();
         }
     }
