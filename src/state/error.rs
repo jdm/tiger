@@ -1,43 +1,60 @@
 use std::fmt;
 
+use crate::export::ExportError;
 use crate::state::command::AsyncCommand;
 
 #[derive(Debug)]
-pub enum UserFacingError {
-    Open(String),
+enum UserFacingErrorCategory {
+    Open,
     Save,
-    Export(String),
+    Export,
+}
+
+#[derive(Debug)]
+pub struct UserFacingError {
+    category: UserFacingErrorCategory,
+    inner_error: anyhow::Error,
 }
 
 impl UserFacingError {
     pub fn from_command(
         source_command: AsyncCommand,
-        inner_error: &anyhow::Error,
+        inner_error: anyhow::Error,
     ) -> Option<UserFacingError> {
-        match source_command {
-            AsyncCommand::ReadDocument(_) => Some(UserFacingError::Open(format!(
-                "{}",
-                inner_error.root_cause()
-            ))),
-            AsyncCommand::Save(_, _, _) => Some(UserFacingError::Save),
-            AsyncCommand::SaveAs(_, _, _) => Some(UserFacingError::Save),
-            AsyncCommand::Export(_) => Some(UserFacingError::Export(format!(
-                "{}",
-                inner_error.root_cause()
-            ))),
-            _ => None,
-        }
+        let category = match source_command {
+            AsyncCommand::ReadDocument(_) => UserFacingErrorCategory::Open,
+            AsyncCommand::Save(_, _, _) => UserFacingErrorCategory::Save,
+            AsyncCommand::SaveAs(_, _, _) => UserFacingErrorCategory::Save,
+            AsyncCommand::Export(_) => UserFacingErrorCategory::Export,
+            _ => return None,
+        };
+        Some(UserFacingError {
+            category,
+            inner_error,
+        })
     }
 }
 
 impl fmt::Display for UserFacingError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        match *self {
-            UserFacingError::Open(ref details) => {
-                write!(f, "Could not open document:\n{}", details)
-            }
-            UserFacingError::Save => write!(f, "Could not save document"),
-            UserFacingError::Export(ref details) => write!(f, "Export failed:\n{}", details),
+        match self.category {
+            UserFacingErrorCategory::Open => write!(
+                f,
+                "Could not open document:\n\n{}",
+                self.inner_error.root_cause()
+            ),
+            UserFacingErrorCategory::Save => write!(f, "Could not save document"),
+            UserFacingErrorCategory::Export => match self.inner_error.downcast_ref::<ExportError>()
+            {
+                Some(ExportError::TemplateParsingError(_)) => {
+                    write!(
+                        f,
+                        "Export failed due to invalid syntax in the template file:\n\n{}",
+                        self.inner_error.root_cause()
+                    )
+                }
+                _ => write!(f, "Export failed:\n\n{}", self.inner_error.root_cause()),
+            },
         }
     }
 }

@@ -175,7 +175,7 @@ fn main() -> anyhow::Result<()> {
                         }
                         Err(e) => {
                             println!("Error: {}", e);
-                            match state::UserFacingError::from_command(result.command, &e) {
+                            match state::UserFacingError::from_command(result.command, e) {
                                 None => (),
                                 Some(user_facing_error) => {
                                     println!("Error: {}", user_facing_error);
