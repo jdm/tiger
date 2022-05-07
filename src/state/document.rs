@@ -537,7 +537,8 @@ impl Document {
                 .ok_or(DocumentError::AnimationNotInDocument)?
                 .create_frame(path, next_frame_index)?;
         }
-        Ok(())
+        let new_frame_indices = next_frame_index..(next_frame_index + paths.len());
+        self.select_keyframes(&MultiSelection::new(new_frame_indices.collect()))
     }
 
     pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), DocumentError> {

@@ -77,6 +77,7 @@
 - [x] Get rid of failure crate
 - [ ] Move hitbox data from frames to animation frames
 - [ ] Editing hitboxes while animation is in workbench
+- [x] Auto-select new keyframes when inserted to timeline
 - [x] Multiple selections
 - [x] Jump to next/previous frame
 - [x] Auto reload images on frame edit
