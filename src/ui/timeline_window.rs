@@ -113,7 +113,7 @@ fn draw_keyframe<'a>(
     let max_resize_handle_size = 16.0; // TODO.dpi?
     let w = keyframe_location.size.0;
     let h = keyframe_location.size.1;
-    let is_too_small = w < 2.0 * outline_size + 1.0;
+    let is_too_small_to_draw = w < 2.0 * outline_size + 1.0;
 
     let resize_handle_size_left = (w / 3.0).floor().min(max_resize_handle_size);
     let resize_handle_size_right = match animation.get_frame(keyframe_index + 1) {
@@ -132,21 +132,29 @@ fn draw_keyframe<'a>(
     let mut cursor_pos = ui.cursor_screen_pos();
     cursor_pos[0] += keyframe_location.top_left.0;
 
-    // Draw outline
     let top_left = cursor_pos;
     let bottom_right = [top_left[0] + w, top_left[1] + h];
-    let outline_color = [25.0 / 255.0, 15.0 / 255.0, 0.0 / 255.0]; // TODO.style
-    draw_list.add_rect_filled_multicolor(
-        top_left,
-        bottom_right,
-        outline_color,
-        outline_color,
-        outline_color,
-        outline_color,
-    );
 
-    // Draw fill
-    if !is_too_small {
+    // Draw outline
+    {
+        let outline_color = [25.0 / 255.0, 15.0 / 255.0, 0.0 / 255.0]; // TODO.style
+        draw_list.add_rect_filled_multicolor(
+            top_left,
+            bottom_right,
+            outline_color,
+            outline_color,
+            outline_color,
+            outline_color,
+        );
+    }
+
+    if is_too_small_to_draw {
+        ui.set_cursor_screen_pos(bottom_right);
+        return;
+    }
+
+    {
+        // Draw fill
         let mut fill_top_left = top_left;
         let mut fill_bottom_right = bottom_right;
         fill_top_left[0] += outline_size;
@@ -170,46 +178,43 @@ fn draw_keyframe<'a>(
         // Draw name
         if let Some(name) = keyframe.get_frame().file_name() {
             draw_list.with_clip_rect_intersect(fill_top_left, fill_bottom_right, || {
-                let text_color = outline_color; // TODO.style
+                let text_color = [25.0 / 255.0, 15.0 / 255.0, 0.0 / 255.0]; // TODO.style
                 let x = fill_top_left[0] + text_padding;
                 let y = (fill_top_left[1] + fill_bottom_right[1]) / 2.0 - 8.0; // TODO.style 8.0 is font_size/2
                 let text_position = [x, y];
                 draw_list.add_text(text_position, text_color, name.to_string_lossy());
             });
         }
+    }
 
-        // Click interactions
-        {
-            let id = format!("frame_button_{}", top_left[0]);
-            ui.set_cursor_screen_pos([top_left[0] + resize_handle_size, top_left[1]]);
-            if ui.invisible_button(
-                &ImString::new(id),
-                [
-                    bottom_right[0] - top_left[0] - resize_handle_size * 2.0,
-                    bottom_right[1] - top_left[1],
-                ],
-            ) {
-                let new_selection = MultiSelection::process(
-                    keyframe_index,
-                    ui.io().key_shift,
-                    ui.io().key_ctrl,
-                    &(0..animation.get_num_frames()).collect(),
-                    match &document.view.selection {
-                        Some(Selection::Keyframe(s)) => Some(s),
-                        _ => None,
-                    },
-                );
-                commands.select_keyframes(&new_selection);
-            }
+    // Click to select
+    {
+        let id = format!("frame_button_{}", top_left[0]);
+        ui.set_cursor_screen_pos([top_left[0] + resize_handle_size, top_left[1]]);
+        if ui.invisible_button(
+            &ImString::new(id),
+            [
+                bottom_right[0] - top_left[0] - resize_handle_size * 2.0,
+                bottom_right[1] - top_left[1],
+            ],
+        ) {
+            let new_selection = MultiSelection::process(
+                keyframe_index,
+                ui.io().key_shift,
+                ui.io().key_ctrl,
+                &(0..animation.get_num_frames()).collect(),
+                match &document.view.selection {
+                    Some(Selection::Keyframe(s)) => Some(s),
+                    _ => None,
+                },
+            );
+            commands.select_keyframes(&new_selection);
         }
     }
 
-    // Drag and drop interactions
-    let is_dragging_duration = document.is_adjusting_frame_duration();
-    if !is_dragging_duration {
-        let is_hovering_frame_exact = if is_too_small {
-            false
-        } else {
+    // Drag and drop to re-order interactions
+    if !document.is_adjusting_frame_duration() {
+        let is_hovering_frame_exact = {
             let id = format!("frame_middle_{}", top_left[0]);
             ui.set_cursor_screen_pos([top_left[0] + resize_handle_size, top_left[1]]);
             ui.invisible_button(&ImString::new(id), [w - resize_handle_size * 2.0, h]);
@@ -226,12 +231,11 @@ fn draw_keyframe<'a>(
     }
 
     // Drag to resize interaction
-    if !is_too_small {
+    {
         assert!(resize_handle_size >= 1.0);
         let id = format!("frame_handle_{}", top_left[0]);
         ui.set_cursor_screen_pos([bottom_right[0] - resize_handle_size, top_left[1]]);
         ui.invisible_button(&ImString::new(id), [resize_handle_size * 2.0, h]);
-
         let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
         let is_mouse_down = ui.is_mouse_down(MouseButton::Left);
         if document.transient.is_none() {
