@@ -1,6 +1,5 @@
 use euclid::default::*;
 use euclid::{point2, vec2};
-use failure::Error;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -61,7 +60,7 @@ impl Document {
         }
     }
 
-    pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, Error> {
+    pub fn open<T: AsRef<Path>>(path: T) -> anyhow::Result<Document> {
         let mut document = Document::new(&path);
 
         let mut directory = path.as_ref().to_owned();
@@ -74,7 +73,7 @@ impl Document {
         Ok(document)
     }
 
-    pub fn save<T: AsRef<Path>>(sheet: &Sheet, to: T) -> Result<(), Error> {
+    pub fn save<T: AsRef<Path>>(sheet: &Sheet, to: T) -> anyhow::Result<()> {
         let mut directory = to.as_ref().to_owned();
         directory.pop();
         let sheet = sheet.with_relative_paths(directory)?;
@@ -188,7 +187,7 @@ impl Document {
         }
     }
 
-    pub fn undo(&mut self) -> Result<(), Error> {
+    pub fn undo(&mut self) -> Result<(), StateError> {
         if !self.can_use_undo_system() {
             return Err(StateError::UndoOperationNowAllowed.into());
         }
@@ -201,7 +200,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn redo(&mut self) -> Result<(), Error> {
+    pub fn redo(&mut self) -> Result<(), StateError> {
         if !self.can_use_undo_system() {
             return Err(StateError::UndoOperationNowAllowed.into());
         }
@@ -226,7 +225,7 @@ impl Document {
         }
     }
 
-    fn get_workbench_frame(&self) -> Result<&Frame, Error> {
+    fn get_workbench_frame(&self) -> Result<&Frame, StateError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Frame(path)) => Some(
                 self.sheet
@@ -238,7 +237,7 @@ impl Document {
         .ok_or_else(|| StateError::NotEditingAnyFrame.into())
     }
 
-    fn get_workbench_frame_mut(&mut self) -> Result<&mut Frame, Error> {
+    fn get_workbench_frame_mut(&mut self) -> Result<&mut Frame, StateError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Frame(path)) => Some(
                 self.sheet
@@ -250,7 +249,7 @@ impl Document {
         .ok_or_else(|| StateError::NotEditingAnyFrame.into())
     }
 
-    fn get_workbench_animation(&self) -> Result<&Animation, Error> {
+    fn get_workbench_animation(&self) -> Result<&Animation, StateError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
@@ -262,7 +261,7 @@ impl Document {
         .ok_or_else(|| StateError::NotEditingAnyAnimation.into())
     }
 
-    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, Error> {
+    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, StateError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
@@ -346,7 +345,7 @@ impl Document {
         self.view.selection = None;
     }
 
-    pub fn select_frames(&mut self, paths: &MultiSelection<PathBuf>) -> Result<(), Error> {
+    pub fn select_frames(&mut self, paths: &MultiSelection<PathBuf>) -> Result<(), StateError> {
         for path in paths.items.iter() {
             if !self.sheet.has_frame(path) {
                 return Err(StateError::FrameNotInDocument.into());
@@ -360,7 +359,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn select_animations(&mut self, names: &MultiSelection<String>) -> Result<(), Error> {
+    pub fn select_animations(&mut self, names: &MultiSelection<String>) -> Result<(), StateError> {
         for name in names.items.iter() {
             if !self.sheet.has_animation(name) {
                 return Err(StateError::AnimationNotInDocument.into());
@@ -374,7 +373,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) -> Result<(), Error> {
+    pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) -> Result<(), StateError> {
         let frame_path = match &self.view.workbench_item {
             Some(WorkbenchItem::Frame(p)) => Some(p.to_owned()),
             _ => None,
@@ -397,7 +396,10 @@ impl Document {
         Ok(())
     }
 
-    pub fn select_keyframes(&mut self, frame_indexes: &MultiSelection<usize>) -> Result<(), Error> {
+    pub fn select_keyframes(
+        &mut self,
+        frame_indexes: &MultiSelection<usize>,
+    ) -> Result<(), StateError> {
         if frame_indexes.items.is_empty() {
             self.clear_selection();
         } else {
@@ -428,7 +430,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn edit_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
+    pub fn edit_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), StateError> {
         if !self.sheet.has_frame(&path) {
             return Err(StateError::FrameNotInDocument.into());
         }
@@ -437,7 +439,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), Error> {
+    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), StateError> {
         if !self.sheet.has_animation(&name) {
             return Err(StateError::AnimationNotInDocument.into());
         }
@@ -454,7 +456,7 @@ impl Document {
         }));
     }
 
-    pub fn create_animation(&mut self) -> Result<(), Error> {
+    pub fn create_animation(&mut self) -> Result<(), StateError> {
         let animation_name = {
             let animation = self.sheet.add_animation();
             let animation_name = animation.get_name().to_owned();
@@ -469,7 +471,7 @@ impl Document {
         &mut self,
         paths: Vec<T>,
         next_frame_index: usize,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         let animation_name = match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
             _ => None,
@@ -484,7 +486,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), Error> {
+    pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), StateError> {
         let selection = match &self.view.selection {
             Some(Selection::Keyframe(i)) => Some(i.clone()),
             _ => None,
@@ -528,7 +530,7 @@ impl Document {
         &mut self,
         frame_being_dragged: usize,
         reference_clock: u32,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         let animation_name = match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
             _ => None,
@@ -566,7 +568,7 @@ impl Document {
         &mut self,
         clock_at_cursor: u32,
         minimum_duration: u32,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         let animation_name = self.get_workbench_animation()?.get_name().to_owned();
 
         let frame_indexes = match &self.view.selection {
@@ -624,7 +626,7 @@ impl Document {
         self.transient = Some(Transient::TimelineFrameDrag);
     }
 
-    pub fn begin_keyframe_offset_drag(&mut self) -> Result<(), Error> {
+    pub fn begin_keyframe_offset_drag(&mut self) -> Result<(), StateError> {
         let animation_name = self.get_workbench_animation()?.get_name().to_owned();
         let frame_indexes = match &self.view.selection {
             Some(Selection::Keyframe(i)) => Some(i.clone()),
@@ -656,7 +658,7 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         both_axis: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         let zoom = self.view.get_workbench_zoom_factor();
         let animation_name = self.get_workbench_animation()?.get_name().to_owned();
         let frame_indexes = match &self.view.selection {
@@ -699,7 +701,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), Error> {
+    pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), StateError> {
         let hitbox_name = {
             let frame_path = self.get_workbench_frame()?.get_source().to_owned();
             let frame = self
@@ -715,7 +717,7 @@ impl Document {
         self.begin_hitbox_scale(ResizeAxis::SE)
     }
 
-    pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) -> Result<(), Error> {
+    pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) -> Result<(), StateError> {
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
 
         let hitbox_names = match &self.view.selection {
@@ -753,7 +755,7 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         preserve_aspect_ratio: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         use ResizeAxis::*;
 
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
@@ -853,7 +855,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn begin_hitbox_drag(&mut self) -> Result<(), Error> {
+    pub fn begin_hitbox_drag(&mut self) -> Result<(), StateError> {
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
@@ -883,7 +885,7 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         both_axis: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         let zoom = self.view.get_workbench_zoom_factor();
 
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
@@ -927,7 +929,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn toggle_playback(&mut self) -> Result<(), Error> {
+    pub fn toggle_playback(&mut self) -> Result<(), StateError> {
         let mut new_timeline_clock = self.view.timeline_clock;
         {
             let animation = self.get_workbench_animation()?;
@@ -950,7 +952,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn snap_to_previous_frame(&mut self) -> Result<(), Error> {
+    pub fn snap_to_previous_frame(&mut self) -> Result<(), StateError> {
         let clock = {
             let animation = self.get_workbench_animation()?;
 
@@ -981,7 +983,7 @@ impl Document {
         self.update_timeline_scrub(Duration::from_millis(clock))
     }
 
-    pub fn snap_to_next_frame(&mut self) -> Result<(), Error> {
+    pub fn snap_to_next_frame(&mut self) -> Result<(), StateError> {
         let clock = {
             let animation = self.get_workbench_animation()?;
 
@@ -1012,13 +1014,13 @@ impl Document {
         self.update_timeline_scrub(Duration::from_millis(clock))
     }
 
-    pub fn toggle_looping(&mut self) -> Result<(), Error> {
+    pub fn toggle_looping(&mut self) -> Result<(), StateError> {
         let animation = self.get_workbench_animation_mut()?;
         animation.set_is_looping(!animation.is_looping());
         Ok(())
     }
 
-    pub fn update_timeline_scrub(&mut self, new_time: Duration) -> Result<(), Error> {
+    pub fn update_timeline_scrub(&mut self, new_time: Duration) -> Result<(), StateError> {
         let animation = self.get_workbench_animation()?;
         let (index, _) = animation
             .get_frame_at(new_time)
@@ -1028,7 +1030,11 @@ impl Document {
         Ok(())
     }
 
-    pub fn nudge_selection(&mut self, direction: Vector2D<i32>, large: bool) -> Result<(), Error> {
+    pub fn nudge_selection(
+        &mut self,
+        direction: Vector2D<i32>,
+        large: bool,
+    ) -> Result<(), StateError> {
         let amplitude = if large { 10 } else { 1 };
         let offset = direction * amplitude;
         match self.view.selection.clone() {
@@ -1060,7 +1066,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn delete_selection(&mut self) -> Result<(), Error> {
+    pub fn delete_selection(&mut self) -> Result<(), StateError> {
         match &self.view.selection {
             Some(Selection::Animation(names)) => {
                 for name in &names.items {
@@ -1101,7 +1107,7 @@ impl Document {
         };
     }
 
-    pub fn end_rename_selection(&mut self) -> Result<(), Error> {
+    pub fn end_rename_selection(&mut self) -> Result<(), StateError> {
         let new_name = match &self.transient {
             Some(Transient::Rename(x)) => Some(x.new_name.clone()),
             _ => None,
@@ -1147,7 +1153,7 @@ impl Document {
         Ok(())
     }
 
-    fn get_export_settings_edit_mut(&mut self) -> Result<&mut ExportSettings, Error> {
+    fn get_export_settings_edit_mut(&mut self) -> Result<&mut ExportSettings, StateError> {
         self.persistent
             .export_settings_edit
             .as_mut()
@@ -1170,7 +1176,7 @@ impl Document {
     fn end_set_export_texture_destination<T: AsRef<Path>>(
         &mut self,
         texture_destination: T,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         self.get_export_settings_edit_mut()?.texture_destination =
             texture_destination.as_ref().to_owned();
         Ok(())
@@ -1179,7 +1185,7 @@ impl Document {
     fn end_set_export_metadata_destination<T: AsRef<Path>>(
         &mut self,
         metadata_destination: T,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         self.get_export_settings_edit_mut()?.metadata_destination =
             metadata_destination.as_ref().to_owned();
         Ok(())
@@ -1188,18 +1194,18 @@ impl Document {
     fn end_set_export_metadata_paths_root<T: AsRef<Path>>(
         &mut self,
         metadata_paths_root: T,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         self.get_export_settings_edit_mut()?.metadata_paths_root =
             metadata_paths_root.as_ref().to_owned();
         Ok(())
     }
 
-    fn end_set_export_format(&mut self, format: ExportFormat) -> Result<(), Error> {
+    fn end_set_export_format(&mut self, format: ExportFormat) -> Result<(), StateError> {
         self.get_export_settings_edit_mut()?.format = format;
         Ok(())
     }
 
-    fn end_export_as(&mut self) -> Result<(), Error> {
+    fn end_export_as(&mut self) -> Result<(), StateError> {
         let export_settings = self.get_export_settings_edit_mut()?.clone();
         self.sheet.set_export_settings(export_settings);
         self.persistent.export_settings_edit = None;
@@ -1220,7 +1226,7 @@ impl Document {
         self.persistent.close_state = None;
     }
 
-    pub fn process_command(&mut self, command: DocumentCommand) -> Result<(), Error> {
+    pub fn process_command(&mut self, command: DocumentCommand) -> Result<(), StateError> {
         use DocumentCommand::*;
 
         match &command {

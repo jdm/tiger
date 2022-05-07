@@ -1,4 +1,4 @@
-use failure::Error;
+use anyhow::bail;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -12,7 +12,7 @@ pub struct VersionedSheet {
     pub sheet: Sheet,
 }
 
-pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> Result<Sheet, Error> {
+pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
     assert!(version == THIS_VERSION);
     match version {
         THIS_VERSION => {

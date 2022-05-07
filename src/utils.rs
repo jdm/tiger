@@ -1,5 +1,6 @@
 use euclid::default::*;
 use euclid::rect;
+use thiserror::Error;
 
 use crate::sheet::Animation;
 use crate::streamer::{TextureCache, TextureCacheResult};
@@ -40,11 +41,11 @@ pub fn fill(space: Vector2D<f32>, content_size: Vector2D<f32>) -> Option<Fill> {
     })
 }
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum BoundingBoxError {
-    #[fail(display = "Animation is empty")]
+    #[error("Animation is empty")]
     EmptyAnimation,
-    #[fail(display = "Frame data not loaded")]
+    #[error("Frame data not loaded")]
     FrameDataNotLoaded,
 }
 

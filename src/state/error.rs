@@ -1,60 +1,63 @@
-use failure::Error;
 use std::fmt;
+use thiserror::Error;
 
+use crate::sheet::SheetError;
 use crate::state::command::AsyncCommand;
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum StateError {
-    #[fail(display = "No document is open")]
+    #[error("No document is open")]
     NoDocumentOpen,
-    #[fail(display = "Requested document was not found")]
+    #[error("Requested document was not found")]
     DocumentNotFound,
-    #[fail(display = "Cannot perform undo operation")]
+    #[error("Cannot perform undo operation")]
     UndoOperationNowAllowed,
-    #[fail(display = "Sheet has no export settings")]
+    #[error("Sheet has no export settings")]
     NoExistingExportSettings,
-    #[fail(display = "Requested frame is not in document")]
+    #[error("Requested frame is not in document")]
     FrameNotInDocument,
-    #[fail(display = "Requested animation is not in document")]
+    #[error("Requested animation is not in document")]
     AnimationNotInDocument,
-    #[fail(display = "Frame does not have a hitbox with the requested name")]
+    #[error("Frame does not have a hitbox with the requested name")]
     InvalidHitboxName,
-    #[fail(display = "Animation does not have a frame at the requested index")]
+    #[error("Animation does not have a frame at the requested index")]
     InvalidKeyframeIndex,
-    #[fail(display = "No keyframe found for requested time")]
+    #[error("No keyframe found for requested time")]
     NoKeyframeForThisTime,
-    #[fail(display = "Expected a hitbox to be selected")]
+    #[error("Expected a hitbox to be selected")]
     NoHitboxSelected,
-    #[fail(display = "Expected an keyframe to be selected")]
+    #[error("Expected an keyframe to be selected")]
     NoKeyframeSelected,
-    #[fail(display = "A hitbox with this name already exists")]
+    #[error("A hitbox with this name already exists")]
     HitboxAlreadyExists,
-    #[fail(display = "An animation with this name already exists")]
+    #[error("An animation with this name already exists")]
     AnimationAlreadyExists,
-    #[fail(display = "Not currently editing any frame")]
+    #[error("Not currently editing any frame")]
     NotEditingAnyFrame,
-    #[fail(display = "Not currently editing any animation")]
+    #[error("Not currently editing any animation")]
     NotEditingAnyAnimation,
-    #[fail(display = "Not currently adjusting export settings")]
+    #[error("Not currently adjusting export settings")]
     NotExporting,
-    #[fail(display = "Not currently renaming an item")]
+    #[error("Not currently renaming an item")]
     NotRenaming,
-    #[fail(display = "Not currently adjusting keyframe position")]
+    #[error("Not currently adjusting keyframe position")]
     NotAdjustingKeyframePosition,
-    #[fail(display = "Not currently adjusting hitbox size")]
+    #[error("Not currently adjusting hitbox size")]
     NotAdjustingHitboxSize,
-    #[fail(display = "Not currently adjusting hitbox position")]
+    #[error("Not currently adjusting hitbox position")]
     NotAdjustingHitboxPosition,
-    #[fail(display = "Not currently adjusting keyframe duration")]
+    #[error("Not currently adjusting keyframe duration")]
     NotAdjustingKeyframeDuration,
-    #[fail(display = "Missing data while adjusting hitbox size")]
+    #[error("Missing data while adjusting hitbox size")]
     MissingHitboxSizeData,
-    #[fail(display = "Missing data while adjusting hitbox position")]
+    #[error("Missing data while adjusting hitbox position")]
     MissingHitboxPositionData,
-    #[fail(display = "Missing data while adjusting keyframe position")]
+    #[error("Missing data while adjusting keyframe position")]
     MissingKeyframePositionData,
-    #[fail(display = "Missing data while adjusting keyframe duration")]
+    #[error("Missing data while adjusting keyframe duration")]
     MissingKeyframeDurationData,
+    #[error("Invalid sheet operation")]
+    InvalidSheetOperation(#[from] SheetError),
 }
 
 #[derive(Debug)]
@@ -67,18 +70,18 @@ pub enum UserFacingError {
 impl UserFacingError {
     pub fn from_command(
         source_command: AsyncCommand,
-        inner_error: &Error,
+        inner_error: &anyhow::Error,
     ) -> Option<UserFacingError> {
         match source_command {
             AsyncCommand::ReadDocument(_) => Some(UserFacingError::Open(format!(
                 "{}",
-                inner_error.find_root_cause()
+                inner_error.root_cause()
             ))),
             AsyncCommand::Save(_, _, _) => Some(UserFacingError::Save),
             AsyncCommand::SaveAs(_, _, _) => Some(UserFacingError::Save),
             AsyncCommand::Export(_) => Some(UserFacingError::Export(format!(
                 "{}",
-                inner_error.find_root_cause()
+                inner_error.root_cause()
             ))),
             _ => None,
         }

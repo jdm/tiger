@@ -1,13 +1,11 @@
 #[macro_use]
-extern crate failure;
-
-#[macro_use]
 extern crate serde_derive;
 
 use glium::backend::Facade;
 use notify::DebouncedEvent;
 use std::collections::HashSet;
 use std::sync::*;
+use thiserror::Error;
 
 mod export;
 mod file_watcher;
@@ -20,17 +18,17 @@ mod utils;
 
 const WINDOW_TITLE: &str = "Tiger";
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum MainError {
-    #[fail(display = "Could not initialize window")]
+    #[error("Could not initialize window")]
     WindowInitError,
-    #[fail(display = "Could not initialize renderer")]
+    #[error("Could not initialize renderer")]
     RendererInitError,
-    #[fail(display = "Draw error")]
+    #[error("Draw error")]
     DrawError,
-    #[fail(display = "Could not swap framebuffers")]
+    #[error("Could not swap framebuffers")]
     SwapError,
-    #[fail(display = "Frame size error")]
+    #[error("Frame size error")]
     FrameSizeError,
 }
 
@@ -43,7 +41,7 @@ struct AsyncCommands {
 #[derive(Debug)]
 struct AsyncResult {
     command: state::AsyncCommand,
-    outcome: Result<state::CommandBuffer, failure::Error>,
+    outcome: anyhow::Result<state::CommandBuffer>,
 }
 
 #[derive(Debug, Default)]
@@ -51,7 +49,7 @@ struct AsyncResults {
     results: Vec<AsyncResult>,
 }
 
-fn main() -> Result<(), failure::Error> {
+fn main() -> anyhow::Result<()> {
     // Init application state
     let async_commands: Arc<(Mutex<AsyncCommands>, Condvar)> =
         Arc::new((Mutex::new(Default::default()), Condvar::new()));

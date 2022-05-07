@@ -1,8 +1,8 @@
 use euclid::default::*;
-use failure::Error;
 use pathdiff::diff_paths;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use thiserror::Error;
 
 use crate::sheet::{Animation, ExportFormat, ExportSettings, Frame, Hitbox, Keyframe, Sheet};
 
@@ -11,17 +11,17 @@ pub use pack::*;
 
 type TextureLayout = HashMap<PathBuf, PackedFrame>;
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum ExportError {
-    #[fail(display = "Template parsing error")]
-    TemplateParsingError(#[cause] Error),
-    #[fail(display = "Template rendering error")]
+    #[error("Template parsing error")]
+    TemplateParsingError(#[from] liquid::Error),
+    #[error("Template rendering error")]
     TemplateRenderingError,
-    #[fail(display = "An animation references a frame which is not part of the sheet")]
+    #[error("An animation references a frame which is not part of the sheet")]
     InvalidFrameReference,
-    #[fail(display = "The sheet contains a frame which was not packed into the texture atlas")]
+    #[error("The sheet contains a frame which was not packed into the texture atlas")]
     FrameWasNotPacked,
-    #[fail(display = "Error converting an absolute path to a relative path")]
+    #[error("Error converting an absolute path to a relative path")]
     AbsoluteToRelativePath,
 }
 
@@ -39,7 +39,7 @@ struct LiquidHitbox {
 fn liquid_data_from_hitbox(
     hitbox: &Hitbox,
     packed_frame: &PackedFrame,
-) -> Result<LiquidHitbox, Error> {
+) -> Result<LiquidHitbox, ExportError> {
     let frame_size: Vector2D<u32> = packed_frame.size_in_sheet.into();
     let hitbox_top_left_from_frame_top_left =
         hitbox.get_position() + (frame_size.to_f32() / 2.0).floor().to_i32();
@@ -70,7 +70,7 @@ fn liquid_data_from_frame(
     sheet: &Sheet,
     frame: &Frame,
     texture_layout: &TextureLayout,
-) -> Result<LiquidFrame, Error> {
+) -> Result<LiquidFrame, ExportError> {
     let index = sheet
         .frames_iter()
         .position(|f| f as *const Frame == frame as *const Frame)
@@ -113,7 +113,7 @@ fn liquid_data_from_keyframe(
     sheet: &Sheet,
     keyframe: &Keyframe,
     texture_layout: &TextureLayout,
-) -> Result<LiquidKeyframe, Error> {
+) -> Result<LiquidKeyframe, ExportError> {
     let packed_frame = texture_layout
         .get(keyframe.get_frame())
         .ok_or(ExportError::FrameWasNotPacked)?;
@@ -149,7 +149,7 @@ fn liquid_data_from_animation(
     sheet: &Sheet,
     animation: &Animation,
     texture_layout: &TextureLayout,
-) -> Result<LiquidAnimation, Error> {
+) -> Result<LiquidAnimation, ExportError> {
     let mut keyframes = Vec::new();
     for keyframe in animation.frames_iter() {
         let frame = liquid_data_from_keyframe(sheet, keyframe, texture_layout)?;
@@ -174,7 +174,7 @@ fn liquid_data_from_sheet(
     sheet: &Sheet,
     export_settings: &ExportSettings,
     texture_layout: &TextureLayout,
-) -> Result<LiquidSheet, Error> {
+) -> Result<LiquidSheet, ExportError> {
     let frames = {
         let mut frames = Vec::new();
         for frame in sheet.frames_iter() {
@@ -210,14 +210,14 @@ pub fn export_sheet(
     sheet: &Sheet,
     export_settings: &ExportSettings,
     texture_layout: &TextureLayout,
-) -> Result<String, Error> {
+) -> Result<String, ExportError> {
     let template;
     match &export_settings.format {
         ExportFormat::Template(p) => {
             template = liquid::ParserBuilder::with_stdlib()
                 .build()?
                 .parse_file(&p)
-                .map_err(|e| ExportError::TemplateParsingError(e.into()))?;
+                .map_err(|e| ExportError::TemplateParsingError(e))?;
         }
     }
 

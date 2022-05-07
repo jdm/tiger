@@ -1,20 +1,20 @@
-use failure::Error;
 use image::DynamicImage;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use texture_packer::exporter::ImageExporter;
 use texture_packer::importer::ImageImporter;
 use texture_packer::{TexturePacker, TexturePackerConfig};
+use thiserror::Error;
 
 use crate::sheet::Sheet;
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum PackError {
-    #[fail(display = "Error reading a frame")]
+    #[error("Error reading a frame")]
     FrameReadError,
-    #[fail(display = "Error while packing textures")]
+    #[error("Error while packing textures")]
     PackingError,
-    #[fail(display = "Error exporting texture from packing data")]
+    #[error("Error exporting texture from packing data")]
     PackerExportError,
 }
 
@@ -38,7 +38,7 @@ impl PackedSheet {
     }
 }
 
-pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, Error> {
+pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, PackError> {
     let config = TexturePackerConfig {
         max_width: 4096, // TODO configurable / dynamic based on widest frame?
         max_height: std::u32::MAX,

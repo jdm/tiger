@@ -1,10 +1,10 @@
 use core::cmp::Ordering;
 use euclid::default::*;
 use euclid::rect;
-use failure::Error;
 use pathdiff::diff_paths;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use thiserror::Error;
 
 pub use self::compat::version2::*;
 use self::constants::*;
@@ -16,24 +16,24 @@ pub mod constants {
     pub const MAX_HITBOX_NAME_LENGTH: usize = 32;
 }
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum SheetError {
-    #[fail(display = "Animation was not found")]
+    #[error("Animation was not found")]
     AnimationNotFound,
-    #[fail(display = "Hitbox was not found")]
+    #[error("Hitbox was not found")]
     HitboxNotFound,
-    #[fail(display = "Animation name too long")]
+    #[error("Animation name too long")]
     AnimationNameTooLong,
-    #[fail(display = "Hitbox name too long")]
+    #[error("Hitbox name too long")]
     HitboxNameTooLong,
-    #[fail(display = "Error converting an absolute path to a relative path")]
+    #[error("Error converting an absolute path to a relative path")]
     AbsoluteToRelativePath,
-    #[fail(display = "Invalid frame index")]
+    #[error("Invalid frame index")]
     InvalidFrameIndex,
 }
 
 impl Sheet {
-    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, Error> {
+    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
             frame.source = diff_paths(&frame.source, relative_to.as_ref())
@@ -135,7 +135,7 @@ impl Sheet {
         &mut self,
         old_name: T,
         new_name: U,
-    ) -> Result<(), Error> {
+    ) -> Result<(), SheetError> {
         if new_name.as_ref().len() > MAX_ANIMATION_NAME_LENGTH {
             return Err(SheetError::AnimationNameTooLong.into());
         }
@@ -253,7 +253,11 @@ impl Animation {
             .collect()
     }
 
-    pub fn create_frame<T: AsRef<Path>>(&mut self, frame: T, index: usize) -> Result<(), Error> {
+    pub fn create_frame<T: AsRef<Path>>(
+        &mut self,
+        frame: T,
+        index: usize,
+    ) -> Result<(), SheetError> {
         // TODO validate that frame exists in sheet!
         if index > self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
@@ -263,7 +267,7 @@ impl Animation {
         Ok(())
     }
 
-    pub fn insert_frame(&mut self, keyframe: Keyframe, index: usize) -> Result<(), Error> {
+    pub fn insert_frame(&mut self, keyframe: Keyframe, index: usize) -> Result<(), SheetError> {
         if index > self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
         }
@@ -271,7 +275,7 @@ impl Animation {
         Ok(())
     }
 
-    pub fn take_frame(&mut self, index: usize) -> Result<Keyframe, Error> {
+    pub fn take_frame(&mut self, index: usize) -> Result<Keyframe, SheetError> {
         if index >= self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
         }
@@ -349,7 +353,7 @@ impl Frame {
         &mut self,
         old_name: T,
         new_name: U,
-    ) -> Result<(), Error> {
+    ) -> Result<(), SheetError> {
         if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
             return Err(SheetError::HitboxNameTooLong.into());
         }
@@ -463,7 +467,7 @@ impl ExportFormat {
     pub fn with_relative_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
-    ) -> Result<ExportFormat, Error> {
+    ) -> Result<ExportFormat, SheetError> {
         match self {
             ExportFormat::Template(p) => Ok(ExportFormat::Template(
                 diff_paths(&p, relative_to.as_ref()).ok_or(SheetError::AbsoluteToRelativePath)?,
@@ -491,7 +495,7 @@ impl ExportSettings {
     pub fn with_relative_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
-    ) -> Result<ExportSettings, Error> {
+    ) -> Result<ExportSettings, SheetError> {
         Ok(ExportSettings {
             format: self.format.with_relative_paths(&relative_to)?,
             texture_destination: diff_paths(&self.texture_destination, relative_to.as_ref())

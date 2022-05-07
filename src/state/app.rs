@@ -1,4 +1,3 @@
-use failure::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
@@ -105,7 +104,7 @@ impl AppState {
         self.documents.iter()
     }
 
-    fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
+    fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), StateError> {
         match self.get_document_mut(&path) {
             Some(d) => *d = Document::new(path.as_ref()),
             None => {
@@ -117,7 +116,7 @@ impl AppState {
         Ok(())
     }
 
-    fn end_open_document(&mut self, document: Document) -> Result<(), Error> {
+    fn end_open_document(&mut self, document: Document) -> Result<(), StateError> {
         let source = document.source.clone();
         if self.get_document(&source).is_none() {
             self.add_document(document);
@@ -129,7 +128,7 @@ impl AppState {
         &mut self,
         from: T,
         to: U,
-    ) -> Result<(), Error> {
+    ) -> Result<(), StateError> {
         if from.as_ref() == to.as_ref() {
             return Ok(());
         }
@@ -154,10 +153,10 @@ impl AppState {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
-    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
+    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), StateError> {
         let document = self
             .get_document_mut(&path)
             .ok_or(StateError::DocumentNotFound)?;
@@ -219,7 +218,7 @@ impl AppState {
         }
     }
 
-    fn process_app_command(&mut self, command: AppCommand) -> Result<(), Error> {
+    fn process_app_command(&mut self, command: AppCommand) -> Result<(), StateError> {
         use AppCommand::*;
 
         match command {
@@ -245,7 +244,7 @@ impl AppState {
         Ok(())
     }
 
-    fn process_document_command(&mut self, command: DocumentCommand) -> Result<(), Error> {
+    fn process_document_command(&mut self, command: DocumentCommand) -> Result<(), StateError> {
         use DocumentCommand::*;
         let document = match &command {
             EndImport(p, _)
@@ -263,7 +262,7 @@ impl AppState {
         document.process_command(command)
     }
 
-    pub fn process_sync_command(&mut self, command: SyncCommand) -> Result<(), Error> {
+    pub fn process_sync_command(&mut self, command: SyncCommand) -> Result<(), StateError> {
         match command {
             SyncCommand::App(c) => self.process_app_command(c),
             SyncCommand::Document(c) => self.process_document_command(c),
@@ -271,7 +270,7 @@ impl AppState {
     }
 }
 
-fn begin_new_document() -> Result<CommandBuffer, Error> {
+fn begin_new_document() -> anyhow::Result<CommandBuffer> {
     let mut command_buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_save_dialog(Some(SHEET_FILE_EXTENSION), None)?
@@ -283,7 +282,7 @@ fn begin_new_document() -> Result<CommandBuffer, Error> {
     Ok(command_buffer)
 }
 
-fn begin_open_document() -> Result<CommandBuffer, Error> {
+fn begin_open_document() -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     match nfd::open_file_multiple_dialog(Some(SHEET_FILE_EXTENSION), None)? {
         nfd::Response::Okay(path_string) => {
@@ -301,21 +300,25 @@ fn begin_open_document() -> Result<CommandBuffer, Error> {
     Ok(buffer)
 }
 
-fn read_document<T: AsRef<Path>>(source: T) -> Result<CommandBuffer, Error> {
+fn read_document<T: AsRef<Path>>(source: T) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     let document = Document::open(source)?;
     buffer.end_open_document(document);
     Ok(buffer)
 }
 
-fn save<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> Result<CommandBuffer, Error> {
+fn save<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     Document::save(sheet, source.as_ref())?;
     buffer.mark_as_saved(source, version);
     Ok(buffer)
 }
 
-fn save_as<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> Result<CommandBuffer, Error> {
+fn save_as<T: AsRef<Path>>(
+    sheet: &Sheet,
+    source: T,
+    version: i32,
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_save_dialog(Some(SHEET_FILE_EXTENSION), None)?
@@ -328,7 +331,7 @@ fn save_as<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> Result<Com
     Ok(buffer)
 }
 
-fn begin_import<T: AsRef<Path>>(into: T) -> Result<CommandBuffer, Error> {
+fn begin_import<T: AsRef<Path>>(into: T) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     match nfd::open_file_multiple_dialog(Some(IMAGE_IMPORT_FILE_EXTENSIONS), None)? {
         nfd::Response::Okay(path_string) => {
@@ -348,7 +351,7 @@ fn begin_import<T: AsRef<Path>>(into: T) -> Result<CommandBuffer, Error> {
 
 fn begin_set_export_texture_destination<T: AsRef<Path>>(
     document_path: T,
-) -> Result<CommandBuffer, Error> {
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_save_dialog(Some(IMAGE_EXPORT_FILE_EXTENSIONS), None)?
@@ -361,7 +364,7 @@ fn begin_set_export_texture_destination<T: AsRef<Path>>(
 
 fn begin_set_export_metadata_destination<T: AsRef<Path>>(
     document_path: T,
-) -> Result<CommandBuffer, Error> {
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) = nfd::open_save_dialog(None, None)? {
         let metadata_destination = std::path::PathBuf::from(path_string);
@@ -372,7 +375,7 @@ fn begin_set_export_metadata_destination<T: AsRef<Path>>(
 
 fn begin_set_export_metadata_paths_root<T: AsRef<Path>>(
     document_path: T,
-) -> Result<CommandBuffer, Error> {
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) = nfd::open_pick_folder(None)? {
         let metadata_paths_root = std::path::PathBuf::from(path_string);
@@ -381,7 +384,7 @@ fn begin_set_export_metadata_paths_root<T: AsRef<Path>>(
     Ok(buffer)
 }
 
-fn begin_set_export_format<T: AsRef<Path>>(document_path: T) -> Result<CommandBuffer, Error> {
+fn begin_set_export_format<T: AsRef<Path>>(document_path: T) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_file_dialog(Some(TEMPLATE_FILE_EXTENSION), None)?
@@ -392,7 +395,7 @@ fn begin_set_export_format<T: AsRef<Path>>(document_path: T) -> Result<CommandBu
     Ok(buffer)
 }
 
-fn export(sheet: &Sheet) -> Result<(), Error> {
+fn export(sheet: &Sheet) -> anyhow::Result<()> {
     let export_settings = sheet
         .get_export_settings()
         .as_ref()
@@ -416,7 +419,7 @@ fn export(sheet: &Sheet) -> Result<(), Error> {
     Ok(())
 }
 
-pub fn process_async_command(command: AsyncCommand) -> Result<CommandBuffer, Error> {
+pub fn process_async_command(command: AsyncCommand) -> anyhow::Result<CommandBuffer> {
     let no_commands = CommandBuffer::new();
     match command {
         AsyncCommand::BeginNewDocument => begin_new_document(),
