@@ -129,6 +129,7 @@
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Prettier UI and review TODO.style
+- [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
 - [ ] Unit test UI
 
 ## Tiger 1.0
@@ -152,4 +153,6 @@
 - [ ] Anchor points (like hitbox but point)
 - [ ] Place arbitrary markers ("events") on timeline
 - [ ] Copy/paste animation or keyframe (between sheets)
+- [ ] Drag and drop frames from OS to content panel
+- [ ] Drag and drop frames from OS to timeline panel
 - [ ] Projects?
