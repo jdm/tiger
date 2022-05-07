@@ -114,6 +114,8 @@
 - [ ] Filter frames/animations in content panel by text search
 - [ ] In-place rename UX
 - [ ] Right click menu to rename/delete item
+- [ ] Edit keyframe duration from selection panel
+- [ ] Edit hitboxes from selection panel (offset, size, tag, etc.)
 - [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 
 ## Tiger 0.8
