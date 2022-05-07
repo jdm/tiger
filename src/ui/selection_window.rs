@@ -61,7 +61,7 @@ fn draw_hitbox<'a>(ui: &Ui<'a>, hitbox: &Hitbox) {
                     .to_array(),
                 color,
             )
-            .thickness(2.0) // TODO dpi
+            .thickness(2.0) // TODO.dpi
             .build();
     }
 }

@@ -53,8 +53,8 @@ fn draw_hitbox_resize_controls<'a>(
         .translate(offset + space / 2.0);
 
     let draw_list = ui.get_window_draw_list();
-    let knob_size = 4.0; // TODO dpi
-    let button_size = 16.0; // TODO dpi
+    let knob_size = 4.0; // TODO.dpi
+    let button_size = 16.0; // TODO.dpi
 
     for dx in -1..=1 {
         for dy in -1..=1 {
@@ -95,7 +95,7 @@ fn draw_hitbox_resize_controls<'a>(
                 .build();
 
             draw_list
-                .add_circle(screen_position, knob_size - 1.0, [0.0, 0.4, 0.9, 1.0]) // TODO dpi TODO.style
+                .add_circle(screen_position, knob_size - 1.0, [0.0, 0.4, 0.9, 1.0]) // TODO.dpi TODO.style
                 .filled(true)
                 .build();
 
@@ -185,7 +185,7 @@ fn draw_hitbox<'a>(
         let draw_list = ui.get_window_draw_list();
         draw_list
             .add_rect(top_left.to_array(), bottom_right.to_array(), outline_color)
-            .thickness(1.0) // TODO dpi
+            .thickness(1.0) // TODO.dpi
             .build();
     }
 
@@ -358,7 +358,7 @@ fn draw_keyframe<'a>(
                         (cursor_screen_pos + draw_size).to_array(),
                         outline_color,
                     )
-                    .thickness(1.0) // TODO dpi
+                    .thickness(1.0) // TODO.dpi
                     .build();
             };
             true
@@ -439,8 +439,8 @@ fn draw_animation<'a>(
 
 fn draw_grid<'a>(ui: &Ui<'a>, app_state: &AppState) {
     let draw_list = ui.get_window_draw_list();
-    let thickness = 0.5; // TODO DPI?
-    let spacing = 16; // TODO DPI?
+    let thickness = 0.5; // TODO.dpi?
+    let spacing = 16; // TODO.dpi?
     let grain = 4;
 
     ui.set_cursor_pos([0.0, 0.0]);
@@ -499,8 +499,8 @@ fn draw_grid<'a>(ui: &Ui<'a>, app_state: &AppState) {
 
 fn draw_origin<'a>(ui: &Ui<'a>, document: &Document) {
     let offset = document.view.workbench_offset;
-    let size = 10.0; // TODO DPI?
-    let thickness = 1.0; // TODO DPI?
+    let size = 10.0; // TODO.dpi?
+    let thickness = 1.0; // TODO.dpi?
 
     let draw_list = ui.get_window_draw_list();
 

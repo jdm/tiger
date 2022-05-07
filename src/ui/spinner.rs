@@ -7,11 +7,11 @@ use std::f32::consts::PI;
 use crate::utils;
 
 pub fn draw_spinner<'a>(ui: &Ui<'a>, draw_list: &DrawListMut<'_>, space: Vector2D<f32>) {
-    let size = 20.0; // TODO dpi?
+    let size = 20.0; // TODO.dpi?
     let color = [0.8, 1.0, 0.1, 1.0]; // TODO.style
     let spin_duration = 3.0; // seconds
     let cycle_duration = 2.0; // seconds
-    let thickness = 1.0; // TODO dpi?
+    let thickness = 1.0; // TODO.dpi?
     let num_control_points = 4;
 
     let time = ui.time() as f32;

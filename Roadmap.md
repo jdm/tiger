@@ -128,7 +128,7 @@
 
 ## Tiger 0.9
 
-- [ ] Review TODO dpi
+- [ ] Review TODO.dpi
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Prettier UI and review TODO.style

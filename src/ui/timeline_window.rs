@@ -9,14 +9,14 @@ use crate::ui::Rect;
 
 fn draw_timeline_ticks<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: &Document) {
     let zoom = document.view.get_timeline_zoom_factor();
-    let h = 8.0; // TODO DPI?
-    let padding = 4.0; // TODO DPI?
+    let h = 8.0; // TODO.dpi?
+    let padding = 4.0; // TODO.dpi?
 
     let draw_list = ui.get_window_draw_list();
     let cursor_start = ui.cursor_screen_pos();
     let max_draw_x = cursor_start[0] + ui.content_region_avail()[0]
         - ui.window_content_region_min()[0]
-        + 2.0 * ui.cursor_pos()[0]; // TODO DPI on 2x factor?
+        + 2.0 * ui.cursor_pos()[0]; // TODO.dpi on 2x factor?
 
     let mut x = cursor_start[0];
     let mut delta_t = 0;
@@ -62,7 +62,7 @@ fn draw_timeline_ticks<'a>(ui: &Ui<'a>, commands: &mut CommandBuffer, document: 
 
 fn draw_insert_marker<'a>(ui: &Ui<'a>, draw_list: &DrawListMut<'_>, height: f32) {
     let position = ui.cursor_screen_pos();
-    let insert_marker_size = 8.0; // TODO DPI?
+    let insert_marker_size = 8.0; // TODO.dpi?
     let insert_marker_color = [249.0 / 255.0, 40.0 / 255.0, 50.0 / 255.0];
     let marker_top_left = [position[0] - insert_marker_size / 2.0, position[1]];
     let marker_bottom_right = [position[0] + insert_marker_size / 2.0, position[1] + height];
@@ -88,7 +88,7 @@ fn get_frame_location(
 ) -> FrameLocation {
     let zoom = document.view.get_timeline_zoom_factor();
     let w = (keyframe.get_duration() as f32 * zoom).ceil();
-    let h = 32.0; // TODO DPI?
+    let h = 32.0; // TODO.dpi?
     let top_left = ((frame_starts_at.as_millis() as f32 * zoom).floor(), 0.0);
     FrameLocation {
         top_left,
@@ -108,9 +108,9 @@ fn draw_keyframe<'a>(
 ) {
     let keyframe_location = get_frame_location(document, frame_starts_at, keyframe);
     let zoom = document.view.get_timeline_zoom_factor();
-    let outline_size = 1.0; // TODO DPI?
-    let text_padding = 4.0; // TODO DPI?
-    let max_resize_handle_size = 16.0; // TODO DPI?
+    let outline_size = 1.0; // TODO.dpi?
+    let text_padding = 4.0; // TODO.dpi?
+    let max_resize_handle_size = 16.0; // TODO.dpi?
     let w = keyframe_location.size.0;
     let h = keyframe_location.size.1;
     let is_too_small = w < 2.0 * outline_size + 1.0;
@@ -172,7 +172,7 @@ fn draw_keyframe<'a>(
             draw_list.with_clip_rect_intersect(fill_top_left, fill_bottom_right, || {
                 let text_color = outline_color; // TODO.style
                 let x = fill_top_left[0] + text_padding;
-                let y = (fill_top_left[1] + fill_bottom_right[1]) / 2.0 - 8.0; // TODO style 8.0 is font_size/2
+                let y = (fill_top_left[1] + fill_bottom_right[1]) / 2.0 - 8.0; // TODO.style 8.0 is font_size/2
                 let text_position = [x, y];
                 draw_list.add_text(text_position, text_color, name.to_string_lossy());
             });
@@ -309,7 +309,7 @@ fn handle_drag_to_resize<'a>(
     let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
     let is_dragging_duration = document.is_adjusting_frame_duration();
     let zoom = document.view.get_timeline_zoom_factor();
-    let min_frame_drag_width = 24.0; // TODO DPI?
+    let min_frame_drag_width = 24.0; // TODO.dpi?
 
     if is_dragging_duration && is_mouse_dragging {
         ui.set_mouse_cursor(Some(MouseCursor::ResizeEW));
