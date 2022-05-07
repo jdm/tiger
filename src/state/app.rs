@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use thiserror::Error;
 
 use crate::export::*;
 use crate::sheet::*;
@@ -16,6 +17,18 @@ const IMAGE_EXPORT_FILE_EXTENSIONS: &str = "png";
 pub enum ExitState {
     Requested,
     Allowed,
+}
+
+#[derive(Error, Debug)]
+pub enum AppError {
+    #[error("No document is open")]
+    NoDocumentOpen,
+    #[error("Requested document was not found")]
+    DocumentNotFound,
+    #[error("Sheet has no export settings")]
+    NoExistingExportSettings,
+    #[error("Invalid document operation")]
+    InvalidDocumentOperation(#[from] document::DocumentError),
 }
 
 #[derive(Debug, Default)]
@@ -104,7 +117,7 @@ impl AppState {
         self.documents.iter()
     }
 
-    fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), StateError> {
+    fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
         match self.get_document_mut(&path) {
             Some(d) => *d = Document::new(path.as_ref()),
             None => {
@@ -116,7 +129,7 @@ impl AppState {
         Ok(())
     }
 
-    fn end_open_document(&mut self, document: Document) -> Result<(), StateError> {
+    fn end_open_document(&mut self, document: Document) -> Result<(), AppError> {
         let source = document.source.clone();
         if self.get_document(&source).is_none() {
             self.add_document(document);
@@ -128,7 +141,7 @@ impl AppState {
         &mut self,
         from: T,
         to: U,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), AppError> {
         if from.as_ref() == to.as_ref() {
             return Ok(());
         }
@@ -139,7 +152,7 @@ impl AppState {
             .map(|d| &d.source)
             .any(|s| s == from.as_ref())
         {
-            return Err(StateError::DocumentNotFound.into());
+            return Err(AppError::DocumentNotFound.into());
         }
 
         self.documents.retain(|d| d.source != to.as_ref());
@@ -156,10 +169,10 @@ impl AppState {
         Ok(())
     }
 
-    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), StateError> {
+    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
         let document = self
             .get_document_mut(&path)
-            .ok_or(StateError::DocumentNotFound)?;
+            .ok_or(AppError::DocumentNotFound)?;
         document.transient = Default::default();
         self.current_document = Some(path.as_ref().to_owned());
         Ok(())
@@ -218,7 +231,7 @@ impl AppState {
         }
     }
 
-    fn process_app_command(&mut self, command: AppCommand) -> Result<(), StateError> {
+    fn process_app_command(&mut self, command: AppCommand) -> Result<(), AppError> {
         use AppCommand::*;
 
         match command {
@@ -229,11 +242,11 @@ impl AppState {
             CloseAllDocuments => self.close_all_documents(),
             Undo => self
                 .get_current_document_mut()
-                .ok_or(StateError::NoDocumentOpen)?
+                .ok_or(AppError::NoDocumentOpen)?
                 .undo()?,
             Redo => self
                 .get_current_document_mut()
-                .ok_or(StateError::NoDocumentOpen)?
+                .ok_or(AppError::NoDocumentOpen)?
                 .redo()?,
             ShowError(e) => self.show_error(e),
             ClearError() => self.clear_error(),
@@ -244,7 +257,7 @@ impl AppState {
         Ok(())
     }
 
-    fn process_document_command(&mut self, command: DocumentCommand) -> Result<(), StateError> {
+    fn process_document_command(&mut self, command: DocumentCommand) -> Result<(), AppError> {
         use DocumentCommand::*;
         let document = match &command {
             EndImport(p, _)
@@ -253,16 +266,16 @@ impl AppState {
             | EndSetExportMetadataDestination(p, _)
             | EndSetExportMetadataPathsRoot(p, _)
             | EndSetExportFormat(p, _) => {
-                self.get_document_mut(p).ok_or(StateError::DocumentNotFound)
+                self.get_document_mut(p).ok_or(AppError::DocumentNotFound)
             }
             _ => self
                 .get_current_document_mut()
-                .ok_or(StateError::NoDocumentOpen),
+                .ok_or(AppError::NoDocumentOpen),
         }?;
-        document.process_command(command)
+        document.process_command(command).map_err(|e| e.into())
     }
 
-    pub fn process_sync_command(&mut self, command: SyncCommand) -> Result<(), StateError> {
+    pub fn process_sync_command(&mut self, command: SyncCommand) -> Result<(), AppError> {
         match command {
             SyncCommand::App(c) => self.process_app_command(c),
             SyncCommand::Document(c) => self.process_document_command(c),
@@ -399,7 +412,7 @@ fn export(sheet: &Sheet) -> anyhow::Result<()> {
     let export_settings = sheet
         .get_export_settings()
         .as_ref()
-        .ok_or(StateError::NoExistingExportSettings)?;
+        .ok_or(AppError::NoExistingExportSettings)?;
 
     // TODO texture export performance is awful
     let packed_sheet = pack_sheet(&sheet)?;

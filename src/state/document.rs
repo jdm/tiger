@@ -3,9 +3,60 @@ use euclid::{point2, vec2};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use thiserror::Error;
 
 use crate::sheet::*;
 use crate::state::*;
+
+#[derive(Error, Debug)]
+pub enum DocumentError {
+    #[error("Cannot perform undo operation")]
+    UndoOperationNowAllowed,
+    #[error("Requested frame is not in document")]
+    FrameNotInDocument,
+    #[error("Requested animation is not in document")]
+    AnimationNotInDocument,
+    #[error("Frame does not have a hitbox with the requested name")]
+    InvalidHitboxName,
+    #[error("Animation does not have a frame at the requested index")]
+    InvalidKeyframeIndex,
+    #[error("No keyframe found for requested time")]
+    NoKeyframeForThisTime,
+    #[error("Expected a hitbox to be selected")]
+    NoHitboxSelected,
+    #[error("Expected an keyframe to be selected")]
+    NoKeyframeSelected,
+    #[error("A hitbox with this name already exists")]
+    HitboxAlreadyExists,
+    #[error("An animation with this name already exists")]
+    AnimationAlreadyExists,
+    #[error("Not currently editing any frame")]
+    NotEditingAnyFrame,
+    #[error("Not currently editing any animation")]
+    NotEditingAnyAnimation,
+    #[error("Not currently adjusting export settings")]
+    NotExporting,
+    #[error("Not currently renaming an item")]
+    NotRenaming,
+    #[error("Not currently adjusting keyframe position")]
+    NotAdjustingKeyframePosition,
+    #[error("Not currently adjusting hitbox size")]
+    NotAdjustingHitboxSize,
+    #[error("Not currently adjusting hitbox position")]
+    NotAdjustingHitboxPosition,
+    #[error("Not currently adjusting keyframe duration")]
+    NotAdjustingKeyframeDuration,
+    #[error("Missing data while adjusting hitbox size")]
+    MissingHitboxSizeData,
+    #[error("Missing data while adjusting hitbox position")]
+    MissingHitboxPositionData,
+    #[error("Missing data while adjusting keyframe position")]
+    MissingKeyframePositionData,
+    #[error("Missing data while adjusting keyframe duration")]
+    MissingKeyframeDurationData,
+    #[error("Invalid sheet operation")]
+    InvalidSheetOperation(#[from] SheetError),
+}
 
 #[derive(Debug, Default)]
 struct HistoryEntry {
@@ -187,9 +238,9 @@ impl Document {
         }
     }
 
-    pub fn undo(&mut self) -> Result<(), StateError> {
+    pub fn undo(&mut self) -> Result<(), DocumentError> {
         if !self.can_use_undo_system() {
-            return Err(StateError::UndoOperationNowAllowed.into());
+            return Err(DocumentError::UndoOperationNowAllowed.into());
         }
         if self.history_index > 0 {
             self.history_index -= 1;
@@ -200,9 +251,9 @@ impl Document {
         Ok(())
     }
 
-    pub fn redo(&mut self) -> Result<(), StateError> {
+    pub fn redo(&mut self) -> Result<(), DocumentError> {
         if !self.can_use_undo_system() {
-            return Err(StateError::UndoOperationNowAllowed.into());
+            return Err(DocumentError::UndoOperationNowAllowed.into());
         }
         if self.history_index < self.history.len() - 1 {
             self.history_index += 1;
@@ -225,52 +276,52 @@ impl Document {
         }
     }
 
-    fn get_workbench_frame(&self) -> Result<&Frame, StateError> {
+    fn get_workbench_frame(&self) -> Result<&Frame, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Frame(path)) => Some(
                 self.sheet
                     .get_frame(path)
-                    .ok_or(StateError::FrameNotInDocument)?,
+                    .ok_or(DocumentError::FrameNotInDocument)?,
             ),
             _ => None,
         }
-        .ok_or_else(|| StateError::NotEditingAnyFrame.into())
+        .ok_or_else(|| DocumentError::NotEditingAnyFrame.into())
     }
 
-    fn get_workbench_frame_mut(&mut self) -> Result<&mut Frame, StateError> {
+    fn get_workbench_frame_mut(&mut self) -> Result<&mut Frame, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Frame(path)) => Some(
                 self.sheet
                     .get_frame_mut(path)
-                    .ok_or(StateError::FrameNotInDocument)?,
+                    .ok_or(DocumentError::FrameNotInDocument)?,
             ),
             _ => None,
         }
-        .ok_or_else(|| StateError::NotEditingAnyFrame.into())
+        .ok_or_else(|| DocumentError::NotEditingAnyFrame.into())
     }
 
-    fn get_workbench_animation(&self) -> Result<&Animation, StateError> {
+    fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
                     .get_animation(n)
-                    .ok_or(StateError::AnimationNotInDocument)?,
+                    .ok_or(DocumentError::AnimationNotInDocument)?,
             ),
             _ => None,
         }
-        .ok_or_else(|| StateError::NotEditingAnyAnimation.into())
+        .ok_or_else(|| DocumentError::NotEditingAnyAnimation.into())
     }
 
-    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, StateError> {
+    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
                     .get_animation_mut(n)
-                    .ok_or(StateError::AnimationNotInDocument)?,
+                    .ok_or(DocumentError::AnimationNotInDocument)?,
             ),
             _ => None,
         }
-        .ok_or_else(|| StateError::NotEditingAnyAnimation.into())
+        .ok_or_else(|| DocumentError::NotEditingAnyAnimation.into())
     }
 
     pub fn is_dragging_content_frames(&self) -> bool {
@@ -345,10 +396,10 @@ impl Document {
         self.view.selection = None;
     }
 
-    pub fn select_frames(&mut self, paths: &MultiSelection<PathBuf>) -> Result<(), StateError> {
+    pub fn select_frames(&mut self, paths: &MultiSelection<PathBuf>) -> Result<(), DocumentError> {
         for path in paths.items.iter() {
             if !self.sheet.has_frame(path) {
-                return Err(StateError::FrameNotInDocument.into());
+                return Err(DocumentError::FrameNotInDocument.into());
             }
         }
         if paths.items.is_empty() {
@@ -359,10 +410,13 @@ impl Document {
         Ok(())
     }
 
-    pub fn select_animations(&mut self, names: &MultiSelection<String>) -> Result<(), StateError> {
+    pub fn select_animations(
+        &mut self,
+        names: &MultiSelection<String>,
+    ) -> Result<(), DocumentError> {
         for name in names.items.iter() {
             if !self.sheet.has_animation(name) {
-                return Err(StateError::AnimationNotInDocument.into());
+                return Err(DocumentError::AnimationNotInDocument.into());
             }
         }
         if names.items.is_empty() {
@@ -373,20 +427,20 @@ impl Document {
         Ok(())
     }
 
-    pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) -> Result<(), StateError> {
+    pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) -> Result<(), DocumentError> {
         let frame_path = match &self.view.workbench_item {
             Some(WorkbenchItem::Frame(p)) => Some(p.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyFrame)?;
+        .ok_or(DocumentError::NotEditingAnyFrame)?;
         let frame = self
             .sheet
             .get_frame(&frame_path)
-            .ok_or(StateError::FrameNotInDocument)?;
+            .ok_or(DocumentError::FrameNotInDocument)?;
         for name in names.items.iter() {
             let _hitbox = frame
                 .get_hitbox(name)
-                .ok_or(StateError::InvalidHitboxName)?;
+                .ok_or(DocumentError::InvalidHitboxName)?;
         }
         if names.items.is_empty() {
             self.clear_selection();
@@ -399,7 +453,7 @@ impl Document {
     pub fn select_keyframes(
         &mut self,
         frame_indexes: &MultiSelection<usize>,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         if frame_indexes.items.is_empty() {
             self.clear_selection();
         } else {
@@ -412,11 +466,11 @@ impl Document {
             let frame_times = animation.get_frame_times();
             let frame_start_time = *frame_times
                 .get(keyframe_index)
-                .ok_or(StateError::InvalidKeyframeIndex)?;
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
 
             let keyframe = animation
                 .get_frame(keyframe_index)
-                .ok_or(StateError::InvalidKeyframeIndex)?;
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
             let duration = keyframe.get_duration() as u64;
 
             let clock = self.view.timeline_clock.as_millis() as u64;
@@ -430,18 +484,18 @@ impl Document {
         Ok(())
     }
 
-    pub fn edit_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), StateError> {
+    pub fn edit_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), DocumentError> {
         if !self.sheet.has_frame(&path) {
-            return Err(StateError::FrameNotInDocument.into());
+            return Err(DocumentError::FrameNotInDocument.into());
         }
         self.view.workbench_item = Some(WorkbenchItem::Frame(path.as_ref().to_owned()));
         self.view.workbench_offset = Vector2D::zero();
         Ok(())
     }
 
-    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), StateError> {
+    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
         if !self.sheet.has_animation(&name) {
-            return Err(StateError::AnimationNotInDocument.into());
+            return Err(DocumentError::AnimationNotInDocument.into());
         }
         self.view.workbench_item = Some(WorkbenchItem::Animation(name.as_ref().to_owned()));
         self.view.workbench_offset = Vector2D::zero();
@@ -456,7 +510,7 @@ impl Document {
         }));
     }
 
-    pub fn create_animation(&mut self) -> Result<(), StateError> {
+    pub fn create_animation(&mut self) -> Result<(), DocumentError> {
         let animation_name = {
             let animation = self.sheet.add_animation();
             let animation_name = animation.get_name().to_owned();
@@ -471,27 +525,27 @@ impl Document {
         &mut self,
         paths: Vec<T>,
         next_frame_index: usize,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         let animation_name = match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
+        .ok_or(DocumentError::NotEditingAnyAnimation)?;
         for path in paths.iter().rev() {
             self.sheet
                 .get_animation_mut(&animation_name)
-                .ok_or(StateError::AnimationNotInDocument)?
+                .ok_or(DocumentError::AnimationNotInDocument)?
                 .create_frame(path, next_frame_index)?;
         }
         Ok(())
     }
 
-    pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), StateError> {
+    pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), DocumentError> {
         let selection = match &self.view.selection {
             Some(Selection::Keyframe(i)) => Some(i.clone()),
             _ => None,
         }
-        .ok_or(StateError::NoKeyframeSelected)?;
+        .ok_or(DocumentError::NoKeyframeSelected)?;
 
         let mut frame_indexes: Vec<usize> = selection.items.clone().into_iter().collect();
         frame_indexes.sort();
@@ -520,7 +574,7 @@ impl Document {
 
         let timeline_pos = *frame_times
             .get(insert_index)
-            .ok_or(StateError::InvalidKeyframeIndex)?;
+            .ok_or(DocumentError::InvalidKeyframeIndex)?;
         self.view.timeline_clock = Duration::from_millis(u64::from(timeline_pos));
 
         Ok(())
@@ -530,27 +584,27 @@ impl Document {
         &mut self,
         frame_being_dragged: usize,
         reference_clock: u32,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         let animation_name = match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
+        .ok_or(DocumentError::NotEditingAnyAnimation)?;
 
         let frame_indexes = match &self.view.selection {
             Some(Selection::Keyframe(i)) => Some(i.clone()),
             _ => None,
         }
-        .ok_or(StateError::NoKeyframeSelected)?;
+        .ok_or(DocumentError::NoKeyframeSelected)?;
 
         let mut initial_duration = HashMap::new();
         for index in frame_indexes.items {
             let keyframe = self
                 .sheet
                 .get_animation(&animation_name)
-                .ok_or(StateError::AnimationNotInDocument)?
+                .ok_or(DocumentError::AnimationNotInDocument)?
                 .get_frame(index)
-                .ok_or(StateError::InvalidKeyframeIndex)?;
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
             let duration = keyframe.get_duration();
             initial_duration.insert(index, duration);
         }
@@ -568,25 +622,25 @@ impl Document {
         &mut self,
         clock_at_cursor: u32,
         minimum_duration: u32,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         let animation_name = self.get_workbench_animation()?.get_name().to_owned();
 
         let frame_indexes = match &self.view.selection {
             Some(Selection::Keyframe(i)) => Some(i.clone()),
             _ => None,
         }
-        .ok_or(StateError::NoKeyframeSelected)?;
+        .ok_or(DocumentError::NoKeyframeSelected)?;
 
         let keyframe_duration = match &self.transient {
             Some(Transient::KeyframeDuration(x)) => Some(x.clone()),
             _ => None,
         }
-        .ok_or(StateError::NotAdjustingKeyframeDuration)?;
+        .ok_or(DocumentError::NotAdjustingKeyframeDuration)?;
 
         let animation = self
             .sheet
             .get_animation_mut(&animation_name)
-            .ok_or(StateError::AnimationNotInDocument)?;
+            .ok_or(DocumentError::AnimationNotInDocument)?;
 
         let reference_clock = keyframe_duration.reference_clock as i32;
         let clock_at_cursor = clock_at_cursor as i32;
@@ -603,11 +657,11 @@ impl Document {
         for index in frame_indexes.items {
             let keyframe = animation
                 .get_frame_mut(index)
-                .ok_or(StateError::InvalidKeyframeIndex)?;
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
             let old_duration = *keyframe_duration
                 .initial_duration
                 .get(&index)
-                .ok_or(StateError::MissingKeyframeDurationData)?;
+                .ok_or(DocumentError::MissingKeyframeDurationData)?;
             let new_duration = (old_duration as i32 + duration_delta_per_frame)
                 .max(minimum_duration as i32) as u32;
             keyframe.set_duration(new_duration);
@@ -616,7 +670,7 @@ impl Document {
         let frame_times = animation.get_frame_times();
         let timeline_pos = *frame_times
             .get(frame_indexes.last_touched_in_range)
-            .ok_or(StateError::InvalidKeyframeIndex)?;
+            .ok_or(DocumentError::InvalidKeyframeIndex)?;
         self.view.timeline_clock = Duration::from_millis(u64::from(timeline_pos));
 
         Ok(())
@@ -626,24 +680,24 @@ impl Document {
         self.transient = Some(Transient::TimelineFrameDrag);
     }
 
-    pub fn begin_keyframe_offset_drag(&mut self) -> Result<(), StateError> {
+    pub fn begin_keyframe_offset_drag(&mut self) -> Result<(), DocumentError> {
         let animation_name = self.get_workbench_animation()?.get_name().to_owned();
         let frame_indexes = match &self.view.selection {
             Some(Selection::Keyframe(i)) => Some(i.clone()),
             _ => None,
         }
-        .ok_or(StateError::NoKeyframeSelected)?;
+        .ok_or(DocumentError::NoKeyframeSelected)?;
 
         let animation = self
             .sheet
             .get_animation(animation_name)
-            .ok_or(StateError::AnimationNotInDocument)?;
+            .ok_or(DocumentError::AnimationNotInDocument)?;
 
         let mut initial_offset = HashMap::new();
         for keyframe_index in frame_indexes.items {
             let keyframe = animation
                 .get_frame(keyframe_index)
-                .ok_or(StateError::InvalidKeyframeIndex)?;
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
             initial_offset.insert(keyframe_index, keyframe.get_offset());
         }
 
@@ -658,20 +712,20 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         both_axis: bool,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         let zoom = self.view.get_workbench_zoom_factor();
         let animation_name = self.get_workbench_animation()?.get_name().to_owned();
         let frame_indexes = match &self.view.selection {
             Some(Selection::Keyframe(indexes)) => Some(indexes.clone()),
             _ => None,
         }
-        .ok_or(StateError::NoKeyframeSelected)?;
+        .ok_or(DocumentError::NoKeyframeSelected)?;
 
         let keyframe_position = match &self.transient {
             Some(Transient::KeyframePosition(x)) => Some(x),
             _ => None,
         }
-        .ok_or(StateError::NotAdjustingKeyframePosition)?;
+        .ok_or(DocumentError::NotAdjustingKeyframePosition)?;
 
         if !both_axis {
             if mouse_delta.x.abs() > mouse_delta.y.abs() {
@@ -685,29 +739,29 @@ impl Document {
             let old_offset = keyframe_position
                 .initial_offset
                 .get(&index)
-                .ok_or(StateError::MissingKeyframePositionData)?;
+                .ok_or(DocumentError::MissingKeyframePositionData)?;
 
             let new_offset = (old_offset.to_f32() + mouse_delta / zoom).floor().to_i32();
 
             let keyframe = self
                 .sheet
                 .get_animation_mut(&animation_name)
-                .ok_or(StateError::AnimationNotInDocument)?
+                .ok_or(DocumentError::AnimationNotInDocument)?
                 .get_frame_mut(index)
-                .ok_or(StateError::InvalidKeyframeIndex)?;
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
             keyframe.set_offset(new_offset);
         }
 
         Ok(())
     }
 
-    pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), StateError> {
+    pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), DocumentError> {
         let hitbox_name = {
             let frame_path = self.get_workbench_frame()?.get_source().to_owned();
             let frame = self
                 .sheet
                 .get_frame_mut(frame_path)
-                .ok_or(StateError::FrameNotInDocument)?;
+                .ok_or(DocumentError::FrameNotInDocument)?;
 
             let hitbox = frame.add_hitbox();
             hitbox.set_position(mouse_position.floor().to_i32());
@@ -717,23 +771,23 @@ impl Document {
         self.begin_hitbox_scale(ResizeAxis::SE)
     }
 
-    pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) -> Result<(), StateError> {
+    pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) -> Result<(), DocumentError> {
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
 
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(names)) => Some(names.items.clone()),
             _ => None,
         }
-        .ok_or(StateError::NoHitboxSelected)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
         let mut initial_state = HashMap::new();
         for name in &hitbox_names {
             let hitbox = self
                 .sheet
                 .get_frame(&frame_path)
-                .ok_or(StateError::FrameNotInDocument)?
+                .ok_or(DocumentError::FrameNotInDocument)?
                 .get_hitbox(name)
-                .ok_or(StateError::InvalidHitboxName)?;
+                .ok_or(DocumentError::InvalidHitboxName)?;
             initial_state.insert(
                 name.to_owned(),
                 HitboxInitialState {
@@ -755,7 +809,7 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         preserve_aspect_ratio: bool,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         use ResizeAxis::*;
 
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
@@ -763,19 +817,19 @@ impl Document {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NoHitboxSelected)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
         let hitbox_size = match &self.transient {
             Some(Transient::HitboxSize(x)) => Some(x),
             _ => None,
         }
-        .ok_or(StateError::NotAdjustingHitboxSize)?;
+        .ok_or(DocumentError::NotAdjustingHitboxSize)?;
 
         for hitbox_name in hitbox_names.items.iter() {
             let initial_state = hitbox_size
                 .initial_state
                 .get(hitbox_name)
-                .ok_or(StateError::MissingHitboxSizeData)?;
+                .ok_or(DocumentError::MissingHitboxSizeData)?;
 
             let initial_hitbox = Rect::new(
                 initial_state.position.to_point(),
@@ -844,9 +898,9 @@ impl Document {
             let hitbox = self
                 .sheet
                 .get_frame_mut(&frame_path)
-                .ok_or(StateError::FrameNotInDocument)?
+                .ok_or(DocumentError::FrameNotInDocument)?
                 .get_hitbox_mut(&hitbox_name)
-                .ok_or(StateError::InvalidHitboxName)?;
+                .ok_or(DocumentError::InvalidHitboxName)?;
 
             hitbox.set_position(new_hitbox.origin.to_vector());
             hitbox.set_size(new_hitbox.size.to_u32().to_vector());
@@ -855,22 +909,22 @@ impl Document {
         Ok(())
     }
 
-    pub fn begin_hitbox_drag(&mut self) -> Result<(), StateError> {
+    pub fn begin_hitbox_drag(&mut self) -> Result<(), DocumentError> {
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NoHitboxSelected)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
         let mut initial_offset = HashMap::new();
         for hitbox_name in hitbox_names.items.iter() {
             let hitbox = self
                 .sheet
                 .get_frame(&frame_path)
-                .ok_or(StateError::FrameNotInDocument)?
+                .ok_or(DocumentError::FrameNotInDocument)?
                 .get_hitbox(hitbox_name)
-                .ok_or(StateError::InvalidHitboxName)?;
+                .ok_or(DocumentError::InvalidHitboxName)?;
             initial_offset.insert(hitbox_name.to_owned(), hitbox.get_position());
         }
 
@@ -885,7 +939,7 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         both_axis: bool,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         let zoom = self.view.get_workbench_zoom_factor();
 
         let frame_path = self.get_workbench_frame()?.get_source().to_owned();
@@ -893,19 +947,19 @@ impl Document {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NoHitboxSelected)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
         let hitbox_position = match &self.transient {
             Some(Transient::HitboxPosition(x)) => Some(x),
             _ => None,
         }
-        .ok_or(StateError::NotAdjustingHitboxPosition)?;
+        .ok_or(DocumentError::NotAdjustingHitboxPosition)?;
 
         for hitbox_name in hitbox_names.items.iter() {
             let old_offset = hitbox_position
                 .initial_offset
                 .get(hitbox_name)
-                .ok_or(StateError::MissingHitboxPositionData)?;
+                .ok_or(DocumentError::MissingHitboxPositionData)?;
 
             if !both_axis {
                 if mouse_delta.x.abs() > mouse_delta.y.abs() {
@@ -920,16 +974,16 @@ impl Document {
             let hitbox = self
                 .sheet
                 .get_frame_mut(&frame_path)
-                .ok_or(StateError::FrameNotInDocument)?
+                .ok_or(DocumentError::FrameNotInDocument)?
                 .get_hitbox_mut(&hitbox_name)
-                .ok_or(StateError::InvalidHitboxName)?;
+                .ok_or(DocumentError::InvalidHitboxName)?;
             hitbox.set_position(new_offset);
         }
 
         Ok(())
     }
 
-    pub fn toggle_playback(&mut self) -> Result<(), StateError> {
+    pub fn toggle_playback(&mut self) -> Result<(), DocumentError> {
         let mut new_timeline_clock = self.view.timeline_clock;
         {
             let animation = self.get_workbench_animation()?;
@@ -952,7 +1006,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn snap_to_previous_frame(&mut self) -> Result<(), StateError> {
+    pub fn snap_to_previous_frame(&mut self) -> Result<(), DocumentError> {
         let clock = {
             let animation = self.get_workbench_animation()?;
 
@@ -983,7 +1037,7 @@ impl Document {
         self.update_timeline_scrub(Duration::from_millis(clock))
     }
 
-    pub fn snap_to_next_frame(&mut self) -> Result<(), StateError> {
+    pub fn snap_to_next_frame(&mut self) -> Result<(), DocumentError> {
         let clock = {
             let animation = self.get_workbench_animation()?;
 
@@ -1014,17 +1068,17 @@ impl Document {
         self.update_timeline_scrub(Duration::from_millis(clock))
     }
 
-    pub fn toggle_looping(&mut self) -> Result<(), StateError> {
+    pub fn toggle_looping(&mut self) -> Result<(), DocumentError> {
         let animation = self.get_workbench_animation_mut()?;
         animation.set_is_looping(!animation.is_looping());
         Ok(())
     }
 
-    pub fn update_timeline_scrub(&mut self, new_time: Duration) -> Result<(), StateError> {
+    pub fn update_timeline_scrub(&mut self, new_time: Duration) -> Result<(), DocumentError> {
         let animation = self.get_workbench_animation()?;
         let (index, _) = animation
             .get_frame_at(new_time)
-            .ok_or(StateError::NoKeyframeForThisTime)?;
+            .ok_or(DocumentError::NoKeyframeForThisTime)?;
         self.select_keyframes(&MultiSelection::new(vec![index]))?;
         self.view.timeline_clock = new_time;
         Ok(())
@@ -1034,7 +1088,7 @@ impl Document {
         &mut self,
         direction: Vector2D<i32>,
         large: bool,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         let amplitude = if large { 10 } else { 1 };
         let offset = direction * amplitude;
         match self.view.selection.clone() {
@@ -1045,7 +1099,7 @@ impl Document {
                     let hitbox = self
                         .get_workbench_frame_mut()?
                         .get_hitbox_mut(name)
-                        .ok_or(StateError::InvalidHitboxName)?;
+                        .ok_or(DocumentError::InvalidHitboxName)?;
                     hitbox.set_position(hitbox.get_position() + offset);
                 }
             }
@@ -1055,9 +1109,9 @@ impl Document {
                     let keyframe = self
                         .sheet
                         .get_animation_mut(animation_name)
-                        .ok_or(StateError::AnimationNotInDocument)?
+                        .ok_or(DocumentError::AnimationNotInDocument)?
                         .get_frame_mut(index)
-                        .ok_or(StateError::InvalidKeyframeIndex)?;
+                        .ok_or(DocumentError::InvalidKeyframeIndex)?;
                     keyframe.set_offset(keyframe.get_offset() + offset);
                 }
             }
@@ -1066,7 +1120,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn delete_selection(&mut self) -> Result<(), StateError> {
+    pub fn delete_selection(&mut self) -> Result<(), DocumentError> {
         match &self.view.selection {
             Some(Selection::Animation(names)) => {
                 for name in &names.items {
@@ -1107,19 +1161,19 @@ impl Document {
         };
     }
 
-    pub fn end_rename_selection(&mut self) -> Result<(), StateError> {
+    pub fn end_rename_selection(&mut self) -> Result<(), DocumentError> {
         let new_name = match &self.transient {
             Some(Transient::Rename(x)) => Some(x.new_name.clone()),
             _ => None,
         }
-        .ok_or(StateError::NotRenaming)?;
+        .ok_or(DocumentError::NotRenaming)?;
 
         match self.view.selection.clone() {
             Some(Selection::Animation(names)) => {
                 let old_name = names.last_touched_in_range;
                 if old_name != new_name {
                     if self.sheet.has_animation(&new_name) {
-                        return Err(StateError::AnimationAlreadyExists.into());
+                        return Err(DocumentError::AnimationAlreadyExists.into());
                     }
                     self.sheet.rename_animation(&old_name, &new_name)?;
                     self.select_animations(&MultiSelection::new(vec![new_name.clone()]))?;
@@ -1136,14 +1190,14 @@ impl Document {
                     if self
                         .sheet
                         .get_frame(&frame_path)
-                        .ok_or(StateError::FrameNotInDocument)?
+                        .ok_or(DocumentError::FrameNotInDocument)?
                         .has_hitbox(&new_name)
                     {
-                        return Err(StateError::HitboxAlreadyExists.into());
+                        return Err(DocumentError::HitboxAlreadyExists.into());
                     }
                     self.sheet
                         .get_frame_mut(&frame_path)
-                        .ok_or(StateError::FrameNotInDocument)?
+                        .ok_or(DocumentError::FrameNotInDocument)?
                         .rename_hitbox(&old_name, &new_name)?;
                     self.select_hitboxes(&MultiSelection::new(vec![new_name.clone()]))?;
                 }
@@ -1153,11 +1207,11 @@ impl Document {
         Ok(())
     }
 
-    fn get_export_settings_edit_mut(&mut self) -> Result<&mut ExportSettings, StateError> {
+    fn get_export_settings_edit_mut(&mut self) -> Result<&mut ExportSettings, DocumentError> {
         self.persistent
             .export_settings_edit
             .as_mut()
-            .ok_or(StateError::NotExporting.into())
+            .ok_or(DocumentError::NotExporting.into())
     }
 
     fn begin_export_as(&mut self) {
@@ -1176,7 +1230,7 @@ impl Document {
     fn end_set_export_texture_destination<T: AsRef<Path>>(
         &mut self,
         texture_destination: T,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.texture_destination =
             texture_destination.as_ref().to_owned();
         Ok(())
@@ -1185,7 +1239,7 @@ impl Document {
     fn end_set_export_metadata_destination<T: AsRef<Path>>(
         &mut self,
         metadata_destination: T,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.metadata_destination =
             metadata_destination.as_ref().to_owned();
         Ok(())
@@ -1194,18 +1248,18 @@ impl Document {
     fn end_set_export_metadata_paths_root<T: AsRef<Path>>(
         &mut self,
         metadata_paths_root: T,
-    ) -> Result<(), StateError> {
+    ) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.metadata_paths_root =
             metadata_paths_root.as_ref().to_owned();
         Ok(())
     }
 
-    fn end_set_export_format(&mut self, format: ExportFormat) -> Result<(), StateError> {
+    fn end_set_export_format(&mut self, format: ExportFormat) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.format = format;
         Ok(())
     }
 
-    fn end_export_as(&mut self) -> Result<(), StateError> {
+    fn end_export_as(&mut self) -> Result<(), DocumentError> {
         let export_settings = self.get_export_settings_edit_mut()?.clone();
         self.sheet.set_export_settings(export_settings);
         self.persistent.export_settings_edit = None;
@@ -1226,7 +1280,7 @@ impl Document {
         self.persistent.close_state = None;
     }
 
-    pub fn process_command(&mut self, command: DocumentCommand) -> Result<(), StateError> {
+    pub fn process_command(&mut self, command: DocumentCommand) -> Result<(), DocumentError> {
         use DocumentCommand::*;
 
         match &command {
