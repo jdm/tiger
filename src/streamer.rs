@@ -142,7 +142,6 @@ pub fn upload<F>(
 struct TextureCacheImage {
     pub id: TextureId,
     pub size: Vector2D<u32>,
-    // TODO dirty flag and file watches
 }
 
 #[derive(Clone)]

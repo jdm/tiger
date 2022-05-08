@@ -270,7 +270,6 @@ impl Animation {
         frame: T,
         index: usize,
     ) -> Result<(), SheetError> {
-        // TODO validate that frame exists in sheet!
         if index > self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
         }
