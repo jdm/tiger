@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
 
-pub use self::compat::version2::*;
+pub use self::compat::version3::*;
 use self::constants::*;
 
 pub mod compat;
@@ -111,10 +111,6 @@ impl Sheet {
         self.frames.iter().find(|f| f.source == path.as_ref())
     }
 
-    pub fn get_frame_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Frame> {
-        self.frames.iter_mut().find(|f| f.source == path.as_ref())
-    }
-
     pub fn get_animation<T: AsRef<str>>(&self, name: T) -> Option<&Animation> {
         self.animations.iter().find(|a| a.name == name.as_ref())
     }
@@ -153,9 +149,16 @@ impl Sheet {
         }
     }
 
-    pub fn delete_hitbox<T: AsRef<Path>, U: AsRef<str>>(&mut self, path: T, name: U) {
-        if let Some(frame) = self.get_frame_mut(path.as_ref()) {
-            frame.hitboxes.retain(|h| h.name != name.as_ref());
+    pub fn delete_hitbox<T: AsRef<str>, U: AsRef<str>>(
+        &mut self,
+        animation_name: T,
+        frame_index: usize,
+        name: U,
+    ) {
+        if let Some(animation) = self.get_animation_mut(animation_name) {
+            if let Some(frame) = animation.get_frame_mut(frame_index) {
+                frame.delete_hitbox(name);
+            }
         }
     }
 
@@ -218,7 +221,7 @@ impl Animation {
         Some(&mut self.timeline[index])
     }
 
-    pub fn get_frame_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
+    pub fn get_frame_index_at(&self, time: Duration) -> Option<usize> {
         let duration = match self.get_duration() {
             None => return None,
             Some(0) => return None,
@@ -233,13 +236,20 @@ impl Animation {
         for (index, frame) in self.timeline.iter().enumerate() {
             cursor += Duration::from_millis(u64::from(frame.duration));
             if time < cursor {
-                return Some((index, frame));
+                return Some(index);
             }
         }
-        Some((
-            self.timeline.len() - 1,
-            self.timeline.iter().last().unwrap(),
-        )) // TODO no unwrap
+        Some(self.timeline.len() - 1)
+    }
+
+    pub fn get_frame_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
+        let frame_index = self.get_frame_index_at(time)?;
+        Some((frame_index, self.timeline.get(frame_index)?))
+    }
+
+    pub fn get_frame_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe)> {
+        let frame_index = self.get_frame_index_at(time)?;
+        Some((frame_index, self.timeline.get_mut(frame_index)?))
     }
 
     pub fn get_frame_times(&self) -> Vec<u64> {
@@ -307,61 +317,11 @@ impl Frame {
     pub fn new<T: AsRef<Path>>(path: T) -> Frame {
         Frame {
             source: path.as_ref().to_owned(),
-            hitboxes: vec![],
         }
     }
 
     pub fn get_source(&self) -> &Path {
         &self.source
-    }
-
-    pub fn hitboxes_iter(&self) -> std::slice::Iter<'_, Hitbox> {
-        self.hitboxes.iter()
-    }
-
-    pub fn get_hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
-        self.hitboxes.iter().find(|a| a.name == name.as_ref())
-    }
-
-    pub fn get_hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
-        self.hitboxes.iter_mut().find(|a| a.name == name.as_ref())
-    }
-
-    pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
-        self.hitboxes.iter().any(|a| a.name == name.as_ref())
-    }
-
-    pub fn add_hitbox(&mut self) -> &mut Hitbox {
-        let mut name = "New Hitbox".to_owned();
-        let mut index = 2;
-        while self.has_hitbox(&name) {
-            name = format!("New Hitbox {}", index);
-            index += 1;
-        }
-
-        self.hitboxes.push(Hitbox {
-            name,
-            geometry: Shape::Rectangle(Rectangle {
-                top_left: (0, 0),
-                size: (0, 0),
-            }),
-        });
-        self.hitboxes.last_mut().unwrap() // TODO no unwrap?
-    }
-
-    pub fn rename_hitbox<T: AsRef<str>, U: AsRef<str>>(
-        &mut self,
-        old_name: T,
-        new_name: U,
-    ) -> Result<(), SheetError> {
-        if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
-            return Err(SheetError::HitboxNameTooLong.into());
-        }
-        let hitbox = self
-            .get_hitbox_mut(old_name)
-            .ok_or(SheetError::HitboxNotFound)?;
-        hitbox.name = new_name.as_ref().to_owned();
-        Ok(())
     }
 }
 
@@ -439,6 +399,7 @@ impl Keyframe {
             frame: frame.as_ref().to_owned(),
             duration: 100, // TODO better default?
             offset: (0, 0),
+            hitboxes: Vec::new(),
         }
     }
 
@@ -460,6 +421,59 @@ impl Keyframe {
 
     pub fn set_offset(&mut self, new_offset: Vector2D<i32>) {
         self.offset = new_offset.to_tuple();
+    }
+
+    pub fn hitboxes_iter(&self) -> std::slice::Iter<'_, Hitbox> {
+        self.hitboxes.iter()
+    }
+
+    pub fn get_hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
+        self.hitboxes.iter().find(|a| a.name == name.as_ref())
+    }
+
+    pub fn get_hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
+        self.hitboxes.iter_mut().find(|a| a.name == name.as_ref())
+    }
+
+    pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
+        self.hitboxes.iter().any(|a| a.name == name.as_ref())
+    }
+
+    pub fn add_hitbox(&mut self) -> &mut Hitbox {
+        let mut name = "New Hitbox".to_owned();
+        let mut index = 2;
+        while self.has_hitbox(&name) {
+            name = format!("New Hitbox {}", index);
+            index += 1;
+        }
+
+        self.hitboxes.push(Hitbox {
+            name,
+            geometry: Shape::Rectangle(Rectangle {
+                top_left: (0, 0),
+                size: (0, 0),
+            }),
+        });
+        self.hitboxes.last_mut().unwrap() // TODO no unwrap?
+    }
+
+    pub fn rename_hitbox<T: AsRef<str>, U: AsRef<str>>(
+        &mut self,
+        old_name: T,
+        new_name: U,
+    ) -> Result<(), SheetError> {
+        if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
+            return Err(SheetError::HitboxNameTooLong.into());
+        }
+        let hitbox = self
+            .get_hitbox_mut(old_name)
+            .ok_or(SheetError::HitboxNotFound)?;
+        hitbox.name = new_name.as_ref().to_owned();
+        Ok(())
+    }
+
+    pub fn delete_hitbox<T: AsRef<str>>(&mut self, name: T) {
+        self.hitboxes.retain(|h| h.name != name.as_ref());
     }
 }
 

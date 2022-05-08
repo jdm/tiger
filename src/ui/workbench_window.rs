@@ -122,7 +122,6 @@ fn draw_hitbox<'a>(
     document: &Document,
     hitbox: &Hitbox,
     is_selectable: bool,
-    offset: Vector2D<i32>,
     is_scaling: &mut bool,
     is_dragging: &mut bool,
 ) {
@@ -134,9 +133,8 @@ fn draw_hitbox<'a>(
     let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
     let is_shift_down = ui.io().key_shift;
 
-    let cursor_pos = workbench_offset
-        + (space / 2.0).floor()
-        + (rectangle.origin.to_f32().to_vector() + offset.to_f32()) * zoom;
+    let cursor_pos =
+        workbench_offset + (space / 2.0).floor() + (rectangle.origin.to_f32().to_vector()) * zoom;
     ui.set_cursor_pos(cursor_pos.to_array());
 
     let top_left: Vector2D<f32> = ui.cursor_screen_pos().into();
@@ -239,54 +237,17 @@ fn draw_hitbox<'a>(
     }
 }
 
-fn draw_frame<'a>(
-    ui: &Ui<'a>,
-    commands: &mut CommandBuffer,
-    texture_cache: &TextureCache,
-    document: &Document,
-    frame: &Frame,
-) {
+fn draw_frame<'a>(ui: &Ui<'a>, texture_cache: &TextureCache, document: &Document, frame: &Frame) {
     let zoom = document.view.get_workbench_zoom_factor();
     let offset = document.view.workbench_offset;
     let space: Vector2D<f32> = ui.window_size().into();
     match texture_cache.get(&frame.get_source()) {
         Some(TextureCacheResult::Loaded(texture)) => {
-            {
-                let draw_size = texture.size * zoom;
-                let cursor_pos =
-                    offset + (space / 2.0).floor() - (draw_size / zoom / 2.0).floor() * zoom;
-                ui.set_cursor_pos(cursor_pos.to_array());
-                Image::new(texture.id, draw_size.to_array()).build(ui);
-            }
-
-            let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
-            let mut is_scaling_hitbox = document.is_sizing_hitbox();
-            let mut is_dragging_hitbox = document.is_positioning_hitbox();
-
-            let mouse_pos = ui.io().mouse_pos.into();
-            let mouse_position_in_workbench = screen_to_workbench(ui, mouse_pos, document);
-
-            for hitbox in frame.hitboxes_iter() {
-                draw_hitbox(
-                    ui,
-                    commands,
-                    document,
-                    hitbox,
-                    true,
-                    vec2(0, 0),
-                    &mut is_scaling_hitbox,
-                    &mut is_dragging_hitbox,
-                );
-            }
-
-            if !is_scaling_hitbox
-                && !is_dragging_hitbox
-                && ui.is_window_hovered()
-                && is_mouse_dragging
-            {
-                let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
-                commands.create_hitbox(mouse_position_in_workbench - drag_delta / zoom);
-            }
+            let draw_size = texture.size * zoom;
+            let cursor_pos =
+                offset + (space / 2.0).floor() - (draw_size / zoom / 2.0).floor() * zoom;
+            ui.set_cursor_pos(cursor_pos.to_array());
+            Image::new(texture.id, draw_size.to_array()).build(ui);
         }
         Some(TextureCacheResult::Loading) => {
             ui.set_cursor_pos(offset.to_array());
@@ -295,6 +256,40 @@ fn draw_frame<'a>(
         _ => {
             // TODO
         }
+    }
+}
+
+fn draw_hitboxes<'a>(
+    ui: &Ui<'a>,
+    commands: &mut CommandBuffer,
+    document: &Document,
+    keyframe: &Keyframe,
+) {
+    let zoom = document.view.get_workbench_zoom_factor();
+    let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
+    let mut is_scaling_hitbox = document.is_sizing_hitbox();
+    let mut is_dragging_hitbox = document.is_positioning_hitbox();
+
+    let mouse_pos = ui.io().mouse_pos.into();
+    let mouse_position_in_workbench = screen_to_workbench(ui, mouse_pos, document);
+
+    for hitbox in keyframe.hitboxes_iter() {
+        draw_hitbox(
+            ui,
+            commands,
+            document,
+            hitbox,
+            true, // TODO hitbox mode on/off
+            &mut is_scaling_hitbox,
+            &mut is_dragging_hitbox,
+        );
+    }
+
+    if !is_scaling_hitbox && !is_dragging_hitbox && ui.is_window_hovered() && is_mouse_dragging
+    // TODO prevent this and other hitbox interactions while playback is active
+    {
+        let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
+        commands.create_hitbox(mouse_position_in_workbench - drag_delta / zoom);
     }
 }
 
@@ -329,21 +324,6 @@ fn draw_keyframe<'a>(
             }
 
             let is_hovered = ui.is_item_hovered();
-
-            if let Some(frame) = document.sheet.get_frame(keyframe.get_frame()) {
-                for hitbox in frame.hitboxes_iter() {
-                    draw_hitbox(
-                        ui,
-                        commands,
-                        document,
-                        hitbox,
-                        false,
-                        frame_offset.to_i32(),
-                        &mut false,
-                        &mut false,
-                    );
-                }
-            }
 
             if is_selected || is_hovered {
                 let outline_color = if is_selected {
@@ -385,6 +365,7 @@ fn draw_animation<'a>(
     let now = document.view.timeline_clock;
     if let Some((keyframe_index, keyframe)) = animation.get_frame_at(now) {
         let is_selected = document.is_keyframe_selected(keyframe_index);
+        let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
 
         let drew = draw_keyframe(
             ui,
@@ -396,10 +377,20 @@ fn draw_animation<'a>(
             is_selected,
         );
 
-        let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
-        let is_shift_down = ui.io().key_shift;
+        if drew && document.transient.is_none() {
+            if ui.is_item_hovered() {
+                ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
+            }
+            if ui.is_item_active() && is_mouse_dragging {
+                if !is_selected {
+                    commands.select_keyframes(&MultiSelection::new(vec![keyframe_index]));
+                }
+                commands.begin_keyframe_offset_drag();
+            }
+        }
 
         if let Some(Selection::Keyframe(selected_frame_indexes)) = &document.view.selection {
+            // Draw semi-transparent version of selected keyframes that are not at current clock time
             for selected_frame_index in &selected_frame_indexes.items {
                 if *selected_frame_index != keyframe_index {
                     if let Some(keyframe) = animation.get_frame(*selected_frame_index) {
@@ -416,6 +407,9 @@ fn draw_animation<'a>(
                     }
                 }
             }
+
+            // Move key frames
+            let is_shift_down = ui.io().key_shift;
             if document.is_moving_keyframe() && is_mouse_dragging {
                 ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
                 let delta = ui.mouse_drag_delta().into();
@@ -423,17 +417,7 @@ fn draw_animation<'a>(
             }
         }
 
-        if drew && document.transient.is_none() {
-            if ui.is_item_hovered() {
-                ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
-            }
-            if ui.is_item_active() && is_mouse_dragging {
-                if !is_selected {
-                    commands.select_keyframes(&MultiSelection::new(vec![keyframe_index]));
-                }
-                commands.begin_keyframe_offset_drag();
-            }
-        }
+        draw_hitboxes(ui, commands, document, keyframe);
     }
 }
 
@@ -596,7 +580,7 @@ pub fn draw<'a>(
                 match &document.view.workbench_item {
                     Some(WorkbenchItem::Frame(path)) => {
                         if let Some(frame) = document.sheet.get_frame(path) {
-                            draw_frame(ui, commands, texture_cache, document, frame);
+                            draw_frame(ui, texture_cache, document, frame);
                             let name = frame
                                 .get_source()
                                 .file_name()

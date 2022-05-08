@@ -1,7 +1,7 @@
 use imgui::StyleVar::*;
 use imgui::*;
 
-use crate::sheet::{Frame, Hitbox};
+use crate::sheet::{Hitbox, Keyframe};
 use crate::state::*;
 use crate::ui::Rect;
 
@@ -9,9 +9,9 @@ fn draw_hitboxes<'a>(
     ui: &Ui<'a>,
     commands: &mut CommandBuffer,
     document: &Document,
-    frame: &Frame,
+    keyframe: &Keyframe,
 ) {
-    let mut hitboxes: Vec<&Hitbox> = frame.hitboxes_iter().collect();
+    let mut hitboxes: Vec<&Hitbox> = keyframe.hitboxes_iter().collect();
     hitboxes.sort_unstable();
     for hitbox in hitboxes.iter() {
         let is_selected = document.is_hitbox_selected(hitbox);
@@ -47,10 +47,8 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &
         .movable(false)
         .build(ui, || {
             if let Some(document) = app_state.get_current_document() {
-                if let Some(WorkbenchItem::Frame(frame_path)) = &document.view.workbench_item {
-                    if let Some(frame) = document.sheet.get_frame(frame_path) {
-                        draw_hitboxes(ui, commands, document, frame);
-                    }
+                if let Ok((_, keyframe)) = document.get_workbench_keyframe() {
+                    draw_hitboxes(ui, commands, document, keyframe);
                 }
             }
         });

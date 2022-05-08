@@ -28,28 +28,21 @@ pub enum ExportError {
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct LiquidHitbox {
     name: String,
-    left_from_frame_center: i32,
-    top_from_frame_center: i32,
-    left_from_frame_left: i32,
-    top_from_frame_top: i32,
+    left: i32,
+    right: i32,
+    top: i32,
+    bottom: i32,
     width: i32,
     height: i32,
 }
 
-fn liquid_data_from_hitbox(
-    hitbox: &Hitbox,
-    packed_frame: &PackedFrame,
-) -> Result<LiquidHitbox, ExportError> {
-    let frame_size: Vector2D<u32> = packed_frame.size_in_sheet.into();
-    let hitbox_top_left_from_frame_top_left =
-        hitbox.get_position() + (frame_size.to_f32() / 2.0).floor().to_i32();
-
+fn liquid_data_from_hitbox(hitbox: &Hitbox) -> Result<LiquidHitbox, ExportError> {
     Ok(LiquidHitbox {
         name: hitbox.get_name().to_owned(),
-        left_from_frame_center: hitbox.get_position().x,
-        top_from_frame_center: hitbox.get_position().y,
-        left_from_frame_left: hitbox_top_left_from_frame_top_left.x,
-        top_from_frame_top: hitbox_top_left_from_frame_top_left.y,
+        left: hitbox.get_position().x,
+        right: hitbox.get_position().x + hitbox.get_size().x as i32,
+        top: hitbox.get_position().y,
+        bottom: hitbox.get_position().y + hitbox.get_size().y as i32,
         width: hitbox.get_size().x as i32,
         height: hitbox.get_size().y as i32,
     })
@@ -63,7 +56,6 @@ struct LiquidFrame {
     y: i32,
     width: i32,
     height: i32,
-    hitboxes: Vec<LiquidHitbox>,
 }
 
 fn liquid_data_from_frame(
@@ -80,15 +72,6 @@ fn liquid_data_from_frame(
         .get(frame.get_source())
         .ok_or(ExportError::FrameWasNotPacked)?;
 
-    let mut hitboxes = Vec::new();
-    for hitbox in frame.hitboxes_iter() {
-        let packed_frame = texture_layout
-            .get(frame.get_source())
-            .ok_or(ExportError::FrameWasNotPacked)?;
-        let hitbox_data = liquid_data_from_hitbox(hitbox, packed_frame)?;
-        hitboxes.push(hitbox_data);
-    }
-
     Ok(LiquidFrame {
         source: frame.get_source().to_string_lossy().into_owned(),
         index: index as i32,
@@ -96,7 +79,6 @@ fn liquid_data_from_frame(
         y: frame_layout.position_in_sheet.1 as i32,
         width: frame_layout.size_in_sheet.0 as i32,
         height: frame_layout.size_in_sheet.1 as i32,
-        hitboxes,
     })
 }
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
@@ -107,6 +89,7 @@ struct LiquidKeyframe {
     top_left_offset_x: i32,
     top_left_offset_y: i32,
     frame: LiquidFrame,
+    hitboxes: Vec<LiquidHitbox>,
 }
 
 fn liquid_data_from_keyframe(
@@ -125,8 +108,12 @@ fn liquid_data_from_keyframe(
     let frame = sheet
         .get_frame(keyframe.get_frame())
         .ok_or(ExportError::InvalidFrameReference)?;
-
     let frame_data = liquid_data_from_frame(sheet, frame, texture_layout)?;
+
+    let mut hitboxes = Vec::new();
+    for hitbox in keyframe.hitboxes_iter() {
+        hitboxes.push(liquid_data_from_hitbox(hitbox)?);
+    }
 
     Ok(LiquidKeyframe {
         duration: keyframe.get_duration() as i32,
@@ -135,6 +122,7 @@ fn liquid_data_from_keyframe(
         top_left_offset_x: top_left_offset.x,
         top_left_offset_y: top_left_offset.y,
         frame: frame_data,
+        hitboxes,
     })
 }
 

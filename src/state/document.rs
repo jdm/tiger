@@ -30,8 +30,6 @@ pub enum DocumentError {
     HitboxAlreadyExists,
     #[error("An animation with this name already exists")]
     AnimationAlreadyExists,
-    #[error("Not currently editing any frame")]
-    NotEditingAnyFrame,
     #[error("Not currently editing any animation")]
     NotEditingAnyAnimation,
     #[error("Not currently adjusting export settings")]
@@ -276,30 +274,6 @@ impl Document {
         }
     }
 
-    fn get_workbench_frame(&self) -> Result<&Frame, DocumentError> {
-        match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(path)) => Some(
-                self.sheet
-                    .get_frame(path)
-                    .ok_or(DocumentError::FrameNotInDocument)?,
-            ),
-            _ => None,
-        }
-        .ok_or_else(|| DocumentError::NotEditingAnyFrame.into())
-    }
-
-    fn get_workbench_frame_mut(&mut self) -> Result<&mut Frame, DocumentError> {
-        match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(path)) => Some(
-                self.sheet
-                    .get_frame_mut(path)
-                    .ok_or(DocumentError::FrameNotInDocument)?,
-            ),
-            _ => None,
-        }
-        .ok_or_else(|| DocumentError::NotEditingAnyFrame.into())
-    }
-
     fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
@@ -322,6 +296,22 @@ impl Document {
             _ => None,
         }
         .ok_or_else(|| DocumentError::NotEditingAnyAnimation.into())
+    }
+
+    pub fn get_workbench_keyframe(&self) -> Result<(usize, &Keyframe), DocumentError> {
+        let animation = self.get_workbench_animation()?;
+        let now = self.view.timeline_clock;
+        animation
+            .get_frame_at(now)
+            .ok_or(DocumentError::NoKeyframeForThisTime)
+    }
+
+    pub fn get_workbench_keyframe_mut(&mut self) -> Result<(usize, &mut Keyframe), DocumentError> {
+        let now = self.view.timeline_clock;
+        let animation = self.get_workbench_animation_mut()?;
+        animation
+            .get_frame_at_mut(now)
+            .ok_or(DocumentError::NoKeyframeForThisTime)
     }
 
     pub fn is_dragging_content_frames(&self) -> bool {
@@ -428,17 +418,9 @@ impl Document {
     }
 
     pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) -> Result<(), DocumentError> {
-        let frame_path = match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(p)) => Some(p.to_owned()),
-            _ => None,
-        }
-        .ok_or(DocumentError::NotEditingAnyFrame)?;
-        let frame = self
-            .sheet
-            .get_frame(&frame_path)
-            .ok_or(DocumentError::FrameNotInDocument)?;
+        let (_, keyframe) = self.get_workbench_keyframe()?;
         for name in names.items.iter() {
-            let _hitbox = frame
+            let _hitbox = keyframe
                 .get_hitbox(name)
                 .ok_or(DocumentError::InvalidHitboxName)?;
         }
@@ -447,6 +429,8 @@ impl Document {
         } else {
             self.view.selection = Some(Selection::Hitbox(names.clone()));
         }
+        // TODO this selection makes no sense when current keyframe changes
+        // Similar issue with stalte selected keyframes when workbench item changes
         Ok(())
     }
 
@@ -757,14 +741,9 @@ impl Document {
     }
 
     pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
         let hitbox_name = {
-            let frame_path = self.get_workbench_frame()?.get_source().to_owned();
-            let frame = self
-                .sheet
-                .get_frame_mut(frame_path)
-                .ok_or(DocumentError::FrameNotInDocument)?;
-
-            let hitbox = frame.add_hitbox();
+            let hitbox = keyframe.add_hitbox();
             hitbox.set_position(mouse_position.floor().to_i32());
             hitbox.get_name().to_owned()
         };
@@ -773,8 +752,7 @@ impl Document {
     }
 
     pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) -> Result<(), DocumentError> {
-        let frame_path = self.get_workbench_frame()?.get_source().to_owned();
-
+        let (_, keyframe) = self.get_workbench_keyframe()?;
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(names)) => Some(names.items.clone()),
             _ => None,
@@ -783,10 +761,7 @@ impl Document {
 
         let mut initial_state = HashMap::new();
         for name in &hitbox_names {
-            let hitbox = self
-                .sheet
-                .get_frame(&frame_path)
-                .ok_or(DocumentError::FrameNotInDocument)?
+            let hitbox = keyframe
                 .get_hitbox(name)
                 .ok_or(DocumentError::InvalidHitboxName)?;
             initial_state.insert(
@@ -813,7 +788,6 @@ impl Document {
     ) -> Result<(), DocumentError> {
         use ResizeAxis::*;
 
-        let frame_path = self.get_workbench_frame()?.get_source().to_owned();
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
@@ -824,7 +798,11 @@ impl Document {
             Some(Transient::HitboxSize(x)) => Some(x),
             _ => None,
         }
+        .cloned()
         .ok_or(DocumentError::NotAdjustingHitboxSize)?;
+
+        let zoom = self.view.get_workbench_zoom_factor();
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
 
         for hitbox_name in hitbox_names.items.iter() {
             let initial_state = hitbox_size
@@ -855,7 +833,6 @@ impl Document {
                 };
             }
 
-            let zoom = self.view.get_workbench_zoom_factor();
             let mouse_delta = (mouse_delta / zoom).round().to_i32();
 
             let bottom_left = point2(initial_hitbox.min_x(), initial_hitbox.max_y());
@@ -896,10 +873,7 @@ impl Document {
                 ],
             });
 
-            let hitbox = self
-                .sheet
-                .get_frame_mut(&frame_path)
-                .ok_or(DocumentError::FrameNotInDocument)?
+            let hitbox = keyframe
                 .get_hitbox_mut(&hitbox_name)
                 .ok_or(DocumentError::InvalidHitboxName)?;
 
@@ -911,7 +885,7 @@ impl Document {
     }
 
     pub fn begin_hitbox_drag(&mut self) -> Result<(), DocumentError> {
-        let frame_path = self.get_workbench_frame()?.get_source().to_owned();
+        let (_, keyframe) = self.get_workbench_keyframe()?;
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
@@ -920,10 +894,7 @@ impl Document {
 
         let mut initial_offset = HashMap::new();
         for hitbox_name in hitbox_names.items.iter() {
-            let hitbox = self
-                .sheet
-                .get_frame(&frame_path)
-                .ok_or(DocumentError::FrameNotInDocument)?
+            let hitbox = keyframe
                 .get_hitbox(hitbox_name)
                 .ok_or(DocumentError::InvalidHitboxName)?;
             initial_offset.insert(hitbox_name.to_owned(), hitbox.get_position());
@@ -942,8 +913,6 @@ impl Document {
         both_axis: bool,
     ) -> Result<(), DocumentError> {
         let zoom = self.view.get_workbench_zoom_factor();
-
-        let frame_path = self.get_workbench_frame()?.get_source().to_owned();
         let hitbox_names = match &self.view.selection {
             Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
@@ -954,7 +923,10 @@ impl Document {
             Some(Transient::HitboxPosition(x)) => Some(x),
             _ => None,
         }
+        .cloned()
         .ok_or(DocumentError::NotAdjustingHitboxPosition)?;
+
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
 
         for hitbox_name in hitbox_names.items.iter() {
             let old_offset = hitbox_position
@@ -972,10 +944,7 @@ impl Document {
 
             let new_offset = (old_offset.to_f32() + mouse_delta / zoom).floor().to_i32();
 
-            let hitbox = self
-                .sheet
-                .get_frame_mut(&frame_path)
-                .ok_or(DocumentError::FrameNotInDocument)?
+            let hitbox = keyframe
                 .get_hitbox_mut(&hitbox_name)
                 .ok_or(DocumentError::InvalidHitboxName)?;
             hitbox.set_position(new_offset);
@@ -1097,8 +1066,8 @@ impl Document {
             Some(Selection::Frame(_)) => {}
             Some(Selection::Hitbox(names)) => {
                 for name in names.items {
-                    let hitbox = self
-                        .get_workbench_frame_mut()?
+                    let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+                    let hitbox = keyframe
                         .get_hitbox_mut(name)
                         .ok_or(DocumentError::InvalidHitboxName)?;
                     hitbox.set_position(hitbox.get_position() + offset);
@@ -1134,9 +1103,11 @@ impl Document {
                 }
             }
             Some(Selection::Hitbox(names)) => {
-                let frame_path = self.get_workbench_frame()?.get_source().to_owned();
+                let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+                let (keyframe_index, _) = self.get_workbench_keyframe()?;
                 for name in &names.items {
-                    self.sheet.delete_hitbox(&frame_path, name);
+                    self.sheet
+                        .delete_hitbox(&animation_name, keyframe_index, name);
                 }
             }
             Some(Selection::Keyframe(indexes)) => {
@@ -1187,19 +1158,12 @@ impl Document {
             Some(Selection::Hitbox(names)) => {
                 let old_name = names.last_touched_in_range;
                 if old_name != new_name {
-                    let frame_path = self.get_workbench_frame()?.get_source().to_owned();
-                    if self
-                        .sheet
-                        .get_frame(&frame_path)
-                        .ok_or(DocumentError::FrameNotInDocument)?
-                        .has_hitbox(&new_name)
-                    {
+                    let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+                    if keyframe.has_hitbox(&new_name) {
+                        // TODO this should be an underlying sheet error
                         return Err(DocumentError::HitboxAlreadyExists.into());
                     }
-                    self.sheet
-                        .get_frame_mut(&frame_path)
-                        .ok_or(DocumentError::FrameNotInDocument)?
-                        .rename_hitbox(&old_name, &new_name)?;
+                    keyframe.rename_hitbox(&old_name, &new_name)?;
                     self.select_hitboxes(&MultiSelection::new(vec![new_name.clone()]))?;
                 }
             }

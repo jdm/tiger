@@ -6,13 +6,15 @@ use crate::sheet::{self, Sheet};
 
 pub mod version1;
 pub mod version2;
+pub mod version3;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 pub enum Version {
     Tiger1,
     Tiger2,
+    Tiger3,
 }
-const CURRENT_VERSION: Version = Version::Tiger2;
+const CURRENT_VERSION: Version = Version::Tiger3;
 
 #[derive(Deserialize)]
 struct Versioned {

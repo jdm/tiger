@@ -61,7 +61,7 @@ fn draw_hitbox<'a>(ui: &Ui<'a>, hitbox: &Hitbox) {
                     .to_array(),
                 color,
             )
-            .thickness(2.0) // TODO.dpi
+            .thickness(2.0) // TODO dpi
             .build();
     }
 }
@@ -178,11 +178,9 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, texture_cac
                     }
                     Some(Selection::Hitbox(names)) => {
                         let name = &names.last_touched_in_range;
-                        if let Some(WorkbenchItem::Frame(path)) = &document.view.workbench_item {
-                            if let Some(frame) = document.sheet.get_frame(path) {
-                                if let Some(hitbox) = frame.get_hitbox(name) {
-                                    draw_hitbox(ui, hitbox);
-                                }
+                        if let Ok((_, keyframe)) = document.get_workbench_keyframe() {
+                            if let Some(hitbox) = keyframe.get_hitbox(name) {
+                                draw_hitbox(ui, hitbox);
                             }
                         }
                     }
