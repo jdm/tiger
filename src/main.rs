@@ -202,14 +202,7 @@ fn main() -> anyhow::Result<()> {
                         let &(ref lock, ref cvar) = &*async_commands;
                         {
                             let mut work = lock.lock().unwrap();
-                            let commands = &*work.commands;
-                            if commands.contains(&async_command) {
-                                // This avoids queuing redundant work or dialogs when holding shortcuts
-                                // TODO: Ignore key repeats instead (second arg of is_key_pressed, not exposed by imgui-rs)
-                                println!("Ignoring duplicate async command");
-                            } else {
-                                work.commands.push(async_command);
-                            }
+                            work.commands.push(async_command);
                         }
                         cvar.notify_all();
                     }

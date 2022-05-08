@@ -562,10 +562,10 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
         if ui.is_key_pressed(Key::Delete) {
             commands.delete_selection();
         }
-        if ui.is_key_index_pressed(VirtualKeyCode::F2 as _) {
+        if ui.is_key_index_pressed_no_repeat(VirtualKeyCode::F2 as _) {
             commands.begin_rename_selection();
         }
-        if ui.is_key_index_pressed(VirtualKeyCode::Space as _) {
+        if ui.is_key_index_pressed_no_repeat(VirtualKeyCode::Space as _) {
             commands.toggle_playback();
         }
     }
@@ -604,13 +604,13 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
             }
         }
 
-        if ui.is_key_index_pressed(VirtualKeyCode::N as _) {
+        if ui.is_key_index_pressed_no_repeat(VirtualKeyCode::N as _) {
             commands.begin_new_document();
         }
-        if ui.is_key_index_pressed(VirtualKeyCode::O as _) {
+        if ui.is_key_index_pressed_no_repeat(VirtualKeyCode::O as _) {
             commands.begin_open_document();
         }
-        if ui.is_key_index_pressed(VirtualKeyCode::S as _) {
+        if ui.is_key_index_pressed_no_repeat(VirtualKeyCode::S as _) {
             if ui.io().key_shift {
                 if let Some(document) = app_state.get_current_document() {
                     commands.save_as(&document.source, &document.sheet, document.get_version());
@@ -621,7 +621,7 @@ fn process_shortcuts<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Comma
                 commands.save(&document.source, &document.sheet, document.get_version());
             }
         }
-        if ui.is_key_index_pressed(VirtualKeyCode::E as _) {
+        if ui.is_key_index_pressed_no_repeat(VirtualKeyCode::E as _) {
             if ui.io().key_shift {
                 commands.begin_export_as();
             } else if let Some(document) = app_state.get_current_document() {
