@@ -79,7 +79,7 @@
 - [ ] Editing hitboxes while animation is in workbench
   - [x] Hitboxes can be created and moved while an animation is in the workbench
   - [x] When multiple hitboxes and the animation frame are overlapping, mouse hovers and clicks should only interact with one of them
-  - [ ] Hitboxes panel is renamed to Keyframe and allows selecting the animation frame
+  - [x] Hitboxes panel is renamed to Keyframe and allows selecting the animation frame
   - [ ] Keyframe panel can lock individual keyframes, or the animation frame, to prevent mouse interactions
   - [ ] Keyframe panel can link/unlink hitboxes to the animation frame so that moving the frame also moves them (default on)
 - [x] Fix bug where hitbox resize handles don't work when clicked where they overlap with the corresponding hitbox

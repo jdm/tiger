@@ -10,7 +10,7 @@ use crate::streamer::{TextureCache, TextureCacheResult};
 use crate::utils;
 
 mod content_window;
-mod hitboxes_window;
+mod keyframe_window;
 mod selection_window;
 mod spinner;
 mod timeline_window;
@@ -85,7 +85,7 @@ pub fn run<'a>(ui: &Ui<'a>, app_state: &AppState, texture_cache: &TextureCache) 
             hitboxes_width,
             hitboxes_height,
         );
-        hitboxes_window::draw(ui, &hitboxes_rect, app_state, &mut commands);
+        keyframe_window::draw(ui, &hitboxes_rect, app_state, &mut commands);
     }
 
     draw_export_popup(ui, app_state, &mut commands);

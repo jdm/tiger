@@ -272,7 +272,7 @@ impl Document {
         }
     }
 
-    fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
+    pub fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
@@ -304,7 +304,7 @@ impl Document {
             .ok_or(DocumentError::NoKeyframeForThisTime)
     }
 
-    pub fn get_workbench_keyframe_mut(&mut self) -> Result<(usize, &mut Keyframe), DocumentError> {
+    fn get_workbench_keyframe_mut(&mut self) -> Result<(usize, &mut Keyframe), DocumentError> {
         let now = self.view.timeline_clock;
         let animation = self.get_workbench_animation_mut()?;
         animation
