@@ -427,8 +427,6 @@ impl Document {
         } else {
             self.view.selection = Some(Selection::Hitbox(names.clone()));
         }
-        // TODO this selection makes no sense when current keyframe changes
-        // Similar issue with stalte selected keyframes when workbench item changes
         Ok(())
     }
 
@@ -970,6 +968,13 @@ impl Document {
 
         self.persistent.timeline_is_playing = !self.persistent.timeline_is_playing;
         self.view.timeline_clock = new_timeline_clock;
+
+        if self.persistent.timeline_is_playing {
+            match self.view.selection {
+                Some(Selection::Hitbox(_)) | Some(Selection::Keyframe(_)) => self.clear_selection(),
+                None | Some(Selection::Frame(_)) | Some(Selection::Animation(_)) => (),
+            }
+        }
 
         Ok(())
     }

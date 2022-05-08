@@ -78,10 +78,10 @@
 - [x] Move hitbox data from frames to animation frames
 - [ ] Editing hitboxes while animation is in workbench
   - [x] Hitboxes can be created and moved while an animation is in the workbench
-  - [ ] When multiple hitboxes and the animation frame are overlapping, mouse hover and clicks should only interact with one of them
+  - [ ] When multiple hitboxes and the animation frame are overlapping, mouse hovers and clicks should only interact with one of them
   - [ ] Hitboxes panel is renamed to Keyframe and allows selecting the animation frame
   - [ ] Keyframe panel can lock individual keyframes, or the animation frame, to prevent mouse interactions
-  - [ ] Keyframe panel can link/unlink hitboxes to the animation frame so that moving the frame also moves them
+  - [ ] Keyframe panel can link/unlink hitboxes to the animation frame so that moving the frame also moves them (default on)
 - [x] Auto-select new keyframes when inserted to timeline
 - [x] Multiple selections
 - [x] Jump to next/previous frame
