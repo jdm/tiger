@@ -26,6 +26,8 @@ pub enum SheetError {
     AnimationNameTooLong,
     #[error("Hitbox name too long")]
     HitboxNameTooLong,
+    #[error("A hitbox with the name `{0}` already exists")]
+    HitboxNameAlreadyExists(String),
     #[error("Error converting an absolute path to a relative path")]
     AbsoluteToRelativePath,
     #[error("Invalid frame index")]
@@ -463,7 +465,12 @@ impl Keyframe {
         new_name: U,
     ) -> Result<(), SheetError> {
         if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
-            return Err(SheetError::HitboxNameTooLong.into());
+            return Err(SheetError::HitboxNameTooLong);
+        }
+        if self.has_hitbox(&new_name) {
+            return Err(SheetError::HitboxNameAlreadyExists(
+                new_name.as_ref().to_owned(),
+            ));
         }
         let hitbox = self
             .get_hitbox_mut(old_name)

@@ -26,8 +26,6 @@ pub enum DocumentError {
     NoHitboxSelected,
     #[error("Expected an keyframe to be selected")]
     NoKeyframeSelected,
-    #[error("A hitbox with this name already exists")]
-    HitboxAlreadyExists,
     #[error("An animation with this name already exists")]
     AnimationAlreadyExists,
     #[error("Not currently editing any animation")]
@@ -1159,10 +1157,6 @@ impl Document {
                 let old_name = names.last_touched_in_range;
                 if old_name != new_name {
                     let (_, keyframe) = self.get_workbench_keyframe_mut()?;
-                    if keyframe.has_hitbox(&new_name) {
-                        // TODO this should be an underlying sheet error
-                        return Err(DocumentError::HitboxAlreadyExists.into());
-                    }
                     keyframe.rename_hitbox(&old_name, &new_name)?;
                     self.select_hitboxes(&MultiSelection::new(vec![new_name.clone()]))?;
                 }
