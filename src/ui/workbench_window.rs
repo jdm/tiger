@@ -3,10 +3,109 @@ use euclid::vec2;
 use imgui::StyleVar::*;
 use imgui::*;
 
-use crate::sheet::{Animation, Frame, Hitbox, Keyframe};
+use crate::sheet::{Animation, Frame, Hitbox, Keyframe, Shape};
 use crate::state::*;
 use crate::streamer::{TextureCache, TextureCacheResult};
 use crate::ui::spinner::*;
+
+const RESIZE_CONTROL_INTERACTIVE_SIZE: f32 = 16.0; // TODO.dpi
+
+#[derive(Eq, PartialEq)]
+enum WorkbenchHoverItem {
+    Frame,
+    Hitbox(String),
+}
+
+// imgui isn't very well equipped to deal with overlapping buttons (our hitboxes and animation frame)
+// This function has logic to decide what we want the mouse cursor to interact with in the workbench
+// while editing an animation keyframe.
+fn compute_hovered_item<'a>(
+    ui: &Ui<'a>,
+    texture_cache: &TextureCache,
+    document: &Document,
+    keyframe: &Keyframe,
+) -> Option<WorkbenchHoverItem> {
+    let is_window_hovered =
+        ui.is_window_hovered_with_flags(WindowHoveredFlags::ALLOW_WHEN_BLOCKED_BY_ACTIVE_ITEM);
+    if document.transient.is_some() || !is_window_hovered {
+        return None;
+    }
+
+    struct WorkbenchHoverItemCandidate {
+        item: WorkbenchHoverItem,
+        priority: f32, // lower is better
+    }
+    let mut candidates: Vec<WorkbenchHoverItemCandidate> = Vec::new();
+    let zoom = document.view.get_workbench_zoom_factor();
+    let workbench_size: Vector2D<f32> = ui.window_size().into();
+
+    // Animation frame
+    if let Some(TextureCacheResult::Loaded(texture)) = texture_cache.get(&keyframe.get_frame()) {
+        let draw_size = texture.size * zoom;
+        let frame_top_left = Vector2D::from(ui.window_pos())
+            + (workbench_size / 2.0).floor()
+            + document.view.workbench_offset
+            + keyframe.get_offset().to_f32() * zoom
+            - (draw_size / zoom / 2.0).floor() * zoom;
+        let frame_bottom_right = frame_top_left + draw_size;
+        if ui.is_mouse_hovering_rect(frame_top_left.to_array(), frame_bottom_right.to_array()) {
+            candidates.push(WorkbenchHoverItemCandidate {
+                item: WorkbenchHoverItem::Frame,
+                priority: draw_size.x * draw_size.y,
+            });
+        }
+    }
+
+    // Hitboxes
+    for hitbox in keyframe.hitboxes_iter() {
+        let Shape::Rectangle(ref rectangle) = hitbox.geometry;
+        let draw_size = Vector2D::from(rectangle.size).to_f32() * zoom;
+        let hitbox_top_left = Vector2D::from(ui.window_pos())
+            + (workbench_size / 2.0).floor()
+            + document.view.workbench_offset
+            + Vector2D::from(rectangle.top_left).to_f32() * zoom;
+        let hitbox_bottom_right = hitbox_top_left + draw_size;
+
+        if ui.is_mouse_hovering_rect(hitbox_top_left.to_array(), hitbox_bottom_right.to_array()) {
+            candidates.push(WorkbenchHoverItemCandidate {
+                item: WorkbenchHoverItem::Hitbox(hitbox.get_name().to_owned()),
+                priority: draw_size.x * draw_size.y,
+            });
+        }
+
+        if document.is_hitbox_selected(hitbox) {
+            for dx in -1..=1 {
+                for dy in -1..=1 {
+                    if dx == 0 && dy == 0 {
+                        continue;
+                    }
+                    let knob_center: Vector2D<f32> = (hitbox_top_left
+                        + hitbox_bottom_right
+                        + Vector2D::new(dx as f32, dy as f32).component_mul(draw_size))
+                        / 2.0;
+                    let knob_top_left =
+                        knob_center - Vector2D::splat(RESIZE_CONTROL_INTERACTIVE_SIZE) / 2.0;
+                    let knob_bottom_right =
+                        knob_center + Vector2D::splat(RESIZE_CONTROL_INTERACTIVE_SIZE) / 2.0;
+                    if ui.is_mouse_hovering_rect(
+                        knob_top_left.to_array(),
+                        knob_bottom_right.to_array(),
+                    ) {
+                        candidates.push(WorkbenchHoverItemCandidate {
+                            item: WorkbenchHoverItem::Hitbox(hitbox.get_name().to_owned()),
+                            priority: -1.0,
+                        });
+                    }
+                }
+            }
+        }
+    }
+
+    candidates
+        .into_iter()
+        .min_by_key(|c| c.priority.round() as i32)
+        .map(|c| c.item)
+}
 
 fn screen_to_workbench<'a>(
     ui: &Ui<'a>,
@@ -38,13 +137,12 @@ fn draw_hitbox_resize_controls<'a>(
     commands: &mut CommandBuffer,
     document: &Document,
     hitbox: &Hitbox,
-    is_scaling: &mut bool,
-    is_dragging: &mut bool,
-) {
+) -> bool {
     let space: Vector2D<f32> = ui.window_size().into();
     let zoom = document.view.get_workbench_zoom_factor();
     let offset = document.view.workbench_offset;
     let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
+    let mut active = false;
 
     let rectangle = hitbox
         .get_rectangle()
@@ -54,7 +152,7 @@ fn draw_hitbox_resize_controls<'a>(
 
     let draw_list = ui.get_window_draw_list();
     let knob_size = 4.0; // TODO.dpi
-    let button_size = 16.0; // TODO.dpi
+    let button_size = RESIZE_CONTROL_INTERACTIVE_SIZE;
 
     for dx in -1..=1 {
         for dy in -1..=1 {
@@ -105,15 +203,18 @@ fn draw_hitbox_resize_controls<'a>(
             ui.invisible_button(&ImString::new(id), [button_size, button_size]);
             if ui.is_item_hovered() {
                 ui.set_mouse_cursor(Some(axis_to_cursor(axis)));
+                active = true;
             }
-            if !*is_dragging && !*is_scaling {
+            if !document.is_sizing_hitbox() {
                 if ui.is_item_active() && is_mouse_dragging {
                     commands.begin_hitbox_scale(axis);
-                    *is_scaling = true;
+                    active = true;
                 }
             }
         }
     }
+
+    active
 }
 
 fn draw_hitbox<'a>(
@@ -121,17 +222,13 @@ fn draw_hitbox<'a>(
     commands: &mut CommandBuffer,
     document: &Document,
     hitbox: &Hitbox,
-    is_selectable: bool,
-    is_scaling: &mut bool,
-    is_dragging: &mut bool,
+    is_hovered: bool,
 ) {
     let zoom = document.view.get_workbench_zoom_factor();
     let workbench_offset = document.view.workbench_offset;
     let space: Vector2D<f32> = ui.window_size().into();
     let rectangle = hitbox.get_rectangle();
     let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
-    let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
-    let is_shift_down = ui.io().key_shift;
 
     let cursor_pos =
         workbench_offset + (space / 2.0).floor() + (rectangle.origin.to_f32().to_vector()) * zoom;
@@ -139,47 +236,17 @@ fn draw_hitbox<'a>(
 
     let top_left: Vector2D<f32> = ui.cursor_screen_pos().into();
     let bottom_right = top_left + rectangle.size.to_f32().to_vector() * zoom;
-
     let is_selected = document.is_hitbox_selected(hitbox);
 
-    let (is_hovered, is_active) =
-        if is_selectable && !rectangle.size.is_empty() && document.transient.is_none() {
-            let hitbox_id = ImString::new(format!("hitbox_button_{}", hitbox.get_name()));
-            if ui.invisible_button(
-                &hitbox_id,
-                (rectangle.size.to_f32().to_vector() * zoom).to_array(),
-            ) {
-                let (mut selection, was_blank) = match &document.view.selection {
-                    Some(Selection::Hitbox(s)) => (s.clone(), false),
-                    _ => (
-                        MultiSelection::new(vec![hitbox.get_name().to_owned()]),
-                        true,
-                    ),
-                };
-                if ui.io().key_ctrl {
-                    if !was_blank {
-                        selection.toggle(&vec![hitbox.get_name().to_owned()]);
-                    }
-                } else {
-                    selection = MultiSelection::new(vec![hitbox.get_name().to_owned()]);
-                }
-                commands.select_hitboxes(&selection);
-            }
-            ui.set_item_allow_overlap();
-            (ui.is_item_hovered(), ui.is_item_active())
-        } else {
-            (false, false)
-        };
-
-    let outline_color = if is_selected {
-        [1.0, 0.1, 0.6, 1.0] // TODO.style
-    } else if is_hovered {
-        [0.0, 0.9, 0.9, 1.0] // TODO.style
-    } else {
-        [1.0, 1.0, 1.0, 1.0] // TODO.style
-    };
-
+    // Draw hitbox outline
     {
+        let outline_color = if is_selected {
+            [1.0, 0.1, 0.6, 1.0] // TODO.style
+        } else if is_hovered {
+            [0.0, 0.9, 0.9, 1.0] // TODO.style
+        } else {
+            [1.0, 1.0, 1.0, 1.0] // TODO.style
+        };
         let draw_list = ui.get_window_draw_list();
         draw_list
             .add_rect(top_left.to_array(), bottom_right.to_array(), outline_color)
@@ -187,30 +254,50 @@ fn draw_hitbox<'a>(
             .build();
     }
 
-    if is_hovered && !*is_scaling && !*is_dragging {
-        ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
-    }
-
-    if *is_dragging && is_selected {
-        ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
-        if is_mouse_dragging {
-            // TODO this check is a workaround https://github.com/ocornut/imgui/issues/2419
-            commands.update_hitbox_drag(drag_delta, !is_shift_down);
+    // Initiate resize
+    if is_selected {
+        if draw_hitbox_resize_controls(ui, commands, document, hitbox) {
+            return;
         }
     }
 
-    if *is_scaling && is_selected {
-        if let Some(Transient::HitboxSize(s)) = &document.transient {
-            ui.set_mouse_cursor(Some(axis_to_cursor(s.axis)));
-            if is_mouse_dragging {
-                // TODO this check is a workaround https://github.com/ocornut/imgui/issues/2419
-                commands.update_hitbox_scale(drag_delta, is_shift_down);
+    if rectangle.size.is_empty() {
+        return;
+    }
+
+    if !is_hovered || document.transient.is_some() {
+        return;
+    }
+
+    ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
+
+    // Select hitbox
+    let hitbox_id = ImString::new(format!("hitbox_button_{}", hitbox.get_name()));
+    ui.set_cursor_pos(cursor_pos.to_array());
+    if ui.invisible_button(
+        &hitbox_id,
+        (rectangle.size.to_f32().to_vector() * zoom).to_array(),
+    ) {
+        let (mut selection, was_blank) = match &document.view.selection {
+            Some(Selection::Hitbox(s)) => (s.clone(), false),
+            _ => (
+                MultiSelection::new(vec![hitbox.get_name().to_owned()]),
+                true,
+            ),
+        };
+        if ui.io().key_ctrl {
+            if !was_blank {
+                selection.toggle(&vec![hitbox.get_name().to_owned()]);
             }
+        } else {
+            selection = MultiSelection::new(vec![hitbox.get_name().to_owned()]);
         }
+        commands.select_hitboxes(&selection);
     }
+    let is_active = ui.is_item_active();
 
-    let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
-    if !*is_dragging && !*is_scaling && is_active && is_mouse_dragging {
+    // Begin hitbox drag
+    if is_active && is_mouse_dragging {
         let (mut selection, was_blank) = match &document.view.selection {
             Some(Selection::Hitbox(s)) => (s.clone(), false),
             _ => (
@@ -229,29 +316,24 @@ fn draw_hitbox<'a>(
         }
         commands.select_hitboxes(&selection);
         commands.begin_hitbox_drag();
-        *is_dragging = true;
-    }
-
-    if is_selected {
-        draw_hitbox_resize_controls(ui, commands, document, hitbox, is_scaling, is_dragging);
     }
 }
 
 fn draw_frame<'a>(ui: &Ui<'a>, texture_cache: &TextureCache, document: &Document, frame: &Frame) {
     let zoom = document.view.get_workbench_zoom_factor();
     let offset = document.view.workbench_offset;
-    let space: Vector2D<f32> = ui.window_size().into();
+    let workbench_size: Vector2D<f32> = ui.window_size().into();
     match texture_cache.get(&frame.get_source()) {
         Some(TextureCacheResult::Loaded(texture)) => {
             let draw_size = texture.size * zoom;
             let cursor_pos =
-                offset + (space / 2.0).floor() - (draw_size / zoom / 2.0).floor() * zoom;
+                offset + (workbench_size / 2.0).floor() - (draw_size / zoom / 2.0).floor() * zoom;
             ui.set_cursor_pos(cursor_pos.to_array());
             Image::new(texture.id, draw_size.to_array()).build(ui);
         }
         Some(TextureCacheResult::Loading) => {
             ui.set_cursor_pos(offset.to_array());
-            draw_spinner(ui, &ui.get_window_draw_list(), space);
+            draw_spinner(ui, &ui.get_window_draw_list(), workbench_size);
         }
         _ => {
             // TODO
@@ -264,30 +346,37 @@ fn draw_hitboxes<'a>(
     commands: &mut CommandBuffer,
     document: &Document,
     keyframe: &Keyframe,
+    hovered_item: &Option<WorkbenchHoverItem>,
 ) {
     let zoom = document.view.get_workbench_zoom_factor();
     let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
-    let mut is_scaling_hitbox = document.is_sizing_hitbox();
-    let mut is_dragging_hitbox = document.is_positioning_hitbox();
-
     let mouse_pos = ui.io().mouse_pos.into();
     let mouse_position_in_workbench = screen_to_workbench(ui, mouse_pos, document);
+    let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
+    let is_shift_down = ui.io().key_shift;
 
     for hitbox in keyframe.hitboxes_iter() {
-        draw_hitbox(
-            ui,
-            commands,
-            document,
-            hitbox,
-            true, // TODO hitbox mode on/off
-            &mut is_scaling_hitbox,
-            &mut is_dragging_hitbox,
+        let is_hovered = matches!(
+            hovered_item,
+            Some(WorkbenchHoverItem::Hitbox(n)) if n == &hitbox.name,
         );
+        draw_hitbox(ui, commands, document, hitbox, is_hovered);
     }
 
-    if !is_scaling_hitbox && !is_dragging_hitbox && ui.is_window_hovered() && is_mouse_dragging
-    // TODO prevent this and other hitbox interactions while playback is active
+    if document.is_sizing_hitbox() {
+        if let Some(Transient::HitboxSize(s)) = &document.transient {
+            ui.set_mouse_cursor(Some(axis_to_cursor(s.axis)));
+            commands.update_hitbox_scale(drag_delta, is_shift_down);
+        }
+    } else if document.is_positioning_hitbox() {
+        ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
+        commands.update_hitbox_drag(drag_delta, !is_shift_down);
+    } else if ui.is_window_hovered()
+        && is_mouse_dragging
+        && document.transient.is_none()
+        && hovered_item.is_none()
     {
+        // TODO prevent this and other interactions while playback is active
         let drag_delta: Vector2D<f32> = ui.mouse_drag_delta().into();
         commands.create_hitbox(mouse_position_in_workbench - drag_delta / zoom);
     }
@@ -300,6 +389,7 @@ fn draw_keyframe<'a>(
     document: &Document,
     keyframe: &Keyframe,
     keyframe_index: usize,
+    is_hovered: bool,
     is_selected: bool,
 ) -> bool {
     let zoom = document.view.get_workbench_zoom_factor();
@@ -316,14 +406,14 @@ fn draw_keyframe<'a>(
             let cursor_screen_pos: Vector2D<f32> = ui.cursor_screen_pos().into();
             Image::new(texture.id, draw_size.to_array()).build(ui);
 
-            ui.set_cursor_pos(cursor_pos.to_array());
-            if ui.invisible_button("current_keyframe", draw_size.to_array()) {
-                if document.transient.is_none() {
-                    commands.select_keyframes(&MultiSelection::new(vec![keyframe_index]));
+            if is_hovered {
+                ui.set_cursor_pos(cursor_pos.to_array());
+                if ui.invisible_button("current_keyframe", draw_size.to_array()) {
+                    if document.transient.is_none() {
+                        commands.select_keyframes(&MultiSelection::new(vec![keyframe_index]));
+                    }
                 }
             }
-
-            let is_hovered = ui.is_item_hovered();
 
             if is_selected || is_hovered {
                 let outline_color = if is_selected {
@@ -364,8 +454,10 @@ fn draw_animation<'a>(
 ) {
     let now = document.view.timeline_clock;
     if let Some((keyframe_index, keyframe)) = animation.get_frame_at(now) {
-        let is_selected = document.is_keyframe_selected(keyframe_index);
         let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
+        let hovered_item = compute_hovered_item(ui, texture_cache, document, keyframe);
+        let is_hovered = hovered_item == Some(WorkbenchHoverItem::Frame);
+        let is_selected = document.is_keyframe_selected(keyframe_index);
 
         let drew = draw_keyframe(
             ui,
@@ -374,11 +466,12 @@ fn draw_animation<'a>(
             document,
             keyframe,
             keyframe_index,
+            is_hovered,
             is_selected,
         );
 
         if drew && document.transient.is_none() {
-            if ui.is_item_hovered() {
+            if is_hovered {
                 ui.set_mouse_cursor(Some(MouseCursor::ResizeAll));
             }
             if ui.is_item_active() && is_mouse_dragging {
@@ -402,6 +495,7 @@ fn draw_animation<'a>(
                             document,
                             keyframe,
                             *selected_frame_index,
+                            false,
                             true,
                         );
                     }
@@ -417,7 +511,7 @@ fn draw_animation<'a>(
             }
         }
 
-        draw_hitboxes(ui, commands, document, keyframe);
+        draw_hitboxes(ui, commands, document, keyframe, &hovered_item);
     }
 }
 

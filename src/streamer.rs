@@ -161,7 +161,7 @@ struct CacheEntry {
 #[derive(Clone)]
 pub struct TextureCacheResultImage {
     pub id: TextureId,
-    pub size: Vector2D<f32>,
+    pub size: Vector2D<f32>, // TODO Why are these floats??
 }
 
 #[derive(Clone)]
