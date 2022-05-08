@@ -1115,8 +1115,10 @@ impl Document {
             }
             Some(Selection::Keyframe(indexes)) => {
                 let animation_name = self.get_workbench_animation()?.get_name().to_owned();
-                for index in &indexes.items {
-                    self.sheet.delete_keyframe(&animation_name, *index);
+                let mut sorted_indices = indexes.items.iter().cloned().collect::<Vec<usize>>();
+                sorted_indices.sort();
+                for index in sorted_indices.into_iter().rev() {
+                    self.sheet.delete_keyframe(&animation_name, index);
                 }
             }
             None => {}
