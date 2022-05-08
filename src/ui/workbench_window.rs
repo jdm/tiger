@@ -453,7 +453,7 @@ fn draw_animation<'a>(
     animation: &Animation,
 ) {
     let now = document.view.timeline_clock;
-    if let Some((keyframe_index, keyframe)) = animation.get_frame_at(now) {
+    if let Some((keyframe_index, keyframe)) = animation.get_keyframe_at(now) {
         let is_mouse_dragging = ui.is_mouse_dragging(MouseButton::Left);
         let hovered_item = compute_hovered_item(ui, texture_cache, document, keyframe);
         let is_hovered = hovered_item == Some(WorkbenchHoverItem::Frame);
@@ -486,7 +486,7 @@ fn draw_animation<'a>(
             // Draw semi-transparent version of selected keyframes that are not at current clock time
             for selected_frame_index in &selected_frame_indexes.items {
                 if *selected_frame_index != keyframe_index {
-                    if let Some(keyframe) = animation.get_frame(*selected_frame_index) {
+                    if let Some(keyframe) = animation.get_keyframe(*selected_frame_index) {
                         let _style_alpha = ui.push_style_var(StyleVar::Alpha(0.05));
                         draw_keyframe(
                             ui,
@@ -625,7 +625,7 @@ fn handle_drag_and_drop<'a>(ui: &Ui<'a>, app_state: &AppState, commands: &mut Co
                 if document.is_dragging_content_frames() {
                     if let Some(animation) = document.sheet.get_animation(animation_name) {
                         if let Some(Selection::Frame(paths)) = &document.view.selection {
-                            let index = animation.get_num_frames();
+                            let index = animation.get_num_keyframes();
                             commands.insert_keyframes_before(
                                 paths.items.clone().iter().collect(),
                                 index,

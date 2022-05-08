@@ -82,7 +82,7 @@ fn draw_animation<'a>(
                 let time = Duration::from_millis(
                     app_state.get_clock().as_millis() as u64 % u64::from(duration),
                 ); // TODO pause on first and last frame for non looping animation?
-                let (_, keyframe) = animation.get_frame_at(time).unwrap(); // TODO no unwrap
+                let (_, keyframe) = animation.get_keyframe_at(time).unwrap(); // TODO no unwrap
                 match texture_cache.get(keyframe.get_frame()) {
                     Some(TextureCacheResult::Loaded(texture)) => {
                         let cursor_pos: Vector2D<f32> = ui.cursor_pos().into();
@@ -170,7 +170,7 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, texture_cac
                         {
                             let index = indexes.last_touched_in_range;
                             if let Some(animation) = document.sheet.get_animation(name) {
-                                if let Some(keyframe) = animation.get_frame(index) {
+                                if let Some(keyframe) = animation.get_keyframe(index) {
                                     draw_keyframe(ui, texture_cache, keyframe);
                                 }
                             }

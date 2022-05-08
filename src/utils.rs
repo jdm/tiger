@@ -71,13 +71,13 @@ pub fn get_bounding_box(
     animation: &Animation,
     texture_cache: &TextureCache,
 ) -> Result<BoundingBox, BoundingBoxError> {
-    if animation.get_num_frames() == 0 {
+    if animation.get_num_keyframes() == 0 {
         return Err(BoundingBoxError::EmptyAnimation);
     }
     let mut bbox_rectangle = Rect::<i32>::zero();
-    for frame in animation.frames_iter() {
-        if let Some(TextureCacheResult::Loaded(texture)) = texture_cache.get(frame.get_frame()) {
-            let frame_offset = frame.get_offset();
+    for keyframe in animation.keyframes_iter() {
+        if let Some(TextureCacheResult::Loaded(texture)) = texture_cache.get(keyframe.get_frame()) {
+            let frame_offset = keyframe.get_offset();
             let frame_rectangle =
                 Rect::<i32>::new(frame_offset.to_point(), texture.size.to_i32().to_size());
             bbox_rectangle = bbox_rectangle.union(&frame_rectangle);

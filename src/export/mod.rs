@@ -139,7 +139,7 @@ fn liquid_data_from_animation(
     texture_layout: &TextureLayout,
 ) -> Result<LiquidAnimation, ExportError> {
     let mut keyframes = Vec::new();
-    for keyframe in animation.frames_iter() {
+    for keyframe in animation.keyframes_iter() {
         let frame = liquid_data_from_keyframe(sheet, keyframe, texture_layout)?;
         keyframes.push(frame);
     }

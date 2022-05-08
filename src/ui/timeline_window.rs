@@ -116,7 +116,7 @@ fn draw_keyframe<'a>(
     let is_too_small_to_draw = w < 2.0 * outline_size + 1.0;
 
     let resize_handle_size_left = (w / 3.0).floor().min(max_resize_handle_size);
-    let resize_handle_size_right = match animation.get_frame(keyframe_index + 1) {
+    let resize_handle_size_right = match animation.get_keyframe(keyframe_index + 1) {
         None => resize_handle_size_left,
         Some(n) => {
             let nw = (n.get_duration() as f32 * zoom).ceil();
@@ -202,7 +202,7 @@ fn draw_keyframe<'a>(
                 keyframe_index,
                 ui.io().key_shift,
                 ui.io().key_ctrl,
-                &(0..animation.get_num_frames()).collect(),
+                &(0..animation.get_num_keyframes()).collect(),
                 match &document.view.selection {
                     Some(Selection::Keyframe(s)) => Some(s),
                     _ => None,
@@ -293,7 +293,7 @@ fn get_frame_under_mouse<'a>(
 ) -> Option<(usize, FrameLocation)> {
     let mouse_pos = ui.io().mouse_pos;
     let mut cursor = Duration::new(0, 0);
-    for (keyframe_index, keyframe) in animation.frames_iter().enumerate() {
+    for (keyframe_index, keyframe) in animation.keyframes_iter().enumerate() {
         let frame_location = get_frame_location(document, cursor, keyframe);
         let frame_start_x = start_screen_position[0] + frame_location.top_left.0;
         if mouse_pos[0] >= frame_start_x && mouse_pos[0] < (frame_start_x + frame_location.size.0) {
@@ -379,7 +379,7 @@ fn handle_drag_and_drop<'a>(
                     let index = if mouse_pos[0] <= cursor_start[0] {
                         0
                     } else {
-                        animation.get_num_frames()
+                        animation.get_num_keyframes()
                     };
                     if let Some(Selection::Frame(paths)) = &document.view.selection {
                         commands
@@ -390,7 +390,7 @@ fn handle_drag_and_drop<'a>(
                     let index = if mouse_pos[0] <= cursor_start[0] {
                         0
                     } else {
-                        animation.get_num_frames()
+                        animation.get_num_keyframes()
                     };
                     commands.reorder_keyframes(index);
                 }
@@ -442,7 +442,7 @@ pub fn draw<'a>(ui: &Ui<'a>, rect: &Rect<f32>, app_state: &AppState, commands: &
                         let frames_cursor_position_start = ui.cursor_screen_pos();
                         let mut frames_cursor_position_end = frames_cursor_position_start;
                         let mut cursor = Duration::new(0, 0);
-                        for (keyframe_index, keyframe) in animation.frames_iter().enumerate() {
+                        for (keyframe_index, keyframe) in animation.keyframes_iter().enumerate() {
                             ui.set_cursor_screen_pos(frames_cursor_position_start);
                             draw_keyframe(
                                 ui,
