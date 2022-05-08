@@ -82,6 +82,7 @@
   - [ ] Hitboxes panel is renamed to Keyframe and allows selecting the animation frame
   - [ ] Keyframe panel can lock individual keyframes, or the animation frame, to prevent mouse interactions
   - [ ] Keyframe panel can link/unlink hitboxes to the animation frame so that moving the frame also moves them (default on)
+- Fix bug where hitbox resize handles don't work when clicked where they overlap with the corresponding hitbox
 - [x] Auto-select new keyframes when inserted to timeline
 - [x] Multiple selections
 - [x] Jump to next/previous frame
@@ -95,6 +96,7 @@
 - [ ] Replace powershell release script with Github action
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
+- [ ] Add menu entry to open recent files
 
 ## Tiger 0.5
 
@@ -116,19 +118,17 @@
 
 ## Tiger 0.7
 
-- [ ] Add menu entry to open recent files
 - [ ] Filter frames/animations in content panel by text search
 - [ ] In-place rename UX
 - [ ] Right click menu to rename/delete item
-- [ ] Edit keyframe duration from selection panel
-- [ ] Edit hitboxes from selection panel (offset, size, tag, etc.)
+- [ ] Edit keyframe duration and offset from selection panel
+- [ ] Edit hitbox offset and size from selection panel
 - [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 
 ## Tiger 0.8
 
 - [ ] Handle missing frame files (warning + offer to relocate)
 - [ ] In-place tutorials instead of blank data
-- [ ] Hitbox colors
 - [ ] Unit test state module
 
 ## Tiger 0.9
@@ -158,6 +158,7 @@
 - [ ] Tiger CLI
 - [ ] Root motion
 - [ ] Onion skin?
+- [ ] Hitbox colors
 - [ ] Import frames from single sheet image
 - [ ] Import animation data from other software (Asesprite, TBD)
 - [ ] Anchor points (like hitbox but point)
