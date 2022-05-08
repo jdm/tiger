@@ -517,8 +517,8 @@ impl Document {
                 .ok_or(DocumentError::AnimationNotInDocument)?
                 .create_keyframe(path, next_keyframe_index)?;
         }
-        let new_keyframe_indices = next_keyframe_index..(next_keyframe_index + paths.len());
-        self.select_keyframes(&MultiSelection::new(new_keyframe_indices.collect()))
+        let new_keyframe_indexes = next_keyframe_index..(next_keyframe_index + paths.len());
+        self.select_keyframes(&MultiSelection::new(new_keyframe_indexes.collect()))
     }
 
     pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), DocumentError> {
@@ -1116,9 +1116,9 @@ impl Document {
             }
             Some(Selection::Keyframe(indexes)) => {
                 let animation_name = self.get_workbench_animation()?.get_name().to_owned();
-                let mut sorted_indices = indexes.items.iter().cloned().collect::<Vec<usize>>();
-                sorted_indices.sort();
-                for index in sorted_indices.into_iter().rev() {
+                let mut sorted_indexes = indexes.items.iter().cloned().collect::<Vec<usize>>();
+                sorted_indexes.sort();
+                for index in sorted_indexes.into_iter().rev() {
                     self.sheet.delete_keyframe(&animation_name, index);
                 }
             }
