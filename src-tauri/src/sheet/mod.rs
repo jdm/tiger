@@ -184,29 +184,8 @@ impl Sheet {
         }
     }
 
-    pub fn delete_hitbox<T: AsRef<str>, U: AsRef<str>>(
-        &mut self,
-        animation_name: T,
-        frame_index: usize,
-        name: U,
-    ) {
-        if let Some(animation) = self.animation_mut(animation_name) {
-            if let Some(keyframe) = animation.keyframe_mut(frame_index) {
-                keyframe.delete_hitbox(name);
-            }
-        }
-    }
-
     pub fn delete_animation<T: AsRef<str>>(&mut self, name: T) {
         self.animations.retain(|a| a.name != name.as_ref());
-    }
-
-    pub fn delete_keyframe<T: AsRef<str>>(&mut self, animation_name: T, frame_index: usize) {
-        if let Some(animation) = self.animation_mut(animation_name) {
-            if frame_index < animation.timeline.len() {
-                animation.timeline.remove(frame_index);
-            }
-        }
     }
 }
 
@@ -319,7 +298,7 @@ impl Animation {
         Ok(())
     }
 
-    pub fn take_keyframe(&mut self, index: usize) -> Result<Keyframe, SheetError> {
+    pub fn delete_keyframe(&mut self, index: usize) -> Result<Keyframe, SheetError> {
         if index >= self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
         }
