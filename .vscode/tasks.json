@@ -3,12 +3,13 @@
 	"tasks": [
 		{
 			"type": "cargo",
-			"command": "build",
+			"command": "tauri",
+			 "args": ["dev"],
 			"problemMatcher": [
 				"$rustc"
 			],
 			"group": "build",
-			"label": "rust: cargo build"
+			"label": "Tauri Dev"
 		}
 	]
 }
