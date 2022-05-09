@@ -5,9 +5,7 @@
 			"type": "cargo",
 			"command": "tauri",
 			 "args": ["dev"],
-			"problemMatcher": [
-				"$rustc"
-			],
+			"problemMatcher": [],
 			"group": "build",
 			"label": "Tauri Dev"
 		}

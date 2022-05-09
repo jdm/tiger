@@ -4,10 +4,10 @@
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
     "devPath": "http://localhost:3000",
-    "distDir": ".."
+    "distDir": "../dist"
   },
   "package": {
-    "productName": "tiger",
+    "productName": "Tiger",
     "version": "0.1.0"
   },
   "tauri": {
@@ -29,7 +29,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.tauri.dev",
+      "identifier": "com.agersant.tiger",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
