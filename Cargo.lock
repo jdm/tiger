@@ -1123,6 +1123,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3e2e65a1a2e43cfcb47a895c4c8b10d1f4a61097f9f254f183aee60cad9c651d"
 
 [[package]]
+name = "material-icons"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "136d9cf8b3c4d02e9d63252cc0dc3d2842dc3053ba6a952add51bfc39a6463b4"
+
+[[package]]
 name = "memchr"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1999,6 +2005,7 @@ dependencies = [
  "imgui-glium-renderer",
  "imgui-winit-support",
  "liquid",
+ "material-icons",
  "nfd",
  "notify",
  "pathdiff",

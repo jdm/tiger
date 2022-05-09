@@ -43,10 +43,11 @@ pub fn init(title: &str) -> System {
 
     let hidpi_factor = platform.hidpi_factor();
     let font_size = (16.0 * hidpi_factor) as f32;
-    let font_data = include_bytes!("../../res/FiraSans-Regular.ttf");
+
+    let primary_font_data = include_bytes!("../../res/FiraSans-Regular.ttf");
     imgui.fonts().add_font(&[
         FontSource::TtfData {
-            data: font_data,
+            data: primary_font_data,
             size_pixels: font_size,
             config: Some(FontConfig {
                 glyph_ranges: FontGlyphRanges::default(),
@@ -54,11 +55,22 @@ pub fn init(title: &str) -> System {
             }),
         },
         FontSource::TtfData {
-            data: font_data,
+            data: primary_font_data,
             size_pixels: font_size,
             config: Some(FontConfig {
                 glyph_ranges: FontGlyphRanges::from_slice(&[8192, 8303, 0]), // General punctuation
                 ..FontConfig::default()
+            }),
+        },
+        FontSource::TtfData {
+            data: material_icons::FONT,
+            size_pixels: font_size,
+            config: Some(FontConfig {
+                glyph_ranges: FontGlyphRanges::from_slice(&[0xE00, 0xF8FF, 0]), // https://github.com/google/material-design-icons/blob/master/font/MaterialIcons-Regular.codepoints
+                ..FontConfig {
+                    glyph_offset: [0.0, 3.0], // TODO.dpi
+                    ..Default::default()
+                }
             }),
         },
     ]);
