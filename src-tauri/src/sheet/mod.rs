@@ -2,19 +2,27 @@ use core::cmp::Ordering;
 use euclid::default::*;
 use euclid::rect;
 use pathdiff::diff_paths;
+use serde::{Deserialize, Serialize};
+use std::fs::File;
+use std::io::BufReader;
+use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
 
-pub use self::compat::version3::*;
-use self::constants::*;
+pub(in crate::sheet) mod version1;
+pub(in crate::sheet) mod version2;
+pub(in crate::sheet) mod version3;
 
-pub mod compat;
-
-pub mod constants {
-    pub const MAX_ANIMATION_NAME_LENGTH: usize = 32;
-    pub const MAX_HITBOX_NAME_LENGTH: usize = 32;
+#[derive(Serialize, Deserialize, PartialEq, Eq)]
+enum Version {
+    Tiger1,
+    Tiger2,
+    Tiger3,
 }
+
+const CURRENT_VERSION: Version = Version::Tiger3;
+pub use self::version3::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
@@ -22,10 +30,6 @@ pub enum SheetError {
     AnimationNotFound,
     #[error("Hitbox was not found")]
     HitboxNotFound,
-    #[error("Animation name too long")]
-    AnimationNameTooLong,
-    #[error("Hitbox name too long")]
-    HitboxNameTooLong,
     #[error("A hitbox with the name `{0}` already exists")]
     HitboxNameAlreadyExists(String),
     #[error("Error converting an absolute path to a relative path")]
@@ -35,7 +39,39 @@ pub enum SheetError {
 }
 
 impl Sheet {
-    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
+    pub fn read<T: AsRef<Path>>(path: T) -> anyhow::Result<Sheet> {
+        #[derive(Deserialize)]
+        struct Versioned {
+            version: Version,
+        }
+        let file = File::open(path.as_ref())?;
+        let versioned: Versioned = serde_json::from_reader(BufReader::new(file))?;
+        let sheet = read_file(versioned.version, &path)?;
+        let mut directory = path.as_ref().to_owned();
+        directory.pop();
+        Ok(sheet.with_absolute_paths(directory))
+    }
+
+    pub fn write<T: AsRef<Path>>(&self, path: T) -> anyhow::Result<()> {
+        #[derive(Serialize)]
+        struct VersionedSheet<'a> {
+            version: Version,
+            sheet: &'a Sheet,
+        }
+        let mut directory = path.as_ref().to_owned();
+        directory.pop();
+        let sheet = self.with_relative_paths(directory)?;
+        let versioned_sheet = VersionedSheet {
+            version: CURRENT_VERSION,
+            sheet: &sheet,
+        };
+
+        let file = BufWriter::new(File::create(path.as_ref())?);
+        serde_json::to_writer_pretty(file, &versioned_sheet)?;
+        Ok(())
+    }
+
+    fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
             frame.source = diff_paths(&frame.source, relative_to.as_ref())
@@ -53,7 +89,7 @@ impl Sheet {
         Ok(sheet)
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Sheet {
+    fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Sheet {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
             frame.source = relative_to.as_ref().join(&frame.source);
@@ -109,19 +145,19 @@ impl Sheet {
         self.animations.last_mut().unwrap()
     }
 
-    pub fn get_frame<T: AsRef<Path>>(&self, path: T) -> Option<&Frame> {
+    pub fn frame<T: AsRef<Path>>(&self, path: T) -> Option<&Frame> {
         self.frames.iter().find(|f| f.source == path.as_ref())
     }
 
-    pub fn get_animation<T: AsRef<str>>(&self, name: T) -> Option<&Animation> {
+    pub fn animation<T: AsRef<str>>(&self, name: T) -> Option<&Animation> {
         self.animations.iter().find(|a| a.name == name.as_ref())
     }
 
-    pub fn get_animation_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Animation> {
+    pub fn animation_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Animation> {
         self.animations.iter_mut().find(|a| a.name == name.as_ref())
     }
 
-    pub fn get_export_settings(&self) -> &Option<ExportSettings> {
+    pub fn export_settings(&self) -> &Option<ExportSettings> {
         &self.export_settings
     }
 
@@ -134,11 +170,8 @@ impl Sheet {
         old_name: T,
         new_name: U,
     ) -> Result<(), SheetError> {
-        if new_name.as_ref().len() > MAX_ANIMATION_NAME_LENGTH {
-            return Err(SheetError::AnimationNameTooLong.into());
-        }
         let animation = self
-            .get_animation_mut(old_name)
+            .animation_mut(old_name)
             .ok_or(SheetError::AnimationNotFound)?;
         animation.name = new_name.as_ref().to_owned();
         Ok(())
@@ -157,8 +190,8 @@ impl Sheet {
         frame_index: usize,
         name: U,
     ) {
-        if let Some(animation) = self.get_animation_mut(animation_name) {
-            if let Some(keyframe) = animation.get_keyframe_mut(frame_index) {
+        if let Some(animation) = self.animation_mut(animation_name) {
+            if let Some(keyframe) = animation.keyframe_mut(frame_index) {
                 keyframe.delete_hitbox(name);
             }
         }
@@ -169,7 +202,7 @@ impl Sheet {
     }
 
     pub fn delete_keyframe<T: AsRef<str>>(&mut self, animation_name: T, frame_index: usize) {
-        if let Some(animation) = self.get_animation_mut(animation_name) {
+        if let Some(animation) = self.animation_mut(animation_name) {
             if frame_index < animation.timeline.len() {
                 animation.timeline.remove(frame_index);
             }
@@ -186,45 +219,45 @@ impl Animation {
         }
     }
 
-    pub fn get_name(&self) -> &str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn get_num_keyframes(&self) -> usize {
+    pub fn num_keyframes(&self) -> usize {
         self.timeline.len()
     }
 
-    pub fn is_looping(&self) -> bool {
+    pub fn looping(&self) -> bool {
         self.is_looping
     }
 
-    pub fn set_is_looping(&mut self, new_is_looping: bool) {
+    pub fn set_looping(&mut self, new_is_looping: bool) {
         self.is_looping = new_is_looping;
     }
 
-    pub fn get_duration(&self) -> Option<u32> {
+    pub fn duration(&self) -> Option<u32> {
         if self.timeline.is_empty() {
             return None;
         }
         Some(self.timeline.iter().map(|f| f.duration).sum())
     }
 
-    pub fn get_keyframe(&self, index: usize) -> Option<&Keyframe> {
+    pub fn keyframe(&self, index: usize) -> Option<&Keyframe> {
         if index >= self.timeline.len() {
             return None;
         }
         Some(&self.timeline[index])
     }
 
-    pub fn get_keyframe_mut(&mut self, index: usize) -> Option<&mut Keyframe> {
+    pub fn keyframe_mut(&mut self, index: usize) -> Option<&mut Keyframe> {
         if index >= self.timeline.len() {
             return None;
         }
         Some(&mut self.timeline[index])
     }
 
-    pub fn get_keyframe_index_at(&self, time: Duration) -> Option<usize> {
-        let duration = match self.get_duration() {
+    pub fn keyframe_index_at(&self, time: Duration) -> Option<usize> {
+        let duration = match self.duration() {
             None => return None,
             Some(0) => return None,
             Some(d) => d,
@@ -244,22 +277,22 @@ impl Animation {
         Some(self.timeline.len() - 1)
     }
 
-    pub fn get_keyframe_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
-        let keyframe_index = self.get_keyframe_index_at(time)?;
+    pub fn keyframe_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
+        let keyframe_index = self.keyframe_index_at(time)?;
         Some((keyframe_index, self.timeline.get(keyframe_index)?))
     }
 
-    pub fn get_keyframe_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe)> {
-        let keyframe_index = self.get_keyframe_index_at(time)?;
+    pub fn keyframe_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe)> {
+        let keyframe_index = self.keyframe_index_at(time)?;
         Some((keyframe_index, self.timeline.get_mut(keyframe_index)?))
     }
 
-    pub fn get_keyframe_times(&self) -> Vec<u64> {
+    pub fn keyframe_times(&self) -> Vec<u64> {
         let mut cursor = 0;
         self.keyframes_iter()
             .map(|f| {
                 let t = cursor;
-                cursor += u64::from(f.get_duration());
+                cursor += u64::from(f.duration());
                 t
             })
             .collect()
@@ -341,11 +374,11 @@ impl PartialOrd for Frame {
 }
 
 impl Hitbox {
-    pub fn get_name(&self) -> &str {
+    pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn get_rectangle(&self) -> Rect<i32> {
+    pub fn rectangle(&self) -> Rect<i32> {
         match &self.geometry {
             Shape::Rectangle(r) => {
                 rect(r.top_left.0, r.top_left.1, r.size.0 as i32, r.size.1 as i32)
@@ -353,13 +386,13 @@ impl Hitbox {
         }
     }
 
-    pub fn get_position(&self) -> Vector2D<i32> {
+    pub fn position(&self) -> Vector2D<i32> {
         match &self.geometry {
             Shape::Rectangle(r) => r.top_left.into(),
         }
     }
 
-    pub fn get_size(&self) -> Vector2D<u32> {
+    pub fn size(&self) -> Vector2D<u32> {
         match &self.geometry {
             Shape::Rectangle(r) => r.size.into(),
         }
@@ -381,7 +414,7 @@ impl Hitbox {
         }
     }
 
-    pub fn is_linked(&self) -> bool {
+    pub fn linked(&self) -> bool {
         self.linked
     }
 
@@ -389,7 +422,7 @@ impl Hitbox {
         self.linked = linked
     }
 
-    pub fn is_locked(&self) -> bool {
+    pub fn locked(&self) -> bool {
         self.locked
     }
 
@@ -420,15 +453,15 @@ impl Keyframe {
         }
     }
 
-    pub fn get_frame(&self) -> &Path {
+    pub fn frame(&self) -> &Path {
         &self.frame
     }
 
-    pub fn get_duration(&self) -> u32 {
+    pub fn duration(&self) -> u32 {
         self.duration
     }
 
-    pub fn get_offset(&self) -> Vector2D<i32> {
+    pub fn offset(&self) -> Vector2D<i32> {
         self.offset.into()
     }
 
@@ -448,11 +481,11 @@ impl Keyframe {
         self.hitboxes.iter_mut()
     }
 
-    pub fn get_hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
+    pub fn hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
         self.hitboxes.iter().find(|a| a.name == name.as_ref())
     }
 
-    pub fn get_hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
+    pub fn hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
         self.hitboxes.iter_mut().find(|a| a.name == name.as_ref())
     }
 
@@ -485,16 +518,13 @@ impl Keyframe {
         old_name: T,
         new_name: U,
     ) -> Result<(), SheetError> {
-        if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
-            return Err(SheetError::HitboxNameTooLong);
-        }
         if self.has_hitbox(&new_name) {
             return Err(SheetError::HitboxNameAlreadyExists(
                 new_name.as_ref().to_owned(),
             ));
         }
         let hitbox = self
-            .get_hitbox_mut(old_name)
+            .hitbox_mut(old_name)
             .ok_or(SheetError::HitboxNotFound)?;
         hitbox.name = new_name.as_ref().to_owned();
         Ok(())

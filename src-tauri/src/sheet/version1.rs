@@ -4,7 +4,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-use crate::sheet::compat::Version;
+use crate::sheet::Version;
 
 const THIS_VERSION: Version = Version::Tiger1;
 
@@ -69,7 +69,7 @@ pub enum ExportFormat {
     Template(PathBuf),
 }
 
-pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
+pub(super) fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
     assert!(version == THIS_VERSION);
     match version {
         THIS_VERSION => {

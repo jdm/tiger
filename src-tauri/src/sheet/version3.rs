@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-use crate::sheet::compat::version2 as previous_version;
-use crate::sheet::compat::Version;
+use crate::sheet::version2 as previous_version;
+use crate::sheet::Version;
 
 const THIS_VERSION: Version = Version::Tiger3;
 
@@ -72,7 +72,7 @@ pub struct Rectangle {
     pub(in crate::sheet) size: (u32, u32),
 }
 
-pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
+pub(super) fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
     match version {
         THIS_VERSION => {
             let deserialized: VersionedSheet =
