@@ -28,6 +28,8 @@ pub use self::version3::*;
 pub enum SheetError {
     #[error("Animation was not found")]
     AnimationNotFound,
+    #[error("An animation with the name `{0}` already exists")]
+    AnimationNameAlreadyExists(String),
     #[error("Hitbox was not found")]
     HitboxNotFound,
     #[error("A hitbox with the name `{0}` already exists")]
@@ -170,6 +172,14 @@ impl Sheet {
         old_name: T,
         new_name: U,
     ) -> Result<(), SheetError> {
+        if old_name.as_ref() == new_name.as_ref() {
+            return Ok(());
+        }
+        if self.has_animation(&new_name) {
+            return Err(SheetError::AnimationNameAlreadyExists(
+                new_name.as_ref().to_owned(),
+            ));
+        }
         let animation = self
             .animation_mut(old_name)
             .ok_or(SheetError::AnimationNotFound)?;
