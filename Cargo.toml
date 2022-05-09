@@ -1,6 +1,6 @@
 [package]
 name = "tiger"
-version = "0.3.0-wip"
+version = "0.3.0"
 authors = ["Antoine Gersant <antoine.gersant@lesforges.org>"]
 edition = "2021"
 

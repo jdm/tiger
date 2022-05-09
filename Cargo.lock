@@ -1995,7 +1995,7 @@ dependencies = [
 
 [[package]]
 name = "tiger"
-version = "0.3.0-wip"
+version = "0.3.0"
 dependencies = [
  "anyhow",
  "euclid",
