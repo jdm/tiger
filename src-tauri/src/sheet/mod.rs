@@ -26,18 +26,18 @@ pub use self::version3::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
-    #[error("Animation was not found")]
-    AnimationNotFound,
+    #[error("Could not find an animation named `{0}`")]
+    AnimationNotFound(String),
     #[error("An animation with the name `{0}` already exists")]
     AnimationNameAlreadyExists(String),
-    #[error("Hitbox was not found")]
-    HitboxNotFound,
+    #[error("Could not find a hitbox named `{0}`")]
+    HitboxNotFound(String),
     #[error("A hitbox with the name `{0}` already exists")]
     HitboxNameAlreadyExists(String),
     #[error("Error converting an absolute path to a relative path")]
     AbsoluteToRelativePath,
-    #[error("Invalid frame index")]
-    InvalidFrameIndex,
+    #[error("Animation `{0}` is missing a keyframe at index `{1}`")]
+    InvalidFrameIndex(String, usize),
 }
 
 impl Sheet {
@@ -181,8 +181,8 @@ impl Sheet {
             ));
         }
         let animation = self
-            .animation_mut(old_name)
-            .ok_or(SheetError::AnimationNotFound)?;
+            .animation_mut(&old_name)
+            .ok_or(SheetError::AnimationNotFound(old_name.as_ref().to_owned()))?;
         animation.name = new_name.as_ref().to_owned();
         Ok(())
     }
@@ -293,7 +293,7 @@ impl Animation {
         index: usize,
     ) -> Result<(), SheetError> {
         if index > self.timeline.len() {
-            return Err(SheetError::InvalidFrameIndex.into());
+            return Err(SheetError::InvalidFrameIndex(self.name.clone(), index));
         }
         let keyframe = Keyframe::new(frame);
         self.timeline.insert(index, keyframe);
@@ -302,7 +302,7 @@ impl Animation {
 
     pub fn insert_keyframe(&mut self, keyframe: Keyframe, index: usize) -> Result<(), SheetError> {
         if index > self.timeline.len() {
-            return Err(SheetError::InvalidFrameIndex.into());
+            return Err(SheetError::InvalidFrameIndex(self.name.clone(), index));
         }
         self.timeline.insert(index, keyframe);
         Ok(())
@@ -310,7 +310,7 @@ impl Animation {
 
     pub fn delete_keyframe(&mut self, index: usize) -> Result<Keyframe, SheetError> {
         if index >= self.timeline.len() {
-            return Err(SheetError::InvalidFrameIndex.into());
+            return Err(SheetError::InvalidFrameIndex(self.name.clone(), index));
         }
         Ok(self.timeline.remove(index))
     }
@@ -507,14 +507,17 @@ impl Keyframe {
         old_name: T,
         new_name: U,
     ) -> Result<(), SheetError> {
+        if old_name.as_ref() == new_name.as_ref() {
+            return Ok(());
+        }
         if self.has_hitbox(&new_name) {
             return Err(SheetError::HitboxNameAlreadyExists(
                 new_name.as_ref().to_owned(),
             ));
         }
         let hitbox = self
-            .hitbox_mut(old_name)
-            .ok_or(SheetError::HitboxNotFound)?;
+            .hitbox_mut(&old_name)
+            .ok_or(SheetError::HitboxNotFound(old_name.as_ref().to_owned()))?;
         hitbox.name = new_name.as_ref().to_owned();
         Ok(())
     }
