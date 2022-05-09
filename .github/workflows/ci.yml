@@ -16,6 +16,12 @@ jobs:
         with:
           toolchain: stable
           default: true
-      - name: cargo test
+      - name: Build frontend
+        run: npm && npm build
+      - name: Build complete app
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Run backend tests
         working-directory: ./src-tauri
         run: cargo test --release
