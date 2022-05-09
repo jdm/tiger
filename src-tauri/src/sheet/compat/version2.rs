@@ -1,4 +1,4 @@
-use serde::{Serialize, Deserialize};
+use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -9,8 +9,59 @@ use crate::sheet::compat::Version;
 const THIS_VERSION: Version = Version::Tiger2;
 
 #[derive(Serialize, Deserialize)]
-pub struct VersionedSheet {
-    pub sheet: Sheet,
+struct VersionedSheet {
+    sheet: Sheet,
+}
+
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct Sheet {
+    pub(in crate::sheet) frames: Vec<Frame>,
+    pub(in crate::sheet) animations: Vec<Animation>,
+    pub(in crate::sheet) export_settings: Option<ExportSettings>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Frame {
+    pub(in crate::sheet) source: PathBuf,
+    pub(in crate::sheet) hitboxes: Vec<Hitbox>,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Animation {
+    pub(in crate::sheet) name: String,
+    pub(in crate::sheet) timeline: Vec<Keyframe>,
+    pub(in crate::sheet) is_looping: bool,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Keyframe {
+    pub(in crate::sheet) frame: PathBuf,
+    pub(in crate::sheet) duration: u32, // in ms
+    pub(in crate::sheet) offset: (i32, i32),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Hitbox {
+    pub(in crate::sheet) name: String,
+    pub(in crate::sheet) geometry: Shape,
+}
+
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+pub enum Shape {
+    Rectangle(Rectangle),
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub struct ExportSettings {
+    pub(in crate::sheet) format: ExportFormat,
+    pub(in crate::sheet) texture_destination: PathBuf,
+    pub(in crate::sheet) metadata_destination: PathBuf,
+    pub(in crate::sheet) metadata_paths_root: PathBuf,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+pub enum ExportFormat {
+    Template(PathBuf),
 }
 
 pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
@@ -24,13 +75,6 @@ pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sh
     }
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
-pub struct Sheet {
-    pub frames: Vec<Frame>,
-    pub animations: Vec<Animation>,
-    pub export_settings: Option<ExportSettings>,
-}
-
 impl From<previous_version::Sheet> for Sheet {
     fn from(old: previous_version::Sheet) -> Sheet {
         Sheet {
@@ -39,13 +83,6 @@ impl From<previous_version::Sheet> for Sheet {
             export_settings: old.export_settings.map(|o| o.into()),
         }
     }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Animation {
-    pub name: String,
-    pub timeline: Vec<Keyframe>,
-    pub is_looping: bool,
 }
 
 impl From<previous_version::Animation> for Animation {
@@ -58,12 +95,6 @@ impl From<previous_version::Animation> for Animation {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Frame {
-    pub source: PathBuf,
-    pub hitboxes: Vec<Hitbox>,
-}
-
 impl From<previous_version::Frame> for Frame {
     fn from(old: previous_version::Frame) -> Frame {
         Frame {
@@ -71,13 +102,6 @@ impl From<previous_version::Frame> for Frame {
             hitboxes: old.hitboxes.into_iter().map(|o| o.into()).collect(),
         }
     }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Keyframe {
-    pub frame: PathBuf,
-    pub duration: u32, // in ms
-    pub offset: (i32, i32),
 }
 
 impl From<previous_version::Keyframe> for Keyframe {
@@ -90,12 +114,6 @@ impl From<previous_version::Keyframe> for Keyframe {
     }
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub struct Hitbox {
-    pub name: String,
-    pub geometry: Shape,
-}
-
 impl From<previous_version::Hitbox> for Hitbox {
     fn from(old: previous_version::Hitbox) -> Hitbox {
         Hitbox {
@@ -103,11 +121,6 @@ impl From<previous_version::Hitbox> for Hitbox {
             geometry: old.geometry.into(),
         }
     }
-}
-
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
-pub enum Shape {
-    Rectangle(Rectangle),
 }
 
 impl From<previous_version::Shape> for Shape {
@@ -133,25 +146,12 @@ impl From<previous_version::Rectangle> for Rectangle {
     }
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub enum ExportFormat {
-    Template(PathBuf),
-}
-
 impl From<previous_version::ExportFormat> for ExportFormat {
     fn from(old: previous_version::ExportFormat) -> ExportFormat {
         match old {
             previous_version::ExportFormat::Template(p) => ExportFormat::Template(p),
         }
     }
-}
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct ExportSettings {
-    pub format: ExportFormat,
-    pub texture_destination: PathBuf,
-    pub metadata_destination: PathBuf,
-    pub metadata_paths_root: PathBuf,
 }
 
 impl From<previous_version::ExportSettings> for ExportSettings {
