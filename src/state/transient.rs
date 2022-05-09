@@ -52,7 +52,7 @@ pub struct HitboxPosition {
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct KeyframePosition {
-    pub initial_offset: HashMap<usize, Vector2D<i32>>,
+    pub initial_offset: HashMap<usize, (Vector2D<i32>, HitboxPosition)>, // TODO very confusing to use, rename/reorg this and HitboxPosition
 }
 
 #[derive(Clone, Debug, Default, PartialEq)]

@@ -58,6 +58,10 @@ fn compute_hovered_item<'a>(
 
     // Hitboxes
     for hitbox in keyframe.hitboxes_iter() {
+        if hitbox.is_locked() {
+            continue;
+        }
+
         let Shape::Rectangle(ref rectangle) = hitbox.geometry;
         let draw_size = Vector2D::from(rectangle.size).to_f32() * zoom;
         let hitbox_top_left = Vector2D::from(ui.window_pos())

@@ -380,6 +380,22 @@ impl Hitbox {
             }
         }
     }
+
+    pub fn is_linked(&self) -> bool {
+        self.linked
+    }
+
+    pub fn set_linked(&mut self, linked: bool) {
+        self.linked = linked
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.locked
+    }
+
+    pub fn set_locked(&mut self, locked: bool) {
+        self.locked = locked
+    }
 }
 
 impl Ord for Hitbox {
@@ -428,6 +444,10 @@ impl Keyframe {
         self.hitboxes.iter()
     }
 
+    pub fn hitboxes_iter_mut(&mut self) -> std::slice::IterMut<'_, Hitbox> {
+        self.hitboxes.iter_mut()
+    }
+
     pub fn get_hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
         self.hitboxes.iter().find(|a| a.name == name.as_ref())
     }
@@ -454,6 +474,8 @@ impl Keyframe {
                 top_left: (0, 0),
                 size: (0, 0),
             }),
+            linked: true,
+            locked: false,
         });
         self.hitboxes.last_mut().unwrap() // TODO no unwrap?
     }

@@ -80,6 +80,8 @@ pub enum DocumentCommand {
     BeginHitboxDrag,
     UpdateHitboxDrag(Vector2D<f32>, bool),
     EndHitboxDrag,
+    SetHitboxLinked(String, bool),
+    SetHitboxLocked(String, bool),
     TogglePlayback,
     SnapToPreviousFrame,
     SnapToNextFrame,
@@ -172,6 +174,10 @@ impl fmt::Display for DocumentCommand {
             BeginRenameSelection | UpdateRenameSelection(_) | EndRenameSelection => {
                 write!(f, "Rename")
             }
+            SetHitboxLinked(_, l) if *l => write!(f, "Link Hitbox"),
+            SetHitboxLinked(_, _) => write!(f, "Unlink Hitbox"),
+            SetHitboxLocked(_, l) if *l => write!(f, "Lock Hitbox"),
+            SetHitboxLocked(_, _) => write!(f, "Unlock Hitbox"),
         }
     }
 }

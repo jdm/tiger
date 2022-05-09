@@ -377,6 +377,20 @@ impl CommandBuffer {
         self.queue.push(Sync(Document(EndHitboxDrag)));
     }
 
+    pub fn set_hitbox_linked(&mut self, hitbox: &Hitbox, linked: bool) {
+        self.queue.push(Sync(Document(SetHitboxLinked(
+            hitbox.get_name().to_owned(),
+            linked,
+        ))));
+    }
+
+    pub fn set_hitbox_locked(&mut self, hitbox: &Hitbox, locked: bool) {
+        self.queue.push(Sync(Document(SetHitboxLocked(
+            hitbox.get_name().to_owned(),
+            locked,
+        ))));
+    }
+
     pub fn toggle_playback(&mut self) {
         self.queue.push(Sync(Document(TogglePlayback)));
     }

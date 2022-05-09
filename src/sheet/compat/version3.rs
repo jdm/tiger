@@ -111,6 +111,8 @@ impl From<previous_version::Keyframe> for Keyframe {
 pub struct Hitbox {
     pub name: String,
     pub geometry: Shape,
+    pub linked: bool,
+    pub locked: bool,
 }
 
 impl From<previous_version::Hitbox> for Hitbox {
@@ -118,6 +120,8 @@ impl From<previous_version::Hitbox> for Hitbox {
         Hitbox {
             name: old.name,
             geometry: old.geometry.into(),
+            linked: true,
+            locked: false,
         }
     }
 }

@@ -680,7 +680,15 @@ impl Document {
             let keyframe = animation
                 .get_keyframe(keyframe_index)
                 .ok_or(DocumentError::InvalidKeyframeIndex)?;
-            initial_offset.insert(keyframe_index, keyframe.get_offset());
+
+            let hitbox_positions = HitboxPosition {
+                initial_offset: keyframe
+                    .hitboxes_iter()
+                    .map(|h| (h.get_name().to_owned(), h.get_position()))
+                    .collect(),
+            };
+
+            initial_offset.insert(keyframe_index, (keyframe.get_offset(), hitbox_positions));
         }
 
         self.transient = Some(Transient::KeyframePosition(KeyframePosition {
@@ -718,12 +726,10 @@ impl Document {
         }
 
         for index in keyframe_indexes.items {
-            let old_offset = keyframe_position
+            let old_offsets = keyframe_position
                 .initial_offset
                 .get(&index)
                 .ok_or(DocumentError::MissingKeyframePositionData)?;
-
-            let new_offset = (old_offset.to_f32() + mouse_delta / zoom).floor().to_i32();
 
             let keyframe = self
                 .sheet
@@ -731,7 +737,27 @@ impl Document {
                 .ok_or(DocumentError::AnimationNotInDocument)?
                 .get_keyframe_mut(index)
                 .ok_or(DocumentError::InvalidKeyframeIndex)?;
-            keyframe.set_offset(new_offset);
+
+            {
+                let new_offset = (old_offsets.0.to_f32() + mouse_delta / zoom)
+                    .floor()
+                    .to_i32();
+                keyframe.set_offset(new_offset);
+            }
+
+            for hitbox in keyframe.hitboxes_iter_mut() {
+                if !hitbox.is_linked() {
+                    continue;
+                }
+                let old_position = old_offsets
+                    .1
+                    .initial_offset
+                    .get(hitbox.get_name())
+                    .ok_or(DocumentError::MissingHitboxPositionData)?
+                    .to_f32();
+                let new_position = (old_position + mouse_delta / zoom).floor().to_i32();
+                hitbox.set_position(new_position);
+            }
         }
 
         Ok(())
@@ -950,6 +976,39 @@ impl Document {
         Ok(())
     }
 
+    pub fn set_hitbox_linked<T: AsRef<str>>(
+        &mut self,
+        name: T,
+        linked: bool,
+    ) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        let hitbox = keyframe
+            .get_hitbox_mut(name.as_ref())
+            .ok_or(DocumentError::InvalidHitboxName)?;
+        hitbox.set_linked(linked);
+        Ok(())
+    }
+
+    pub fn set_hitbox_locked<T: AsRef<str>>(
+        &mut self,
+        name: T,
+        locked: bool,
+    ) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        let hitbox = keyframe
+            .get_hitbox_mut(name.as_ref())
+            .ok_or(DocumentError::InvalidHitboxName)?;
+        hitbox.set_locked(locked);
+
+        if let Some(Selection::Hitbox(ref mut hitbox_selection)) = self.view.selection {
+            hitbox_selection.items.remove(name.as_ref());
+            if hitbox_selection.items.is_empty() {
+                self.clear_selection();
+            }
+        }
+        Ok(())
+    }
+
     pub fn toggle_playback(&mut self) -> Result<(), DocumentError> {
         let mut new_timeline_clock = self.view.timeline_clock;
         {
@@ -1087,6 +1146,11 @@ impl Document {
                         .get_keyframe_mut(index)
                         .ok_or(DocumentError::InvalidKeyframeIndex)?;
                     keyframe.set_offset(keyframe.get_offset() + offset);
+                    for hitbox in keyframe.hitboxes_iter_mut() {
+                        if hitbox.is_linked() {
+                            hitbox.set_position(hitbox.get_position() + offset)
+                        }
+                    }
                 }
             }
             None => {}
@@ -1287,6 +1351,8 @@ impl Document {
             UpdateHitboxScale(delta, ar) => self.update_hitbox_scale(*delta, *ar)?,
             BeginHitboxDrag => self.begin_hitbox_drag()?,
             UpdateHitboxDrag(delta, b) => self.update_hitbox_drag(*delta, *b)?,
+            SetHitboxLinked(name, l) => self.set_hitbox_linked(name, *l)?,
+            SetHitboxLocked(name, l) => self.set_hitbox_locked(name, *l)?,
             TogglePlayback => self.toggle_playback()?,
             SnapToPreviousFrame => self.snap_to_previous_frame()?,
             SnapToNextFrame => self.snap_to_next_frame()?,
