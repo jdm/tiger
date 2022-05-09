@@ -1,18 +1,15 @@
 #[macro_use]
-extern crate failure;
-use gfx;
-use gfx_device_gl;
-use gfx_window_glutin;
-use glutin;
-use imgui_gfx_renderer;
-use imgui_winit_support;
-#[macro_use]
 extern crate serde_derive;
 
-use gfx::Device;
+use glium::backend::Facade;
+use notify::DebouncedEvent;
+use std::collections::HashSet;
 use std::sync::*;
+use thiserror::Error;
 
 mod export;
+mod file_watcher;
+mod scaffold;
 mod sheet;
 mod state;
 mod streamer;
@@ -21,78 +18,38 @@ mod utils;
 
 const WINDOW_TITLE: &str = "Tiger";
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum MainError {
-    #[fail(display = "Could not initialize window")]
+    #[error("Could not initialize window")]
     WindowInitError,
-    #[fail(display = "Could not initialize renderer")]
+    #[error("Could not initialize renderer")]
     RendererInitError,
-    #[fail(display = "Draw error")]
+    #[error("Draw error")]
     DrawError,
-    #[fail(display = "Could not swap framebuffers")]
+    #[error("Could not swap framebuffers")]
     SwapError,
-    #[fail(display = "Frame size error")]
+    #[error("Frame size error")]
     FrameSizeError,
 }
 
-fn get_shaders(version: gfx_device_gl::Version) -> imgui_gfx_renderer::Shaders {
-    use imgui_gfx_renderer::Shaders;
-
-    if version.is_embedded {
-        if version.major >= 3 {
-            Shaders::GlSlEs300
-        } else {
-            Shaders::GlSlEs100
-        }
-    } else if version.major >= 4 {
-        Shaders::GlSl400
-    } else if version.major >= 3 {
-        if version.minor >= 2 {
-            Shaders::GlSl150
-        } else {
-            Shaders::GlSl130
-        }
-    } else {
-        Shaders::GlSl110
-    }
-}
-
+// TODO why are async commands/results not using channels?
 #[derive(Debug, Default)]
 struct AsyncCommands {
     commands: Vec<state::AsyncCommand>,
 }
 
-#[derive(Debug, Default)]
-struct AsyncResults {
-    results: Vec<Result<state::CommandBuffer, failure::Error>>,
+#[derive(Debug)]
+struct AsyncResult {
+    command: state::AsyncCommand,
+    outcome: anyhow::Result<state::CommandBuffer>,
 }
 
-fn main() -> Result<(), failure::Error> {
-    let mut events_loop = glutin::EventsLoop::new();
-    let context = glutin::ContextBuilder::new().with_vsync(true);
-    let window = glutin::WindowBuilder::new().with_title(WINDOW_TITLE);
+#[derive(Debug, Default)]
+struct AsyncResults {
+    results: Vec<AsyncResult>,
+}
 
-    let (window, mut device, mut factory, mut color_rt, mut depth_rt) =
-        gfx_window_glutin::init::<gfx::format::Rgba8, gfx::format::DepthStencil>(
-            window,
-            context,
-            &events_loop,
-        )
-        .or(Err(MainError::WindowInitError))?;
-
-    let mut encoder: gfx::Encoder<_, _> = factory.create_command_buffer().into();
-    let mut imgui_instance = ui::init(&window);
-    let mut renderer = imgui_gfx_renderer::Renderer::init(
-        &mut imgui_instance,
-        &mut factory,
-        get_shaders(device.get_info().shading_language),
-        color_rt.clone(),
-    )
-    .or(Err(MainError::RendererInitError))?;
-
-    let icon = include_bytes!("../res/app_icon.png");
-    window.set_window_icon(glutin::Icon::from_bytes(icon).ok());
-
+fn main() -> anyhow::Result<()> {
     // Init application state
     let async_commands: Arc<(Mutex<AsyncCommands>, Condvar)> =
         Arc::new((Mutex::new(Default::default()), Condvar::new()));
@@ -100,34 +57,52 @@ fn main() -> Result<(), failure::Error> {
     let state_mutex: Arc<Mutex<state::AppState>> = Arc::new(Mutex::new(Default::default()));
     let texture_cache = Arc::new(Mutex::new(streamer::TextureCache::new()));
     let (streamer_from_disk, streamer_to_gpu) = streamer::init();
+    let (file_watcher_sender, file_watcher_receiver) = file_watcher::init();
+    let mut file_watcher = file_watcher::FileWatcher::new(file_watcher_sender);
     let main_thread_frame = Arc::new((Mutex::new(false), Condvar::new()));
 
     // Thread processing async commands without blocking the UI
     let async_commands_for_worker = async_commands.clone();
     let async_results_for_worker = async_results.clone();
     std::thread::spawn(move || loop {
-        let commands;
-
-        {
+        let commands = {
             let &(ref commands_mutex, ref cvar) = &*async_commands_for_worker;
             let mut async_commands = commands_mutex.lock().unwrap();
             while async_commands.commands.is_empty() {
                 async_commands = cvar.wait(async_commands).unwrap();
             }
-            commands = async_commands.commands.clone();
-        }
+            async_commands
+                .commands
+                .drain(..)
+                .collect::<Vec<state::AsyncCommand>>()
+        };
 
-        for command in &commands {
-            let process_result = state::process_async_command(&command);
+        for command in commands {
+            let outcome = state::process_async_command(command.clone());
             {
                 let mut result_mutex = async_results_for_worker.lock().unwrap();
-                result_mutex.results.push(process_result);
+                result_mutex.results.push(AsyncResult {
+                    command: command,
+                    outcome: outcome,
+                });
             }
         }
+    });
 
-        let &(ref commands_mutex, ref _cvar) = &*async_commands_for_worker;
-        let mut async_commands = commands_mutex.lock().unwrap();
-        async_commands.commands.drain(..commands.len());
+    // File watcher thread
+    let texture_cache_for_file_watcher = texture_cache.clone();
+    std::thread::spawn(move || loop {
+        if let Ok(event) = file_watcher_receiver.recv() {
+            match event {
+                DebouncedEvent::Write(path)
+                | DebouncedEvent::Create(path)
+                | DebouncedEvent::Remove(path) => {
+                    let mut texture_cache = texture_cache_for_file_watcher.lock().unwrap();
+                    texture_cache.invalidate(path);
+                }
+                _ => (),
+            }
+        }
     });
 
     // Streamer thread
@@ -146,98 +121,67 @@ fn main() -> Result<(), failure::Error> {
                 *lock = false;
             }
 
-            let state;
+            let mut desired_textures = HashSet::new();
             {
-                state = state_mutex_for_streamer.lock().unwrap().clone();
+                let state = state_mutex_for_streamer.lock().unwrap();
+                for document in state.documents_iter() {
+                    for frame in document.sheet.frames_iter() {
+                        desired_textures.insert(frame.get_source().to_owned());
+                    }
+                }
             }
+
             streamer::load_from_disk(
-                &state,
+                desired_textures,
                 texture_cache_for_streamer.clone(),
                 &streamer_from_disk,
             );
         }
     });
 
-    // Main thread
-    {
-        let mut last_frame = std::time::Instant::now();
-        let mut quit = false;
+    let system = scaffold::init(WINDOW_TITLE);
+    system.main_loop(move |quit_requested, run, ui, renderer, display| {
+        // Tiger frame
+        {
+            let mut state = state_mutex.lock().unwrap();
+            let delta_time = ui.io().delta_time;
+            state.tick(std::time::Duration::new(
+                delta_time.floor() as u64,
+                (delta_time.fract() * 1_000_000_000 as f32) as u32,
+            ));
 
-        loop {
-            let rounded_hidpi_factor = window.get_hidpi_factor().round();
-
-            // Handle Windows events
-            events_loop.poll_events(|event| {
-                use glutin::{
-                    Event,
-                    WindowEvent::{CloseRequested, Resized},
-                };
-
-                imgui_winit_support::handle_event(
-                    &mut imgui_instance,
-                    &event,
-                    window.get_hidpi_factor(),
-                    rounded_hidpi_factor,
-                );
-
-                if let Event::WindowEvent { event, .. } = event {
-                    match event {
-                        Resized(_) => {
-                            gfx_window_glutin::update_views(&window, &mut color_rt, &mut depth_rt);
-                            renderer.update_render_target(color_rt.clone());
-                        }
-                        CloseRequested => quit = true,
-                        _ => (),
-                    }
-                }
-            });
-            imgui_winit_support::update_mouse_cursor(&imgui_instance, &window);
-
-            // Update delta-time
-            let now = std::time::Instant::now();
-            let delta = now - last_frame;
-            let delta_s = delta.as_secs() as f32 + delta.subsec_nanos() as f32 / 1_000_000_000.0;
-            last_frame = now;
-
-            // Begin imgui frame
-            let ui_frame;
-            {
-                let frame_size = imgui_winit_support::get_frame_size(&window, rounded_hidpi_factor)
-                    .ok_or(MainError::FrameSizeError)?;
-                ui_frame = imgui_instance.frame(frame_size, delta_s);
-            }
-
-            let mut state = state_mutex.lock().unwrap().clone();
-
-            // Run Tiger UI frame
             let mut new_commands = {
                 let texture_cache = texture_cache.lock().unwrap();
-                ui::run(&ui_frame, &state, &texture_cache)?
+                ui::run(ui, &state, &texture_cache)
             };
 
             // Exit
-            if quit {
+            if quit_requested {
+                new_commands.close_all_documents();
                 new_commands.exit();
-                quit = false;
             }
 
-            state.tick(delta);
-
             if state.get_exit_state() == Some(state::ExitState::Allowed) {
-                break;
+                *run = false;
             }
 
             // Grab results from async worker
             {
                 let mut result_mutex = async_results.lock().unwrap();
                 for result in std::mem::replace(&mut result_mutex.results, vec![]) {
-                    match result {
+                    match result.outcome {
                         Ok(buffer) => {
                             new_commands.append(buffer);
                         }
                         Err(e) => {
-                            // TODO surface to user
                             println!("Error: {}", e);
+                            match state::UserFacingError::from_command(result.command, e) {
+                                None => (),
+                                Some(user_facing_error) => {
+                                    println!("Error: {}", user_facing_error);
+                                    new_commands.show_error(user_facing_error);
+                                }
+                            };
                         }
                     }
                 }
@@ -245,10 +189,10 @@ fn main() -> Result<(), failure::Error> {
 
             // Process new commands
             use state::Command;
-            for command in &new_commands.flush() {
+            for command in new_commands.flush() {
                 match command {
                     Command::Sync(sync_command) => {
-                        if let Err(e) = state.process_sync_command(&sync_command) {
+                        if let Err(e) = state.process_sync_command(sync_command) {
                             // TODO surface to user
                             println!("Error: {}", e);
                             break;
@@ -258,57 +202,36 @@ fn main() -> Result<(), failure::Error> {
                         let &(ref lock, ref cvar) = &*async_commands;
                         {
                             let mut work = lock.lock().unwrap();
-                            let commands = &*work.commands;
-                            if commands.contains(async_command) {
-                                // This avoids queuing redundant work or dialogs when holding shortcuts
-                                // TODO: Ignore key repeats instead (second arg of is_key_pressed, not exposed by imgui-rs)
-                                println!("Ignoring duplicate async command");
-                            } else {
-                                work.commands.push(async_command.clone());
-                            }
+                            work.commands.push(async_command);
                         }
                         cvar.notify_all();
                     }
                 }
             }
 
-            // Commit new state
-            {
-                let mut s = state_mutex.lock().unwrap();
-                *s = state.clone();
-            }
-
-            // Render screen
-            {
-                encoder.clear(&color_rt, [0.0, 0.0, 0.0, 0.0]);
-                renderer
-                    .render(ui_frame, &mut factory, &mut encoder)
-                    .or(Err(MainError::DrawError))?;
-                encoder.flush(&mut device);
-                window.swap_buffers().or(Err(MainError::SwapError))?;
-                device.cleanup();
-            }
-
-            // Upload textures loaded by streamer thread
-            {
-                let mut texture_cache = texture_cache.lock().unwrap();
-                streamer::upload(
-                    &mut texture_cache,
-                    &mut factory,
-                    &mut renderer,
-                    &streamer_to_gpu,
-                );
-            }
-
-            // Allow streamer thread to tick
-            {
-                let &(ref mutex, ref cvar) = &*main_thread_frame;
-                let mut lock = mutex.lock().expect("Can't lock");
-                *lock = true;
-                cvar.notify_one();
-            }
+            // Update file watches
+            file_watcher.update_watched_files(&state);
         }
-    }
+
+        // Upload textures loaded by streamer thread
+        {
+            let mut texture_cache = texture_cache.lock().unwrap();
+            streamer::upload(
+                &mut texture_cache,
+                display.get_context(),
+                renderer.textures(),
+                &streamer_to_gpu,
+            );
+        }
+
+        // Allow streamer thread to tick
+        {
+            let &(ref mutex, ref cvar) = &*main_thread_frame;
+            let mut lock = mutex.lock().expect("Can't lock");
+            *lock = true;
+            cvar.notify_one();
+        }
+    });
 
     Ok(())
 }

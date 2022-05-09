@@ -1,271 +1,217 @@
-use euclid::*;
-use failure::Error;
-use liquid::value::{Scalar, Value};
+use euclid::default::*;
 use pathdiff::diff_paths;
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::path::PathBuf;
+use thiserror::Error;
 
-use crate::sheet::{Animation, AnimationFrame, ExportFormat, ExportSettings, Frame, Hitbox, Sheet};
+use crate::sheet::{Animation, ExportFormat, ExportSettings, Frame, Hitbox, Keyframe, Sheet};
 
 mod pack;
 pub use pack::*;
 
-type LiquidData = HashMap<Cow<'static, str>, Value>;
 type TextureLayout = HashMap<PathBuf, PackedFrame>;
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum ExportError {
-    #[fail(display = "Template parsing error")]
-    TemplateParsingError,
-    #[fail(display = "Template rendering error")]
+    #[error("Template parsing error")]
+    TemplateParsingError(#[from] liquid::Error),
+    #[error("Template rendering error")]
     TemplateRenderingError,
-    #[fail(display = "An animation references a frame which is not part of the sheet")]
+    #[error("An animation references a frame which is not part of the sheet")]
     InvalidFrameReference,
-    #[fail(display = "The sheet contains a frame which was not packed into the texture atlas")]
+    #[error("The sheet contains a frame which was not packed into the texture atlas")]
     FrameWasNotPacked,
-    #[fail(display = "Error converting an absolute path to a relative path")]
+    #[error("Error converting an absolute path to a relative path")]
     AbsoluteToRelativePath,
 }
 
-fn liquid_data_from_hitbox(
-    hitbox: &Hitbox,
-    packed_frame: &PackedFrame,
-) -> Result<LiquidData, Error> {
-    let mut map = LiquidData::new();
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct LiquidHitbox {
+    name: String,
+    left: i32,
+    right: i32,
+    top: i32,
+    bottom: i32,
+    width: i32,
+    height: i32,
+}
 
-    map.insert(
-        "name".into(),
-        Value::Scalar(Scalar::new(hitbox.get_name().to_owned())),
-    );
+fn liquid_data_from_hitbox(hitbox: &Hitbox) -> Result<LiquidHitbox, ExportError> {
+    Ok(LiquidHitbox {
+        name: hitbox.get_name().to_owned(),
+        left: hitbox.get_position().x,
+        right: hitbox.get_position().x + hitbox.get_size().x as i32,
+        top: hitbox.get_position().y,
+        bottom: hitbox.get_position().y + hitbox.get_size().y as i32,
+        width: hitbox.get_size().x as i32,
+        height: hitbox.get_size().y as i32,
+    })
+}
 
-    map.insert(
-        "left_from_frame_center".into(),
-        Value::Scalar(Scalar::new(hitbox.get_position().x)),
-    );
-
-    map.insert(
-        "top_from_frame_center".into(),
-        Value::Scalar(Scalar::new(hitbox.get_position().y)),
-    );
-
-    let frame_size: Vector2D<u32> = packed_frame.size_in_sheet.into();
-    let hitbox_top_left_from_frame_top_left =
-        hitbox.get_position() + (frame_size.to_f32() / 2.0).floor().to_i32();
-
-    map.insert(
-        "left_from_frame_left".into(),
-        Value::Scalar(Scalar::new(hitbox_top_left_from_frame_top_left.x)),
-    );
-    map.insert(
-        "top_from_frame_top".into(),
-        Value::Scalar(Scalar::new(hitbox_top_left_from_frame_top_left.y)),
-    );
-
-    map.insert(
-        "width".into(),
-        Value::Scalar(Scalar::new(hitbox.get_size().x as i32)),
-    );
-
-    map.insert(
-        "height".into(),
-        Value::Scalar(Scalar::new(hitbox.get_size().y as i32)),
-    );
-
-    Ok(map)
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct LiquidFrame {
+    source: String,
+    index: i32,
+    x: i32,
+    y: i32,
+    width: i32,
+    height: i32,
 }
 
 fn liquid_data_from_frame(
     sheet: &Sheet,
     frame: &Frame,
     texture_layout: &TextureLayout,
-) -> Result<LiquidData, Error> {
-    let mut frame_data = LiquidData::new();
-    frame_data.insert(
-        "source".into(),
-        Value::Scalar(Scalar::new(
-            frame.get_source().to_string_lossy().into_owned(),
-        )),
-    );
-
+) -> Result<LiquidFrame, ExportError> {
     let index = sheet
         .frames_iter()
         .position(|f| f as *const Frame == frame as *const Frame)
         .ok_or(ExportError::InvalidFrameReference)?;
-    frame_data.insert("index".into(), Value::Scalar(Scalar::new(index as i32)));
 
     let frame_layout = texture_layout
         .get(frame.get_source())
         .ok_or(ExportError::FrameWasNotPacked)?;
 
-    frame_data.insert(
-        "x".into(),
-        Value::Scalar(Scalar::new(frame_layout.position_in_sheet.0 as i32)),
-    );
-
-    frame_data.insert(
-        "y".into(),
-        Value::Scalar(Scalar::new(frame_layout.position_in_sheet.1 as i32)),
-    );
-
-    frame_data.insert(
-        "width".into(),
-        Value::Scalar(Scalar::new(frame_layout.size_in_sheet.0 as i32)),
-    );
-
-    frame_data.insert(
-        "height".into(),
-        Value::Scalar(Scalar::new(frame_layout.size_in_sheet.1 as i32)),
-    );
-
-    let mut hitboxes = Vec::new();
-    for hitbox in frame.hitboxes_iter() {
-        let packed_frame = texture_layout
-            .get(frame.get_source())
-            .ok_or(ExportError::FrameWasNotPacked)?;
-        let hitbox_data = liquid_data_from_hitbox(hitbox, packed_frame)?;
-        hitboxes.push(Value::Object(hitbox_data));
-    }
-    frame_data.insert("hitboxes".into(), Value::Array(hitboxes));
-
-    Ok(frame_data)
+    Ok(LiquidFrame {
+        source: frame.get_source().to_string_lossy().into_owned(),
+        index: index as i32,
+        x: frame_layout.position_in_sheet.0 as i32,
+        y: frame_layout.position_in_sheet.1 as i32,
+        width: frame_layout.size_in_sheet.0 as i32,
+        height: frame_layout.size_in_sheet.1 as i32,
+    })
+}
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct LiquidKeyframe {
+    duration: i32,
+    center_offset_x: i32,
+    center_offset_y: i32,
+    top_left_offset_x: i32,
+    top_left_offset_y: i32,
+    frame: LiquidFrame,
+    hitboxes: Vec<LiquidHitbox>,
 }
 
-fn liquid_data_from_animation_frame(
+fn liquid_data_from_keyframe(
     sheet: &Sheet,
-    animation_frame: &AnimationFrame,
+    keyframe: &Keyframe,
     texture_layout: &TextureLayout,
-) -> Result<LiquidData, Error> {
+) -> Result<LiquidKeyframe, ExportError> {
     let packed_frame = texture_layout
-        .get(animation_frame.get_frame())
+        .get(keyframe.get_frame())
         .ok_or(ExportError::FrameWasNotPacked)?;
 
-    let mut map = LiquidData::new();
-    map.insert(
-        "duration".into(),
-        Value::Scalar(Scalar::new(animation_frame.get_duration() as i32)),
-    );
-
-    let center_offset = animation_frame.get_offset();
-    map.insert(
-        "center_offset_x".into(),
-        Value::Scalar(Scalar::new(center_offset.x)),
-    );
-    map.insert(
-        "center_offset_y".into(),
-        Value::Scalar(Scalar::new(center_offset.y)),
-    );
-
     let frame_size: Vector2D<u32> = packed_frame.size_in_sheet.into();
+    let center_offset = keyframe.get_offset();
     let top_left_offset = center_offset - (frame_size.to_f32() / 2.0).floor().to_i32();
 
-    map.insert(
-        "top_left_offset_x".into(),
-        Value::Scalar(Scalar::new(top_left_offset.x)),
-    );
-    map.insert(
-        "top_left_offset_y".into(),
-        Value::Scalar(Scalar::new(top_left_offset.y)),
-    );
-
     let frame = sheet
-        .get_frame(animation_frame.get_frame())
+        .get_frame(keyframe.get_frame())
         .ok_or(ExportError::InvalidFrameReference)?;
-
     let frame_data = liquid_data_from_frame(sheet, frame, texture_layout)?;
-    map.insert("frame".into(), Value::Object(frame_data));
 
-    Ok(map)
+    let mut hitboxes = Vec::new();
+    for hitbox in keyframe.hitboxes_iter() {
+        hitboxes.push(liquid_data_from_hitbox(hitbox)?);
+    }
+
+    Ok(LiquidKeyframe {
+        duration: keyframe.get_duration() as i32,
+        center_offset_x: center_offset.x,
+        center_offset_y: center_offset.y,
+        top_left_offset_x: top_left_offset.x,
+        top_left_offset_y: top_left_offset.y,
+        frame: frame_data,
+        hitboxes,
+    })
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct LiquidAnimation {
+    name: String,
+    is_looping: bool,
+    keyframes: Vec<LiquidKeyframe>,
 }
 
 fn liquid_data_from_animation(
     sheet: &Sheet,
     animation: &Animation,
     texture_layout: &TextureLayout,
-) -> Result<LiquidData, Error> {
-    let mut map = LiquidData::new();
-
-    map.insert(
-        "name".into(),
-        Value::Scalar(Scalar::new(animation.get_name().to_owned())),
-    );
-
-    map.insert(
-        "is_looping".into(),
-        Value::Scalar(Scalar::new(animation.is_looping())),
-    );
-
-    let mut frames = Vec::new();
-    for animation_frame in animation.frames_iter() {
-        let frame = liquid_data_from_animation_frame(sheet, animation_frame, texture_layout)?;
-        frames.push(Value::Object(frame));
+) -> Result<LiquidAnimation, ExportError> {
+    let mut keyframes = Vec::new();
+    for keyframe in animation.keyframes_iter() {
+        let frame = liquid_data_from_keyframe(sheet, keyframe, texture_layout)?;
+        keyframes.push(frame);
     }
-    map.insert("keyframes".into(), Value::Array(frames));
 
-    Ok(map)
+    Ok(LiquidAnimation {
+        name: animation.get_name().to_owned(),
+        is_looping: animation.is_looping(),
+        keyframes,
+    })
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct LiquidSheet {
+    frames: Vec<LiquidFrame>,
+    animations: Vec<LiquidAnimation>,
+    sheet_image: String,
 }
 
 fn liquid_data_from_sheet(
     sheet: &Sheet,
     export_settings: &ExportSettings,
     texture_layout: &TextureLayout,
-) -> Result<LiquidData, Error> {
-    let mut map = LiquidData::new();
-
-    {
+) -> Result<LiquidSheet, ExportError> {
+    let frames = {
         let mut frames = Vec::new();
         for frame in sheet.frames_iter() {
-            frames.push(Value::Object(liquid_data_from_frame(
-                sheet,
-                frame,
-                texture_layout,
-            )?));
+            frames.push(liquid_data_from_frame(sheet, frame, texture_layout)?);
         }
-        let frames_value = Value::Array(frames);
-        map.insert("frames".into(), frames_value);
-    }
+        frames
+    };
 
-    {
+    let animations = {
         let mut animations = Vec::new();
         for animation in sheet.animations_iter() {
             let animation_data = liquid_data_from_animation(sheet, animation, texture_layout)?;
-            animations.push(Value::Object(animation_data));
+            animations.push(animation_data);
         }
-        let animations_value = Value::Array(animations);
-        map.insert("animations".into(), animations_value);
-    }
+        animations
+    };
 
-    {
+    let sheet_image = {
         let relative_to = export_settings.metadata_paths_root.clone();
         let image_path = diff_paths(&export_settings.texture_destination, &relative_to)
             .ok_or(ExportError::AbsoluteToRelativePath)?;
-        map.insert(
-            "sheet_image".into(),
-            Value::Scalar(Scalar::new(image_path.to_string_lossy().into_owned())),
-        );
-    }
+        image_path.to_string_lossy().into_owned()
+    };
 
-    Ok(map)
+    Ok(LiquidSheet {
+        frames,
+        animations,
+        sheet_image,
+    })
 }
 
 pub fn export_sheet(
     sheet: &Sheet,
     export_settings: &ExportSettings,
     texture_layout: &TextureLayout,
-) -> Result<String, Error> {
+) -> Result<String, ExportError> {
     let template;
     match &export_settings.format {
         ExportFormat::Template(p) => {
-            template = liquid::ParserBuilder::with_liquid()
-                .build()
-                .parse_file(p)
-                .map_err(|_| ExportError::TemplateParsingError)?;
+            template = liquid::ParserBuilder::with_stdlib()
+                .build()?
+                .parse_file(&p)
+                .map_err(|e| ExportError::TemplateParsingError(e))?;
         }
     }
 
-    let globals: LiquidData = liquid_data_from_sheet(sheet, export_settings, texture_layout)?;
+    let globals = liquid_data_from_sheet(sheet, export_settings, texture_layout)?;
     let output = template
-        .render(&globals)
+        .render(&liquid::to_object(&globals)?)
         .map_err(|_| ExportError::TemplateRenderingError)?;
 
     Ok(output)

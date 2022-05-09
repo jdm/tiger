@@ -1,18 +1,20 @@
-use failure::Error;
 use image::DynamicImage;
 use std::collections::HashMap;
 use std::path::PathBuf;
 use texture_packer::exporter::ImageExporter;
 use texture_packer::importer::ImageImporter;
 use texture_packer::{TexturePacker, TexturePackerConfig};
+use thiserror::Error;
 
 use crate::sheet::Sheet;
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum PackError {
-    #[fail(display = "Error reading a frame")]
+    #[error("Error reading a frame")]
     FrameReadError,
-    #[fail(display = "Error exporting texture from packing data")]
+    #[error("Error while packing textures")]
+    PackingError,
+    #[error("Error exporting texture from packing data")]
     PackerExportError,
 }
 
@@ -36,7 +38,7 @@ impl PackedSheet {
     }
 }
 
-pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, Error> {
+pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, PackError> {
     let config = TexturePackerConfig {
         max_width: 4096, // TODO configurable / dynamic based on widest frame?
         max_height: std::u32::MAX,
@@ -45,6 +47,7 @@ pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, Error> {
         texture_padding: 0, // TODO configurable?
         trim: false,        // TODO support trimming?
         texture_outlines: false,
+        texture_extrusion: 0, // TODO configurable?
     };
 
     let mut packer = TexturePacker::new_skyline(config);
@@ -55,7 +58,9 @@ pub fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, Error> {
             ImageImporter::import_from_file(source).map_err(|_| PackError::FrameReadError)?;
 
         let name = source.to_string_lossy();
-        packer.pack_own(name.to_string(), texture);
+        packer
+            .pack_own(name.to_string(), texture)
+            .map_err(|_| PackError::PackingError)?;
     }
 
     let texture = ImageExporter::export(&packer).map_err(|_| PackError::PackerExportError)?;

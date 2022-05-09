@@ -1,12 +1,60 @@
-use euclid::*;
-use failure::Error;
+use euclid::default::*;
+use euclid::{point2, vec2};
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use thiserror::Error;
 
 use crate::sheet::*;
 use crate::state::*;
 
-#[derive(Clone, Debug, Default)]
+#[derive(Error, Debug)]
+pub enum DocumentError {
+    #[error("Cannot perform undo operation")]
+    UndoOperationNowAllowed,
+    #[error("Requested frame is not in document")]
+    FrameNotInDocument,
+    #[error("Requested animation is not in document")]
+    AnimationNotInDocument,
+    #[error("Frame does not have a hitbox with the requested name")]
+    InvalidHitboxName,
+    #[error("Animation does not have a frame at the requested index")]
+    InvalidKeyframeIndex,
+    #[error("No keyframe found for requested time")]
+    NoKeyframeForThisTime,
+    #[error("Expected a hitbox to be selected")]
+    NoHitboxSelected,
+    #[error("Expected an keyframe to be selected")]
+    NoKeyframeSelected,
+    #[error("An animation with this name already exists")]
+    AnimationAlreadyExists,
+    #[error("Not currently editing any animation")]
+    NotEditingAnyAnimation,
+    #[error("Not currently adjusting export settings")]
+    NotExporting,
+    #[error("Not currently renaming an item")]
+    NotRenaming,
+    #[error("Not currently adjusting keyframe position")]
+    NotAdjustingKeyframePosition,
+    #[error("Not currently adjusting hitbox size")]
+    NotAdjustingHitboxSize,
+    #[error("Not currently adjusting hitbox position")]
+    NotAdjustingHitboxPosition,
+    #[error("Not currently adjusting keyframe duration")]
+    NotAdjustingKeyframeDuration,
+    #[error("Missing data while adjusting hitbox size")]
+    MissingHitboxSizeData,
+    #[error("Missing data while adjusting hitbox position")]
+    MissingHitboxPositionData,
+    #[error("Missing data while adjusting keyframe position")]
+    MissingKeyframePositionData,
+    #[error("Missing data while adjusting keyframe duration")]
+    MissingKeyframeDurationData,
+    #[error("Invalid sheet operation")]
+    InvalidSheetOperation(#[from] SheetError),
+}
+
+#[derive(Debug, Default)]
 struct HistoryEntry {
     last_command: Option<DocumentCommand>,
     sheet: Sheet,
@@ -14,20 +62,28 @@ struct HistoryEntry {
     version: i32,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum CloseState {
+    Requested,
+    Saving,
+    Allowed,
+}
+
 #[derive(Clone, Debug, Default)]
 pub struct Persistent {
     pub export_settings_edit: Option<ExportSettings>,
+    pub close_state: Option<CloseState>,
     timeline_is_playing: bool,
     disk_version: i32,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Document {
     pub source: PathBuf,
-    pub sheet: Sheet,           // Sheet being edited, fully recorded in history
-    pub view: View,             // View state, collapsed and recorded in history
-    pub transient: Transient, // State preventing undo actions when not default, not recorded in history
-    pub persistent: Persistent, // Other state, not recorded in history
+    pub sheet: Sheet, // Sheet being edited, fully recorded in history
+    pub view: View,   // View state, collapsed and recorded in history
+    pub transient: Option<Transient>, // State preventing undo actions when not default, not recorded in history
+    pub persistent: Persistent,       // Other state, not recorded in history
     next_version: i32,
     history: Vec<HistoryEntry>,
     history_index: usize,
@@ -36,33 +92,35 @@ pub struct Document {
 impl Document {
     pub fn new<T: AsRef<Path>>(path: T) -> Document {
         let history_entry: HistoryEntry = Default::default();
+        let sheet = history_entry.sheet.clone();
+        let view = history_entry.view.clone();
+        let next_version = history_entry.version;
         Document {
             source: path.as_ref().to_owned(),
-            history: vec![history_entry.clone()],
-            sheet: history_entry.sheet.clone(),
-            view: history_entry.view.clone(),
-            transient: Default::default(),
+            history: vec![history_entry],
+            sheet: sheet,
+            view: view,
+            transient: None,
             persistent: Default::default(),
-            next_version: history_entry.version,
+            next_version: next_version,
             history_index: 0,
         }
     }
 
-    pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, Error> {
+    pub fn open<T: AsRef<Path>>(path: T) -> anyhow::Result<Document> {
         let mut document = Document::new(&path);
 
         let mut directory = path.as_ref().to_owned();
         directory.pop();
         let sheet: Sheet = compat::read_sheet(path.as_ref())?;
-        document.sheet = sheet.with_absolute_paths(&directory)?;
-
+        document.sheet = sheet.with_absolute_paths(&directory);
         document.history[0].sheet = document.sheet.clone();
         document.persistent.disk_version = document.next_version;
 
         Ok(document)
     }
 
-    pub fn save<T: AsRef<Path>>(sheet: &Sheet, to: T) -> Result<(), Error> {
+    pub fn save<T: AsRef<Path>>(sheet: &Sheet, to: T) -> anyhow::Result<()> {
         let mut directory = to.as_ref().to_owned();
         directory.pop();
         let sheet = sheet.with_relative_paths(directory)?;
@@ -78,7 +136,19 @@ impl Document {
         self.history[self.history_index].version
     }
 
+    pub fn get_display_name(&self) -> String {
+        self.source
+            .file_name()
+            .and_then(|f| Some(f.to_string_lossy().into_owned()))
+            .unwrap_or("???".to_owned())
+    }
+
     pub fn tick(&mut self, delta: Duration) {
+        self.advance_timeline(delta);
+        self.try_close();
+    }
+
+    fn advance_timeline(&mut self, delta: Duration) {
         if self.persistent.timeline_is_playing {
             self.view.timeline_clock += delta;
             if let Some(WorkbenchItem::Animation(animation_name)) = &self.view.workbench_item {
@@ -109,54 +179,64 @@ impl Document {
         }
     }
 
-    fn push_undo_state(&mut self, entry: HistoryEntry) {
-        self.history.truncate(self.history_index + 1);
-        self.history.push(entry);
-        self.history_index = self.history.len() - 1;
-    }
-
-    fn can_use_undo_system(&self) -> bool {
-        self.transient == Default::default()
-    }
-
-    fn record_command(&mut self, command: &DocumentCommand, new_document: Document) {
-        self.sheet = new_document.sheet.clone();
-        self.view = new_document.view.clone();
-        self.transient = new_document.transient.clone();
-        self.persistent = new_document.persistent.clone();
-
-        if self.can_use_undo_system() {
-            let has_sheet_changes = &self.history[self.history_index].sheet != &new_document.sheet;
-
-            if has_sheet_changes {
-                self.next_version += 1;
-            }
-
-            let new_undo_state = HistoryEntry {
-                sheet: new_document.sheet,
-                view: new_document.view,
-                last_command: Some(command.clone()),
-                version: self.next_version,
-            };
-
-            if has_sheet_changes {
-                self.push_undo_state(new_undo_state);
-            } else if &self.history[self.history_index].view != &new_undo_state.view {
-                let merge = self.history_index > 0
-                    && self.history[self.history_index - 1].sheet
-                        == self.history[self.history_index].sheet;
-                if merge {
-                    self.history[self.history_index].view = new_undo_state.view;
-                } else {
-                    self.push_undo_state(new_undo_state);
-                }
+    fn try_close(&mut self) {
+        if self.persistent.close_state == Some(CloseState::Saving) {
+            if self.is_saved() {
+                self.persistent.close_state = Some(CloseState::Allowed);
             }
         }
     }
 
-    pub fn undo(&mut self) -> Result<(), Error> {
+    fn push_undo_state(&mut self, entry: HistoryEntry) {
+        self.history.truncate(self.history_index + 1);
+        self.history.push(entry);
+        self.history_index = self.history.len() - 1;
+
+        while self.history.len() > 100 {
+            self.history.remove(0);
+            self.history_index -= 1;
+        }
+    }
+
+    fn can_use_undo_system(&self) -> bool {
+        self.transient.is_none()
+    }
+
+    fn record_command(&mut self, command: DocumentCommand) {
         if !self.can_use_undo_system() {
-            return Err(StateError::UndoOperationNowAllowed.into());
+            return;
+        }
+
+        let has_sheet_changes = &self.history[self.history_index].sheet != &self.sheet;
+
+        if has_sheet_changes {
+            self.next_version += 1;
+        }
+
+        let new_undo_state = HistoryEntry {
+            sheet: self.sheet.clone(),
+            view: self.view.clone(),
+            last_command: Some(command),
+            version: self.next_version,
+        };
+
+        if has_sheet_changes {
+            self.push_undo_state(new_undo_state);
+        } else if &self.history[self.history_index].view != &new_undo_state.view {
+            let merge = self.history_index > 0
+                && self.history[self.history_index - 1].sheet
+                    == self.history[self.history_index].sheet;
+            if merge {
+                self.history[self.history_index].view = new_undo_state.view;
+            } else {
+                self.push_undo_state(new_undo_state);
+            }
+        }
+    }
+
+    pub fn undo(&mut self) -> Result<(), DocumentError> {
+        if !self.can_use_undo_system() {
+            return Err(DocumentError::UndoOperationNowAllowed.into());
         }
         if self.history_index > 0 {
             self.history_index -= 1;
@@ -167,9 +247,9 @@ impl Document {
         Ok(())
     }
 
-    pub fn redo(&mut self) -> Result<(), Error> {
+    pub fn redo(&mut self) -> Result<(), DocumentError> {
         if !self.can_use_undo_system() {
-            return Err(StateError::UndoOperationNowAllowed.into());
+            return Err(DocumentError::UndoOperationNowAllowed.into());
         }
         if self.history_index < self.history.len() - 1 {
             self.history_index += 1;
@@ -192,170 +272,210 @@ impl Document {
         }
     }
 
-    fn get_workbench_animation(&self) -> Result<&Animation, Error> {
+    pub fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
                     .get_animation(n)
-                    .ok_or(StateError::AnimationNotInDocument)?,
+                    .ok_or(DocumentError::AnimationNotInDocument)?,
             ),
             _ => None,
         }
-        .ok_or_else(|| StateError::NotEditingAnyAnimation.into())
+        .ok_or_else(|| DocumentError::NotEditingAnyAnimation.into())
     }
 
-    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, Error> {
+    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
         match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(n)) => Some(
                 self.sheet
                     .get_animation_mut(n)
-                    .ok_or(StateError::AnimationNotInDocument)?,
+                    .ok_or(DocumentError::AnimationNotInDocument)?,
             ),
             _ => None,
         }
-        .ok_or_else(|| StateError::NotEditingAnyAnimation.into())
+        .ok_or_else(|| DocumentError::NotEditingAnyAnimation.into())
+    }
+
+    pub fn get_workbench_keyframe(&self) -> Result<(usize, &Keyframe), DocumentError> {
+        let animation = self.get_workbench_animation()?;
+        let now = self.view.timeline_clock;
+        animation
+            .get_keyframe_at(now)
+            .ok_or(DocumentError::NoKeyframeForThisTime)
+    }
+
+    fn get_workbench_keyframe_mut(&mut self) -> Result<(usize, &mut Keyframe), DocumentError> {
+        let now = self.view.timeline_clock;
+        let animation = self.get_workbench_animation_mut()?;
+        animation
+            .get_keyframe_at_mut(now)
+            .ok_or(DocumentError::NoKeyframeForThisTime)
+    }
+
+    pub fn is_dragging_content_frames(&self) -> bool {
+        self.transient == Some(Transient::ContentFramesDrag)
+    }
+
+    pub fn is_dragging_timeline_frames(&self) -> bool {
+        self.transient == Some(Transient::TimelineFrameDrag)
+    }
+
+    pub fn is_positioning_hitbox(&self) -> bool {
+        match &self.transient {
+            Some(Transient::HitboxPosition(_)) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_sizing_hitbox(&self) -> bool {
+        match &self.transient {
+            Some(Transient::HitboxSize(_)) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_scrubbing_timeline(&self) -> bool {
+        self.transient == Some(Transient::TimelineScrub)
+    }
+
+    pub fn is_adjusting_frame_duration(&self) -> bool {
+        match &self.transient {
+            Some(Transient::KeyframeDuration(_)) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_moving_keyframe(&self) -> bool {
+        match &self.transient {
+            Some(Transient::KeyframePosition(_)) => true,
+            _ => false,
+        }
+    }
+
+    pub fn is_frame_selected(&self, frame: &Frame) -> bool {
+        self.view
+            .selection
+            .as_ref()
+            .map_or(false, |s| s.is_frame_selected(frame.get_source()))
+    }
+
+    pub fn is_animation_selected(&self, animation: &Animation) -> bool {
+        self.view
+            .selection
+            .as_ref()
+            .map_or(false, |s| s.is_animation_selected(animation.get_name()))
+    }
+
+    pub fn is_hitbox_selected(&self, hitbox: &Hitbox) -> bool {
+        self.view
+            .selection
+            .as_ref()
+            .map_or(false, |s| s.is_hitbox_selected(hitbox.get_name()))
+    }
+
+    pub fn is_keyframe_selected(&self, keyframe_index: usize) -> bool {
+        self.view
+            .selection
+            .as_ref()
+            .map_or(false, |s| s.is_keyframe_selected(keyframe_index))
     }
 
     pub fn clear_selection(&mut self) {
         self.view.selection = None;
     }
 
-    pub fn select_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
-        if !self.sheet.has_frame(&path) {
-            return Err(StateError::FrameNotInDocument.into());
+    pub fn select_frames(&mut self, paths: &MultiSelection<PathBuf>) -> Result<(), DocumentError> {
+        for path in paths.items.iter() {
+            if !self.sheet.has_frame(path) {
+                return Err(DocumentError::FrameNotInDocument.into());
+            }
         }
-        self.view.selection = Some(Selection::Frame(path.as_ref().to_owned()));
+        if paths.items.is_empty() {
+            self.clear_selection();
+        } else {
+            self.view.selection = Some(Selection::Frame(paths.clone()));
+        }
         Ok(())
     }
 
-    pub fn select_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), Error> {
-        if !self.sheet.has_animation(&name) {
-            return Err(StateError::AnimationNotInDocument.into());
+    pub fn select_animations(
+        &mut self,
+        names: &MultiSelection<String>,
+    ) -> Result<(), DocumentError> {
+        for name in names.items.iter() {
+            if !self.sheet.has_animation(name) {
+                return Err(DocumentError::AnimationNotInDocument.into());
+            }
         }
-        self.view.selection = Some(Selection::Animation(name.as_ref().to_owned()));
+        if names.items.is_empty() {
+            self.clear_selection();
+        } else {
+            self.view.selection = Some(Selection::Animation(names.clone()));
+        }
         Ok(())
     }
 
-    pub fn select_hitbox<T: AsRef<str>>(&mut self, hitbox_name: T) -> Result<(), Error> {
-        let frame_path = match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(p)) => Some(p.to_owned()),
-            _ => None,
+    pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe()?;
+        for name in names.items.iter() {
+            let _hitbox = keyframe
+                .get_hitbox(name)
+                .ok_or(DocumentError::InvalidHitboxName)?;
         }
-        .ok_or(StateError::NotEditingAnyFrame)?;
-        let frame = self
-            .sheet
-            .get_frame(&frame_path)
-            .ok_or(StateError::FrameNotInDocument)?;
-        let _hitbox = frame
-            .get_hitbox(&hitbox_name)
-            .ok_or(StateError::InvalidHitboxIndex)?;
-        self.view.selection = Some(Selection::Hitbox(
-            frame_path,
-            hitbox_name.as_ref().to_owned(),
-        ));
+        if names.items.is_empty() {
+            self.clear_selection();
+        } else {
+            self.view.selection = Some(Selection::Hitbox(names.clone()));
+        }
         Ok(())
     }
 
-    pub fn select_animation_frame(&mut self, frame_index: usize) -> Result<(), Error> {
-        let animation_name = {
+    pub fn select_keyframes(
+        &mut self,
+        frame_indexes: &MultiSelection<usize>,
+    ) -> Result<(), DocumentError> {
+        if frame_indexes.items.is_empty() {
+            self.clear_selection();
+        } else {
+            self.view.selection = Some(Selection::Keyframe(frame_indexes.clone()));
+
             let animation = self.get_workbench_animation()?;
-            animation.get_name().to_owned()
-        };
 
-        self.view.selection = Some(Selection::AnimationFrame(animation_name, frame_index));
+            let keyframe_index = frame_indexes.last_touched_in_range;
 
-        let animation = self.get_workbench_animation()?;
+            let keyframe_times = animation.get_keyframe_times();
+            let keyframe_start_time = *keyframe_times
+                .get(keyframe_index)
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
 
-        let frame_times = animation.get_frame_times();
-        let frame_start_time = *frame_times
-            .get(frame_index)
-            .ok_or(StateError::InvalidAnimationFrameIndex)?;
+            let keyframe = animation
+                .get_keyframe(keyframe_index)
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
+            let duration = keyframe.get_duration() as u64;
 
-        let animation_frame = animation
-            .get_frame(frame_index)
-            .ok_or(StateError::InvalidAnimationFrameIndex)?;
-        let duration = animation_frame.get_duration() as u64;
-
-        let clock = self.view.timeline_clock.as_millis() as u64;
-        let is_playhead_in_frame = clock >= frame_start_time
-            && (clock < (frame_start_time + duration)
-                || frame_index == animation.get_num_frames() - 1);
-        if !self.persistent.timeline_is_playing && !is_playhead_in_frame {
-            self.view.timeline_clock = Duration::from_millis(frame_start_time);
+            let clock = self.view.timeline_clock.as_millis() as u64;
+            let is_playhead_in_frame = clock >= keyframe_start_time
+                && (clock < (keyframe_start_time + duration)
+                    || keyframe_index == animation.get_num_keyframes() - 1);
+            if !self.persistent.timeline_is_playing && !is_playhead_in_frame {
+                self.view.timeline_clock = Duration::from_millis(keyframe_start_time);
+            }
         }
-
         Ok(())
     }
 
-    fn advance_selection<F>(&mut self, advance: F) -> Result<(), Error>
-    where
-        F: Fn(usize) -> usize,
-    {
-        match &self.view.selection {
-            Some(Selection::Frame(p)) => {
-                let mut frames: Vec<&Frame> = self.sheet.frames_iter().collect();
-                frames.sort_unstable();
-                let current_index = frames
-                    .iter()
-                    .position(|f| f.get_source() == p)
-                    .ok_or(StateError::FrameNotInDocument)?;
-                if let Some(f) = frames.get(advance(current_index)) {
-                    self.view.selection = Some(Selection::Frame(f.get_source().to_owned()));
-                }
-            }
-            Some(Selection::Animation(n)) => {
-                let mut animations: Vec<&Animation> = self.sheet.animations_iter().collect();
-                animations.sort_unstable();
-                let current_index = animations
-                    .iter()
-                    .position(|a| a.get_name() == n)
-                    .ok_or(StateError::AnimationNotInDocument)?;
-                if let Some(n) = animations.get(advance(current_index)) {
-                    self.view.selection = Some(Selection::Animation(n.get_name().to_owned()));
-                }
-            }
-            Some(Selection::Hitbox(p, n)) => {
-                let frame = self
-                    .sheet
-                    .frames_iter()
-                    .find(|f| f.get_source() == p)
-                    .ok_or(StateError::FrameNotInDocument)?;
-                let mut hitboxes: Vec<&Hitbox> = frame.hitboxes_iter().collect();
-                hitboxes.sort_unstable();
-                let current_index = hitboxes
-                    .iter()
-                    .position(|h| h.get_name() == n)
-                    .ok_or(StateError::InvalidHitboxIndex)?;
-                if let Some(h) = hitboxes.get(advance(current_index)) {
-                    self.view.selection =
-                        Some(Selection::Hitbox(p.to_owned(), h.get_name().to_owned()));
-                }
-            }
-            Some(Selection::AnimationFrame(_, _)) | None => (),
-        };
-        Ok(())
-    }
-
-    pub fn select_previous(&mut self) -> Result<(), Error> {
-        self.advance_selection(|n| n.checked_sub(1).unwrap_or(n))
-    }
-
-    pub fn select_next(&mut self) -> Result<(), Error> {
-        self.advance_selection(|n| n.checked_add(1).unwrap_or(n))
-    }
-
-    pub fn edit_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
+    pub fn edit_frame<T: AsRef<Path>>(&mut self, path: T) -> Result<(), DocumentError> {
         if !self.sheet.has_frame(&path) {
-            return Err(StateError::FrameNotInDocument.into());
+            return Err(DocumentError::FrameNotInDocument.into());
         }
         self.view.workbench_item = Some(WorkbenchItem::Frame(path.as_ref().to_owned()));
         self.view.workbench_offset = Vector2D::zero();
         Ok(())
     }
 
-    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), Error> {
+    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
         if !self.sheet.has_animation(&name) {
-            return Err(StateError::AnimationNotInDocument.into());
+            return Err(DocumentError::AnimationNotInDocument.into());
         }
         self.view.workbench_item = Some(WorkbenchItem::Animation(name.as_ref().to_owned()));
         self.view.workbench_offset = Vector2D::zero();
@@ -364,254 +484,239 @@ impl Document {
         Ok(())
     }
 
-    pub fn begin_animation_rename<T: AsRef<str>>(&mut self, old_name: T) -> Result<(), Error> {
-        let _animation = self
-            .sheet
-            .get_animation(&old_name)
-            .ok_or(StateError::AnimationNotInDocument)?;
-        self.transient.item_being_renamed =
-            Some(RenameItem::Animation(old_name.as_ref().to_owned()));
-        self.transient.rename_buffer = Some(old_name.as_ref().to_owned());
-        Ok(())
+    fn begin_rename<T: AsRef<str>>(&mut self, old_name: T) {
+        self.transient = Some(Transient::Rename(Rename {
+            new_name: old_name.as_ref().to_owned(),
+        }));
     }
 
-    fn begin_hitbox_rename<T: AsRef<Path>, U: AsRef<str>>(
-        &mut self,
-        frame_path: T,
-        old_name: U,
-    ) -> Result<(), Error> {
-        let _hitbox = self
-            .sheet
-            .get_frame(&frame_path)
-            .ok_or(StateError::FrameNotInDocument)?
-            .get_hitbox(old_name.as_ref())
-            .ok_or(StateError::HitboxNotInFrame)?;
-        self.transient.item_being_renamed = Some(RenameItem::Hitbox(
-            frame_path.as_ref().to_owned(),
-            old_name.as_ref().to_owned(),
-        ));
-        self.transient.rename_buffer = Some(old_name.as_ref().to_owned());
-        Ok(())
-    }
-
-    pub fn create_animation(&mut self) -> Result<(), Error> {
+    pub fn create_animation(&mut self) -> Result<(), DocumentError> {
         let animation_name = {
             let animation = self.sheet.add_animation();
             let animation_name = animation.get_name().to_owned();
-            self.begin_animation_rename(&animation_name)?;
             animation_name
         };
-        self.select_animation(&animation_name)?;
+        self.select_animations(&MultiSelection::new(vec![animation_name.clone()]))?;
+        self.begin_rename(&animation_name);
         self.edit_animation(animation_name)
     }
 
-    pub fn begin_frame_drag<T: AsRef<Path>>(&mut self, frame: T) -> Result<(), Error> {
-        // TODO Validate that frame is in sheet
-        self.transient.content_frame_being_dragged = Some(frame.as_ref().to_owned());
-        Ok(())
-    }
-
-    pub fn insert_animation_frame_before<T: AsRef<Path>>(
+    pub fn insert_keyframes_before<T: AsRef<Path>>(
         &mut self,
-        frame: T,
-        next_frame_index: usize,
-    ) -> Result<(), Error> {
+        paths: Vec<T>,
+        next_keyframe_index: usize,
+    ) -> Result<(), DocumentError> {
         let animation_name = match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
-        self.sheet
-            .get_animation_mut(animation_name)
-            .ok_or(StateError::AnimationNotInDocument)?
-            .insert_frame(frame, next_frame_index)?;
-        Ok(())
-    }
-
-    pub fn reorder_animation_frame(
-        &mut self,
-        old_index: usize,
-        new_index: usize,
-    ) -> Result<(), Error> {
-        if old_index == new_index {
-            return Ok(());
-        }
-
-        let animation_name = match &self.view.workbench_item {
-            Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
-            _ => None,
-        }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
-
-        self.sheet
-            .get_animation_mut(&animation_name)
-            .ok_or(StateError::AnimationNotInDocument)?
-            .reorder_frame(old_index, new_index)?;
-
-        match self.view.selection {
-            Some(Selection::AnimationFrame(ref n, i)) if n == &animation_name => {
-                if i == old_index {
-                    self.view.selection = Some(Selection::AnimationFrame(
-                        n.clone(),
-                        new_index - if old_index < new_index { 1 } else { 0 },
-                    ));
-                } else if i > old_index && i < new_index {
-                    self.view.selection = Some(Selection::AnimationFrame(n.clone(), i - 1));
-                } else if i >= new_index && i < old_index {
-                    self.view.selection = Some(Selection::AnimationFrame(n.clone(), i + 1));
-                }
-            }
-            _ => (),
-        }
-
-        Ok(())
-    }
-
-    pub fn begin_animation_frame_duration_drag(&mut self, index: usize) -> Result<(), Error> {
-        let old_duration = {
-            let animation_name = match &self.view.workbench_item {
-                Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
-                _ => None,
-            }
-            .ok_or(StateError::NotEditingAnyAnimation)?;
-
-            let animation = self
-                .sheet
-                .get_animation(animation_name)
-                .ok_or(StateError::AnimationNotInDocument)?;
-
-            let animation_frame = animation
-                .get_frame(index)
-                .ok_or(StateError::InvalidAnimationFrameIndex)?;
-
-            animation_frame.get_duration()
-        };
-
-        self.transient.timeline_frame_being_scaled = Some(index);
-        self.transient.timeline_frame_scale_initial_duration = old_duration;
-        self.transient.timeline_frame_scale_initial_clock = self.view.timeline_clock;
-
-        Ok(())
-    }
-
-    pub fn update_animation_frame_duration_drag(&mut self, new_duration: u32) -> Result<(), Error> {
-        let frame_start_time = {
-            let animation_name = match &self.view.workbench_item {
-                Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
-                _ => None,
-            }
-            .ok_or(StateError::NotEditingAnyAnimation)?;
-
-            let index = self
-                .transient
-                .timeline_frame_being_scaled
-                .ok_or(StateError::NotDraggingATimelineFrame)?;
-
-            let animation = self
-                .sheet
+        .ok_or(DocumentError::NotEditingAnyAnimation)?;
+        for path in paths.iter().rev() {
+            self.sheet
                 .get_animation_mut(&animation_name)
-                .ok_or(StateError::AnimationNotInDocument)?;
-
-            let animation_frame = animation
-                .get_frame_mut(index)
-                .ok_or(StateError::InvalidAnimationFrameIndex)?;
-
-            animation_frame.set_duration(new_duration);
-
-            let frame_times = animation.get_frame_times();
-
-            *frame_times
-                .get(index)
-                .ok_or(StateError::InvalidAnimationFrameIndex)?
-        };
-
-        if !self.persistent.timeline_is_playing {
-            let initial_clock = self
-                .transient
-                .timeline_frame_scale_initial_clock
-                .as_millis();
-            let initial_duration = self.transient.timeline_frame_scale_initial_duration as u128;
-            if initial_clock >= frame_start_time as u128 + initial_duration {
-                self.view.timeline_clock = Duration::from_millis(
-                    initial_clock as u64 + new_duration as u64 - initial_duration as u64,
-                );
-            }
+                .ok_or(DocumentError::AnimationNotInDocument)?
+                .create_keyframe(path, next_keyframe_index)?;
         }
+        let new_keyframe_indexes = next_keyframe_index..(next_keyframe_index + paths.len());
+        self.select_keyframes(&MultiSelection::new(new_keyframe_indexes.collect()))
+    }
+
+    pub fn reorder_keyframes(&mut self, new_index: usize) -> Result<(), DocumentError> {
+        let selection = match &self.view.selection {
+            Some(Selection::Keyframe(i)) => Some(i.clone()),
+            _ => None,
+        }
+        .ok_or(DocumentError::NoKeyframeSelected)?;
+
+        let mut keyframe_indexes: Vec<usize> = selection.items.clone().into_iter().collect();
+        keyframe_indexes.sort();
+
+        let animation = self.get_workbench_animation_mut()?;
+
+        let mut affected_keyframes = Vec::with_capacity(keyframe_indexes.len());
+        for index in keyframe_indexes.iter().rev() {
+            affected_keyframes.push(animation.take_keyframe(*index)?);
+        }
+
+        let num_affected_frames_before_insert_point =
+            keyframe_indexes.iter().filter(|i| **i < new_index).count();
+        let insert_index = new_index - num_affected_frames_before_insert_point;
+
+        for keyframe in affected_keyframes {
+            animation.insert_keyframe(keyframe, insert_index)?;
+        }
+
+        let keyframe_times = animation.get_keyframe_times().clone();
+
+        let new_selected_indexes =
+            (insert_index..(insert_index + keyframe_indexes.len())).collect();
+        self.view.selection = Some(Selection::Keyframe(MultiSelection::new(
+            new_selected_indexes,
+        )));
+
+        let timeline_pos = *keyframe_times
+            .get(insert_index)
+            .ok_or(DocumentError::InvalidKeyframeIndex)?;
+        self.view.timeline_clock = Duration::from_millis(u64::from(timeline_pos));
 
         Ok(())
     }
 
-    pub fn end_animation_frame_duration_drag(&mut self) {
-        self.transient.timeline_frame_being_scaled = None;
-        self.transient.timeline_frame_scale_initial_duration = 0;
-        self.transient.timeline_frame_scale_initial_clock = Default::default();
-    }
-
-    pub fn begin_animation_frame_drag(
+    pub fn begin_keyframe_duration_drag(
         &mut self,
-        animation_frame_index: usize,
-    ) -> Result<(), Error> {
+        frame_being_dragged: usize,
+        reference_clock: u32,
+    ) -> Result<(), DocumentError> {
         let animation_name = match &self.view.workbench_item {
             Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
+        .ok_or(DocumentError::NotEditingAnyAnimation)?;
+
+        let frame_indexes = match &self.view.selection {
+            Some(Selection::Keyframe(i)) => Some(i.clone()),
+            _ => None,
+        }
+        .ok_or(DocumentError::NoKeyframeSelected)?;
+
+        let mut initial_duration = HashMap::new();
+        for index in frame_indexes.items {
+            let keyframe = self
+                .sheet
+                .get_animation(&animation_name)
+                .ok_or(DocumentError::AnimationNotInDocument)?
+                .get_keyframe(index)
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
+            let duration = keyframe.get_duration();
+            initial_duration.insert(index, duration);
+        }
+
+        self.transient = Some(Transient::KeyframeDuration(KeyframeDuration {
+            initial_duration: initial_duration,
+            frame_being_dragged: frame_being_dragged,
+            reference_clock: reference_clock,
+        }));
+
+        Ok(())
+    }
+
+    pub fn update_keyframe_duration_drag(
+        &mut self,
+        clock_at_cursor: u32,
+        minimum_duration: u32,
+    ) -> Result<(), DocumentError> {
+        let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+
+        let keyframe_indexes = match &self.view.selection {
+            Some(Selection::Keyframe(i)) => Some(i.clone()),
+            _ => None,
+        }
+        .ok_or(DocumentError::NoKeyframeSelected)?;
+
+        let keyframe_duration = match &self.transient {
+            Some(Transient::KeyframeDuration(x)) => Some(x.clone()),
+            _ => None,
+        }
+        .ok_or(DocumentError::NotAdjustingKeyframeDuration)?;
+
+        let animation = self
+            .sheet
+            .get_animation_mut(&animation_name)
+            .ok_or(DocumentError::AnimationNotInDocument)?;
+
+        let reference_clock = keyframe_duration.reference_clock as i32;
+        let clock_at_cursor = clock_at_cursor as i32;
+        let duration_delta_up_to_dragged_frame = clock_at_cursor - reference_clock;
+
+        let duration_delta_per_frame = duration_delta_up_to_dragged_frame
+            / keyframe_indexes
+                .items
+                .iter()
+                .filter(|i| **i <= keyframe_duration.frame_being_dragged)
+                .count()
+                .max(1) as i32;
+
+        for index in keyframe_indexes.items {
+            let keyframe = animation
+                .get_keyframe_mut(index)
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
+            let old_duration = *keyframe_duration
+                .initial_duration
+                .get(&index)
+                .ok_or(DocumentError::MissingKeyframeDurationData)?;
+            let new_duration = (old_duration as i32 + duration_delta_per_frame)
+                .max(minimum_duration as i32) as u32;
+            keyframe.set_duration(new_duration);
+        }
+
+        let keyframe_times = animation.get_keyframe_times();
+        let timeline_pos = *keyframe_times
+            .get(keyframe_indexes.last_touched_in_range)
+            .ok_or(DocumentError::InvalidKeyframeIndex)?;
+        self.view.timeline_clock = Duration::from_millis(u64::from(timeline_pos));
+
+        Ok(())
+    }
+
+    pub fn begin_keyframe_drag(&mut self) {
+        self.transient = Some(Transient::TimelineFrameDrag);
+    }
+
+    pub fn begin_keyframe_offset_drag(&mut self) -> Result<(), DocumentError> {
+        let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+        let keyframe_indexes = match &self.view.selection {
+            Some(Selection::Keyframe(i)) => Some(i.clone()),
+            _ => None,
+        }
+        .ok_or(DocumentError::NoKeyframeSelected)?;
+
         let animation = self
             .sheet
             .get_animation(animation_name)
-            .ok_or(StateError::AnimationNotInDocument)?;
-        let _animation_frame = animation
-            .get_frame(animation_frame_index)
-            .ok_or(StateError::InvalidAnimationFrameIndex)?;
-        self.transient.timeline_frame_being_dragged = Some(animation_frame_index);
+            .ok_or(DocumentError::AnimationNotInDocument)?;
+
+        let mut initial_offset = HashMap::new();
+        for keyframe_index in keyframe_indexes.items {
+            let keyframe = animation
+                .get_keyframe(keyframe_index)
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
+
+            let hitbox_positions = HitboxPosition {
+                initial_offset: keyframe
+                    .hitboxes_iter()
+                    .map(|h| (h.get_name().to_owned(), h.get_position()))
+                    .collect(),
+            };
+
+            initial_offset.insert(keyframe_index, (keyframe.get_offset(), hitbox_positions));
+        }
+
+        self.transient = Some(Transient::KeyframePosition(KeyframePosition {
+            initial_offset: initial_offset,
+        }));
+
         Ok(())
     }
 
-    pub fn begin_animation_frame_offset_drag(
-        &mut self,
-        index: usize,
-    ) -> Result<(), Error> {
-        let animation_name = match &self.view.workbench_item {
-            Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
-            _ => None,
-        }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
-
-        {
-            let animation = self
-                .sheet
-                .get_animation_mut(animation_name)
-                .ok_or(StateError::AnimationNotInDocument)?;
-
-            let animation_frame = animation
-                .get_frame(index)
-                .ok_or(StateError::InvalidAnimationFrameIndex)?;
-            self.transient.workbench_animation_frame_drag_initial_offset =
-                animation_frame.get_offset();
-        }
-
-        self.transient.workbench_animation_frame_being_dragged = Some(index);
-        self.select_animation_frame(index)
-    }
-
-    pub fn update_animation_frame_offset_drag(
+    pub fn update_keyframe_offset_drag(
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         both_axis: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DocumentError> {
         let zoom = self.view.get_workbench_zoom_factor();
-        let animation_name = match &self.view.workbench_item {
-            Some(WorkbenchItem::Animation(animation_name)) => Some(animation_name.to_owned()),
+        let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+        let keyframe_indexes = match &self.view.selection {
+            Some(Selection::Keyframe(indexes)) => Some(indexes.clone()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyAnimation)?;
+        .ok_or(DocumentError::NoKeyframeSelected)?;
 
-        let animation_index = self
-            .transient
-            .workbench_animation_frame_being_dragged
-            .ok_or(StateError::NotDraggingATimelineFrame)?;
+        let keyframe_position = match &self.transient {
+            Some(Transient::KeyframePosition(x)) => Some(x),
+            _ => None,
+        }
+        .ok_or(DocumentError::NotAdjustingKeyframePosition)?;
 
-        let old_offset = self.transient.workbench_animation_frame_drag_initial_offset;
         if !both_axis {
             if mouse_delta.x.abs() > mouse_delta.y.abs() {
                 mouse_delta.y = 0.0;
@@ -619,75 +724,82 @@ impl Document {
                 mouse_delta.x = 0.0;
             }
         }
-        let new_offset = (old_offset.to_f32() + mouse_delta / zoom).floor().to_i32();
 
-        let animation_frame = self
-            .sheet
-            .get_animation_mut(animation_name)
-            .ok_or(StateError::AnimationNotInDocument)?
-            .get_frame_mut(animation_index)
-            .ok_or(StateError::InvalidAnimationFrameIndex)?;
-        animation_frame.set_offset(new_offset);
+        for index in keyframe_indexes.items {
+            let old_offsets = keyframe_position
+                .initial_offset
+                .get(&index)
+                .ok_or(DocumentError::MissingKeyframePositionData)?;
+
+            let keyframe = self
+                .sheet
+                .get_animation_mut(&animation_name)
+                .ok_or(DocumentError::AnimationNotInDocument)?
+                .get_keyframe_mut(index)
+                .ok_or(DocumentError::InvalidKeyframeIndex)?;
+
+            {
+                let new_offset = (old_offsets.0.to_f32() + mouse_delta / zoom)
+                    .floor()
+                    .to_i32();
+                keyframe.set_offset(new_offset);
+            }
+
+            for hitbox in keyframe.hitboxes_iter_mut() {
+                if !hitbox.is_linked() {
+                    continue;
+                }
+                let old_position = old_offsets
+                    .1
+                    .initial_offset
+                    .get(hitbox.get_name())
+                    .ok_or(DocumentError::MissingHitboxPositionData)?
+                    .to_f32();
+                let new_position = (old_position + mouse_delta / zoom).floor().to_i32();
+                hitbox.set_position(new_position);
+            }
+        }
 
         Ok(())
     }
 
-    pub fn end_animation_frame_offset_drag(&mut self) {
-        self.transient.workbench_animation_frame_drag_initial_offset = Vector2D::<i32>::zero();
-        self.transient.workbench_animation_frame_being_dragged = None;
-    }
-
-    pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), Error> {
+    pub fn create_hitbox(&mut self, mouse_position: Vector2D<f32>) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
         let hitbox_name = {
-            let frame_path = match &self.view.workbench_item {
-                Some(WorkbenchItem::Frame(s)) => Some(s.to_owned()),
-                _ => None,
-            }
-            .ok_or(StateError::NotEditingAnyFrame)?;
-
-            let frame = self
-                .sheet
-                .get_frame_mut(frame_path)
-                .ok_or(StateError::FrameNotInDocument)?;
-
-            let hitbox = frame.add_hitbox();
+            let hitbox = keyframe.add_hitbox();
             hitbox.set_position(mouse_position.floor().to_i32());
             hitbox.get_name().to_owned()
         };
-        self.begin_hitbox_scale(&hitbox_name, ResizeAxis::SE)?;
-        self.select_hitbox(&hitbox_name)
+        self.select_hitboxes(&MultiSelection::new(vec![hitbox_name]))?;
+        self.begin_hitbox_scale(ResizeAxis::SE)
     }
 
-    pub fn begin_hitbox_scale<T: AsRef<str>>(
-        &mut self,
-        hitbox_name: T,
-        axis: ResizeAxis,
-    ) -> Result<(), Error> {
-        let frame_path = match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(s)) => Some(s.to_owned()),
+    pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe()?;
+        let hitbox_names = match &self.view.selection {
+            Some(Selection::Hitbox(names)) => Some(names.items.clone()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyFrame)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
-        let hitbox;
-        let position;
-        let size;
-        {
-            let frame = self
-                .sheet
-                .get_frame(&frame_path)
-                .ok_or(StateError::FrameNotInDocument)?;
-            hitbox = frame
-                .get_hitbox(&hitbox_name)
-                .ok_or(StateError::InvalidHitboxIndex)?;
-            position = hitbox.get_position();
-            size = hitbox.get_size();
+        let mut initial_state = HashMap::new();
+        for name in &hitbox_names {
+            let hitbox = keyframe
+                .get_hitbox(name)
+                .ok_or(DocumentError::InvalidHitboxName)?;
+            initial_state.insert(
+                name.to_owned(),
+                HitboxInitialState {
+                    position: hitbox.get_position(),
+                    size: hitbox.get_size(),
+                },
+            );
         }
 
-        self.transient.workbench_hitbox_being_scaled = Some(hitbox_name.as_ref().to_owned());
-        self.transient.workbench_hitbox_scale_axis = axis;
-        self.transient.workbench_hitbox_scale_initial_position = position;
-        self.transient.workbench_hitbox_scale_initial_size = size;
+        self.transient = Some(Transient::HitboxSize(HitboxSize {
+            axis: axis,
+            initial_state: initial_state,
+        }));
 
         Ok(())
     }
@@ -696,148 +808,124 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         preserve_aspect_ratio: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DocumentError> {
         use ResizeAxis::*;
 
-        let frame_path = match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(s)) => Some(s.to_owned()),
+        let hitbox_names = match &self.view.selection {
+            Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyFrame)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
-        let initial_hitbox = Rect::new(
-            self.transient
-                .workbench_hitbox_scale_initial_position
-                .to_point(),
-            self.transient
-                .workbench_hitbox_scale_initial_size
-                .to_i32()
-                .to_size(),
-        );
-
-        let axis = self.transient.workbench_hitbox_scale_axis;
-        if preserve_aspect_ratio && axis.is_diagonal() {
-            let aspect_ratio =
-                initial_hitbox.size.width.max(1) as f32 / initial_hitbox.size.height.max(1) as f32;
-            let odd_axis_factor = if axis == NE || axis == SW { -1.0 } else { 1.0 };
-            mouse_delta = if mouse_delta.x.abs() > mouse_delta.y.abs() {
-                vec2(
-                    mouse_delta.x,
-                    odd_axis_factor * (mouse_delta.x / aspect_ratio).round(),
-                )
-            } else {
-                vec2(
-                    odd_axis_factor * (mouse_delta.y * aspect_ratio).round(),
-                    mouse_delta.y,
-                )
-            };
+        let hitbox_size = match &self.transient {
+            Some(Transient::HitboxSize(x)) => Some(x),
+            _ => None,
         }
+        .cloned()
+        .ok_or(DocumentError::NotAdjustingHitboxSize)?;
 
         let zoom = self.view.get_workbench_zoom_factor();
-        let mouse_delta = (mouse_delta / zoom).round().to_i32();
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
 
-        let new_hitbox = Rect::from_points(match axis {
-            NW => vec![
-                initial_hitbox.bottom_right(),
-                initial_hitbox.origin + mouse_delta,
-            ],
-            NE => vec![
-                initial_hitbox.bottom_left(),
-                initial_hitbox.top_right() + mouse_delta,
-            ],
-            SW => vec![
-                initial_hitbox.top_right(),
-                initial_hitbox.bottom_left() + mouse_delta,
-            ],
-            SE => vec![
-                initial_hitbox.origin,
-                initial_hitbox.bottom_right() + mouse_delta,
-            ],
-            N => vec![
-                initial_hitbox.bottom_left(),
-                point2(
-                    initial_hitbox.max_x(),
-                    initial_hitbox.min_y() + mouse_delta.y,
-                ),
-            ],
-            W => vec![
-                initial_hitbox.top_right(),
-                point2(
-                    initial_hitbox.min_x() + mouse_delta.x,
-                    initial_hitbox.max_y(),
-                ),
-            ],
-            S => vec![
-                initial_hitbox.origin,
-                point2(
-                    initial_hitbox.max_x(),
-                    initial_hitbox.max_y() + mouse_delta.y,
-                ),
-            ],
-            E => vec![
-                initial_hitbox.origin,
-                point2(
-                    initial_hitbox.max_x() + mouse_delta.x,
-                    initial_hitbox.max_y(),
-                ),
-            ],
-        });
+        for hitbox_name in hitbox_names.items.iter() {
+            let initial_state = hitbox_size
+                .initial_state
+                .get(hitbox_name)
+                .ok_or(DocumentError::MissingHitboxSizeData)?;
 
-        let hitbox_name = self
-            .transient
-            .workbench_hitbox_being_scaled
-            .as_ref()
-            .ok_or(StateError::NotDraggingAHitbox)?;
+            let initial_hitbox = Rect::new(
+                initial_state.position.to_point(),
+                initial_state.size.to_i32().to_size(),
+            );
 
-        let hitbox = self
-            .sheet
-            .get_frame_mut(frame_path)
-            .ok_or(StateError::FrameNotInDocument)?
-            .get_hitbox_mut(&hitbox_name)
-            .ok_or(StateError::InvalidHitboxIndex)?;
+            let axis = hitbox_size.axis;
+            if preserve_aspect_ratio && axis.is_diagonal() {
+                let aspect_ratio = initial_hitbox.size.width.max(1) as f32
+                    / initial_hitbox.size.height.max(1) as f32;
+                let odd_axis_factor = if axis == NE || axis == SW { -1.0 } else { 1.0 };
+                mouse_delta = if mouse_delta.x.abs() > mouse_delta.y.abs() {
+                    vec2(
+                        mouse_delta.x,
+                        odd_axis_factor * (mouse_delta.x / aspect_ratio).round(),
+                    )
+                } else {
+                    vec2(
+                        odd_axis_factor * (mouse_delta.y * aspect_ratio).round(),
+                        mouse_delta.y,
+                    )
+                };
+            }
 
-        hitbox.set_position(new_hitbox.origin.to_vector());
-        hitbox.set_size(new_hitbox.size.to_u32().to_vector());
+            let mouse_delta = (mouse_delta / zoom).round().to_i32();
 
-        Ok(())
-    }
+            let bottom_left = point2(initial_hitbox.min_x(), initial_hitbox.max_y());
+            let top_right = point2(initial_hitbox.max_x(), initial_hitbox.min_y());
 
-    pub fn end_hitbox_scale(&mut self) -> Result<(), Error> {
-        if let Some(hitbox_name) = self.transient.workbench_hitbox_being_scaled.clone() {
-            self.select_hitbox(hitbox_name)?;
+            let new_hitbox = Rect::from_points(match axis {
+                NW => vec![initial_hitbox.max(), initial_hitbox.origin + mouse_delta],
+                NE => vec![bottom_left, top_right + mouse_delta],
+                SW => vec![top_right, bottom_left + mouse_delta],
+                SE => vec![initial_hitbox.origin, initial_hitbox.max() + mouse_delta],
+                N => vec![
+                    bottom_left,
+                    point2(
+                        initial_hitbox.max_x(),
+                        initial_hitbox.min_y() + mouse_delta.y,
+                    ),
+                ],
+                W => vec![
+                    top_right,
+                    point2(
+                        initial_hitbox.min_x() + mouse_delta.x,
+                        initial_hitbox.max_y(),
+                    ),
+                ],
+                S => vec![
+                    initial_hitbox.origin,
+                    point2(
+                        initial_hitbox.max_x(),
+                        initial_hitbox.max_y() + mouse_delta.y,
+                    ),
+                ],
+                E => vec![
+                    initial_hitbox.origin,
+                    point2(
+                        initial_hitbox.max_x() + mouse_delta.x,
+                        initial_hitbox.max_y(),
+                    ),
+                ],
+            });
+
+            let hitbox = keyframe
+                .get_hitbox_mut(&hitbox_name)
+                .ok_or(DocumentError::InvalidHitboxName)?;
+
+            hitbox.set_position(new_hitbox.origin.to_vector());
+            hitbox.set_size(new_hitbox.size.to_u32().to_vector());
         }
-        self.transient.workbench_hitbox_scale_axis = ResizeAxis::N;
-        self.transient.workbench_hitbox_scale_initial_position = Vector2D::<i32>::zero();
-        self.transient.workbench_hitbox_scale_initial_size = Vector2D::<u32>::zero();
-        self.transient.workbench_hitbox_being_scaled = None;
+
         Ok(())
     }
 
-    pub fn begin_hitbox_drag<T: AsRef<str>>(
-        &mut self,
-        hitbox_name: T,
-    ) -> Result<(), Error> {
-        let frame_path = match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(s)) => Some(s.to_owned()),
+    pub fn begin_hitbox_drag(&mut self) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe()?;
+        let hitbox_names = match &self.view.selection {
+            Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyFrame)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
-        let hitbox_position;
-        {
-            let frame = self
-                .sheet
-                .get_frame(&frame_path)
-                .ok_or(StateError::FrameNotInDocument)?;
-            let hitbox = frame
-                .get_hitbox(&hitbox_name)
-                .ok_or(StateError::InvalidHitboxIndex)?;
-            hitbox_position = hitbox.get_position();
+        let mut initial_offset = HashMap::new();
+        for hitbox_name in hitbox_names.items.iter() {
+            let hitbox = keyframe
+                .get_hitbox(hitbox_name)
+                .ok_or(DocumentError::InvalidHitboxName)?;
+            initial_offset.insert(hitbox_name.to_owned(), hitbox.get_position());
         }
 
-        self.transient.workbench_hitbox_being_dragged = Some(hitbox_name.as_ref().to_owned());
-        self.transient.workbench_hitbox_drag_initial_offset = hitbox_position;
-        self.select_hitbox(hitbox_name)?;
+        self.transient = Some(Transient::HitboxPosition(HitboxPosition {
+            initial_offset: initial_offset,
+        }));
 
         Ok(())
     }
@@ -846,51 +934,82 @@ impl Document {
         &mut self,
         mut mouse_delta: Vector2D<f32>,
         both_axis: bool,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DocumentError> {
         let zoom = self.view.get_workbench_zoom_factor();
-
-        let frame_path = match &self.view.workbench_item {
-            Some(WorkbenchItem::Frame(p)) => Some(p.to_owned()),
+        let hitbox_names = match &self.view.selection {
+            Some(Selection::Hitbox(n)) => Some(n.to_owned()),
             _ => None,
         }
-        .ok_or(StateError::NotEditingAnyFrame)?;
+        .ok_or(DocumentError::NoHitboxSelected)?;
 
-        let hitbox_name = self
-            .transient
-            .workbench_hitbox_being_dragged
-            .as_ref()
-            .cloned()
-            .ok_or(StateError::NotDraggingAHitbox)?;
-
-        let old_offset = self.transient.workbench_hitbox_drag_initial_offset;
-
-        if !both_axis {
-            if mouse_delta.x.abs() > mouse_delta.y.abs() {
-                mouse_delta.y = 0.0;
-            } else {
-                mouse_delta.x = 0.0;
-            }
+        let hitbox_position = match &self.transient {
+            Some(Transient::HitboxPosition(x)) => Some(x),
+            _ => None,
         }
+        .cloned()
+        .ok_or(DocumentError::NotAdjustingHitboxPosition)?;
 
-        let new_offset = (old_offset.to_f32() + mouse_delta / zoom).floor().to_i32();
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
 
-        let hitbox = self
-            .sheet
-            .get_frame_mut(frame_path)
-            .ok_or(StateError::FrameNotInDocument)?
-            .get_hitbox_mut(&hitbox_name)
-            .ok_or(StateError::InvalidHitboxIndex)?;
-        hitbox.set_position(new_offset);
+        for hitbox_name in hitbox_names.items.iter() {
+            let old_offset = hitbox_position
+                .initial_offset
+                .get(hitbox_name)
+                .ok_or(DocumentError::MissingHitboxPositionData)?;
+
+            if !both_axis {
+                if mouse_delta.x.abs() > mouse_delta.y.abs() {
+                    mouse_delta.y = 0.0;
+                } else {
+                    mouse_delta.x = 0.0;
+                }
+            }
+
+            let new_offset = (old_offset.to_f32() + mouse_delta / zoom).floor().to_i32();
+
+            let hitbox = keyframe
+                .get_hitbox_mut(&hitbox_name)
+                .ok_or(DocumentError::InvalidHitboxName)?;
+            hitbox.set_position(new_offset);
+        }
 
         Ok(())
     }
 
-    pub fn end_hitbox_drag(&mut self) {
-        self.transient.workbench_hitbox_drag_initial_offset = Vector2D::<i32>::zero();
-        self.transient.workbench_hitbox_being_dragged = None;
+    pub fn set_hitbox_linked<T: AsRef<str>>(
+        &mut self,
+        name: T,
+        linked: bool,
+    ) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        let hitbox = keyframe
+            .get_hitbox_mut(name.as_ref())
+            .ok_or(DocumentError::InvalidHitboxName)?;
+        hitbox.set_linked(linked);
+        Ok(())
     }
 
-    pub fn toggle_playback(&mut self) -> Result<(), Error> {
+    pub fn set_hitbox_locked<T: AsRef<str>>(
+        &mut self,
+        name: T,
+        locked: bool,
+    ) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        let hitbox = keyframe
+            .get_hitbox_mut(name.as_ref())
+            .ok_or(DocumentError::InvalidHitboxName)?;
+        hitbox.set_locked(locked);
+
+        if let Some(Selection::Hitbox(ref mut hitbox_selection)) = self.view.selection {
+            hitbox_selection.items.remove(name.as_ref());
+            if hitbox_selection.items.is_empty() {
+                self.clear_selection();
+            }
+        }
+        Ok(())
+    }
+
+    pub fn toggle_playback(&mut self) -> Result<(), DocumentError> {
         let mut new_timeline_clock = self.view.timeline_clock;
         {
             let animation = self.get_workbench_animation()?;
@@ -910,21 +1029,28 @@ impl Document {
         self.persistent.timeline_is_playing = !self.persistent.timeline_is_playing;
         self.view.timeline_clock = new_timeline_clock;
 
+        if self.persistent.timeline_is_playing {
+            match self.view.selection {
+                Some(Selection::Hitbox(_)) | Some(Selection::Keyframe(_)) => self.clear_selection(),
+                None | Some(Selection::Frame(_)) | Some(Selection::Animation(_)) => (),
+            }
+        }
+
         Ok(())
     }
 
-    pub fn snap_to_previous_frame(&mut self) -> Result<(), Error> {
+    pub fn snap_to_previous_frame(&mut self) -> Result<(), DocumentError> {
         let clock = {
             let animation = self.get_workbench_animation()?;
 
-            if animation.get_num_frames() == 0 {
+            if animation.get_num_keyframes() == 0 {
                 return Ok(());
             }
 
             let mut cursor = 0 as u64;
             let now = self.view.timeline_clock.as_millis() as u64;
             let frame_times: Vec<u64> = animation
-                .frames_iter()
+                .keyframes_iter()
                 .map(|f| {
                     let t = cursor;
                     cursor += u64::from(f.get_duration());
@@ -944,18 +1070,18 @@ impl Document {
         self.update_timeline_scrub(Duration::from_millis(clock))
     }
 
-    pub fn snap_to_next_frame(&mut self) -> Result<(), Error> {
+    pub fn snap_to_next_frame(&mut self) -> Result<(), DocumentError> {
         let clock = {
             let animation = self.get_workbench_animation()?;
 
-            if animation.get_num_frames() == 0 {
+            if animation.get_num_keyframes() == 0 {
                 return Ok(());
             }
 
             let mut cursor = 0 as u64;
             let now = self.view.timeline_clock.as_millis() as u64;
             let frame_times: Vec<u64> = animation
-                .frames_iter()
+                .keyframes_iter()
                 .map(|f| {
                     let t = cursor;
                     cursor += u64::from(f.get_duration());
@@ -975,160 +1101,148 @@ impl Document {
         self.update_timeline_scrub(Duration::from_millis(clock))
     }
 
-    pub fn toggle_looping(&mut self) -> Result<(), Error> {
+    pub fn toggle_looping(&mut self) -> Result<(), DocumentError> {
         let animation = self.get_workbench_animation_mut()?;
         animation.set_is_looping(!animation.is_looping());
         Ok(())
     }
 
-    pub fn update_timeline_scrub(&mut self, new_time: Duration) -> Result<(), Error> {
+    pub fn update_timeline_scrub(&mut self, new_time: Duration) -> Result<(), DocumentError> {
         let animation = self.get_workbench_animation()?;
         let (index, _) = animation
-            .get_frame_at(new_time)
-            .ok_or(StateError::NoAnimationFrameForThisTime)?;
-        self.select_animation_frame(index)?;
+            .get_keyframe_at(new_time)
+            .ok_or(DocumentError::NoKeyframeForThisTime)?;
+        self.select_keyframes(&MultiSelection::new(vec![index]))?;
         self.view.timeline_clock = new_time;
         Ok(())
     }
 
-    pub fn nudge_selection(&mut self, direction: Vector2D<i32>, large: bool) -> Result<(), Error> {
+    pub fn nudge_selection(
+        &mut self,
+        direction: Vector2D<i32>,
+        large: bool,
+    ) -> Result<(), DocumentError> {
         let amplitude = if large { 10 } else { 1 };
         let offset = direction * amplitude;
-        match &self.view.selection {
+        match self.view.selection.clone() {
             Some(Selection::Animation(_)) => {}
             Some(Selection::Frame(_)) => {}
-            Some(Selection::Hitbox(f, h)) => {
-                let hitbox = self
-                    .sheet
-                    .get_frame_mut(f)
-                    .ok_or(StateError::FrameNotInDocument)?
-                    .get_hitbox_mut(&h)
-                    .ok_or(StateError::InvalidHitboxIndex)?;
-                hitbox.set_position(hitbox.get_position() + offset);
+            Some(Selection::Hitbox(names)) => {
+                for name in names.items {
+                    let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+                    let hitbox = keyframe
+                        .get_hitbox_mut(name)
+                        .ok_or(DocumentError::InvalidHitboxName)?;
+                    hitbox.set_position(hitbox.get_position() + offset);
+                }
             }
-            Some(Selection::AnimationFrame(a, af)) => {
-                let animation_frame = self
-                    .sheet
-                    .get_animation_mut(a)
-                    .ok_or(StateError::AnimationNotInDocument)?
-                    .get_frame_mut(*af)
-                    .ok_or(StateError::InvalidAnimationFrameIndex)?;
-                animation_frame.set_offset(animation_frame.get_offset() + offset);
+            Some(Selection::Keyframe(indexes)) => {
+                for index in indexes.items {
+                    let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+                    let keyframe = self
+                        .sheet
+                        .get_animation_mut(animation_name)
+                        .ok_or(DocumentError::AnimationNotInDocument)?
+                        .get_keyframe_mut(index)
+                        .ok_or(DocumentError::InvalidKeyframeIndex)?;
+                    keyframe.set_offset(keyframe.get_offset() + offset);
+                    for hitbox in keyframe.hitboxes_iter_mut() {
+                        if hitbox.is_linked() {
+                            hitbox.set_position(hitbox.get_position() + offset)
+                        }
+                    }
+                }
             }
             None => {}
         };
         Ok(())
     }
 
-    pub fn delete_selection(&mut self) {
+    pub fn delete_selection(&mut self) -> Result<(), DocumentError> {
         match &self.view.selection {
-            Some(Selection::Animation(a)) => {
-                self.sheet.delete_animation(&a);
-                if self.transient.item_being_renamed == Some(RenameItem::Animation(a.clone())) {
-                    self.transient.item_being_renamed = None;
-                    self.transient.rename_buffer = None;
+            Some(Selection::Animation(names)) => {
+                for name in &names.items {
+                    self.sheet.delete_animation(name);
                 }
             }
-            Some(Selection::Frame(f)) => {
-                self.sheet.delete_frame(&f);
-                if self.transient.content_frame_being_dragged == Some(f.clone()) {
-                    self.transient.content_frame_being_dragged = None;
+            Some(Selection::Frame(paths)) => {
+                for path in &paths.items {
+                    self.sheet.delete_frame(&path);
                 }
             }
-            Some(Selection::Hitbox(f, h)) => {
-                self.sheet.delete_hitbox(&f, &h);
-                if self.view.workbench_item == Some(WorkbenchItem::Frame(f.clone())) {
-                    if self.transient.workbench_hitbox_being_dragged == Some(h.to_owned()) {
-                        self.transient.workbench_hitbox_being_dragged = None;
-                    }
-                    if self.transient.workbench_hitbox_being_scaled == Some(h.to_owned()) {
-                        self.transient.workbench_hitbox_being_scaled = None;
-                    }
+            Some(Selection::Hitbox(names)) => {
+                let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+                let (keyframe_index, _) = self.get_workbench_keyframe()?;
+                for name in &names.items {
+                    self.sheet
+                        .delete_hitbox(&animation_name, keyframe_index, name);
                 }
             }
-            Some(Selection::AnimationFrame(a, af)) => {
-                self.sheet.delete_animation_frame(a, *af);
-                if self.view.workbench_item == Some(WorkbenchItem::Animation(a.clone()))
-                    && self.transient.workbench_animation_frame_being_dragged == Some(*af)
-                {
-                    self.transient.workbench_animation_frame_being_dragged = None;
+            Some(Selection::Keyframe(indexes)) => {
+                let animation_name = self.get_workbench_animation()?.get_name().to_owned();
+                let mut sorted_indexes = indexes.items.iter().cloned().collect::<Vec<usize>>();
+                sorted_indexes.sort();
+                for index in sorted_indexes.into_iter().rev() {
+                    self.sheet.delete_keyframe(&animation_name, index);
                 }
             }
             None => {}
         };
         self.view.selection = None;
-    }
-
-    pub fn begin_rename_selection(&mut self) -> Result<(), Error> {
-        match &self.view.selection {
-            Some(Selection::Animation(a)) => self.begin_animation_rename(a.clone())?,
-            Some(Selection::Hitbox(f, h)) => self.begin_hitbox_rename(f.clone(), h.clone())?,
-            Some(Selection::Frame(_f)) => (),
-            Some(Selection::AnimationFrame(_a, _af)) => (),
-            None => {}
-        };
         Ok(())
     }
 
-    pub fn end_rename_selection(&mut self) -> Result<(), Error> {
-        let new_name = self
-            .transient
-            .rename_buffer
-            .clone()
-            .ok_or(StateError::NotRenaming)?;
+    pub fn begin_rename_selection(&mut self) {
+        match self.view.selection.clone() {
+            Some(Selection::Animation(names)) | Some(Selection::Hitbox(names)) => {
+                self.begin_rename(names.last_touched_in_range.clone())
+            }
+            Some(Selection::Frame(_)) => (),
+            Some(Selection::Keyframe(_)) => (),
+            None => {}
+        };
+    }
 
-        match self.transient.item_being_renamed.as_ref().cloned() {
-            Some(RenameItem::Animation(old_name)) => {
+    pub fn end_rename_selection(&mut self) -> Result<(), DocumentError> {
+        let new_name = match &self.transient {
+            Some(Transient::Rename(x)) => Some(x.new_name.clone()),
+            _ => None,
+        }
+        .ok_or(DocumentError::NotRenaming)?;
+
+        match self.view.selection.clone() {
+            Some(Selection::Animation(names)) => {
+                let old_name = names.last_touched_in_range;
                 if old_name != new_name {
                     if self.sheet.has_animation(&new_name) {
-                        return Err(StateError::AnimationAlreadyExists.into());
+                        return Err(DocumentError::AnimationAlreadyExists.into());
                     }
                     self.sheet.rename_animation(&old_name, &new_name)?;
-                    if Some(Selection::Animation(old_name.clone())) == self.view.selection {
-                        self.view.selection = Some(Selection::Animation(new_name.clone()));
-                    }
+                    self.select_animations(&MultiSelection::new(vec![new_name.clone()]))?;
                     if Some(WorkbenchItem::Animation(old_name.clone())) == self.view.workbench_item
                     {
                         self.view.workbench_item = Some(WorkbenchItem::Animation(new_name.clone()));
                     }
                 }
             }
-            Some(RenameItem::Hitbox(frame_path, old_name)) => {
+            Some(Selection::Hitbox(names)) => {
+                let old_name = names.last_touched_in_range;
                 if old_name != new_name {
-                    if self
-                        .sheet
-                        .get_frame(&frame_path)
-                        .ok_or(StateError::FrameNotInDocument)?
-                        .has_hitbox(&new_name)
-                    {
-                        return Err(StateError::HitboxAlreadyExists.into());
-                    }
-                    self.sheet
-                        .get_frame_mut(&frame_path)
-                        .ok_or(StateError::FrameNotInDocument)?
-                        .rename_hitbox(&old_name, &new_name)?;
-                    if Some(Selection::Hitbox(frame_path.clone(), old_name.clone()))
-                        == self.view.selection
-                    {
-                        self.view.selection =
-                            Some(Selection::Hitbox(frame_path.clone(), new_name.clone()));
-                    }
+                    let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+                    keyframe.rename_hitbox(&old_name, &new_name)?;
+                    self.select_hitboxes(&MultiSelection::new(vec![new_name.clone()]))?;
                 }
             }
-            None => (),
+            _ => (),
         }
-
-        self.transient.item_being_renamed = None;
-        self.transient.rename_buffer = None;
-
         Ok(())
     }
 
-    fn get_export_settings_edit_mut(&mut self) -> Result<&mut ExportSettings, Error> {
+    fn get_export_settings_edit_mut(&mut self) -> Result<&mut ExportSettings, DocumentError> {
         self.persistent
             .export_settings_edit
             .as_mut()
-            .ok_or(StateError::NotExporting.into())
+            .ok_or(DocumentError::NotExporting.into())
     }
 
     fn begin_export_as(&mut self) {
@@ -1147,7 +1261,7 @@ impl Document {
     fn end_set_export_texture_destination<T: AsRef<Path>>(
         &mut self,
         texture_destination: T,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.texture_destination =
             texture_destination.as_ref().to_owned();
         Ok(())
@@ -1156,7 +1270,7 @@ impl Document {
     fn end_set_export_metadata_destination<T: AsRef<Path>>(
         &mut self,
         metadata_destination: T,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.metadata_destination =
             metadata_destination.as_ref().to_owned();
         Ok(())
@@ -1165,108 +1279,116 @@ impl Document {
     fn end_set_export_metadata_paths_root<T: AsRef<Path>>(
         &mut self,
         metadata_paths_root: T,
-    ) -> Result<(), Error> {
+    ) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.metadata_paths_root =
             metadata_paths_root.as_ref().to_owned();
         Ok(())
     }
 
-    fn end_set_export_format(&mut self, format: ExportFormat) -> Result<(), Error> {
+    fn end_set_export_format(&mut self, format: ExportFormat) -> Result<(), DocumentError> {
         self.get_export_settings_edit_mut()?.format = format;
         Ok(())
     }
 
-    fn end_export_as(&mut self) -> Result<(), Error> {
+    fn end_export_as(&mut self) -> Result<(), DocumentError> {
         let export_settings = self.get_export_settings_edit_mut()?.clone();
         self.sheet.set_export_settings(export_settings);
         self.persistent.export_settings_edit = None;
         Ok(())
     }
 
-    pub fn process_command(&mut self, command: &DocumentCommand) -> Result<(), Error> {
+    pub fn begin_close(&mut self) {
+        if self.persistent.close_state == None {
+            self.persistent.close_state = Some(if self.is_saved() {
+                CloseState::Allowed
+            } else {
+                CloseState::Requested
+            });
+        }
+    }
+
+    pub fn cancel_close(&mut self) {
+        self.persistent.close_state = None;
+    }
+
+    pub fn process_command(&mut self, command: DocumentCommand) -> Result<(), DocumentError> {
         use DocumentCommand::*;
 
-        let mut new_document = self.clone();
-
-        match command {
-            MarkAsSaved(_, v) => new_document.persistent.disk_version = *v,
-            EndImport(_, f) => new_document.sheet.add_frame(f),
-            BeginExportAs => new_document.begin_export_as(),
-            CancelExportAs => new_document.cancel_export_as(),
-            EndSetExportTextureDestination(_, d) => {
-                new_document.end_set_export_texture_destination(d)?
+        match &command {
+            MarkAsSaved(_, v) => self.persistent.disk_version = *v,
+            EndImport(_, f) => self.sheet.add_frame(f),
+            BeginExportAs => self.begin_export_as(),
+            CancelExportAs => self.cancel_export_as(),
+            EndSetExportTextureDestination(_, d) => self.end_set_export_texture_destination(d)?,
+            EndSetExportMetadataDestination(_, d) => self.end_set_export_metadata_destination(d)?,
+            EndSetExportMetadataPathsRoot(_, d) => self.end_set_export_metadata_paths_root(d)?,
+            EndSetExportFormat(_, f) => self.end_set_export_format(f.clone())?,
+            EndExportAs => self.end_export_as()?,
+            SwitchToContentTab(t) => self.view.content_tab = *t,
+            ClearSelection => self.clear_selection(),
+            SelectFrames(s) => self.select_frames(&s)?,
+            SelectAnimations(s) => self.select_animations(&s)?,
+            SelectHitboxes(s) => self.select_hitboxes(&s)?,
+            SelectKeyframes(s) => self.select_keyframes(&s)?,
+            EditFrame(p) => self.edit_frame(&p)?,
+            EditAnimation(a) => self.edit_animation(&a)?,
+            CreateAnimation => self.create_animation()?,
+            BeginFramesDrag => self.transient = Some(Transient::ContentFramesDrag),
+            InsertKeyframesBefore(frames, n) => self.insert_keyframes_before(frames.clone(), *n)?,
+            ReorderKeyframes(i) => self.reorder_keyframes(*i)?,
+            BeginKeyframeDurationDrag(c, i) => self.begin_keyframe_duration_drag(*i, *c)?,
+            UpdateKeyframeDurationDrag(d, m) => self.update_keyframe_duration_drag(*d, *m)?,
+            BeginKeyframeDrag => self.begin_keyframe_drag(),
+            BeginKeyframeOffsetDrag => self.begin_keyframe_offset_drag()?,
+            UpdateKeyframeOffsetDrag(o, b) => self.update_keyframe_offset_drag(*o, *b)?,
+            WorkbenchZoomIn => self.view.workbench_zoom_in(),
+            WorkbenchZoomOut => self.view.workbench_zoom_out(),
+            WorkbenchResetZoom => self.view.workbench_reset_zoom(),
+            WorkbenchCenter => self.view.workbench_center(),
+            Pan(delta) => self.view.pan(*delta),
+            CreateHitbox(p) => self.create_hitbox(*p)?,
+            BeginHitboxScale(axis) => self.begin_hitbox_scale(*axis)?,
+            UpdateHitboxScale(delta, ar) => self.update_hitbox_scale(*delta, *ar)?,
+            BeginHitboxDrag => self.begin_hitbox_drag()?,
+            UpdateHitboxDrag(delta, b) => self.update_hitbox_drag(*delta, *b)?,
+            SetHitboxLinked(name, l) => self.set_hitbox_linked(name, *l)?,
+            SetHitboxLocked(name, l) => self.set_hitbox_locked(name, *l)?,
+            TogglePlayback => self.toggle_playback()?,
+            SnapToPreviousFrame => self.snap_to_previous_frame()?,
+            SnapToNextFrame => self.snap_to_next_frame()?,
+            ToggleLooping => self.toggle_looping()?,
+            TimelineZoomIn => self.view.timeline_zoom_in(),
+            TimelineZoomOut => self.view.timeline_zoom_out(),
+            TimelineResetZoom => self.view.timeline_reset_zoom(),
+            BeginScrub => self.transient = Some(Transient::TimelineScrub),
+            UpdateScrub(t) => self.update_timeline_scrub(*t)?,
+            NudgeSelection(d, l) => self.nudge_selection(*d, *l)?,
+            DeleteSelection => self.delete_selection()?,
+            BeginRenameSelection => self.begin_rename_selection(),
+            UpdateRenameSelection(n) => {
+                self.transient = Some(Transient::Rename(Rename {
+                    new_name: n.to_owned(),
+                }))
             }
-            EndSetExportMetadataDestination(_, d) => {
-                new_document.end_set_export_metadata_destination(d)?
-            }
-            EndSetExportMetadataPathsRoot(_, d) => {
-                new_document.end_set_export_metadata_paths_root(d)?
-            }
-            EndSetExportFormat(_, f) => new_document.end_set_export_format(f.clone())?,
-            EndExportAs => new_document.end_export_as()?,
-            SwitchToContentTab(t) => new_document.view.content_tab = *t,
-            ClearSelection => new_document.clear_selection(),
-            SelectFrame(p) => new_document.select_frame(&p)?,
-            SelectAnimation(a) => new_document.select_animation(&a)?,
-            SelectHitbox(h) => new_document.select_hitbox(&h)?,
-            SelectAnimationFrame(af) => new_document.select_animation_frame(*af)?,
-            SelectPrevious => new_document.select_previous()?,
-            SelectNext => new_document.select_next()?,
-            EditFrame(p) => new_document.edit_frame(&p)?,
-            EditAnimation(a) => new_document.edit_animation(&a)?,
-            CreateAnimation => new_document.create_animation()?,
-            BeginFrameDrag(f) => new_document.begin_frame_drag(f)?,
-            EndFrameDrag => new_document.transient.content_frame_being_dragged = None,
-            InsertAnimationFrameBefore(f, n) => {
-                new_document.insert_animation_frame_before(f, *n)?
-            }
-            ReorderAnimationFrame(a, b) => new_document.reorder_animation_frame(*a, *b)?,
-            BeginAnimationFrameDurationDrag(a) => {
-                new_document.begin_animation_frame_duration_drag(*a)?
-            }
-            UpdateAnimationFrameDurationDrag(d) => {
-                new_document.update_animation_frame_duration_drag(*d)?
-            }
-            EndAnimationFrameDurationDrag => new_document.end_animation_frame_duration_drag(),
-            BeginAnimationFrameDrag(a) => new_document.begin_animation_frame_drag(*a)?,
-            EndAnimationFrameDrag => new_document.transient.timeline_frame_being_dragged = None,
-            BeginAnimationFrameOffsetDrag(a) => {
-                new_document.begin_animation_frame_offset_drag(*a)?
-            }
-            UpdateAnimationFrameOffsetDrag(o, b) => {
-                new_document.update_animation_frame_offset_drag(*o, *b)?
-            }
-            EndAnimationFrameOffsetDrag => new_document.end_animation_frame_offset_drag(),
-            WorkbenchZoomIn => new_document.view.workbench_zoom_in(),
-            WorkbenchZoomOut => new_document.view.workbench_zoom_out(),
-            WorkbenchResetZoom => new_document.view.workbench_reset_zoom(),
-            WorkbenchCenter => new_document.view.workbench_center(),
-            Pan(delta) => new_document.view.pan(*delta),
-            CreateHitbox(p) => new_document.create_hitbox(*p)?,
-            BeginHitboxScale(h, a) => new_document.begin_hitbox_scale(&h, *a)?,
-            UpdateHitboxScale(delta, ar) => new_document.update_hitbox_scale(*delta, *ar)?,
-            EndHitboxScale => new_document.end_hitbox_scale()?,
-            BeginHitboxDrag(a) => new_document.begin_hitbox_drag(&a)?,
-            UpdateHitboxDrag(delta, b) => new_document.update_hitbox_drag(*delta, *b)?,
-            EndHitboxDrag => new_document.end_hitbox_drag(),
-            TogglePlayback => new_document.toggle_playback()?,
-            SnapToPreviousFrame => new_document.snap_to_previous_frame()?,
-            SnapToNextFrame => new_document.snap_to_next_frame()?,
-            ToggleLooping => new_document.toggle_looping()?,
-            TimelineZoomIn => new_document.view.timeline_zoom_in(),
-            TimelineZoomOut => new_document.view.timeline_zoom_out(),
-            TimelineResetZoom => new_document.view.timeline_reset_zoom(),
-            BeginScrub => new_document.transient.timeline_scrubbing = true,
-            UpdateScrub(t) => new_document.update_timeline_scrub(*t)?,
-            EndScrub => new_document.transient.timeline_scrubbing = false,
-            NudgeSelection(d, l) => new_document.nudge_selection(*d, *l)?,
-            DeleteSelection => new_document.delete_selection(),
-            BeginRenameSelection => new_document.begin_rename_selection()?,
-            UpdateRenameSelection(n) => new_document.transient.rename_buffer = Some(n.to_owned()),
-            EndRenameSelection => new_document.end_rename_selection()?,
+            EndRenameSelection => self.end_rename_selection()?,
+            Close => self.begin_close(),
+            CloseAfterSaving => self.persistent.close_state = Some(CloseState::Saving),
+            CloseWithoutSaving => self.persistent.close_state = Some(CloseState::Allowed),
+            CancelClose => self.persistent.close_state = None,
+            EndFramesDrag
+            | EndKeyframeDurationDrag
+            | EndKeyframeDrag
+            | EndKeyframeOffsetDrag
+            | EndHitboxScale
+            | EndHitboxDrag
+            | EndScrub => (),
         };
 
-        self.record_command(command, new_document);
+        if !Transient::is_transient_command(&command) {
+            self.transient = None;
+        }
+
+        self.record_command(command);
 
         Ok(())
     }

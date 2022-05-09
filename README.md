@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/agersant/tiger.svg?branch=master)](https://travis-ci.org/agersant/tiger)
+[![Actions Status](https://github.com/agersant/tiger/workflows/Build/badge.svg)](https://github.com/agersant/tiger/actions)
 
 Tiger is a graphical tool for generating spritesheets and metadata about the animation and hitboxes they contain.
 

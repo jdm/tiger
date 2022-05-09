@@ -1,4 +1,4 @@
-use failure::Error;
+use anyhow::bail;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -12,7 +12,7 @@ pub struct VersionedSheet {
     pub sheet: Sheet,
 }
 
-pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> Result<Sheet, Error> {
+pub fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
     assert!(version == THIS_VERSION);
     match version {
         THIS_VERSION => {
@@ -34,7 +34,7 @@ pub struct Sheet {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Animation {
     pub name: String,
-    pub timeline: Vec<AnimationFrame>,
+    pub timeline: Vec<Keyframe>,
     pub is_looping: bool,
 }
 
@@ -45,7 +45,7 @@ pub struct Frame {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct AnimationFrame {
+pub struct Keyframe {
     pub frame: PathBuf,
     pub duration: u32, // in ms
     pub offset: (i32, i32),

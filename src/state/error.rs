@@ -1,39 +1,60 @@
-#[derive(Fail, Debug)]
-pub enum StateError {
-    #[fail(display = "No document is open")]
-    NoDocumentOpen,
-    #[fail(display = "Requested document was not found")]
-    DocumentNotFound,
-    #[fail(display = "Sheet has no export settings")]
-    NoExistingExportSettings,
-    #[fail(display = "Cannot perform undo operation")]
-    UndoOperationNowAllowed,
-    #[fail(display = "Requested frame is not in document")]
-    FrameNotInDocument,
-    #[fail(display = "Requested animation is not in document")]
-    AnimationNotInDocument,
-    #[fail(display = "Requested hitbox is not in frame")]
-    HitboxNotInFrame,
-    #[fail(display = "A hitbox with this name already exists")]
-    HitboxAlreadyExists,
-    #[fail(display = "An animation with this name already exists")]
-    AnimationAlreadyExists,
-    #[fail(display = "Not currently editing any frame")]
-    NotEditingAnyFrame,
-    #[fail(display = "Not currently editing any animation")]
-    NotEditingAnyAnimation,
-    #[fail(display = "Currently not adjusting a hitbox")]
-    NotDraggingAHitbox,
-    #[fail(display = "Frame does not have a hitbox at the requested index")]
-    InvalidHitboxIndex,
-    #[fail(display = "Animation does not have a frame at the requested index")]
-    InvalidAnimationFrameIndex,
-    #[fail(display = "Currently not adjusting the duration of an animation frame")]
-    NotDraggingATimelineFrame,
-    #[fail(display = "No animation frame found for requested time")]
-    NoAnimationFrameForThisTime,
-    #[fail(display = "Not currently adjusting export settings")]
-    NotExporting,
-    #[fail(display = "Not currently renaming an item")]
-    NotRenaming,
+use std::fmt;
+
+use crate::export::ExportError;
+use crate::state::command::AsyncCommand;
+
+#[derive(Debug)]
+enum UserFacingErrorCategory {
+    Open,
+    Save,
+    Export,
+}
+
+#[derive(Debug)]
+pub struct UserFacingError {
+    category: UserFacingErrorCategory,
+    inner_error: anyhow::Error,
+}
+
+impl UserFacingError {
+    pub fn from_command(
+        source_command: AsyncCommand,
+        inner_error: anyhow::Error,
+    ) -> Option<UserFacingError> {
+        let category = match source_command {
+            AsyncCommand::ReadDocument(_) => UserFacingErrorCategory::Open,
+            AsyncCommand::Save(_, _, _) => UserFacingErrorCategory::Save,
+            AsyncCommand::SaveAs(_, _, _) => UserFacingErrorCategory::Save,
+            AsyncCommand::Export(_) => UserFacingErrorCategory::Export,
+            _ => return None,
+        };
+        Some(UserFacingError {
+            category,
+            inner_error,
+        })
+    }
+}
+
+impl fmt::Display for UserFacingError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self.category {
+            UserFacingErrorCategory::Open => write!(
+                f,
+                "Could not open document:\n\n{}",
+                self.inner_error.root_cause()
+            ),
+            UserFacingErrorCategory::Save => write!(f, "Could not save document"),
+            UserFacingErrorCategory::Export => match self.inner_error.downcast_ref::<ExportError>()
+            {
+                Some(ExportError::TemplateParsingError(_)) => {
+                    write!(
+                        f,
+                        "Export failed due to invalid syntax in the template file:\n\n{}",
+                        self.inner_error.root_cause()
+                    )
+                }
+                _ => write!(f, "Export failed:\n\n{}", self.inner_error.root_cause()),
+            },
+        }
+    }
 }

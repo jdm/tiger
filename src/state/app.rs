@@ -1,8 +1,8 @@
-use failure::Error;
 use std::fs::File;
 use std::io::prelude::*;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use thiserror::Error;
 
 use crate::export::*;
 use crate::sheet::*;
@@ -16,15 +16,27 @@ const IMAGE_EXPORT_FILE_EXTENSIONS: &str = "png";
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum ExitState {
     Requested,
-    Saving,
     Allowed,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Error, Debug)]
+pub enum AppError {
+    #[error("No document is open")]
+    NoDocumentOpen,
+    #[error("Requested document was not found")]
+    DocumentNotFound,
+    #[error("Sheet has no export settings")]
+    NoExistingExportSettings,
+    #[error("Invalid document operation")]
+    InvalidDocumentOperation(#[from] document::DocumentError),
+}
+
+#[derive(Debug, Default)]
 pub struct AppState {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
     clock: Duration,
+    errors: Vec<UserFacingError>,
     exit_state: Option<ExitState>,
 }
 
@@ -34,8 +46,22 @@ impl AppState {
         if let Some(document) = self.get_current_document_mut() {
             document.tick(delta);
         }
-        if self.exit_state.is_some() {
-            if self.documents.iter().all(|d| d.is_saved()) {
+        self.advance_exit();
+    }
+
+    fn advance_exit(&mut self) {
+        let documents_to_close: Vec<PathBuf> = self
+            .documents
+            .iter()
+            .filter(|d| d.persistent.close_state == Some(CloseState::Allowed))
+            .map(|d| d.source.clone())
+            .collect();
+        for path in documents_to_close {
+            self.close_document(path);
+        }
+
+        if Some(ExitState::Requested) == self.exit_state {
+            if self.documents.len() == 0 {
                 self.exit_state = Some(ExitState::Allowed);
             }
         }
@@ -43,6 +69,14 @@ impl AppState {
 
     pub fn get_clock(&self) -> Duration {
         self.clock
+    }
+
+    pub fn get_error(&self) -> Option<&UserFacingError> {
+        if self.errors.is_empty() {
+            None
+        } else {
+            Some(&self.errors[0])
+        }
     }
 
     pub fn get_exit_state(&self) -> Option<ExitState> {
@@ -83,7 +117,7 @@ impl AppState {
         self.documents.iter()
     }
 
-    fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
+    fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
         match self.get_document_mut(&path) {
             Some(d) => *d = Document::new(path.as_ref()),
             None => {
@@ -95,19 +129,19 @@ impl AppState {
         Ok(())
     }
 
-    fn end_open_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
-        if self.get_document(&path).is_none() {
-            let document = Document::open(&path)?;
+    fn end_open_document(&mut self, document: Document) -> Result<(), AppError> {
+        let source = document.source.clone();
+        if self.get_document(&source).is_none() {
             self.add_document(document);
         }
-        self.focus_document(path)
+        self.focus_document(&source)
     }
 
     fn relocate_document<T: AsRef<Path>, U: AsRef<Path>>(
         &mut self,
         from: T,
         to: U,
-    ) -> Result<(), Error> {
+    ) -> Result<(), AppError> {
         if from.as_ref() == to.as_ref() {
             return Ok(());
         }
@@ -118,7 +152,7 @@ impl AppState {
             .map(|d| &d.source)
             .any(|s| s == from.as_ref())
         {
-            return Err(StateError::DocumentNotFound.into());
+            return Err(AppError::DocumentNotFound.into());
         }
 
         self.documents.retain(|d| d.source != to.as_ref());
@@ -132,13 +166,13 @@ impl AppState {
             }
         }
 
-        return Ok(());
+        Ok(())
     }
 
-    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), Error> {
+    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
         let document = self
             .get_document_mut(&path)
-            .ok_or(StateError::DocumentNotFound)?;
+            .ok_or(AppError::DocumentNotFound)?;
         document.transient = Default::default();
         self.current_document = Some(path.as_ref().to_owned());
         Ok(())
@@ -149,31 +183,39 @@ impl AppState {
         self.documents.push(added_document);
     }
 
-    fn close_current_document(&mut self) -> Result<(), Error> {
-        let document = self
-            .get_current_document()
-            .ok_or(StateError::NoDocumentOpen)?;
-        let index = self
+    fn close_document<T: AsRef<Path>>(&mut self, path: T) {
+        if let Some(index) = self
             .documents
             .iter()
-            .position(|d| d as *const Document == document as *const Document)
-            .ok_or(StateError::DocumentNotFound)?;
-        self.documents.remove(index);
-        self.current_document = if self.documents.is_empty() {
-            None
-        } else {
-            Some(
-                self.documents[std::cmp::min(index, self.documents.len() - 1)]
-                    .source
-                    .clone(),
-            )
-        };
-        Ok(())
+            .position(|d| d.source == path.as_ref())
+        {
+            self.documents.remove(index);
+            self.current_document = if self.documents.is_empty() {
+                None
+            } else {
+                Some(
+                    self.documents[std::cmp::min(index, self.documents.len() - 1)]
+                        .source
+                        .clone(),
+                )
+            };
+        }
     }
 
     fn close_all_documents(&mut self) {
-        self.documents.clear();
-        self.current_document = None;
+        for document in self.documents.iter_mut() {
+            document.begin_close();
+        }
+    }
+
+    fn show_error(&mut self, e: UserFacingError) {
+        self.errors.push(e);
+        self.cancel_exit();
+    }
+
+    fn clear_error(&mut self) {
+        assert!(!self.errors.is_empty());
+        self.errors.remove(0);
     }
 
     fn exit(&mut self) {
@@ -182,66 +224,58 @@ impl AppState {
         }
     }
 
-    fn exit_after_saving(&mut self) {
-        if self.exit_state == Some(ExitState::Requested) {
-            self.exit_state = Some(ExitState::Saving);
+    fn cancel_exit(&mut self) {
+        self.exit_state = None;
+        for document in self.documents.iter_mut() {
+            document.cancel_close();
         }
     }
 
-    fn exit_without_saving(&mut self) {
-        self.exit_state = Some(ExitState::Allowed);
-    }
-
-    fn cancel_exit(&mut self) {
-        self.exit_state = None;
-    }
-
-    fn process_app_command(&mut self, command: &AppCommand) -> Result<(), Error> {
+    fn process_app_command(&mut self, command: AppCommand) -> Result<(), AppError> {
         use AppCommand::*;
 
         match command {
             EndNewDocument(p) => self.end_new_document(p)?,
-            EndOpenDocument(p) => self.end_open_document(p)?,
+            EndOpenDocument(d) => self.end_open_document(d)?,
             RelocateDocument(from, to) => self.relocate_document(from, to)?,
             FocusDocument(p) => self.focus_document(p)?,
-            CloseCurrentDocument => self.close_current_document()?,
             CloseAllDocuments => self.close_all_documents(),
             Undo => self
                 .get_current_document_mut()
-                .ok_or(StateError::NoDocumentOpen)?
+                .ok_or(AppError::NoDocumentOpen)?
                 .undo()?,
             Redo => self
                 .get_current_document_mut()
-                .ok_or(StateError::NoDocumentOpen)?
+                .ok_or(AppError::NoDocumentOpen)?
                 .redo()?,
+            ShowError(e) => self.show_error(e),
+            ClearError() => self.clear_error(),
             Exit => self.exit(),
-            ExitAfterSaving => self.exit_after_saving(),
-            ExitWithoutSaving => self.exit_without_saving(),
             CancelExit => self.cancel_exit(),
         }
 
         Ok(())
     }
 
-    fn process_document_command(&mut self, command: &DocumentCommand) -> Result<(), Error> {
+    fn process_document_command(&mut self, command: DocumentCommand) -> Result<(), AppError> {
         use DocumentCommand::*;
-        let document = match command {
+        let document = match &command {
             EndImport(p, _)
             | MarkAsSaved(p, _)
             | EndSetExportTextureDestination(p, _)
             | EndSetExportMetadataDestination(p, _)
             | EndSetExportMetadataPathsRoot(p, _)
             | EndSetExportFormat(p, _) => {
-                self.get_document_mut(p).ok_or(StateError::DocumentNotFound)
+                self.get_document_mut(p).ok_or(AppError::DocumentNotFound)
             }
             _ => self
                 .get_current_document_mut()
-                .ok_or(StateError::NoDocumentOpen),
+                .ok_or(AppError::NoDocumentOpen),
         }?;
-        document.process_command(command)
+        document.process_command(command).map_err(|e| e.into())
     }
 
-    pub fn process_sync_command(&mut self, command: &SyncCommand) -> Result<(), Error> {
+    pub fn process_sync_command(&mut self, command: SyncCommand) -> Result<(), AppError> {
         match command {
             SyncCommand::App(c) => self.process_app_command(c),
             SyncCommand::Document(c) => self.process_document_command(c),
@@ -249,7 +283,7 @@ impl AppState {
     }
 }
 
-fn begin_new_document() -> Result<CommandBuffer, Error> {
+fn begin_new_document() -> anyhow::Result<CommandBuffer> {
     let mut command_buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_save_dialog(Some(SHEET_FILE_EXTENSION), None)?
@@ -261,17 +295,17 @@ fn begin_new_document() -> Result<CommandBuffer, Error> {
     Ok(command_buffer)
 }
 
-fn begin_open_document() -> Result<CommandBuffer, Error> {
+fn begin_open_document() -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     match nfd::open_file_multiple_dialog(Some(SHEET_FILE_EXTENSION), None)? {
         nfd::Response::Okay(path_string) => {
             let path = std::path::PathBuf::from(path_string);
-            buffer.end_open_document(path);
+            buffer.read_document(path);
         }
         nfd::Response::OkayMultiple(path_strings) => {
             for path_string in path_strings {
                 let path = std::path::PathBuf::from(path_string);
-                buffer.end_open_document(path);
+                buffer.read_document(path);
             }
         }
         _ => (),
@@ -279,14 +313,25 @@ fn begin_open_document() -> Result<CommandBuffer, Error> {
     Ok(buffer)
 }
 
-fn save<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> Result<CommandBuffer, Error> {
+fn read_document<T: AsRef<Path>>(source: T) -> anyhow::Result<CommandBuffer> {
+    let mut buffer = CommandBuffer::new();
+    let document = Document::open(source)?;
+    buffer.end_open_document(document);
+    Ok(buffer)
+}
+
+fn save<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     Document::save(sheet, source.as_ref())?;
     buffer.mark_as_saved(source, version);
     Ok(buffer)
 }
 
-fn save_as<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> Result<CommandBuffer, Error> {
+fn save_as<T: AsRef<Path>>(
+    sheet: &Sheet,
+    source: T,
+    version: i32,
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_save_dialog(Some(SHEET_FILE_EXTENSION), None)?
@@ -299,7 +344,7 @@ fn save_as<T: AsRef<Path>>(sheet: &Sheet, source: T, version: i32) -> Result<Com
     Ok(buffer)
 }
 
-fn begin_import<T: AsRef<Path>>(into: T) -> Result<CommandBuffer, Error> {
+fn begin_import<T: AsRef<Path>>(into: T) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     match nfd::open_file_multiple_dialog(Some(IMAGE_IMPORT_FILE_EXTENSIONS), None)? {
         nfd::Response::Okay(path_string) => {
@@ -319,7 +364,7 @@ fn begin_import<T: AsRef<Path>>(into: T) -> Result<CommandBuffer, Error> {
 
 fn begin_set_export_texture_destination<T: AsRef<Path>>(
     document_path: T,
-) -> Result<CommandBuffer, Error> {
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_save_dialog(Some(IMAGE_EXPORT_FILE_EXTENSIONS), None)?
@@ -332,7 +377,7 @@ fn begin_set_export_texture_destination<T: AsRef<Path>>(
 
 fn begin_set_export_metadata_destination<T: AsRef<Path>>(
     document_path: T,
-) -> Result<CommandBuffer, Error> {
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) = nfd::open_save_dialog(None, None)? {
         let metadata_destination = std::path::PathBuf::from(path_string);
@@ -343,7 +388,7 @@ fn begin_set_export_metadata_destination<T: AsRef<Path>>(
 
 fn begin_set_export_metadata_paths_root<T: AsRef<Path>>(
     document_path: T,
-) -> Result<CommandBuffer, Error> {
+) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) = nfd::open_pick_folder(None)? {
         let metadata_paths_root = std::path::PathBuf::from(path_string);
@@ -352,7 +397,7 @@ fn begin_set_export_metadata_paths_root<T: AsRef<Path>>(
     Ok(buffer)
 }
 
-fn begin_set_export_format<T: AsRef<Path>>(document_path: T) -> Result<CommandBuffer, Error> {
+fn begin_set_export_format<T: AsRef<Path>>(document_path: T) -> anyhow::Result<CommandBuffer> {
     let mut buffer = CommandBuffer::new();
     if let nfd::Response::Okay(path_string) =
         nfd::open_file_dialog(Some(TEMPLATE_FILE_EXTENSION), None)?
@@ -363,11 +408,11 @@ fn begin_set_export_format<T: AsRef<Path>>(document_path: T) -> Result<CommandBu
     Ok(buffer)
 }
 
-fn export(sheet: &Sheet) -> Result<(), Error> {
+fn export(sheet: &Sheet) -> anyhow::Result<()> {
     let export_settings = sheet
         .get_export_settings()
         .as_ref()
-        .ok_or(StateError::NoExistingExportSettings)?;
+        .ok_or(AppError::NoExistingExportSettings)?;
 
     // TODO texture export performance is awful
     let packed_sheet = pack_sheet(&sheet)?;
@@ -379,19 +424,22 @@ fn export(sheet: &Sheet) -> Result<(), Error> {
     }
     {
         let mut file = File::create(&export_settings.texture_destination)?;
-        packed_sheet.get_texture().write_to(&mut file, image::PNG)?;
+        packed_sheet
+            .get_texture()
+            .write_to(&mut file, image::ImageFormat::Png)?;
     }
 
     Ok(())
 }
 
-pub fn process_async_command(command: &AsyncCommand) -> Result<CommandBuffer, Error> {
+pub fn process_async_command(command: AsyncCommand) -> anyhow::Result<CommandBuffer> {
     let no_commands = CommandBuffer::new();
     match command {
         AsyncCommand::BeginNewDocument => begin_new_document(),
         AsyncCommand::BeginOpenDocument => begin_open_document(),
-        AsyncCommand::Save(p, sheet, version) => save(sheet, p, *version),
-        AsyncCommand::SaveAs(p, sheet, version) => save_as(sheet, p, *version),
+        AsyncCommand::ReadDocument(p) => read_document(p),
+        AsyncCommand::Save(p, sheet, version) => save(&sheet, p, version),
+        AsyncCommand::SaveAs(p, sheet, version) => save_as(&sheet, p, version),
         AsyncCommand::BeginSetExportTextureDestination(p) => {
             begin_set_export_texture_destination(p)
         }
@@ -401,6 +449,6 @@ pub fn process_async_command(command: &AsyncCommand) -> Result<CommandBuffer, Er
         AsyncCommand::BeginSetExportMetadataPathsRoot(p) => begin_set_export_metadata_paths_root(p),
         AsyncCommand::BeginSetExportFormat(p) => begin_set_export_format(p),
         AsyncCommand::BeginImport(p) => begin_import(p),
-        AsyncCommand::Export(sheet) => export(sheet).and(Ok(no_commands)),
+        AsyncCommand::Export(sheet) => export(&sheet).and(Ok(no_commands)),
     }
 }

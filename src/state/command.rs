@@ -1,4 +1,4 @@
-use euclid::*;
+use euclid::default::*;
 use std::fmt;
 use std::path::PathBuf;
 use std::time::Duration;
@@ -10,6 +10,7 @@ use crate::state::*;
 pub enum AsyncCommand {
     BeginNewDocument,
     BeginOpenDocument,
+    ReadDocument(PathBuf),
     Save(PathBuf, Sheet, i32),
     SaveAs(PathBuf, Sheet, i32),
     BeginSetExportTextureDestination(PathBuf),
@@ -20,23 +21,22 @@ pub enum AsyncCommand {
     Export(Sheet),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub enum AppCommand {
     EndNewDocument(PathBuf),
-    EndOpenDocument(PathBuf), // TODO This should be async (has IO + heavylifting)
-    CloseCurrentDocument,
+    EndOpenDocument(Document),
     CloseAllDocuments,
     FocusDocument(PathBuf),
     RelocateDocument(PathBuf, PathBuf),
     Undo,
     Redo,
+    ShowError(UserFacingError),
+    ClearError(),
     Exit,
-    ExitAfterSaving,
-    ExitWithoutSaving,
     CancelExit,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub enum DocumentCommand {
     BeginExportAs,
     EndSetExportTextureDestination(PathBuf, PathBuf),
@@ -49,39 +49,39 @@ pub enum DocumentCommand {
     EndImport(PathBuf, PathBuf),
     SwitchToContentTab(ContentTab),
     ClearSelection,
-    SelectFrame(PathBuf),
-    SelectAnimation(String),
-    SelectHitbox(String),
-    SelectAnimationFrame(usize),
-    SelectPrevious,
-    SelectNext,
+    SelectFrames(MultiSelection<PathBuf>),
+    SelectAnimations(MultiSelection<String>),
+    SelectHitboxes(MultiSelection<String>),
+    SelectKeyframes(MultiSelection<usize>),
     EditFrame(PathBuf),
     EditAnimation(String),
     CreateAnimation,
-    BeginFrameDrag(PathBuf),
-    EndFrameDrag,
-    InsertAnimationFrameBefore(PathBuf, usize),
-    ReorderAnimationFrame(usize, usize),
-    BeginAnimationFrameDurationDrag(usize),
-    UpdateAnimationFrameDurationDrag(u32),
-    EndAnimationFrameDurationDrag,
-    BeginAnimationFrameDrag(usize),
-    EndAnimationFrameDrag,
-    BeginAnimationFrameOffsetDrag(usize),
-    UpdateAnimationFrameOffsetDrag(Vector2D<f32>, bool),
-    EndAnimationFrameOffsetDrag,
+    BeginFramesDrag,
+    EndFramesDrag,
+    InsertKeyframesBefore(Vec<PathBuf>, usize),
+    ReorderKeyframes(usize),
+    BeginKeyframeDurationDrag(u32, usize),
+    UpdateKeyframeDurationDrag(u32, u32),
+    EndKeyframeDurationDrag,
+    BeginKeyframeDrag,
+    EndKeyframeDrag,
+    BeginKeyframeOffsetDrag,
+    UpdateKeyframeOffsetDrag(Vector2D<f32>, bool),
+    EndKeyframeOffsetDrag,
     WorkbenchZoomIn,
     WorkbenchZoomOut,
     WorkbenchResetZoom,
     WorkbenchCenter,
     Pan(Vector2D<f32>),
     CreateHitbox(Vector2D<f32>),
-    BeginHitboxScale(String, ResizeAxis),
+    BeginHitboxScale(ResizeAxis),
     UpdateHitboxScale(Vector2D<f32>, bool),
     EndHitboxScale,
-    BeginHitboxDrag(String),
+    BeginHitboxDrag,
     UpdateHitboxDrag(Vector2D<f32>, bool),
     EndHitboxDrag,
+    SetHitboxLinked(String, bool),
+    SetHitboxLocked(String, bool),
     TogglePlayback,
     SnapToPreviousFrame,
     SnapToNextFrame,
@@ -97,6 +97,10 @@ pub enum DocumentCommand {
     BeginRenameSelection,
     UpdateRenameSelection(String),
     EndRenameSelection,
+    Close,
+    CloseAfterSaving,
+    CloseWithoutSaving,
+    CancelClose,
 }
 
 impl fmt::Display for DocumentCommand {
@@ -117,12 +121,10 @@ impl fmt::Display for DocumentCommand {
             // Navigation
             SwitchToContentTab(_)
             | ClearSelection
-            | SelectFrame(_)
-            | SelectAnimation(_)
-            | SelectHitbox(_)
-            | SelectAnimationFrame(_)
-            | SelectPrevious
-            | SelectNext
+            | SelectFrames(_)
+            | SelectAnimations(_)
+            | SelectHitboxes(_)
+            | SelectKeyframes(_)
             | EditFrame(_)
             | EditAnimation(_)
             | WorkbenchZoomIn
@@ -142,45 +144,51 @@ impl fmt::Display for DocumentCommand {
 
             MarkAsSaved(_, _) => write!(f, "Mark As Saved"),
 
+            Close | CloseAfterSaving | CloseWithoutSaving | CancelClose => write!(f, "Close"),
+
             // Animation
             CreateAnimation => write!(f, "Create Animation"),
             ToggleLooping => write!(f, "Toggle Looping"),
-            BeginFrameDrag(_) | EndFrameDrag | InsertAnimationFrameBefore(_, _) => {
+            BeginFramesDrag | EndFramesDrag | InsertKeyframesBefore(_, _) => {
                 write!(f, "Create Frame")
             }
-            BeginAnimationFrameDrag(_) | EndAnimationFrameDrag | ReorderAnimationFrame(_, _) => {
+            BeginKeyframeDrag | EndKeyframeDrag | ReorderKeyframes(_) => {
                 write!(f, "Re-order Frames")
             }
-            BeginAnimationFrameDurationDrag(_)
-            | UpdateAnimationFrameDurationDrag(_)
-            | EndAnimationFrameDurationDrag => write!(f, "Adjust Frame Duration"),
-            BeginAnimationFrameOffsetDrag(_)
-            | UpdateAnimationFrameOffsetDrag(_, _)
-            | EndAnimationFrameOffsetDrag => write!(f, "Move Frame"),
+            BeginKeyframeDurationDrag(_, _)
+            | UpdateKeyframeDurationDrag(_, _)
+            | EndKeyframeDurationDrag => write!(f, "Adjust Frame Duration"),
+            BeginKeyframeOffsetDrag | UpdateKeyframeOffsetDrag(_, _) | EndKeyframeOffsetDrag => {
+                write!(f, "Move Frame")
+            }
 
             // Hitbox
             CreateHitbox(_) => write!(f, "Create Hitbox"),
-            BeginHitboxScale(_, _) | UpdateHitboxScale(_, _) | EndHitboxScale => {
+            BeginHitboxScale(_) | UpdateHitboxScale(_, _) | EndHitboxScale => {
                 write!(f, "Resize Hitbox")
             }
-            BeginHitboxDrag(_) | UpdateHitboxDrag(_, _) | EndHitboxDrag => write!(f, "Move Hitbox"),
+            BeginHitboxDrag | UpdateHitboxDrag(_, _) | EndHitboxDrag => write!(f, "Move Hitbox"),
 
             NudgeSelection(_, _) => write!(f, "Nudge"),
             DeleteSelection => write!(f, "Delete"),
             BeginRenameSelection | UpdateRenameSelection(_) | EndRenameSelection => {
                 write!(f, "Rename")
             }
+            SetHitboxLinked(_, l) if *l => write!(f, "Link Hitbox"),
+            SetHitboxLinked(_, _) => write!(f, "Unlink Hitbox"),
+            SetHitboxLocked(_, l) if *l => write!(f, "Lock Hitbox"),
+            SetHitboxLocked(_, _) => write!(f, "Unlock Hitbox"),
         }
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub enum SyncCommand {
     App(AppCommand),
     Document(DocumentCommand),
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug)]
 pub enum Command {
     Sync(SyncCommand),
     Async(AsyncCommand),

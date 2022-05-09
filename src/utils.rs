@@ -1,4 +1,6 @@
-use euclid::*;
+use euclid::default::*;
+use euclid::rect;
+use thiserror::Error;
 
 use crate::sheet::Animation;
 use crate::streamer::{TextureCache, TextureCacheResult};
@@ -9,7 +11,7 @@ pub struct Fill {
 }
 
 pub fn fill(space: Vector2D<f32>, content_size: Vector2D<f32>) -> Option<Fill> {
-    if content_size.to_size().is_empty_or_negative() || space.to_size().is_empty_or_negative() {
+    if content_size.to_size().is_empty() || space.to_size().is_empty() {
         return None;
     }
 
@@ -39,11 +41,11 @@ pub fn fill(space: Vector2D<f32>, content_size: Vector2D<f32>) -> Option<Fill> {
     })
 }
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum BoundingBoxError {
-    #[fail(display = "Animation is empty")]
+    #[error("Animation is empty")]
     EmptyAnimation,
-    #[fail(display = "Frame data not loaded")]
+    #[error("Frame data not loaded")]
     FrameDataNotLoaded,
 }
 
@@ -57,11 +59,11 @@ impl BoundingBox {
         self.rect = Rect::<i32>::from_points(&[
             self.rect.origin,
             self.rect.origin * -1,
-            self.rect.bottom_right(),
-            self.rect.bottom_right() * -1,
+            self.rect.max(),
+            self.rect.max() * -1,
         ]);
         let delta = self.rect.origin * -1 + self.rect.size / -2;
-        self.rect = self.rect.translate(&delta.to_vector());
+        self.rect = self.rect.translate(delta.to_vector());
     }
 }
 
@@ -69,13 +71,13 @@ pub fn get_bounding_box(
     animation: &Animation,
     texture_cache: &TextureCache,
 ) -> Result<BoundingBox, BoundingBoxError> {
-    if animation.get_num_frames() == 0 {
+    if animation.get_num_keyframes() == 0 {
         return Err(BoundingBoxError::EmptyAnimation);
     }
     let mut bbox_rectangle = Rect::<i32>::zero();
-    for frame in animation.frames_iter() {
-        if let Some(TextureCacheResult::Loaded(texture)) = texture_cache.get(frame.get_frame()) {
-            let frame_offset = frame.get_offset();
+    for keyframe in animation.keyframes_iter() {
+        if let Some(TextureCacheResult::Loaded(texture)) = texture_cache.get(keyframe.get_frame()) {
+            let frame_offset = keyframe.get_offset();
             let frame_rectangle =
                 Rect::<i32>::new(frame_offset.to_point(), texture.size.to_i32().to_size());
             bbox_rectangle = bbox_rectangle.union(&frame_rectangle);

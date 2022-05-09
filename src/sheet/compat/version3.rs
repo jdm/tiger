@@ -2,10 +2,10 @@ use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
 
-use crate::sheet::compat::version1 as previous_version;
+use crate::sheet::compat::version2 as previous_version;
 use crate::sheet::compat::Version;
 
-const THIS_VERSION: Version = Version::Tiger2;
+const THIS_VERSION: Version = Version::Tiger3;
 
 #[derive(Serialize, Deserialize)]
 pub struct VersionedSheet {
@@ -32,9 +32,29 @@ pub struct Sheet {
 
 impl From<previous_version::Sheet> for Sheet {
     fn from(old: previous_version::Sheet) -> Sheet {
+        let mut new_animations: Vec<Animation> =
+            old.animations.into_iter().map(|o| o.into()).collect();
+
+        // Migrate hitbox data from frames to keyframes
+        for frame in &old.frames {
+            for hitbox in &frame.hitboxes {
+                for animation in &mut new_animations {
+                    for keyframe in &mut animation.timeline {
+                        if keyframe.frame == frame.source {
+                            let mut new_hitbox: Hitbox = hitbox.clone().into();
+                            let Shape::Rectangle(r) = &mut new_hitbox.geometry;
+                            r.top_left.0 += keyframe.offset.0;
+                            r.top_left.1 += keyframe.offset.1;
+                            keyframe.hitboxes.push(new_hitbox);
+                        }
+                    }
+                }
+            }
+        }
+        let new_frames = old.frames.into_iter().map(|o| o.into()).collect();
         Sheet {
-            frames: old.frames.into_iter().map(|o| o.into()).collect(),
-            animations: old.animations.into_iter().map(|o| o.into()).collect(),
+            frames: new_frames,
+            animations: new_animations,
             export_settings: old.export_settings.map(|o| o.into()),
         }
     }
@@ -60,21 +80,18 @@ impl From<previous_version::Animation> for Animation {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Frame {
     pub source: PathBuf,
-    pub hitboxes: Vec<Hitbox>,
 }
 
 impl From<previous_version::Frame> for Frame {
     fn from(old: previous_version::Frame) -> Frame {
-        Frame {
-            source: old.source,
-            hitboxes: old.hitboxes.into_iter().map(|o| o.into()).collect(),
-        }
+        Frame { source: old.source }
     }
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Keyframe {
     pub frame: PathBuf,
+    pub hitboxes: Vec<Hitbox>,
     pub duration: u32, // in ms
     pub offset: (i32, i32),
 }
@@ -85,6 +102,7 @@ impl From<previous_version::Keyframe> for Keyframe {
             frame: old.frame,
             duration: old.duration,
             offset: old.offset,
+            hitboxes: Vec::new(),
         }
     }
 }
@@ -93,6 +111,8 @@ impl From<previous_version::Keyframe> for Keyframe {
 pub struct Hitbox {
     pub name: String,
     pub geometry: Shape,
+    pub linked: bool,
+    pub locked: bool,
 }
 
 impl From<previous_version::Hitbox> for Hitbox {
@@ -100,6 +120,8 @@ impl From<previous_version::Hitbox> for Hitbox {
         Hitbox {
             name: old.name,
             geometry: old.geometry.into(),
+            linked: true,
+            locked: false,
         }
     }
 }

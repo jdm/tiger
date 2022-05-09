@@ -1,17 +1,17 @@
-use euclid::*;
-use gfx::texture::{FilterMethod, SamplerInfo, WrapMode};
-use gfx::Factory;
-use gfx_device_gl::Resources;
-use imgui::ImTexture;
-use imgui_gfx_renderer::Renderer;
+use euclid::default::*;
+use glium::{
+    backend::Facade,
+    texture::{RawImage2d, Texture2d},
+    uniforms::{MagnifySamplerFilter, MinifySamplerFilter, SamplerBehavior},
+};
+use imgui::*;
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
+use std::rc::Rc;
 use std::sync::mpsc::{channel, Receiver, Sender};
 use std::sync::{Arc, Mutex};
-
-use crate::state::AppState;
 
 const MAX_TEXTURES_LOAD_TIME_PER_TICK: u128 = 250; // ms
 
@@ -27,18 +27,10 @@ pub fn init() -> (Sender<StreamerPayload>, Receiver<StreamerPayload>) {
 }
 
 pub fn load_from_disk(
-    app_state: &AppState,
+    desired_textures: HashSet<PathBuf>,
     texture_cache: Arc<Mutex<TextureCache>>,
     sender: &Sender<StreamerPayload>,
 ) {
-    // List textures we want loaded
-    let mut desired_textures = HashSet::new();
-    for document in app_state.documents_iter() {
-        for frame in document.sheet.frames_iter() {
-            desired_textures.insert(frame.get_source().to_owned());
-        }
-    }
-
     // List textures we already have (or have tried to load)
     let cache_content;
     {
@@ -56,18 +48,22 @@ pub fn load_from_disk(
     for path in desired_textures.iter() {
         obsolete_textures.remove(path);
 
-        match cache_content.get(path) {
-            Some(TextureCacheEntry::Loaded(_)) | Some(TextureCacheEntry::Missing) => {
-                continue;
+        if let Some(cache_entry) = cache_content.get(path) {
+            if !cache_entry.outdated {
+                match cache_entry.state {
+                    CacheEntryState::Loaded(_) | CacheEntryState::Missing => {
+                        continue;
+                    }
+                    _ => (),
+                }
             }
-            _ => (),
         }
 
         if io_time.as_millis() < MAX_TEXTURES_LOAD_TIME_PER_TICK {
             let start = std::time::Instant::now();
             if let Ok(file) = File::open(&path) {
-                if let Ok(image) = image::load(BufReader::new(file), image::PNG) {
-                    new_textures.insert(path.clone(), image.to_rgba());
+                if let Ok(image) = image::load(BufReader::new(file), image::ImageFormat::Png) {
+                    new_textures.insert(path.clone(), image.to_rgba8());
                 };
             } else {
                 // TODO Log
@@ -100,26 +96,29 @@ pub fn load_from_disk(
     }
 }
 
-pub fn upload(
+pub fn upload<F>(
     texture_cache: &mut TextureCache,
-    factory: &mut gfx_device_gl::Factory,
-    renderer: &mut Renderer<Resources>,
+    gl_ctx: &F,
+    imgui_textures: &mut Textures<imgui_glium_renderer::Texture>,
     receiver: &Receiver<StreamerPayload>,
-) {
+) where
+    F: Facade,
+{
     if let Ok(payload) = receiver.try_recv() {
         for (path, texture_data) in payload.new_textures {
-            let sampler =
-                factory.create_sampler(SamplerInfo::new(FilterMethod::Scale, WrapMode::Clamp));
-            let size: Vector2D<u32> = texture_data.dimensions().into();
-            let kind =
-                gfx::texture::Kind::D2(size.x as u16, size.y as u16, gfx::texture::AaMode::Single);
-            if let Ok((_, texture)) = factory.create_texture_immutable_u8::<gfx::format::Srgba8>(
-                kind,
-                gfx::texture::Mipmap::Allocated,
-                &[&texture_data],
-            ) {
-                let id = renderer.textures().insert((texture, sampler));
-                texture_cache.insert_entry(path, id, size);
+            let (width, height) = texture_data.dimensions();
+            let raw = RawImage2d::from_raw_rgba(texture_data.into_raw(), (width, height));
+            if let Ok(gl_texture) = Texture2d::new(gl_ctx, raw) {
+                let texture = imgui_glium_renderer::Texture {
+                    texture: Rc::new(gl_texture),
+                    sampler: SamplerBehavior {
+                        magnify_filter: MagnifySamplerFilter::Nearest,
+                        minify_filter: MinifySamplerFilter::Linear,
+                        ..Default::default()
+                    },
+                };
+                let id = imgui_textures.insert(texture);
+                texture_cache.insert_entry(path, id, Vector2D::new(width, height));
             } else {
                 texture_cache.insert_error(path);
             }
@@ -132,7 +131,7 @@ pub fn upload(
         }
         for path in payload.obsolete_textures {
             if let Some(TextureCacheResult::Loaded(texture)) = texture_cache.get(&path) {
-                renderer.textures().remove(texture.id);
+                imgui_textures.remove(texture.id);
                 texture_cache.remove(path);
             }
         }
@@ -141,22 +140,27 @@ pub fn upload(
 
 #[derive(Clone)]
 struct TextureCacheImage {
-    pub id: ImTexture,
+    pub id: TextureId,
     pub size: Vector2D<u32>,
-    // TODO dirty flag and file watches
 }
 
 #[derive(Clone)]
-enum TextureCacheEntry {
+enum CacheEntryState {
     Loading,
     Loaded(TextureCacheImage),
     Missing,
 }
 
 #[derive(Clone)]
+struct CacheEntry {
+    state: CacheEntryState,
+    outdated: bool,
+}
+
+#[derive(Clone)]
 pub struct TextureCacheResultImage {
-    pub id: ImTexture,
-    pub size: Vector2D<f32>,
+    pub id: TextureId,
+    pub size: Vector2D<f32>, // TODO Why are these floats??
 }
 
 #[derive(Clone)]
@@ -166,12 +170,12 @@ pub enum TextureCacheResult {
     Missing,
 }
 
-impl From<&TextureCacheEntry> for TextureCacheResult {
-    fn from(entry: &TextureCacheEntry) -> TextureCacheResult {
-        match entry {
-            TextureCacheEntry::Loading => TextureCacheResult::Loading,
-            TextureCacheEntry::Missing => TextureCacheResult::Missing,
-            TextureCacheEntry::Loaded(t) => TextureCacheResult::Loaded(TextureCacheResultImage {
+impl From<&CacheEntry> for TextureCacheResult {
+    fn from(entry: &CacheEntry) -> TextureCacheResult {
+        match &entry.state {
+            CacheEntryState::Loading => TextureCacheResult::Loading,
+            CacheEntryState::Missing => TextureCacheResult::Missing,
+            CacheEntryState::Loaded(t) => TextureCacheResult::Loaded(TextureCacheResultImage {
                 id: t.id,
                 size: t.size.to_f32(),
             }),
@@ -180,7 +184,7 @@ impl From<&TextureCacheEntry> for TextureCacheResult {
 }
 
 pub struct TextureCache {
-    cache: HashMap<PathBuf, TextureCacheEntry>,
+    cache: HashMap<PathBuf, CacheEntry>,
 }
 
 impl TextureCache {
@@ -190,7 +194,7 @@ impl TextureCache {
         }
     }
 
-    fn dump(&self) -> HashMap<PathBuf, TextureCacheEntry> {
+    fn dump(&self) -> HashMap<PathBuf, CacheEntry> {
         self.cache.clone()
     }
 
@@ -198,22 +202,40 @@ impl TextureCache {
         self.cache.get(path.as_ref()).map(|e| e.into())
     }
 
-    pub fn insert_entry<T: AsRef<Path>>(&mut self, path: T, id: ImTexture, size: Vector2D<u32>) {
-        self.cache.insert(
-            path.as_ref().to_owned(),
-            TextureCacheEntry::Loaded(TextureCacheImage { id, size }),
+    fn insert<T: AsRef<Path>>(&mut self, path: T, state: CacheEntryState) {
+        let allow_insert = match state {
+            CacheEntryState::Loading => self.cache.get(path.as_ref()).is_none(),
+            _ => true,
+        };
+        if allow_insert {
+            self.cache.insert(
+                path.as_ref().to_owned(),
+                CacheEntry {
+                    state: state,
+                    outdated: false,
+                },
+            );
+        }
+    }
+
+    pub fn insert_entry<T: AsRef<Path>>(&mut self, path: T, id: TextureId, size: Vector2D<u32>) {
+        self.insert(
+            path,
+            CacheEntryState::Loaded(TextureCacheImage { id, size }),
         );
     }
 
     pub fn insert_error<T: AsRef<Path>>(&mut self, path: T) {
-        self.cache
-            .insert(path.as_ref().to_owned(), TextureCacheEntry::Missing);
+        self.insert(path, CacheEntryState::Missing);
     }
 
     pub fn insert_pending<T: AsRef<Path>>(&mut self, path: T) {
-        if self.cache.get(path.as_ref()).is_none() {
-            self.cache
-                .insert(path.as_ref().to_owned(), TextureCacheEntry::Loading);
+        self.insert(path, CacheEntryState::Loading);
+    }
+
+    pub fn invalidate<T: AsRef<Path>>(&mut self, path: T) {
+        if let Some(entry) = self.cache.get_mut(path.as_ref()) {
+            entry.outdated = true;
         }
     }
 

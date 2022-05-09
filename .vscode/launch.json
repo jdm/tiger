@@ -9,11 +9,12 @@
 			"type": "cppvsdbg",
 			"request": "launch",
 			"program": "${workspaceFolder}/target/debug/tiger.exe",
+			"preLaunchTask": "rust: cargo build",
 			"args": [],
 			"stopAtEntry": false,
 			"cwd": "${workspaceFolder}",
 			"environment": [],
-			"externalConsole": true
+			"console": "internalConsole"
 		}
 	]
 }

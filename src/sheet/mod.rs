@@ -1,12 +1,12 @@
 use core::cmp::Ordering;
-use dunce::canonicalize;
-use euclid::*;
-use failure::Error;
+use euclid::default::*;
+use euclid::rect;
 use pathdiff::diff_paths;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use thiserror::Error;
 
-pub use self::compat::version2::*;
+pub use self::compat::version3::*;
 use self::constants::*;
 
 pub mod compat;
@@ -16,32 +16,34 @@ pub mod constants {
     pub const MAX_HITBOX_NAME_LENGTH: usize = 32;
 }
 
-#[derive(Fail, Debug)]
+#[derive(Error, Debug)]
 pub enum SheetError {
-    #[fail(display = "Animation was not found")]
+    #[error("Animation was not found")]
     AnimationNotFound,
-    #[fail(display = "Hitbox was not found")]
+    #[error("Hitbox was not found")]
     HitboxNotFound,
-    #[fail(display = "Animation name too long")]
+    #[error("Animation name too long")]
     AnimationNameTooLong,
-    #[fail(display = "Hitbox name too long")]
+    #[error("Hitbox name too long")]
     HitboxNameTooLong,
-    #[fail(display = "Error converting an absolute path to a relative path")]
+    #[error("A hitbox with the name `{0}` already exists")]
+    HitboxNameAlreadyExists(String),
+    #[error("Error converting an absolute path to a relative path")]
     AbsoluteToRelativePath,
-    #[fail(display = "Invalid frame index")]
+    #[error("Invalid frame index")]
     InvalidFrameIndex,
 }
 
 impl Sheet {
-    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, Error> {
+    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
             frame.source = diff_paths(&frame.source, relative_to.as_ref())
                 .ok_or(SheetError::AbsoluteToRelativePath)?;
         }
         for animation in sheet.animations.iter_mut() {
-            for animation_frame in animation.frames_iter_mut() {
-                animation_frame.frame = diff_paths(&animation_frame.frame, relative_to.as_ref())
+            for keyframe in animation.keyframes_iter_mut() {
+                keyframe.frame = diff_paths(&keyframe.frame, relative_to.as_ref())
                     .ok_or(SheetError::AbsoluteToRelativePath)?;
             }
         }
@@ -51,21 +53,20 @@ impl Sheet {
         Ok(sheet)
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, Error> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Sheet {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
-            frame.source = canonicalize(relative_to.as_ref().join(&frame.source))?;
+            frame.source = relative_to.as_ref().join(&frame.source);
         }
         for animation in sheet.animations.iter_mut() {
-            for animation_frame in animation.frames_iter_mut() {
-                animation_frame.frame =
-                    canonicalize(relative_to.as_ref().join(&&animation_frame.frame))?;
+            for keyframe in animation.keyframes_iter_mut() {
+                keyframe.frame = relative_to.as_ref().join(&&keyframe.frame);
             }
         }
         if let Some(e) = sheet.export_settings {
-            sheet.export_settings = Some(e.with_absolute_paths(relative_to)?);
+            sheet.export_settings = Some(e.with_absolute_paths(relative_to));
         }
-        Ok(sheet)
+        sheet
     }
 
     pub fn frames_iter(&self) -> std::slice::Iter<'_, Frame> {
@@ -112,10 +113,6 @@ impl Sheet {
         self.frames.iter().find(|f| f.source == path.as_ref())
     }
 
-    pub fn get_frame_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Frame> {
-        self.frames.iter_mut().find(|f| f.source == path.as_ref())
-    }
-
     pub fn get_animation<T: AsRef<str>>(&self, name: T) -> Option<&Animation> {
         self.animations.iter().find(|a| a.name == name.as_ref())
     }
@@ -136,7 +133,7 @@ impl Sheet {
         &mut self,
         old_name: T,
         new_name: U,
-    ) -> Result<(), Error> {
+    ) -> Result<(), SheetError> {
         if new_name.as_ref().len() > MAX_ANIMATION_NAME_LENGTH {
             return Err(SheetError::AnimationNameTooLong.into());
         }
@@ -150,13 +147,20 @@ impl Sheet {
     pub fn delete_frame<T: AsRef<Path>>(&mut self, path: T) {
         self.frames.retain(|f| f.source != path.as_ref());
         for animation in self.animations.iter_mut() {
-            animation.timeline.retain(|af| af.frame != path.as_ref())
+            animation.timeline.retain(|kf| kf.frame != path.as_ref())
         }
     }
 
-    pub fn delete_hitbox<T: AsRef<Path>, U: AsRef<str>>(&mut self, path: T, name: U) {
-        if let Some(frame) = self.get_frame_mut(path.as_ref()) {
-            frame.hitboxes.retain(|h| h.name != name.as_ref());
+    pub fn delete_hitbox<T: AsRef<str>, U: AsRef<str>>(
+        &mut self,
+        animation_name: T,
+        frame_index: usize,
+        name: U,
+    ) {
+        if let Some(animation) = self.get_animation_mut(animation_name) {
+            if let Some(keyframe) = animation.get_keyframe_mut(frame_index) {
+                keyframe.delete_hitbox(name);
+            }
         }
     }
 
@@ -164,7 +168,7 @@ impl Sheet {
         self.animations.retain(|a| a.name != name.as_ref());
     }
 
-    pub fn delete_animation_frame<T: AsRef<str>>(&mut self, animation_name: T, frame_index: usize) {
+    pub fn delete_keyframe<T: AsRef<str>>(&mut self, animation_name: T, frame_index: usize) {
         if let Some(animation) = self.get_animation_mut(animation_name) {
             if frame_index < animation.timeline.len() {
                 animation.timeline.remove(frame_index);
@@ -186,7 +190,7 @@ impl Animation {
         &self.name
     }
 
-    pub fn get_num_frames(&self) -> usize {
+    pub fn get_num_keyframes(&self) -> usize {
         self.timeline.len()
     }
 
@@ -205,21 +209,21 @@ impl Animation {
         Some(self.timeline.iter().map(|f| f.duration).sum())
     }
 
-    pub fn get_frame(&self, index: usize) -> Option<&AnimationFrame> {
+    pub fn get_keyframe(&self, index: usize) -> Option<&Keyframe> {
         if index >= self.timeline.len() {
             return None;
         }
         Some(&self.timeline[index])
     }
 
-    pub fn get_frame_mut(&mut self, index: usize) -> Option<&mut AnimationFrame> {
+    pub fn get_keyframe_mut(&mut self, index: usize) -> Option<&mut Keyframe> {
         if index >= self.timeline.len() {
             return None;
         }
         Some(&mut self.timeline[index])
     }
 
-    pub fn get_frame_at(&self, time: Duration) -> Option<(usize, &AnimationFrame)> {
+    pub fn get_keyframe_index_at(&self, time: Duration) -> Option<usize> {
         let duration = match self.get_duration() {
             None => return None,
             Some(0) => return None,
@@ -234,18 +238,25 @@ impl Animation {
         for (index, frame) in self.timeline.iter().enumerate() {
             cursor += Duration::from_millis(u64::from(frame.duration));
             if time < cursor {
-                return Some((index, frame));
+                return Some(index);
             }
         }
-        Some((
-            self.timeline.len() - 1,
-            self.timeline.iter().last().unwrap(),
-        )) // TODO no unwrap
+        Some(self.timeline.len() - 1)
     }
 
-    pub fn get_frame_times(&self) -> Vec<u64> {
+    pub fn get_keyframe_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
+        let keyframe_index = self.get_keyframe_index_at(time)?;
+        Some((keyframe_index, self.timeline.get(keyframe_index)?))
+    }
+
+    pub fn get_keyframe_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe)> {
+        let keyframe_index = self.get_keyframe_index_at(time)?;
+        Some((keyframe_index, self.timeline.get_mut(keyframe_index)?))
+    }
+
+    pub fn get_keyframe_times(&self) -> Vec<u64> {
         let mut cursor = 0;
-        self.frames_iter()
+        self.keyframes_iter()
             .map(|f| {
                 let t = cursor;
                 cursor += u64::from(f.get_duration());
@@ -254,35 +265,39 @@ impl Animation {
             .collect()
     }
 
-    pub fn insert_frame<T: AsRef<Path>>(&mut self, frame: T, index: usize) -> Result<(), Error> {
-        // TODO validate that frame exists in sheet!
+    pub fn create_keyframe<T: AsRef<Path>>(
+        &mut self,
+        frame: T,
+        index: usize,
+    ) -> Result<(), SheetError> {
         if index > self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
         }
-        let animation_frame = AnimationFrame::new(frame);
-        self.timeline.insert(index, animation_frame);
+        let keyframe = Keyframe::new(frame);
+        self.timeline.insert(index, keyframe);
         Ok(())
     }
 
-    pub fn reorder_frame(&mut self, old_index: usize, new_index: usize) -> Result<(), Error> {
-        if old_index >= self.timeline.len() || new_index > self.timeline.len() {
+    pub fn insert_keyframe(&mut self, keyframe: Keyframe, index: usize) -> Result<(), SheetError> {
+        if index > self.timeline.len() {
             return Err(SheetError::InvalidFrameIndex.into());
         }
-        let moving_element = self.timeline.remove(old_index);
-        let adjusted_index = if new_index > old_index {
-            new_index - 1
-        } else {
-            new_index
-        };
-        self.timeline.insert(adjusted_index, moving_element);
+        self.timeline.insert(index, keyframe);
         Ok(())
     }
 
-    pub fn frames_iter(&self) -> std::slice::Iter<'_, AnimationFrame> {
+    pub fn take_keyframe(&mut self, index: usize) -> Result<Keyframe, SheetError> {
+        if index >= self.timeline.len() {
+            return Err(SheetError::InvalidFrameIndex.into());
+        }
+        Ok(self.timeline.remove(index))
+    }
+
+    pub fn keyframes_iter(&self) -> std::slice::Iter<'_, Keyframe> {
         self.timeline.iter()
     }
 
-    pub fn frames_iter_mut(&mut self) -> std::slice::IterMut<'_, AnimationFrame> {
+    pub fn keyframes_iter_mut(&mut self) -> std::slice::IterMut<'_, Keyframe> {
         self.timeline.iter_mut()
     }
 }
@@ -303,61 +318,11 @@ impl Frame {
     pub fn new<T: AsRef<Path>>(path: T) -> Frame {
         Frame {
             source: path.as_ref().to_owned(),
-            hitboxes: vec![],
         }
     }
 
     pub fn get_source(&self) -> &Path {
         &self.source
-    }
-
-    pub fn hitboxes_iter(&self) -> std::slice::Iter<'_, Hitbox> {
-        self.hitboxes.iter()
-    }
-
-    pub fn get_hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
-        self.hitboxes.iter().find(|a| a.name == name.as_ref())
-    }
-
-    pub fn get_hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
-        self.hitboxes.iter_mut().find(|a| a.name == name.as_ref())
-    }
-
-    pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
-        self.hitboxes.iter().any(|a| a.name == name.as_ref())
-    }
-
-    pub fn add_hitbox(&mut self) -> &mut Hitbox {
-        let mut name = "New Hitbox".to_owned();
-        let mut index = 2;
-        while self.has_hitbox(&name) {
-            name = format!("New Hitbox {}", index);
-            index += 1;
-        }
-
-        self.hitboxes.push(Hitbox {
-            name,
-            geometry: Shape::Rectangle(Rectangle {
-                top_left: (0, 0),
-                size: (0, 0),
-            }),
-        });
-        self.hitboxes.last_mut().unwrap() // TODO no unwrap?
-    }
-
-    pub fn rename_hitbox<T: AsRef<str>, U: AsRef<str>>(
-        &mut self,
-        old_name: T,
-        new_name: U,
-    ) -> Result<(), Error> {
-        if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
-            return Err(SheetError::HitboxNameTooLong.into());
-        }
-        let hitbox = self
-            .get_hitbox_mut(old_name)
-            .ok_or(SheetError::HitboxNotFound)?;
-        hitbox.name = new_name.as_ref().to_owned();
-        Ok(())
     }
 }
 
@@ -415,6 +380,22 @@ impl Hitbox {
             }
         }
     }
+
+    pub fn is_linked(&self) -> bool {
+        self.linked
+    }
+
+    pub fn set_linked(&mut self, linked: bool) {
+        self.linked = linked
+    }
+
+    pub fn is_locked(&self) -> bool {
+        self.locked
+    }
+
+    pub fn set_locked(&mut self, locked: bool) {
+        self.locked = locked
+    }
 }
 
 impl Ord for Hitbox {
@@ -429,12 +410,13 @@ impl PartialOrd for Hitbox {
     }
 }
 
-impl AnimationFrame {
-    pub fn new<T: AsRef<Path>>(frame: T) -> AnimationFrame {
-        AnimationFrame {
+impl Keyframe {
+    pub fn new<T: AsRef<Path>>(frame: T) -> Keyframe {
+        Keyframe {
             frame: frame.as_ref().to_owned(),
             duration: 100, // TODO better default?
             offset: (0, 0),
+            hitboxes: Vec::new(),
         }
     }
 
@@ -457,13 +439,77 @@ impl AnimationFrame {
     pub fn set_offset(&mut self, new_offset: Vector2D<i32>) {
         self.offset = new_offset.to_tuple();
     }
+
+    pub fn hitboxes_iter(&self) -> std::slice::Iter<'_, Hitbox> {
+        self.hitboxes.iter()
+    }
+
+    pub fn hitboxes_iter_mut(&mut self) -> std::slice::IterMut<'_, Hitbox> {
+        self.hitboxes.iter_mut()
+    }
+
+    pub fn get_hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
+        self.hitboxes.iter().find(|a| a.name == name.as_ref())
+    }
+
+    pub fn get_hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
+        self.hitboxes.iter_mut().find(|a| a.name == name.as_ref())
+    }
+
+    pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
+        self.hitboxes.iter().any(|a| a.name == name.as_ref())
+    }
+
+    pub fn add_hitbox(&mut self) -> &mut Hitbox {
+        let mut name = "New Hitbox".to_owned();
+        let mut index = 2;
+        while self.has_hitbox(&name) {
+            name = format!("New Hitbox {}", index);
+            index += 1;
+        }
+
+        self.hitboxes.push(Hitbox {
+            name,
+            geometry: Shape::Rectangle(Rectangle {
+                top_left: (0, 0),
+                size: (0, 0),
+            }),
+            linked: true,
+            locked: false,
+        });
+        self.hitboxes.last_mut().unwrap() // TODO no unwrap?
+    }
+
+    pub fn rename_hitbox<T: AsRef<str>, U: AsRef<str>>(
+        &mut self,
+        old_name: T,
+        new_name: U,
+    ) -> Result<(), SheetError> {
+        if new_name.as_ref().len() > MAX_HITBOX_NAME_LENGTH {
+            return Err(SheetError::HitboxNameTooLong);
+        }
+        if self.has_hitbox(&new_name) {
+            return Err(SheetError::HitboxNameAlreadyExists(
+                new_name.as_ref().to_owned(),
+            ));
+        }
+        let hitbox = self
+            .get_hitbox_mut(old_name)
+            .ok_or(SheetError::HitboxNotFound)?;
+        hitbox.name = new_name.as_ref().to_owned();
+        Ok(())
+    }
+
+    pub fn delete_hitbox<T: AsRef<str>>(&mut self, name: T) {
+        self.hitboxes.retain(|h| h.name != name.as_ref());
+    }
 }
 
 impl ExportFormat {
     pub fn with_relative_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
-    ) -> Result<ExportFormat, Error> {
+    ) -> Result<ExportFormat, SheetError> {
         match self {
             ExportFormat::Template(p) => Ok(ExportFormat::Template(
                 diff_paths(&p, relative_to.as_ref()).ok_or(SheetError::AbsoluteToRelativePath)?,
@@ -471,14 +517,9 @@ impl ExportFormat {
         }
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(
-        &self,
-        relative_to: T,
-    ) -> Result<ExportFormat, Error> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportFormat {
         match self {
-            ExportFormat::Template(p) => Ok(ExportFormat::Template(canonicalize(
-                relative_to.as_ref().join(&p),
-            )?)),
+            ExportFormat::Template(p) => ExportFormat::Template(relative_to.as_ref().join(&p)),
         }
     }
 }
@@ -496,7 +537,7 @@ impl ExportSettings {
     pub fn with_relative_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
-    ) -> Result<ExportSettings, Error> {
+    ) -> Result<ExportSettings, SheetError> {
         Ok(ExportSettings {
             format: self.format.with_relative_paths(&relative_to)?,
             texture_destination: diff_paths(&self.texture_destination, relative_to.as_ref())
@@ -508,21 +549,12 @@ impl ExportSettings {
         })
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(
-        &self,
-        relative_to: T,
-    ) -> Result<ExportSettings, Error> {
-        Ok(ExportSettings {
-            format: self.format.with_absolute_paths(&relative_to)?,
-            texture_destination: canonicalize(
-                relative_to.as_ref().join(&self.texture_destination),
-            )?,
-            metadata_destination: canonicalize(
-                relative_to.as_ref().join(&self.metadata_destination),
-            )?,
-            metadata_paths_root: canonicalize(
-                relative_to.as_ref().join(&self.metadata_paths_root),
-            )?,
-        })
+    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportSettings {
+        ExportSettings {
+            format: self.format.with_absolute_paths(&relative_to),
+            texture_destination: relative_to.as_ref().join(&self.texture_destination),
+            metadata_destination: relative_to.as_ref().join(&self.metadata_destination),
+            metadata_paths_root: relative_to.as_ref().join(&self.metadata_paths_root),
+        }
     }
 }

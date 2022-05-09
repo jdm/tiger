@@ -1,5 +1,6 @@
-use euclid::*;
-use std::path::Path;
+use euclid::default::*;
+use euclid::vec2;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
 
 use crate::sheet::*;
@@ -42,9 +43,13 @@ impl CommandBuffer {
         self.queue.push(Async(BeginOpenDocument));
     }
 
-    pub fn end_open_document<T: AsRef<Path>>(&mut self, path: T) {
+    pub fn read_document<T: AsRef<Path>>(&mut self, path: T) {
         self.queue
-            .push(Sync(App(EndOpenDocument(path.as_ref().to_owned()))));
+            .push(Async(ReadDocument(path.as_ref().to_owned())));
+    }
+
+    pub fn end_open_document(&mut self, document: crate::state::Document) {
+        self.queue.push(Sync(App(EndOpenDocument(document))));
     }
 
     pub fn relocate_document<T: AsRef<Path>, U: AsRef<Path>>(&mut self, from: T, to: U) {
@@ -60,7 +65,7 @@ impl CommandBuffer {
     }
 
     pub fn close_current_document(&mut self) {
-        self.queue.push(Sync(App(CloseCurrentDocument)));
+        self.queue.push(Sync(Document(Close)));
     }
 
     pub fn close_all_documents(&mut self) {
@@ -96,6 +101,14 @@ impl CommandBuffer {
 
     pub fn redo(&mut self) {
         self.queue.push(Sync(App(Redo)));
+    }
+
+    pub fn show_error(&mut self, e: UserFacingError) {
+        self.queue.push(Sync(App(ShowError(e))));
+    }
+
+    pub fn clear_error(&mut self) {
+        self.queue.push(Sync(App(ClearError())));
     }
 
     pub fn begin_export_as(&mut self) {
@@ -175,9 +188,11 @@ impl CommandBuffer {
         self.queue.push(Sync(Document(CancelExportAs)));
     }
 
-    pub fn end_export_as(&mut self, sheet: &Sheet) {
+    pub fn end_export_as(&mut self, sheet: &Sheet, export_settings: ExportSettings) {
         self.queue.push(Sync(Document(EndExportAs)));
-        self.queue.push(Async(Export(sheet.clone())));
+        let mut cloned_sheet = sheet.clone();
+        cloned_sheet.set_export_settings(export_settings);
+        self.queue.push(Async(Export(cloned_sheet)));
     }
 
     pub fn export(&mut self, sheet: &Sheet) {
@@ -204,33 +219,23 @@ impl CommandBuffer {
         self.queue.push(Sync(Document(ClearSelection)));
     }
 
-    pub fn select_frame(&mut self, frame: &Frame) {
+    pub fn select_frames(&mut self, paths: &MultiSelection<PathBuf>) {
+        self.queue.push(Sync(Document(SelectFrames(paths.clone()))));
+    }
+
+    pub fn select_animations(&mut self, names: &MultiSelection<String>) {
         self.queue
-            .push(Sync(Document(SelectFrame(frame.get_source().to_owned()))));
+            .push(Sync(Document(SelectAnimations(names.clone()))));
     }
 
-    pub fn select_animation(&mut self, animation: &Animation) {
-        self.queue.push(Sync(Document(SelectAnimation(
-            animation.get_name().to_owned(),
-        ))));
-    }
-
-    pub fn select_hitbox(&mut self, hitbox: &Hitbox) {
+    pub fn select_hitboxes(&mut self, names: &MultiSelection<String>) {
         self.queue
-            .push(Sync(Document(SelectHitbox(hitbox.get_name().to_owned()))));
+            .push(Sync(Document(SelectHitboxes(names.clone()))));
     }
 
-    pub fn select_animation_frame(&mut self, animation_frame_index: usize) {
+    pub fn select_keyframes(&mut self, indexes: &MultiSelection<usize>) {
         self.queue
-            .push(Sync(Document(SelectAnimationFrame(animation_frame_index))));
-    }
-
-    pub fn select_previous(&mut self) {
-        self.queue.push(Sync(Document(SelectPrevious)));
-    }
-
-    pub fn select_next(&mut self) {
-        self.queue.push(Sync(Document(SelectNext)));
+            .push(Sync(Document(SelectKeyframes(indexes.clone()))));
     }
 
     pub fn edit_frame(&mut self, frame: &Frame) {
@@ -248,80 +253,75 @@ impl CommandBuffer {
         self.queue.push(Sync(Document(CreateAnimation)));
     }
 
-    pub fn begin_frame_drag(&mut self, frame: &Frame) {
-        self.queue.push(Sync(Document(BeginFrameDrag(
-            frame.get_source().to_owned(),
-        ))));
+    pub fn begin_frames_drag(&mut self) {
+        self.queue.push(Sync(Document(BeginFramesDrag)));
     }
 
-    pub fn end_frame_drag(&mut self) {
-        self.queue.push(Sync(Document(EndFrameDrag)));
+    pub fn end_frames_drag(&mut self) {
+        self.queue.push(Sync(Document(EndFramesDrag)));
     }
 
-    pub fn insert_animation_frame_before<T: AsRef<Path>>(
+    pub fn insert_keyframes_before<T: AsRef<Path>>(
         &mut self,
-        frame: T,
-        animation_frame_index: usize,
+        frames: Vec<T>,
+        keyframe_index: usize,
     ) {
-        self.queue.push(Sync(Document(InsertAnimationFrameBefore(
-            frame.as_ref().to_owned(),
-            animation_frame_index,
+        let mut sorted_frames: Vec<PathBuf> =
+            frames.iter().map(|p| p.as_ref().to_owned()).collect();
+        sorted_frames.sort();
+        self.queue.push(Sync(Document(InsertKeyframesBefore(
+            sorted_frames,
+            keyframe_index,
         ))));
     }
 
-    pub fn reorder_animation_frame(&mut self, old_index: usize, new_index: usize) {
-        self.queue
-            .push(Sync(Document(ReorderAnimationFrame(old_index, new_index))));
+    pub fn reorder_keyframes(&mut self, new_index: usize) {
+        self.queue.push(Sync(Document(ReorderKeyframes(new_index))));
     }
 
-    pub fn begin_animation_frame_duration_drag(&mut self, animation_frame_index: usize) {
-        self.queue
-            .push(Sync(Document(BeginAnimationFrameDurationDrag(
-                animation_frame_index,
-            ))));
-    }
-
-    pub fn update_animation_frame_duration_drag(&mut self, new_duration: u32) {
-        self.queue
-            .push(Sync(Document(UpdateAnimationFrameDurationDrag(
-                new_duration,
-            ))));
-    }
-
-    pub fn end_animation_frame_duration_drag(&mut self) {
-        self.queue
-            .push(Sync(Document(EndAnimationFrameDurationDrag)));
-    }
-
-    pub fn begin_animation_frame_drag(&mut self, animation_frame_index: usize) {
-        self.queue.push(Sync(Document(BeginAnimationFrameDrag(
-            animation_frame_index,
-        ))));
-    }
-
-    pub fn end_animation_frame_drag(&mut self) {
-        self.queue.push(Sync(Document(EndAnimationFrameDrag)));
-    }
-
-    pub fn begin_animation_frame_offset_drag(&mut self, frame_index: usize) {
-        self.queue
-            .push(Sync(Document(BeginAnimationFrameOffsetDrag(frame_index))));
-    }
-
-    pub fn update_animation_frame_offset_drag(
+    pub fn begin_keyframe_duration_drag(
         &mut self,
-        mouse_delta: Vector2D<f32>,
-        both_axis: bool,
+        clock_at_cursor: u32,
+        frame_being_dragged: usize,
     ) {
-        self.queue
-            .push(Sync(Document(UpdateAnimationFrameOffsetDrag(
-                mouse_delta,
-                both_axis,
-            ))));
+        self.queue.push(Sync(Document(BeginKeyframeDurationDrag(
+            clock_at_cursor,
+            frame_being_dragged,
+        ))));
     }
 
-    pub fn end_animation_frame_offset_drag(&mut self) {
-        self.queue.push(Sync(Document(EndAnimationFrameOffsetDrag)));
+    pub fn update_keyframe_duration_drag(&mut self, clock_at_cursor: u32, minimum_duration: u32) {
+        self.queue.push(Sync(Document(UpdateKeyframeDurationDrag(
+            clock_at_cursor,
+            minimum_duration,
+        ))));
+    }
+
+    pub fn end_keyframe_duration_drag(&mut self) {
+        self.queue.push(Sync(Document(EndKeyframeDurationDrag)));
+    }
+
+    pub fn begin_keyframe_drag(&mut self) {
+        self.queue.push(Sync(Document(BeginKeyframeDrag)));
+    }
+
+    pub fn end_keyframe_drag(&mut self) {
+        self.queue.push(Sync(Document(EndKeyframeDrag)));
+    }
+
+    pub fn begin_keyframe_offset_drag(&mut self) {
+        self.queue.push(Sync(Document(BeginKeyframeOffsetDrag)));
+    }
+
+    pub fn update_keyframe_offset_drag(&mut self, mouse_delta: Vector2D<f32>, both_axis: bool) {
+        self.queue.push(Sync(Document(UpdateKeyframeOffsetDrag(
+            mouse_delta,
+            both_axis,
+        ))));
+    }
+
+    pub fn end_keyframe_offset_drag(&mut self) {
+        self.queue.push(Sync(Document(EndKeyframeOffsetDrag)));
     }
 
     pub fn workbench_zoom_in(&mut self) {
@@ -349,11 +349,8 @@ impl CommandBuffer {
             .push(Sync(Document(CreateHitbox(mouse_position))));
     }
 
-    pub fn begin_hitbox_scale(&mut self, hitbox: &Hitbox, axis: ResizeAxis) {
-        self.queue.push(Sync(Document(BeginHitboxScale(
-            hitbox.get_name().to_owned(),
-            axis,
-        ))));
+    pub fn begin_hitbox_scale(&mut self, axis: ResizeAxis) {
+        self.queue.push(Sync(Document(BeginHitboxScale(axis))));
     }
 
     pub fn update_hitbox_scale(&mut self, mouse_delta: Vector2D<f32>, preserve_aspect_ratio: bool) {
@@ -367,10 +364,8 @@ impl CommandBuffer {
         self.queue.push(Sync(Document(EndHitboxScale)));
     }
 
-    pub fn begin_hitbox_drag(&mut self, hitbox: &Hitbox) {
-        self.queue.push(Sync(Document(BeginHitboxDrag(
-            hitbox.get_name().to_owned(),
-        ))));
+    pub fn begin_hitbox_drag(&mut self) {
+        self.queue.push(Sync(Document(BeginHitboxDrag)));
     }
 
     pub fn update_hitbox_drag(&mut self, mouse_delta: Vector2D<f32>, both_axis: bool) {
@@ -380,6 +375,20 @@ impl CommandBuffer {
 
     pub fn end_hitbox_drag(&mut self) {
         self.queue.push(Sync(Document(EndHitboxDrag)));
+    }
+
+    pub fn set_hitbox_linked(&mut self, hitbox: &Hitbox, linked: bool) {
+        self.queue.push(Sync(Document(SetHitboxLinked(
+            hitbox.get_name().to_owned(),
+            linked,
+        ))));
+    }
+
+    pub fn set_hitbox_locked(&mut self, hitbox: &Hitbox, locked: bool) {
+        self.queue.push(Sync(Document(SetHitboxLocked(
+            hitbox.get_name().to_owned(),
+            locked,
+        ))));
     }
 
     pub fn toggle_playback(&mut self) {
@@ -464,12 +473,16 @@ impl CommandBuffer {
         self.queue.push(Sync(App(Exit)));
     }
 
-    pub fn exit_after_saving(&mut self) {
-        self.queue.push(Sync(App(ExitAfterSaving)));
+    pub fn close_after_saving(&mut self) {
+        self.queue.push(Sync(Document(CloseAfterSaving)));
     }
 
-    pub fn exit_without_saving(&mut self) {
-        self.queue.push(Sync(App(ExitWithoutSaving)));
+    pub fn close_without_saving(&mut self) {
+        self.queue.push(Sync(Document(CloseWithoutSaving)));
+    }
+
+    pub fn cancel_close(&mut self) {
+        self.queue.push(Sync(Document(CancelClose)));
     }
 
     pub fn cancel_exit(&mut self) {
