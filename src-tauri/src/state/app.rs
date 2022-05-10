@@ -1,0 +1,59 @@
+use std::{
+    path::{Path, PathBuf},
+    sync::Mutex,
+};
+use thiserror::Error;
+
+use crate::state::Document;
+
+#[derive(Error, Debug)]
+pub enum AppError {
+    #[error("The requested document (`{0}`) is not currently opened.")]
+    DocumentNotFound(PathBuf),
+}
+
+impl From<AppError> for String {
+    fn from(e: AppError) -> Self {
+        e.to_string()
+    }
+}
+
+pub struct AppState(pub Mutex<App>);
+#[derive(Debug, Default)]
+pub struct App {
+    documents: Vec<Document>,
+    current_document: Option<PathBuf>,
+}
+
+impl App {
+    pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
+        self.documents.iter()
+    }
+
+    pub fn open_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
+        if self.get_document(&path).is_none() {
+            let document = Document::new(&path);
+            self.documents.push(document);
+        }
+        self.focus_document(path)
+    }
+
+    pub fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
+        let document = self
+            .get_document_mut(&path)
+            .ok_or_else(|| AppError::DocumentNotFound(path.as_ref().to_path_buf()))?;
+        document.clear_transient();
+        self.current_document = Some(path.as_ref().to_owned());
+        Ok(())
+    }
+
+    fn get_document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {
+        self.documents.iter().find(|d| d.source() == path.as_ref())
+    }
+
+    fn get_document_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Document> {
+        self.documents
+            .iter_mut()
+            .find(|d| d.source() == path.as_ref())
+    }
+}

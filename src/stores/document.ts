@@ -4,7 +4,7 @@ interface Sheet {}
 
 interface View {}
 
-export const useDocument = defineStore("document", {
+export const useDocumentStore = defineStore("document", {
   state: () => ({
     source: "something" as null | String,
     sheet: null as null | Sheet,
@@ -13,5 +13,5 @@ export const useDocument = defineStore("document", {
 });
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useDocument, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(useDocumentStore, import.meta.hot));
 }

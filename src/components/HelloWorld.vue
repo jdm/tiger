@@ -1,16 +1,21 @@
 <script setup lang="ts">
-import { useApp } from '@/stores/app'
-import { useDocument } from '@/stores/document'
+import { useAppStore } from '@/stores/app'
+import { useDocumentStore } from '@/stores/document'
+import { openDocument } from '@/commands/app'
 
-const app = useApp()
-const document = useDocument()
+const app = useAppStore()
+const document = useDocumentStore()
+
+function o() {
+  openDocument("example" + Math.random());
+}
 </script>
 
 <template>
-  Oink oink
-  Opened:
-  <div v-for="path in app.documents">
-    {{ path }}
-  </div>
-  Editing {{ document.source }}
+  <p>Current document: {{ document.source }}</p>
+  <button @click="o">Open document</button>
+  <p>Open documents:</p>
+  <ul v-for=" path in app.documents">
+    <li>{{ path }}</li>
+  </ul>
 </template>
