@@ -9,9 +9,9 @@ use crate::state::*;
 pub struct Document {
     pub source: PathBuf,
     pub sheet: Sheet, // Sheet being edited, fully recorded in history
-    pub view: View,   // View state, collapsed and recorded in history
+    pub view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
     pub transient: Option<Transient>, // State preventing undo actions when not default, not recorded in history
-    pub persistent: Persistent,       // Other state, not recorded in history
+    pub persistent: Persistent,       // Other state not recorded in history
     next_version: i32,
     history: Vec<HistoryEntry>,
     history_index: usize,
