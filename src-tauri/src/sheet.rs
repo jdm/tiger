@@ -1,6 +1,8 @@
 use core::cmp::Ordering;
 use euclid::default::*;
 use euclid::rect;
+#[cfg(test)]
+use euclid::vec2;
 use pathdiff::diff_paths;
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -362,76 +364,6 @@ impl PartialOrd for Frame {
     }
 }
 
-impl Hitbox {
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn rectangle(&self) -> Rect<i32> {
-        match &self.geometry {
-            Shape::Rectangle(r) => {
-                rect(r.top_left.0, r.top_left.1, r.size.0 as i32, r.size.1 as i32)
-            }
-        }
-    }
-
-    pub fn position(&self) -> Vector2D<i32> {
-        match &self.geometry {
-            Shape::Rectangle(r) => r.top_left.into(),
-        }
-    }
-
-    pub fn size(&self) -> Vector2D<u32> {
-        match &self.geometry {
-            Shape::Rectangle(r) => r.size.into(),
-        }
-    }
-
-    pub fn set_position(&mut self, new_position: Vector2D<i32>) {
-        match &mut self.geometry {
-            Shape::Rectangle(r) => {
-                r.top_left = new_position.to_tuple();
-            }
-        }
-    }
-
-    pub fn set_size(&mut self, new_size: Vector2D<u32>) {
-        match &mut self.geometry {
-            Shape::Rectangle(r) => {
-                r.size = new_size.to_tuple();
-            }
-        }
-    }
-
-    pub fn linked(&self) -> bool {
-        self.linked
-    }
-
-    pub fn set_linked(&mut self, linked: bool) {
-        self.linked = linked
-    }
-
-    pub fn locked(&self) -> bool {
-        self.locked
-    }
-
-    pub fn set_locked(&mut self, locked: bool) {
-        self.locked = locked
-    }
-}
-
-impl Ord for Hitbox {
-    fn cmp(&self, other: &Hitbox) -> Ordering {
-        self.name.cmp(&other.name)
-    }
-}
-
-impl PartialOrd for Hitbox {
-    fn partial_cmp(&self, other: &Hitbox) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 impl Keyframe {
     pub fn new<T: AsRef<Path>>(frame: T) -> Keyframe {
         Keyframe {
@@ -527,22 +459,85 @@ impl Keyframe {
     }
 }
 
-impl ExportFormat {
-    pub fn with_relative_paths<T: AsRef<Path>>(
-        &self,
-        relative_to: T,
-    ) -> Result<ExportFormat, SheetError> {
-        match self {
-            ExportFormat::Template(p) => Ok(ExportFormat::Template(
-                diff_paths(&p, relative_to.as_ref()).ok_or(SheetError::AbsoluteToRelativePath)?,
-            )),
+impl Hitbox {
+    pub fn new<T: AsRef<str>>(name: T) -> Self {
+        Hitbox {
+            name: name.as_ref().to_owned(),
+            geometry: Shape::Rectangle(Rectangle {
+                top_left: (-10, -10),
+                size: (20, 20),
+            }),
+            linked: true,
+            locked: false,
         }
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportFormat {
-        match self {
-            ExportFormat::Template(p) => ExportFormat::Template(relative_to.as_ref().join(&p)),
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn rectangle(&self) -> Rect<i32> {
+        match &self.geometry {
+            Shape::Rectangle(r) => {
+                rect(r.top_left.0, r.top_left.1, r.size.0 as i32, r.size.1 as i32)
+            }
         }
+    }
+
+    pub fn position(&self) -> Vector2D<i32> {
+        match &self.geometry {
+            Shape::Rectangle(r) => r.top_left.into(),
+        }
+    }
+
+    pub fn size(&self) -> Vector2D<u32> {
+        match &self.geometry {
+            Shape::Rectangle(r) => r.size.into(),
+        }
+    }
+
+    pub fn set_position(&mut self, new_position: Vector2D<i32>) {
+        match &mut self.geometry {
+            Shape::Rectangle(r) => {
+                r.top_left = new_position.to_tuple();
+            }
+        }
+    }
+
+    pub fn set_size(&mut self, new_size: Vector2D<u32>) {
+        match &mut self.geometry {
+            Shape::Rectangle(r) => {
+                r.size = new_size.to_tuple();
+            }
+        }
+    }
+
+    pub fn linked(&self) -> bool {
+        self.linked
+    }
+
+    pub fn set_linked(&mut self, linked: bool) {
+        self.linked = linked
+    }
+
+    pub fn locked(&self) -> bool {
+        self.locked
+    }
+
+    pub fn set_locked(&mut self, locked: bool) {
+        self.locked = locked
+    }
+}
+
+impl Ord for Hitbox {
+    fn cmp(&self, other: &Hitbox) -> Ordering {
+        self.name.cmp(&other.name)
+    }
+}
+
+impl PartialOrd for Hitbox {
+    fn partial_cmp(&self, other: &Hitbox) -> Option<Ordering> {
+        Some(self.cmp(other))
     }
 }
 
@@ -579,4 +574,81 @@ impl ExportSettings {
             metadata_paths_root: relative_to.as_ref().join(&self.metadata_paths_root),
         }
     }
+}
+
+impl ExportFormat {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        &self,
+        relative_to: T,
+    ) -> Result<ExportFormat, SheetError> {
+        match self {
+            ExportFormat::Template(p) => Ok(ExportFormat::Template(
+                diff_paths(&p, relative_to.as_ref()).ok_or(SheetError::AbsoluteToRelativePath)?,
+            )),
+        }
+    }
+
+    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportFormat {
+        match self {
+            ExportFormat::Template(p) => ExportFormat::Template(relative_to.as_ref().join(&p)),
+        }
+    }
+}
+
+#[test]
+fn can_read_write_hitbox_position() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_position(vec2(100, 100));
+    assert_eq!(hitbox.position(), vec2(100, 100));
+}
+
+#[test]
+fn can_read_write_hitbox_size() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_size(vec2(50, 50));
+    assert_eq!(hitbox.size(), vec2(50, 50));
+}
+
+#[test]
+fn can_read_write_hitbox_linked() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_linked(true);
+    assert_eq!(hitbox.linked(), true);
+    hitbox.set_linked(false);
+    assert_eq!(hitbox.linked(), false);
+}
+
+#[test]
+fn can_read_write_hitbox_locked() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_locked(true);
+    assert_eq!(hitbox.locked(), true);
+    hitbox.set_locked(false);
+    assert_eq!(hitbox.locked(), false);
+}
+
+#[test]
+fn moving_hitbox_preserves_size() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_size(vec2(50, 50));
+    hitbox.set_position(vec2(0, 0));
+    hitbox.set_position(vec2(100, 100));
+    assert_eq!(hitbox.size(), vec2(50, 50));
+}
+
+#[test]
+fn resizing_hitbox_preserves_position() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_position(vec2(10, 10));
+    hitbox.set_size(vec2(50, 50));
+    hitbox.set_size(vec2(100, 100));
+    assert_eq!(hitbox.position(), vec2(10, 10));
+}
+
+#[test]
+fn can_convert_hitbox_to_rectangle() {
+    let mut hitbox = Hitbox::new("test");
+    hitbox.set_position(vec2(100, 100));
+    hitbox.set_size(vec2(50, 50));
+    assert_eq!(hitbox.rectangle(), rect(100, 100, 50, 50));
 }
