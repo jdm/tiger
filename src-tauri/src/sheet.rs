@@ -201,6 +201,32 @@ impl Sheet {
     }
 }
 
+impl Frame {
+    pub fn new<T: AsRef<Path>>(path: T) -> Frame {
+        Frame {
+            source: path.as_ref().to_owned(),
+        }
+    }
+
+    pub fn get_source(&self) -> &Path {
+        &self.source
+    }
+}
+
+impl Ord for Frame {
+    fn cmp(&self, other: &Frame) -> Ordering {
+        self.source
+            .to_string_lossy()
+            .cmp(&other.source.to_string_lossy())
+    }
+}
+
+impl PartialOrd for Frame {
+    fn partial_cmp(&self, other: &Frame) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 impl Animation {
     pub fn new<T: AsRef<str>>(name: T) -> Animation {
         Animation {
@@ -338,37 +364,11 @@ impl PartialOrd for Animation {
     }
 }
 
-impl Frame {
-    pub fn new<T: AsRef<Path>>(path: T) -> Frame {
-        Frame {
-            source: path.as_ref().to_owned(),
-        }
-    }
-
-    pub fn get_source(&self) -> &Path {
-        &self.source
-    }
-}
-
-impl Ord for Frame {
-    fn cmp(&self, other: &Frame) -> Ordering {
-        self.source
-            .to_string_lossy()
-            .cmp(&other.source.to_string_lossy())
-    }
-}
-
-impl PartialOrd for Frame {
-    fn partial_cmp(&self, other: &Frame) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
 impl Keyframe {
     pub fn new<T: AsRef<Path>>(frame: T) -> Keyframe {
         Keyframe {
             frame: frame.as_ref().to_owned(),
-            duration: 100, // TODO better default?
+            duration: 100,
             offset: (0, 0),
             hitboxes: Vec::new(),
         }
@@ -384,6 +384,10 @@ impl Keyframe {
 
     pub fn offset(&self) -> Vector2D<i32> {
         self.offset.into()
+    }
+
+    pub fn set_frame<T: AsRef<Path>>(&mut self, new_frame: T) {
+        self.frame = new_frame.as_ref().to_owned();
     }
 
     pub fn set_duration(&mut self, new_duration: u32) {
@@ -403,15 +407,15 @@ impl Keyframe {
     }
 
     pub fn hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
-        self.hitboxes.iter().find(|a| a.name == name.as_ref())
+        self.hitboxes.iter().find(|a| a.name() == name.as_ref())
     }
 
     pub fn hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
-        self.hitboxes.iter_mut().find(|a| a.name == name.as_ref())
+        self.hitboxes.iter_mut().find(|a| a.name() == name.as_ref())
     }
 
     pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
-        self.hitboxes.iter().any(|a| a.name == name.as_ref())
+        self.hitboxes.iter().any(|a| a.name() == name.as_ref())
     }
 
     pub fn add_hitbox(&mut self) -> &mut Hitbox {
@@ -450,12 +454,12 @@ impl Keyframe {
         let hitbox = self
             .hitbox_mut(&old_name)
             .ok_or(SheetError::HitboxNotFound(old_name.as_ref().to_owned()))?;
-        hitbox.name = new_name.as_ref().to_owned();
+        hitbox.set_name(new_name);
         Ok(())
     }
 
     pub fn delete_hitbox<T: AsRef<str>>(&mut self, name: T) {
-        self.hitboxes.retain(|h| h.name != name.as_ref());
+        self.hitboxes.retain(|h| h.name() != name.as_ref());
     }
 }
 
@@ -494,6 +498,10 @@ impl Hitbox {
         match &self.geometry {
             Shape::Rectangle(r) => r.size.into(),
         }
+    }
+
+    pub fn set_name<T: AsRef<str>>(&mut self, new_name: T) {
+        self.name = new_name.as_ref().to_owned();
     }
 
     pub fn set_position(&mut self, new_position: Vector2D<i32>) {
@@ -596,6 +604,14 @@ impl ExportFormat {
 }
 
 #[test]
+fn can_read_write_hitbox_name() {
+    let mut hitbox = Hitbox::new("test");
+    assert_eq!(hitbox.name(), "test");
+    hitbox.set_name("other_test");
+    assert_eq!(hitbox.name(), "other_test");
+}
+
+#[test]
 fn can_read_write_hitbox_position() {
     let mut hitbox = Hitbox::new("test");
     hitbox.set_position(vec2(100, 100));
@@ -651,4 +667,49 @@ fn can_convert_hitbox_to_rectangle() {
     hitbox.set_position(vec2(100, 100));
     hitbox.set_size(vec2(50, 50));
     assert_eq!(hitbox.rectangle(), rect(100, 100, 50, 50));
+}
+
+#[test]
+fn can_read_write_keyframe_frame() {
+    let frame = Path::new("./example/directory/texture.png");
+    let other_frame = Path::new("./example/directory/other_texture.png");
+    let mut keyframe = Keyframe::new(frame);
+    assert_eq!(keyframe.frame(), frame);
+    keyframe.set_frame(other_frame);
+    assert_eq!(keyframe.frame(), other_frame);
+}
+
+#[test]
+fn can_read_write_keyframe_duration() {
+    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    keyframe.set_duration(200);
+    assert_eq!(keyframe.duration(), 200);
+}
+
+#[test]
+fn can_read_write_keyframe_offset() {
+    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    keyframe.set_offset(vec2(30, 20));
+    assert_eq!(keyframe.offset(), vec2(30, 20));
+}
+
+#[test]
+fn can_add_and_remove_keyframe_hitboxes() {
+    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    let name = keyframe.add_hitbox().name().to_owned();
+    assert!(keyframe.hitbox(&name).is_some());
+    assert!(keyframe.hitbox_mut(&name).is_some());
+    keyframe.delete_hitbox(&name);
+    assert!(keyframe.hitbox(&name).is_none());
+    assert!(keyframe.hitbox_mut(&name).is_none());
+}
+
+#[test]
+fn can_rename_keyframe_hitboxes() {
+    let frame = Path::new("./example/directory/texture.png");
+    let mut keyframe = Keyframe::new(frame);
+    let old_name = keyframe.add_hitbox().name().to_owned();
+    keyframe.rename_hitbox(&old_name, "updated name").unwrap();
+    assert!(keyframe.hitbox("updated name").is_some());
+    assert!(keyframe.hitbox(&old_name).is_none());
 }
