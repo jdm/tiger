@@ -138,7 +138,7 @@ impl Sheet {
         self.frames.push(frame);
     }
 
-    pub fn add_animation(&mut self) -> &mut Animation {
+    pub fn create_animation(&mut self) -> &mut Animation {
         let mut name = "New Animation".to_owned();
         let mut index = 2;
         while self.has_animation(&name) {
