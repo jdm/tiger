@@ -55,20 +55,8 @@ pub enum DocumentError {
 }
 
 impl Document {
-    pub fn save<T: AsRef<Path>>(sheet: &Sheet, to: T) -> anyhow::Result<()> {
-        let mut directory = to.as_ref().to_owned();
-        directory.pop();
-        let sheet = sheet.with_relative_paths(directory)?;
-        compat::write_sheet(to, &sheet)?;
-        Ok(())
-    }
-
     pub fn is_saved(&self) -> bool {
         self.persistent.disk_version == self.get_version()
-    }
-
-    pub fn get_version(&self) -> i32 {
-        self.history[self.history_index].version
     }
 
     pub fn get_display_name(&self) -> String {

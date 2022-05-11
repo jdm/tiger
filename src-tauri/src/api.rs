@@ -12,3 +12,12 @@ pub async fn open_document(
     app.open_document(path)?;
     Ok((&*app).into())
 }
+
+#[tauri::command]
+pub async fn save_current_document(
+    app_state: tauri::State<'_, AppState>,
+) -> Result<dto::App, String> {
+    let mut app = app_state.0.lock().unwrap();
+    app.save_current_document()?;
+    Ok((&*app).into())
+}

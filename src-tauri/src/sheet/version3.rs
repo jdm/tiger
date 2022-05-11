@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
-use std::fs::File;
-use std::io::{BufReader, Read};
-use std::path::{Path, PathBuf};
+use std::io::Read;
+use std::path::PathBuf;
 
 use crate::sheet::version2 as previous_version;
 use crate::sheet::{SheetError, Version};

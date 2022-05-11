@@ -13,7 +13,10 @@ use state::AppState;
 fn main() {
     tauri::Builder::default()
         .manage(AppState(Default::default()))
-        .invoke_handler(tauri::generate_handler![api::open_document])
+        .invoke_handler(tauri::generate_handler![
+            api::open_document,
+            api::save_current_document,
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

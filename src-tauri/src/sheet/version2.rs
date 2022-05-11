@@ -1,7 +1,6 @@
 use serde::{Deserialize, Serialize};
-use std::fs::File;
-use std::io::{BufReader, Read};
-use std::path::{Path, PathBuf};
+use std::io::Read;
+use std::path::PathBuf;
 
 use crate::sheet::version1 as previous_version;
 use crate::sheet::{SheetError, Version};

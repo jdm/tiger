@@ -8,6 +8,8 @@ use crate::state::{Document, DocumentError};
 
 #[derive(Error, Debug)]
 pub enum AppError {
+    #[error("No document is open")]
+    NoDocumentOpen,
     #[error("The requested document (`{0}`) is not currently opened.")]
     DocumentNotFound(PathBuf),
     #[error("Invalid document operation: {0}")]
@@ -49,11 +51,28 @@ impl App {
         Ok(())
     }
 
+    pub fn save_current_document(&mut self) -> Result<(), AppError> {
+        let destination = self
+            .get_current_document()
+            .map(|d| d.source().to_owned())
+            .ok_or(AppError::NoDocumentOpen)?;
+        match self.get_current_document_mut() {
+            Some(d) => d.save(destination).map_err(|e| e.into()),
+            None => Err(AppError::NoDocumentOpen),
+        }
+    }
+
     pub fn get_current_document(&self) -> Option<&Document> {
         match &self.current_document {
             None => None,
             Some(p) => self.documents.iter().find(|d| d.source() == p),
         }
+    }
+
+    pub fn get_current_document_mut(&mut self) -> Option<&mut Document> {
+        self.current_document
+            .clone()
+            .and_then(|path| self.documents.iter_mut().find(|d| d.source() == path))
     }
 
     fn get_document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {

@@ -74,6 +74,16 @@ impl Document {
         Ok(document)
     }
 
+    pub fn save<T: AsRef<Path>>(&mut self, to: T) -> Result<(), DocumentError> {
+        self.sheet.write(to)?;
+        self.persistent.disk_version = self.version();
+        Ok(())
+    }
+
+    pub fn version(&self) -> i32 {
+        self.history[self.history_index].version
+    }
+
     pub fn source(&self) -> &Path {
         &self.source
     }

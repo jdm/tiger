@@ -21,8 +21,6 @@ pub enum ExitState {
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("No document is open")]
-    NoDocumentOpen,
     #[error("Requested document was not found")]
     DocumentNotFound,
     #[error("Sheet has no export settings")]

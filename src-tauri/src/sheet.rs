@@ -73,7 +73,7 @@ impl Sheet {
         Ok(sheet.with_absolute_paths(directory))
     }
 
-    pub fn write<T: AsRef<Path>>(&self, path: T) -> anyhow::Result<()> {
+    pub fn write<T: AsRef<Path>>(&self, path: T) -> Result<(), SheetError> {
         #[derive(Serialize)]
         struct VersionedSheet<'a> {
             version: Version,
@@ -87,8 +87,9 @@ impl Sheet {
             sheet: &sheet,
         };
 
-        let file = BufWriter::new(File::create(path.as_ref())?);
-        serde_json::to_writer_pretty(file, &versioned_sheet)?;
+        let file = File::create(path.as_ref())
+            .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
+        serde_json::to_writer_pretty(BufWriter::new(file), &versioned_sheet)?;
         Ok(())
     }
 
