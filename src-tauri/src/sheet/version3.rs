@@ -36,7 +36,7 @@ pub struct Animation {
 pub struct Keyframe {
     pub(in crate::sheet) frame: PathBuf,
     pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
-    pub(in crate::sheet) duration: u32, // in ms
+    pub(in crate::sheet) duration_millis: u32,
     pub(in crate::sheet) offset: (i32, i32),
 }
 
@@ -134,7 +134,7 @@ impl From<previous_version::Keyframe> for Keyframe {
     fn from(old: previous_version::Keyframe) -> Keyframe {
         Keyframe {
             frame: old.frame,
-            duration: old.duration,
+            duration_millis: old.duration,
             offset: old.offset,
             hitboxes: BTreeMap::new(),
         }

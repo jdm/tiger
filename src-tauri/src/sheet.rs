@@ -243,11 +243,11 @@ impl Animation {
         self.is_looping = new_is_looping;
     }
 
-    pub fn duration(&self) -> Option<u32> {
+    pub fn duration_millis(&self) -> Option<u32> {
         if self.timeline.is_empty() {
             return None;
         }
-        Some(self.timeline.iter().map(|f| f.duration).sum())
+        Some(self.timeline.iter().map(|f| f.duration_millis).sum())
     }
 
     pub fn keyframe(&self, index: usize) -> Option<&Keyframe> {
@@ -265,7 +265,7 @@ impl Animation {
     }
 
     pub fn keyframe_index_at(&self, time: Duration) -> Option<usize> {
-        let duration = match self.duration() {
+        let duration = match self.duration_millis() {
             None => return None,
             Some(0) => return None,
             Some(d) => d,
@@ -277,7 +277,7 @@ impl Animation {
         };
         let mut cursor = Duration::new(0, 0);
         for (index, frame) in self.timeline.iter().enumerate() {
-            cursor += Duration::from_millis(u64::from(frame.duration));
+            cursor += Duration::from_millis(u64::from(frame.duration_millis));
             if time < cursor {
                 return Some(index);
             }
@@ -300,23 +300,10 @@ impl Animation {
         self.keyframes_iter()
             .map(|f| {
                 let t = cursor;
-                cursor += u64::from(f.duration());
+                cursor += u64::from(f.duration_millis());
                 t
             })
             .collect()
-    }
-
-    pub fn create_keyframe<T: AsRef<Path>>(
-        &mut self,
-        frame: T,
-        index: usize,
-    ) -> Result<(), SheetError> {
-        if index > self.timeline.len() {
-            return Err(SheetError::InvalidFrameIndex(index));
-        }
-        let keyframe = Keyframe::new(frame);
-        self.timeline.insert(index, keyframe);
-        Ok(())
     }
 
     pub fn insert_keyframe(&mut self, keyframe: Keyframe, index: usize) -> Result<(), SheetError> {
@@ -347,7 +334,7 @@ impl Keyframe {
     pub fn new<T: AsRef<Path>>(frame: T) -> Keyframe {
         Keyframe {
             frame: frame.as_ref().to_owned(),
-            duration: 100,
+            duration_millis: 100,
             offset: (0, 0),
             hitboxes: BTreeMap::new(),
         }
@@ -357,8 +344,8 @@ impl Keyframe {
         &self.frame
     }
 
-    pub fn duration(&self) -> u32 {
-        self.duration
+    pub fn duration_millis(&self) -> u32 {
+        self.duration_millis
     }
 
     pub fn offset(&self) -> Vector2D<i32> {
@@ -369,8 +356,8 @@ impl Keyframe {
         self.frame = new_frame.as_ref().to_owned();
     }
 
-    pub fn set_duration(&mut self, new_duration: u32) {
-        self.duration = new_duration;
+    pub fn set_duration_millis(&mut self, new_duration: u32) {
+        self.duration_millis = new_duration;
     }
 
     pub fn set_offset(&mut self, new_offset: Vector2D<i32>) {
@@ -554,6 +541,92 @@ impl ExportFormat {
 }
 
 #[test]
+fn can_read_write_animation_looping() {
+    let mut animation = Animation::default();
+    animation.set_looping(true);
+    assert_eq!(animation.looping(), true);
+    animation.set_looping(false);
+    assert_eq!(animation.looping(), false);
+}
+
+#[test]
+fn can_add_and_remove_animation_keyframes() {
+    let mut animation = Animation::default();
+    let keyframe_a = Keyframe::new(&Path::new("a.png"));
+    let keyframe_b = Keyframe::new(&Path::new("b.png"));
+
+    animation.insert_keyframe(keyframe_a, 0).unwrap();
+    animation.insert_keyframe(keyframe_b, 1).unwrap();
+    assert_eq!(animation.num_keyframes(), 2);
+    assert_eq!(animation.keyframe(0).unwrap().frame(), Path::new("a.png"));
+    assert_eq!(
+        animation.keyframe_mut(0).unwrap().frame(),
+        Path::new("a.png")
+    );
+    assert_eq!(animation.keyframe(1).unwrap().frame(), Path::new("b.png"));
+    assert_eq!(
+        animation.keyframe_mut(1).unwrap().frame(),
+        Path::new("b.png")
+    );
+
+    animation.delete_keyframe(0).unwrap();
+    assert_eq!(animation.num_keyframes(), 1);
+    assert_eq!(animation.keyframe(0).unwrap().frame(), Path::new("b.png"));
+    assert!(animation.keyframe(1).is_none());
+}
+
+#[test]
+fn can_measure_animation_duration() {
+    let mut animation = Animation::default();
+    assert_eq!(animation.duration_millis(), None);
+
+    let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
+    let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
+    keyframe_a.set_duration_millis(150);
+    keyframe_b.set_duration_millis(250);
+    animation.insert_keyframe(keyframe_a, 0).unwrap();
+    animation.insert_keyframe(keyframe_b, 1).unwrap();
+
+    assert_eq!(animation.duration_millis(), Some(400));
+}
+
+#[test]
+fn can_query_animation_by_time_elapsed() {
+    let mut animation = Animation::default();
+    let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
+    keyframe_a.set_duration_millis(200);
+    let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
+    keyframe_b.set_duration_millis(200);
+
+    animation.insert_keyframe(keyframe_a, 0).unwrap();
+    animation.insert_keyframe(keyframe_b, 1).unwrap();
+    assert_eq!(animation.keyframe_times(), vec![0, 200]);
+
+    for (time, frame_index) in [(0, 0), (199, 0), (200, 1), (399, 1), (400, 1)] {
+        assert_eq!(
+            animation
+                .keyframe_at(Duration::from_millis(time))
+                .unwrap()
+                .0,
+            frame_index
+        );
+        assert_eq!(
+            animation
+                .keyframe_at_mut(Duration::from_millis(time))
+                .unwrap()
+                .0,
+            frame_index
+        );
+    }
+
+    animation.set_looping(true);
+    assert_eq!(
+        animation.keyframe_at(Duration::from_millis(400)).unwrap().0,
+        0
+    );
+}
+
+#[test]
 fn can_read_write_keyframe_frame() {
     let frame = Path::new("./example/directory/texture.png");
     let other_frame = Path::new("./example/directory/other_texture.png");
@@ -566,8 +639,8 @@ fn can_read_write_keyframe_frame() {
 #[test]
 fn can_read_write_keyframe_duration() {
     let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
-    keyframe.set_duration(200);
-    assert_eq!(keyframe.duration(), 200);
+    keyframe.set_duration_millis(200);
+    assert_eq!(keyframe.duration_millis(), 200);
 }
 
 #[test]
