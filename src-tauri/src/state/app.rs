@@ -47,6 +47,13 @@ impl App {
         Ok(())
     }
 
+    pub fn get_current_document(&self) -> Option<&Document> {
+        match &self.current_document {
+            None => None,
+            Some(p) => self.documents.iter().find(|d| d.source() == p),
+        }
+    }
+
     fn get_document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {
         self.documents.iter().find(|d| d.source() == path.as_ref())
     }

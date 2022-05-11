@@ -2,12 +2,18 @@ import { defineStore, acceptHMRUpdate } from "pinia";
 
 export type AppState = {
   documents: string[];
+  currentDocument: Document | null;
+};
+
+type Document = {
+  source: string;
 };
 
 export const useAppStore = defineStore("app", {
   state: () =>
     ({
       documents: [],
+      currentDocument: null,
     } as AppState),
 });
 
