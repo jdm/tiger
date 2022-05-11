@@ -554,6 +554,51 @@ impl ExportFormat {
 }
 
 #[test]
+fn can_read_write_keyframe_frame() {
+    let frame = Path::new("./example/directory/texture.png");
+    let other_frame = Path::new("./example/directory/other_texture.png");
+    let mut keyframe = Keyframe::new(frame);
+    assert_eq!(keyframe.frame(), frame);
+    keyframe.set_frame(other_frame);
+    assert_eq!(keyframe.frame(), other_frame);
+}
+
+#[test]
+fn can_read_write_keyframe_duration() {
+    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    keyframe.set_duration(200);
+    assert_eq!(keyframe.duration(), 200);
+}
+
+#[test]
+fn can_read_write_keyframe_offset() {
+    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    keyframe.set_offset(vec2(30, 20));
+    assert_eq!(keyframe.offset(), vec2(30, 20));
+}
+
+#[test]
+fn can_add_and_remove_keyframe_hitboxes() {
+    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    let (name, _hitbox) = keyframe.create_hitbox();
+    assert!(keyframe.hitbox(&name).is_some());
+    assert!(keyframe.hitbox_mut(&name).is_some());
+    keyframe.delete_hitbox(&name);
+    assert!(keyframe.hitbox(&name).is_none());
+    assert!(keyframe.hitbox_mut(&name).is_none());
+}
+
+#[test]
+fn can_rename_keyframe_hitboxes() {
+    let frame = Path::new("./example/directory/texture.png");
+    let mut keyframe = Keyframe::new(frame);
+    let (old_name, _hitbox) = keyframe.create_hitbox();
+    keyframe.rename_hitbox(&old_name, "updated name").unwrap();
+    assert!(keyframe.hitbox("updated name").is_some());
+    assert!(keyframe.hitbox(&old_name).is_none());
+}
+
+#[test]
 fn can_read_write_hitbox_position() {
     let mut hitbox = Hitbox::new();
     hitbox.set_position(vec2(100, 100));
@@ -609,49 +654,4 @@ fn can_convert_hitbox_to_rectangle() {
     hitbox.set_position(vec2(100, 100));
     hitbox.set_size(vec2(50, 50));
     assert_eq!(hitbox.rectangle(), rect(100, 100, 50, 50));
-}
-
-#[test]
-fn can_read_write_keyframe_frame() {
-    let frame = Path::new("./example/directory/texture.png");
-    let other_frame = Path::new("./example/directory/other_texture.png");
-    let mut keyframe = Keyframe::new(frame);
-    assert_eq!(keyframe.frame(), frame);
-    keyframe.set_frame(other_frame);
-    assert_eq!(keyframe.frame(), other_frame);
-}
-
-#[test]
-fn can_read_write_keyframe_duration() {
-    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
-    keyframe.set_duration(200);
-    assert_eq!(keyframe.duration(), 200);
-}
-
-#[test]
-fn can_read_write_keyframe_offset() {
-    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
-    keyframe.set_offset(vec2(30, 20));
-    assert_eq!(keyframe.offset(), vec2(30, 20));
-}
-
-#[test]
-fn can_add_and_remove_keyframe_hitboxes() {
-    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
-    let (name, _hitbox) = keyframe.create_hitbox();
-    assert!(keyframe.hitbox(&name).is_some());
-    assert!(keyframe.hitbox_mut(&name).is_some());
-    keyframe.delete_hitbox(&name);
-    assert!(keyframe.hitbox(&name).is_none());
-    assert!(keyframe.hitbox_mut(&name).is_none());
-}
-
-#[test]
-fn can_rename_keyframe_hitboxes() {
-    let frame = Path::new("./example/directory/texture.png");
-    let mut keyframe = Keyframe::new(frame);
-    let (old_name, _hitbox) = keyframe.create_hitbox();
-    keyframe.rename_hitbox(&old_name, "updated name").unwrap();
-    assert!(keyframe.hitbox("updated name").is_some());
-    assert!(keyframe.hitbox(&old_name).is_none());
 }
