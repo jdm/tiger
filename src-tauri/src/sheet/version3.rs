@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::{Path, PathBuf};
@@ -16,7 +17,7 @@ struct VersionedSheet {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Sheet {
     pub(in crate::sheet) frames: Vec<Frame>,
-    pub(in crate::sheet) animations: Vec<Animation>,
+    pub(in crate::sheet) animations: BTreeMap<String, Animation>,
     pub(in crate::sheet) export_settings: Option<ExportSettings>,
 }
 
@@ -25,9 +26,8 @@ pub struct Frame {
     pub(in crate::sheet) source: PathBuf,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Animation {
-    pub(in crate::sheet) name: String,
     pub(in crate::sheet) timeline: Vec<Keyframe>,
     pub(in crate::sheet) is_looping: bool,
 }
@@ -35,14 +35,13 @@ pub struct Animation {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Keyframe {
     pub(in crate::sheet) frame: PathBuf,
-    pub(in crate::sheet) hitboxes: Vec<Hitbox>,
+    pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
     pub(in crate::sheet) duration: u32, // in ms
     pub(in crate::sheet) offset: (i32, i32),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Hitbox {
-    pub(in crate::sheet) name: String,
     pub(in crate::sheet) geometry: Shape,
     pub(in crate::sheet) linked: bool,
     pub(in crate::sheet) locked: bool,
@@ -85,20 +84,23 @@ pub(super) fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Re
 
 impl From<previous_version::Sheet> for Sheet {
     fn from(old: previous_version::Sheet) -> Sheet {
-        let mut new_animations: Vec<Animation> =
-            old.animations.into_iter().map(|o| o.into()).collect();
+        let mut new_animations: BTreeMap<String, Animation> = old
+            .animations
+            .into_iter()
+            .map(|o| (o.name.clone(), o.into()))
+            .collect();
 
         // Migrate hitbox data from frames to keyframes
         for frame in &old.frames {
             for hitbox in &frame.hitboxes {
-                for animation in &mut new_animations {
+                for (_name, animation) in &mut new_animations {
                     for keyframe in &mut animation.timeline {
                         if keyframe.frame == frame.source {
                             let mut new_hitbox: Hitbox = hitbox.clone().into();
                             let Shape::Rectangle(r) = &mut new_hitbox.geometry;
                             r.top_left.0 += keyframe.offset.0;
                             r.top_left.1 += keyframe.offset.1;
-                            keyframe.hitboxes.push(new_hitbox);
+                            keyframe.hitboxes.insert(hitbox.name.clone(), new_hitbox);
                         }
                     }
                 }
@@ -116,7 +118,6 @@ impl From<previous_version::Sheet> for Sheet {
 impl From<previous_version::Animation> for Animation {
     fn from(old: previous_version::Animation) -> Animation {
         Animation {
-            name: old.name,
             timeline: old.timeline.into_iter().map(|o| o.into()).collect(),
             is_looping: old.is_looping,
         }
@@ -135,7 +136,7 @@ impl From<previous_version::Keyframe> for Keyframe {
             frame: old.frame,
             duration: old.duration,
             offset: old.offset,
-            hitboxes: Vec::new(),
+            hitboxes: BTreeMap::new(),
         }
     }
 }
@@ -143,7 +144,6 @@ impl From<previous_version::Keyframe> for Keyframe {
 impl From<previous_version::Hitbox> for Hitbox {
     fn from(old: previous_version::Hitbox) -> Hitbox {
         Hitbox {
-            name: old.name,
             geometry: old.geometry.into(),
             linked: true,
             locked: false,
