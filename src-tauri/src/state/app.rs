@@ -4,12 +4,14 @@ use std::{
 };
 use thiserror::Error;
 
-use crate::state::Document;
+use crate::state::{Document, DocumentError};
 
 #[derive(Error, Debug)]
 pub enum AppError {
     #[error("The requested document (`{0}`) is not currently opened.")]
     DocumentNotFound(PathBuf),
+    #[error("Invalid document operation: {0}")]
+    DocumentError(#[from] DocumentError),
 }
 
 impl From<AppError> for String {
@@ -32,7 +34,7 @@ impl App {
 
     pub fn open_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
         if self.get_document(&path).is_none() {
-            let document = Document::new(&path);
+            let document = Document::open(&path)?;
             self.documents.push(document);
         }
         self.focus_document(path)

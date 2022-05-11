@@ -1,10 +1,10 @@
 use serde::{Deserialize, Serialize};
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{BufReader, Read};
 use std::path::{Path, PathBuf};
 
 use crate::sheet::version1 as previous_version;
-use crate::sheet::Version;
+use crate::sheet::{SheetError, Version};
 
 const THIS_VERSION: Version = Version::Tiger2;
 
@@ -64,14 +64,13 @@ pub enum ExportFormat {
     Template(PathBuf),
 }
 
-pub(super) fn read_file<T: AsRef<Path>>(version: Version, path: T) -> anyhow::Result<Sheet> {
+pub(super) fn read_file<R: Read>(version: Version, reader: R) -> Result<Sheet, SheetError> {
     match version {
         THIS_VERSION => {
-            let deserialized: VersionedSheet =
-                serde_json::from_reader(BufReader::new(File::open(path.as_ref())?))?;
+            let deserialized: VersionedSheet = serde_json::from_reader(reader)?;
             Ok(deserialized.sheet)
         }
-        _ => Ok(previous_version::read_file(version, path)?.into()),
+        _ => Ok(previous_version::read_file(version, reader)?.into()),
     }
 }
 

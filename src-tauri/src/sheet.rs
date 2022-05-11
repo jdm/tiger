@@ -29,6 +29,10 @@ pub use self::version3::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
+    #[error("Filesystem error for file `{0}`: `{1}`")]
+    IoError(PathBuf, std::io::Error),
+    #[error("Encoding error: `{0}`")]
+    SerdeError(#[from] serde_json::Error),
     #[error("Could not find an animation named `{0}`")]
     AnimationNotFound(String),
     #[error("An animation with the name `{0}` already exists")]
@@ -44,14 +48,26 @@ pub enum SheetError {
 }
 
 impl Sheet {
-    pub fn read<T: AsRef<Path>>(path: T) -> anyhow::Result<Sheet> {
+    pub fn read<T: AsRef<Path>>(path: T) -> Result<Sheet, SheetError> {
         #[derive(Deserialize)]
         struct Versioned {
             version: Version,
         }
-        let file = File::open(path.as_ref())?;
-        let versioned: Versioned = serde_json::from_reader(BufReader::new(file))?;
-        let sheet = read_file(versioned.version, &path)?;
+
+        let version = {
+            let file = File::open(path.as_ref())
+                .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
+            let versioned: Versioned = serde_json::from_reader(BufReader::new(file))?;
+            versioned.version
+        };
+
+        let sheet = {
+            let file = File::open(path.as_ref())
+                .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
+            let reader = BufReader::new(file);
+            read_file(version, reader)?
+        };
+
         let mut directory = path.as_ref().to_owned();
         directory.pop();
         Ok(sheet.with_absolute_paths(directory))

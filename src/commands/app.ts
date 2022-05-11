@@ -10,9 +10,13 @@ import { invoke } from "@tauri-apps/api/tauri";
 // - Rust https://github.com/idubrov/json-patch
 
 export async function openDocument(path: String): Promise<void> {
-  const app: AppState = await invoke("open_document", {
-    path: path,
-  });
-  const appStore = useAppStore();
-  appStore.$state = app;
+  try {
+    const app: AppState = await invoke("open_document", {
+      path: path,
+    });
+    const appStore = useAppStore();
+    appStore.$state = app;
+  } catch (error) {
+    console.log(error);
+  }
 }
