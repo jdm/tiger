@@ -20,6 +20,8 @@ jobs:
           default: true
       - name: Install Tauri Dependencies
         run: sudo apt update && sudo apt install libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libappindicator3-dev librsvg2-dev
+      - name: Install frontend dependencies
+        run: npm install
       - name: Run backend tests
         working-directory: ./src-tauri
         run: cargo test
