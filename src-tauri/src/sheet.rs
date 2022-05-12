@@ -16,16 +16,18 @@ use thiserror::Error;
 pub(in crate::sheet) mod version1;
 pub(in crate::sheet) mod version2;
 pub(in crate::sheet) mod version3;
+pub(in crate::sheet) mod version4;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 enum Version {
     Tiger1,
     Tiger2,
     Tiger3,
+    Tiger4,
 }
 
-const CURRENT_VERSION: Version = Version::Tiger3;
-pub use self::version3::*;
+const CURRENT_VERSION: Version = Version::Tiger4;
+pub use self::version4::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {

@@ -1,11 +1,12 @@
 use serde::{Deserialize, Serialize};
+use std::collections::BTreeMap;
 use std::io::Read;
 use std::path::PathBuf;
 
-use crate::sheet::version2 as previous_version;
+use crate::sheet::version3 as previous_version;
 use crate::sheet::{SheetError, Version};
 
-const THIS_VERSION: Version = Version::Tiger3;
+const THIS_VERSION: Version = Version::Tiger4;
 
 #[derive(Serialize, Deserialize)]
 struct VersionedSheet {
@@ -15,7 +16,7 @@ struct VersionedSheet {
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Sheet {
     pub(in crate::sheet) frames: Vec<Frame>,
-    pub(in crate::sheet) animations: Vec<Animation>,
+    pub(in crate::sheet) animations: BTreeMap<String, Animation>,
     pub(in crate::sheet) export_settings: Option<ExportSettings>,
 }
 
@@ -26,7 +27,6 @@ pub struct Frame {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Animation {
-    pub(in crate::sheet) name: String,
     pub(in crate::sheet) timeline: Vec<Keyframe>,
     pub(in crate::sheet) is_looping: bool,
 }
@@ -34,14 +34,13 @@ pub struct Animation {
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Keyframe {
     pub(in crate::sheet) frame: PathBuf,
-    pub(in crate::sheet) hitboxes: Vec<Hitbox>,
+    pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u32,
     pub(in crate::sheet) offset: (i32, i32),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Hitbox {
-    pub(in crate::sheet) name: String,
     pub(in crate::sheet) geometry: Shape,
     pub(in crate::sheet) linked: bool,
     pub(in crate::sheet) locked: bool,
@@ -83,29 +82,13 @@ pub(super) fn read_file<R: Read>(version: Version, reader: R) -> Result<Sheet, S
 
 impl From<previous_version::Sheet> for Sheet {
     fn from(old: previous_version::Sheet) -> Sheet {
-        let mut new_animations: Vec<Animation> =
-            old.animations.into_iter().map(|o| o.into()).collect();
-
-        // Migrate hitbox data from frames to keyframes
-        for frame in &old.frames {
-            for hitbox in &frame.hitboxes {
-                for animation in &mut new_animations {
-                    for keyframe in &mut animation.timeline {
-                        if keyframe.frame == frame.source {
-                            let mut new_hitbox: Hitbox = hitbox.clone().into();
-                            let Shape::Rectangle(r) = &mut new_hitbox.geometry;
-                            r.top_left.0 += keyframe.offset.0;
-                            r.top_left.1 += keyframe.offset.1;
-                            keyframe.hitboxes.push(new_hitbox);
-                        }
-                    }
-                }
-            }
-        }
-        let new_frames = old.frames.into_iter().map(|o| o.into()).collect();
         Sheet {
-            frames: new_frames,
-            animations: new_animations,
+            frames: old.frames.into_iter().map(|o| o.into()).collect(),
+            animations: old
+                .animations
+                .into_iter()
+                .map(|o| (o.name.to_owned(), o.into()))
+                .collect(),
             export_settings: old.export_settings.map(|o| o.into()),
         }
     }
@@ -114,7 +97,6 @@ impl From<previous_version::Sheet> for Sheet {
 impl From<previous_version::Animation> for Animation {
     fn from(old: previous_version::Animation) -> Animation {
         Animation {
-            name: old.name,
             timeline: old.timeline.into_iter().map(|o| o.into()).collect(),
             is_looping: old.is_looping,
         }
@@ -131,9 +113,13 @@ impl From<previous_version::Keyframe> for Keyframe {
     fn from(old: previous_version::Keyframe) -> Keyframe {
         Keyframe {
             frame: old.frame,
-            duration_millis: old.duration,
+            duration_millis: old.duration_millis,
             offset: old.offset,
-            hitboxes: Vec::new(),
+            hitboxes: old
+                .hitboxes
+                .into_iter()
+                .map(|o| (o.name.to_owned(), o.into()))
+                .collect(),
         }
     }
 }
@@ -141,7 +127,6 @@ impl From<previous_version::Keyframe> for Keyframe {
 impl From<previous_version::Hitbox> for Hitbox {
     fn from(old: previous_version::Hitbox) -> Hitbox {
         Hitbox {
-            name: old.name,
             geometry: old.geometry.into(),
             linked: true,
             locked: false,
