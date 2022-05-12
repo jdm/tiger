@@ -795,3 +795,25 @@ fn can_convert_hitbox_to_rectangle() {
     hitbox.set_size(vec2(50, 50));
     assert_eq!(hitbox.rectangle(), rect(100, 100, 50, 50));
 }
+
+#[test]
+fn export_settings_can_convert_relative_and_absolute_paths() {
+    let settings = ExportSettings {
+        texture_destination: Path::new("a/b/c/sheet.png").to_owned(),
+        metadata_destination: Path::new("a/b/c/sheet.lua").to_owned(),
+        metadata_paths_root: Path::new("a/b").to_owned(),
+        format: ExportFormat::Template(Path::new("a/b/format.liquid").to_owned()),
+    };
+
+    let relative = settings.with_relative_paths("a/b").unwrap();
+    assert_eq!(&relative.texture_destination, Path::new("c/sheet.png"));
+    assert_eq!(&relative.metadata_destination, Path::new("c/sheet.lua"));
+    assert_eq!(&relative.metadata_paths_root, Path::new(""));
+    assert_eq!(
+        relative.format,
+        ExportFormat::Template(Path::new("format.liquid").to_owned())
+    );
+
+    let absolute = relative.with_absolute_paths("a/b");
+    assert_eq!(settings, absolute);
+}
