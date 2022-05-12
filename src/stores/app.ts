@@ -7,6 +7,11 @@ export type AppState = {
 
 type Document = {
   source: string;
+  sheet: Sheet;
+};
+
+type Sheet = {
+  frames: string[];
 };
 
 export const useAppStore = defineStore("app", {

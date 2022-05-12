@@ -236,7 +236,7 @@ impl Frame {
         }
     }
 
-    pub fn get_source(&self) -> &Path {
+    pub fn source(&self) -> &Path {
         &self.source
     }
 }
