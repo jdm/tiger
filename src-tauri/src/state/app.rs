@@ -12,7 +12,7 @@ pub enum AppError {
     NoDocumentOpen,
     #[error("The requested document (`{0}`) is not currently opened.")]
     DocumentNotFound(PathBuf),
-    #[error("Invalid document operation: {0}")]
+    #[error(transparent)]
     DocumentError(#[from] DocumentError),
 }
 

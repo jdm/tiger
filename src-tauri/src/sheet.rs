@@ -33,7 +33,7 @@ pub use self::version4::*;
 pub enum SheetError {
     #[error("Filesystem error for file `{0}`: `{1}`")]
     IoError(PathBuf, std::io::Error),
-    #[error("Encoding error: `{0}`")]
+    #[error(transparent)]
     SerdeError(#[from] serde_json::Error),
     #[error("Could not find an animation named `{0}`")]
     AnimationNotFound(String),

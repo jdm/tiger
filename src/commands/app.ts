@@ -17,6 +17,7 @@ export async function openDocument(path: String): Promise<void> {
     const appStore = useAppStore();
     appStore.$state = app;
   } catch (error) {
+    // TODO error UI
     console.log(error);
   }
 }

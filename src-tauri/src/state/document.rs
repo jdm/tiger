@@ -44,7 +44,7 @@ pub enum CloseState {
 
 #[derive(Error, Debug)]
 pub enum DocumentError {
-    #[error("Invalid sheet operation: {0}")]
+    #[error(transparent)]
     SheetError(#[from] SheetError),
 }
 
