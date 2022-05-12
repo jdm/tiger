@@ -47,6 +47,12 @@ pub enum SheetError {
     InvalidFrameIndex(usize),
 }
 
+impl From<SheetError> for String {
+    fn from(e: SheetError) -> Self {
+        e.to_string()
+    }
+}
+
 impl Sheet {
     pub fn read<T: AsRef<Path>>(path: T) -> Result<Sheet, SheetError> {
         #[derive(Deserialize)]

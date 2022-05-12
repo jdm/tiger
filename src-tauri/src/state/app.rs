@@ -51,17 +51,6 @@ impl App {
         Ok(())
     }
 
-    pub fn save_current_document(&mut self) -> Result<(), AppError> {
-        let destination = self
-            .get_current_document()
-            .map(|d| d.source().to_owned())
-            .ok_or(AppError::NoDocumentOpen)?;
-        match self.get_current_document_mut() {
-            Some(d) => d.save(destination).map_err(|e| e.into()),
-            None => Err(AppError::NoDocumentOpen),
-        }
-    }
-
     pub fn get_current_document(&self) -> Option<&Document> {
         match &self.current_document {
             None => None,

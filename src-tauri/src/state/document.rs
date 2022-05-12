@@ -7,11 +7,11 @@ use crate::state::*;
 
 #[derive(Debug)]
 pub struct Document {
-    pub source: PathBuf,
-    pub sheet: Sheet, // Sheet being edited, fully recorded in history
-    pub view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
-    pub transient: Option<Transient>, // State preventing undo actions when not default, not recorded in history
-    pub persistent: Persistent,       // Other state not recorded in history
+    source: PathBuf,
+    sheet: Sheet,                 // Sheet being edited, fully recorded in history
+    view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
+    transient: Option<Transient>, // State preventing undo actions when not default, not recorded in history
+    persistent: Persistent,       // Other state not recorded in history
     next_version: i32,
     history: Vec<HistoryEntry>,
     history_index: usize,
@@ -66,6 +66,10 @@ impl Document {
         }
     }
 
+    pub fn sheet(&self) -> &Sheet {
+        &self.sheet
+    }
+
     pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, DocumentError> {
         let mut document = Document::new(&path);
         document.sheet = Sheet::read(path.as_ref())?;
@@ -74,10 +78,8 @@ impl Document {
         Ok(document)
     }
 
-    pub fn save<T: AsRef<Path>>(&mut self, to: T) -> Result<(), DocumentError> {
-        self.sheet.write(to)?;
-        self.persistent.disk_version = self.version();
-        Ok(())
+    pub fn mark_as_saved(&mut self, saved_version: i32) {
+        self.persistent.disk_version = saved_version;
     }
 
     pub fn version(&self) -> i32 {
