@@ -19,14 +19,14 @@ pub async fn save_current_document(
 ) -> Result<dto::App, String> {
     let (sheet, destination, version) = {
         let app = app_state.0.lock().unwrap();
-        match app.get_current_document() {
+        match app.current_document() {
             Some(d) => (d.sheet().clone(), d.source().to_owned(), d.version()),
             _ => return Err("".to_owned()),
         }
     };
     sheet.write(destination)?;
     let mut app = app_state.0.lock().unwrap();
-    if let Some(document) = app.get_current_document_mut() {
+    if let Some(document) = app.current_document_mut() {
         document.mark_as_saved(version);
     }
     Ok((&*app).into())

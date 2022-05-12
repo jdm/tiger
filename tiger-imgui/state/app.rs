@@ -85,36 +85,6 @@ impl AppState {
         self.documents.iter().any(|t| t.source == path.as_ref())
     }
 
-    pub fn get_current_document(&self) -> Option<&Document> {
-        if let Some(path) = &self.current_document {
-            self.documents.iter().find(|d| &d.source == path)
-        } else {
-            None
-        }
-    }
-
-    fn get_current_document_mut(&mut self) -> Option<&mut Document> {
-        if let Some(path) = &self.current_document {
-            self.documents.iter_mut().find(|d| &d.source == path)
-        } else {
-            None
-        }
-    }
-
-    fn get_document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {
-        self.documents.iter().find(|d| d.source == path.as_ref())
-    }
-
-    fn get_document_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Document> {
-        self.documents
-            .iter_mut()
-            .find(|d| d.source == path.as_ref())
-    }
-
-    pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
-        self.documents.iter()
-    }
-
     fn end_new_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
         match self.get_document_mut(&path) {
             Some(d) => *d = Document::new(path.as_ref()),
@@ -167,37 +137,9 @@ impl AppState {
         Ok(())
     }
 
-    fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
-        let document = self
-            .get_document_mut(&path)
-            .ok_or(AppError::DocumentNotFound)?;
-        document.transient = Default::default();
-        self.current_document = Some(path.as_ref().to_owned());
-        Ok(())
-    }
-
     fn add_document(&mut self, added_document: Document) {
         assert!(!self.is_opened(&added_document.source));
         self.documents.push(added_document);
-    }
-
-    fn close_document<T: AsRef<Path>>(&mut self, path: T) {
-        if let Some(index) = self
-            .documents
-            .iter()
-            .position(|d| d.source == path.as_ref())
-        {
-            self.documents.remove(index);
-            self.current_document = if self.documents.is_empty() {
-                None
-            } else {
-                Some(
-                    self.documents[std::cmp::min(index, self.documents.len() - 1)]
-                        .source
-                        .clone(),
-                )
-            };
-        }
     }
 
     fn close_all_documents(&mut self) {

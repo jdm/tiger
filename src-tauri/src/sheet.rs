@@ -567,7 +567,7 @@ impl ExportFormat {
 
 #[test]
 fn can_read_write_sheet_from_disk() {
-    let original = Sheet::read("test-data/sample_sheet.tiger").unwrap();
+    let original = Sheet::read("test-data/sample_sheet_1.tiger").unwrap();
     original.write("test-data/sample_sheet_copy.tiger").unwrap();
     let copy = Sheet::read("test-data/sample_sheet_copy.tiger").unwrap();
     std::fs::remove_file("test-data/sample_sheet_copy.tiger").unwrap();

@@ -25,7 +25,7 @@ impl From<&state::App> for App {
                 .documents_iter()
                 .map(|d| d.source().to_owned())
                 .collect(),
-            current_document: app.get_current_document().map(|d| d.into()),
+            current_document: app.current_document().map(|d| d.into()),
         }
     }
 }
