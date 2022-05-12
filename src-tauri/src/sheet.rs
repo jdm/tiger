@@ -122,7 +122,7 @@ impl Sheet {
     fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Sheet {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
-            frame.source = relative_to.as_ref().join(&frame.source);
+            frame.source = relative_to.as_ref().join(&frame.source)
         }
         for (_name, animation) in sheet.animations.iter_mut() {
             for keyframe in animation.keyframes_iter_mut() {
@@ -163,7 +163,7 @@ impl Sheet {
         self.frames.push(frame);
     }
 
-    pub fn create_animation(&mut self) -> &mut Animation {
+    pub fn create_animation(&mut self) -> (String, &mut Animation) {
         let mut name = "New Animation".to_owned();
         let mut index = 2;
         while self.has_animation(&name) {
@@ -172,7 +172,7 @@ impl Sheet {
         }
         let animation = Animation::default();
         self.animations.insert(name.clone(), animation);
-        self.animations.get_mut(&name).unwrap()
+        (name.clone(), self.animations.get_mut(&name).unwrap())
     }
 
     pub fn frame<T: AsRef<Path>>(&self, path: T) -> Option<&Frame> {
@@ -566,6 +566,48 @@ impl ExportFormat {
 }
 
 #[test]
+fn can_read_write_sheet_from_disk() {
+    let original = Sheet::read("test-data/sample_sheet.tiger").unwrap();
+    original.write("test-data/sample_sheet_copy.tiger").unwrap();
+    let copy = Sheet::read("test-data/sample_sheet_copy.tiger").unwrap();
+    std::fs::remove_file("test-data/sample_sheet_copy.tiger").unwrap();
+    assert_eq!(original, copy);
+}
+
+#[test]
+fn can_add_and_remove_sheet_frame() {
+    let mut sheet = Sheet::default();
+    sheet.add_frame("frame.png");
+    assert!(sheet.has_frame("frame.png"));
+    assert!(sheet.frame("frame.png").is_some());
+    sheet.delete_frame("frame.png");
+    assert!(!sheet.has_frame("frame.png"));
+    assert!(sheet.frame("frame.png").is_none());
+}
+
+#[test]
+fn can_add_and_remove_sheet_animation() {
+    let mut sheet = Sheet::default();
+    let (name, _animation) = sheet.create_animation();
+    assert!(sheet.has_animation(&name));
+    assert!(sheet.animation(&name).is_some());
+    assert!(sheet.animation_mut(&name).is_some());
+    sheet.delete_animation(&name);
+    assert!(!sheet.has_animation(&name));
+    assert!(sheet.animation(&name).is_none());
+    assert!(sheet.animation_mut(&name).is_none());
+}
+
+#[test]
+fn can_rename_sheet_animation() {
+    let mut sheet = Sheet::default();
+    let (old_name, _animation) = sheet.create_animation();
+    sheet.rename_animation(&old_name, "updated name").unwrap();
+    assert!(sheet.animation("updated name").is_some());
+    assert!(sheet.animation(&old_name).is_none());
+}
+
+#[test]
 fn can_read_write_animation_looping() {
     let mut animation = Animation::default();
     animation.set_looping(true);
@@ -575,7 +617,7 @@ fn can_read_write_animation_looping() {
 }
 
 #[test]
-fn can_add_and_remove_animation_keyframes() {
+fn can_add_and_remove_animation_keyframe() {
     let mut animation = Animation::default();
     let keyframe_a = Keyframe::new(&Path::new("a.png"));
     let keyframe_b = Keyframe::new(&Path::new("b.png"));
@@ -676,7 +718,7 @@ fn can_read_write_keyframe_offset() {
 }
 
 #[test]
-fn can_add_and_remove_keyframe_hitboxes() {
+fn can_add_and_remove_keyframe_hitbox() {
     let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
     let (name, _hitbox) = keyframe.create_hitbox();
     assert!(keyframe.hitbox(&name).is_some());
@@ -687,7 +729,7 @@ fn can_add_and_remove_keyframe_hitboxes() {
 }
 
 #[test]
-fn can_rename_keyframe_hitboxes() {
+fn can_rename_keyframe_hitbox() {
     let frame = Path::new("./example/directory/texture.png");
     let mut keyframe = Keyframe::new(frame);
     let (old_name, _hitbox) = keyframe.create_hitbox();
