@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
-import { openDocument } from '@/commands/app'
+import { openFiles } from '@/commands/local'
 
 const app = useAppStore()
 
-function o() {
-  openDocument("C:\\Users\\agersant\\Documents\\GitHub\\crystal\\source\\arpg\\sprite\\duran\\\\duran.tiger");
-}
 </script>
 
 <template>
@@ -17,7 +14,7 @@ function o() {
     </ul>
   </div>
 
-  <button @click="o">Open document</button>
+  <button @click="openFiles">Open document</button>
   <p>Open documents:</p>
   <ul v-for="path in app.documents">
     <li>{{ path }}</li>

@@ -9,10 +9,10 @@ import { invoke } from "@tauri-apps/api/tauri";
 // - JS https://github.com/martindale/fast-json-patch
 // - Rust https://github.com/idubrov/json-patch
 
-export async function openDocument(path: String): Promise<void> {
+export async function openDocuments(paths: String[]): Promise<void> {
   try {
-    const app: AppState = await invoke("open_document", {
-      path: path,
+    const app: AppState = await invoke("open_documents", {
+      paths: paths,
     });
     const appStore = useAppStore();
     appStore.$state = app;

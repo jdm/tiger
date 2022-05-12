@@ -3,13 +3,20 @@ use std::path::PathBuf;
 use crate::dto;
 use crate::state::AppState;
 
+// TODO commands returning errors can fail after modifiying state
+// In such cases, updated state will not be communicated to the frontend.
+// Consider inserting the errors inside the state and not returning Result<>
+// from these functions.
+
 #[tauri::command]
-pub async fn open_document(
+pub async fn open_documents(
     app_state: tauri::State<'_, AppState>,
-    path: PathBuf,
+    paths: Vec<PathBuf>,
 ) -> Result<dto::App, String> {
     let mut app = app_state.0.lock().unwrap();
-    app.open_document(path)?;
+    for path in paths {
+        app.open_document(path)?;
+    }
     Ok((&*app).into())
 }
 
