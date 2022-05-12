@@ -3241,7 +3241,6 @@ dependencies = [
 name = "tiger"
 version = "0.4.0-wip"
 dependencies = [
- "anyhow",
  "euclid",
  "image",
  "liquid",
