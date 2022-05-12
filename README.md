@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/agersant/tiger/workflows/Build/badge.svg)](https://github.com/agersant/tiger/actions)
+[![Actions Status](https://github.com/agersant/tiger/workflows/Build/badge.svg)](https://github.com/agersant/tiger/actions) [![codecov](https://codecov.io/gh/agersant/tiger/branch/master/graph/badge.svg?token=Ekd9mm2Wii)](https://codecov.io/gh/agersant/tiger)
 
 Tiger is a graphical tool for generating spritesheets and metadata about the animation and hitboxes they contain.
 
