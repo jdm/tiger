@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     name: Measure Test Coverage
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
 
     steps:
       - uses: actions/checkout@v2
