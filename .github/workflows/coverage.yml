@@ -1,0 +1,28 @@
+name: Test Coverage
+
+on:
+  push:
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  test:
+    name: Measure Test Coverage
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+      - name: Run Tarpaulin
+        uses: actions-rs/tarpaulin@v0.1
+        with:
+          args: "--root src-tauri --ignore-tests"
+      - name: Upload Results
+        uses: codecov/codecov-action@v2
+        with:
+          fail_ci_if_error: true
