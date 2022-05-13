@@ -3,38 +3,44 @@ use std::path::PathBuf;
 use crate::dto;
 use crate::state::AppState;
 
-// TODO commands returning errors can fail after modifiying state
-// In such cases, updated state will not be communicated to the frontend.
-// Consider inserting the errors inside the state and not returning Result<>
-// from these functions.
-
 #[tauri::command]
 pub async fn open_documents(
     app_state: tauri::State<'_, AppState>,
     paths: Vec<PathBuf>,
-) -> Result<dto::App, String> {
+) -> Result<dto::App, ()> {
     let mut app = app_state.0.lock().unwrap();
-    for path in paths {
-        app.open_document(path)?;
+    for path in &paths {
+        if let Err(e) = app.open_document(path) {
+            app.show_error_message(format!("Could not open `{}`: {e}", path.to_string_lossy()));
+        }
     }
     Ok((&*app).into())
 }
 
 #[tauri::command]
-pub async fn save_current_document(
-    app_state: tauri::State<'_, AppState>,
-) -> Result<dto::App, String> {
+pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> {
     let (sheet, destination, version) = {
         let app = app_state.0.lock().unwrap();
         match app.current_document() {
             Some(d) => (d.sheet().clone(), d.source().to_owned(), d.version()),
-            _ => return Err("".to_owned()),
+            _ => return Ok((&*app).into()),
         }
     };
-    sheet.write(destination)?;
+
+    let result = sheet.write(&destination);
+
     let mut app = app_state.0.lock().unwrap();
-    if let Some(document) = app.current_document_mut() {
-        document.mark_as_saved(version);
+    match result {
+        Ok(_) => {
+            if let Some(document) = app.document_mut(&destination) {
+                document.mark_as_saved(version);
+            }
+        }
+        Err(e) => app.show_error_message(format!(
+            "Could not save `{}`: {e}",
+            destination.to_string_lossy()
+        )),
     }
+
     Ok((&*app).into())
 }

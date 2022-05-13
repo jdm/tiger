@@ -16,17 +16,12 @@ pub enum AppError {
     DocumentError(#[from] DocumentError),
 }
 
-impl From<AppError> for String {
-    fn from(e: AppError) -> Self {
-        e.to_string()
-    }
-}
-
 pub struct AppState(pub Mutex<App>);
 #[derive(Debug, Default)]
 pub struct App {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
+    errors: Vec<String>,
 }
 
 impl App {
@@ -64,11 +59,11 @@ impl App {
             .and_then(|path| self.documents.iter_mut().find(|d| d.source() == path))
     }
 
-    fn document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {
+    pub fn document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {
         self.documents.iter().find(|d| d.source() == path.as_ref())
     }
 
-    fn document_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Document> {
+    pub fn document_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Document> {
         self.documents
             .iter_mut()
             .find(|d| d.source() == path.as_ref())
@@ -90,6 +85,16 @@ impl App {
                         .to_owned(),
                 )
             };
+        }
+    }
+
+    pub fn show_error_message<T: AsRef<str>>(&mut self, message: T) {
+        self.errors.push(message.as_ref().to_owned());
+    }
+
+    pub fn acknowledge_error(&mut self) {
+        if !self.errors.is_empty() {
+            self.errors.remove(0);
         }
     }
 }
