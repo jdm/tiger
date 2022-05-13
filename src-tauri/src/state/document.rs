@@ -7,7 +7,7 @@ use crate::state::*;
 
 #[derive(Debug)]
 pub struct Document {
-    source: PathBuf,
+    path: PathBuf,
     sheet: Sheet,                 // Sheet being edited, fully recorded in history
     view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
     transient: Option<Transient>, // State preventing undo actions when not default, not recorded in history
@@ -55,7 +55,7 @@ impl Document {
         let view = history_entry.view.clone();
         let next_version = history_entry.version;
         Document {
-            source: path.as_ref().to_owned(),
+            path: path.as_ref().to_owned(),
             history: vec![history_entry],
             sheet: sheet,
             view: view,
@@ -86,8 +86,8 @@ impl Document {
         self.history[self.history_index].version
     }
 
-    pub fn source(&self) -> &Path {
-        &self.source
+    pub fn path(&self) -> &Path {
+        &self.path
     }
 
     pub fn clear_transient(&mut self) {

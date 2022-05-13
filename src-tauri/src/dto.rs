@@ -9,14 +9,15 @@ use crate::state;
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct App {
-    documents: Vec<PathBuf>,
-    current_document: Option<Document>,
+    documents: Vec<Document>,
+    current_document_path: Option<String>,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
-    source: PathBuf,
+    path: PathBuf,
+    name: String,
     sheet: Sheet,
 }
 
@@ -29,11 +30,10 @@ pub struct Sheet {
 impl From<&state::App> for App {
     fn from(app: &state::App) -> Self {
         App {
-            documents: app
-                .documents_iter()
-                .map(|d| d.source().to_owned())
-                .collect(),
-            current_document: app.current_document().map(|d| d.into()),
+            documents: app.documents_iter().map(|d| d.into()).collect(),
+            current_document_path: app
+                .current_document()
+                .map(|d| d.path().to_string_lossy().into_owned()),
         }
     }
 }
@@ -41,7 +41,12 @@ impl From<&state::App> for App {
 impl From<&state::Document> for Document {
     fn from(document: &state::Document) -> Self {
         Document {
-            source: document.source().to_owned(),
+            path: document.path().to_owned(),
+            name: document
+                .path()
+                .file_name()
+                .map(|s| s.to_string_lossy().into_owned())
+                .unwrap_or("??".to_owned()),
             sheet: document.sheet().into(),
         }
     }

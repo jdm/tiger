@@ -22,7 +22,7 @@ pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Res
     let (sheet, destination, version) = {
         let app = app_state.0.lock().unwrap();
         match app.current_document() {
-            Some(d) => (d.sheet().clone(), d.source().to_owned(), d.version()),
+            Some(d) => (d.sheet().clone(), d.path().to_owned(), d.version()),
             _ => return Ok((&*app).into()),
         }
     };

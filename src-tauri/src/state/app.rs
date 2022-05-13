@@ -49,31 +49,31 @@ impl App {
     pub fn current_document(&self) -> Option<&Document> {
         match &self.current_document {
             None => None,
-            Some(p) => self.documents.iter().find(|d| d.source() == p),
+            Some(p) => self.documents.iter().find(|d| d.path() == p),
         }
     }
 
     pub fn current_document_mut(&mut self) -> Option<&mut Document> {
         self.current_document
             .clone()
-            .and_then(|path| self.documents.iter_mut().find(|d| d.source() == path))
+            .and_then(|path| self.documents.iter_mut().find(|d| d.path() == path))
     }
 
     pub fn document<T: AsRef<Path>>(&mut self, path: T) -> Option<&Document> {
-        self.documents.iter().find(|d| d.source() == path.as_ref())
+        self.documents.iter().find(|d| d.path() == path.as_ref())
     }
 
     pub fn document_mut<T: AsRef<Path>>(&mut self, path: T) -> Option<&mut Document> {
         self.documents
             .iter_mut()
-            .find(|d| d.source() == path.as_ref())
+            .find(|d| d.path() == path.as_ref())
     }
 
     fn close_document<T: AsRef<Path>>(&mut self, path: T) {
         if let Some(index) = self
             .documents
             .iter()
-            .position(|d| d.source() == path.as_ref())
+            .position(|d| d.path() == path.as_ref())
         {
             self.documents.remove(index);
             self.current_document = if self.documents.is_empty() {
@@ -81,7 +81,7 @@ impl App {
             } else {
                 Some(
                     self.documents[std::cmp::min(index, self.documents.len() - 1)]
-                        .source()
+                        .path()
                         .to_owned(),
                 )
             };
@@ -125,19 +125,19 @@ fn open_and_close_update_focused_document() {
 
     app.open_document("test-data/sample_sheet_1.tiger").unwrap();
     assert_eq!(
-        app.current_document().unwrap().source(),
+        app.current_document().unwrap().path(),
         Path::new("test-data/sample_sheet_1.tiger")
     );
 
     app.open_document("test-data/sample_sheet_2.tiger").unwrap();
     assert_eq!(
-        app.current_document().unwrap().source(),
+        app.current_document().unwrap().path(),
         Path::new("test-data/sample_sheet_2.tiger")
     );
 
     app.close_document("test-data/sample_sheet_2.tiger");
     assert_eq!(
-        app.current_document().unwrap().source(),
+        app.current_document().unwrap().path(),
         Path::new("test-data/sample_sheet_1.tiger")
     );
 }
@@ -150,7 +150,7 @@ fn can_manually_focus_a_document() {
     app.focus_document("test-data/sample_sheet_1.tiger")
         .unwrap();
     assert_eq!(
-        app.current_document().unwrap().source(),
+        app.current_document().unwrap().path(),
         Path::new("test-data/sample_sheet_1.tiger")
     );
 }

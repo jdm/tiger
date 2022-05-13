@@ -1,12 +1,13 @@
 import { defineStore, acceptHMRUpdate } from "pinia";
 
 export type AppState = {
-  documents: string[];
-  currentDocument: Document | null;
+  documents: Document[];
+  currentDocumentPath: string | null;
 };
 
 type Document = {
-  source: string;
+  path: string;
+  name: string;
   sheet: Sheet;
 };
 
@@ -18,8 +19,18 @@ export const useAppStore = defineStore("app", {
   state: () =>
     ({
       documents: [],
-      currentDocument: null,
+      currentDocumentPath: null,
     } as AppState),
+  getters: {
+    currentDocument(state) {
+      for (let document of state.documents) {
+        if (document.path == state.currentDocumentPath) {
+          return document;
+        }
+      }
+      return null;
+    },
+  },
 });
 
 if (import.meta.hot) {
