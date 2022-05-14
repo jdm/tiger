@@ -103,12 +103,12 @@ impl App {
 fn can_open_and_close_documents() {
     let mut app = App::default();
 
-    app.open_document("test-data/sample_sheet_1.tiger").unwrap();
+    app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
     assert_eq!(app.documents_iter().count(), 1);
     assert!(app.document("test-data/sample_sheet_1.tiger").is_some());
     assert!(app.document_mut("test-data/sample_sheet_1.tiger").is_some());
 
-    app.open_document("test-data/sample_sheet_2.tiger").unwrap();
+    app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
     assert_eq!(app.documents_iter().count(), 2);
     assert!(app.document("test-data/sample_sheet_2.tiger").is_some());
     assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_some());
@@ -123,13 +123,13 @@ fn can_open_and_close_documents() {
 fn open_and_close_update_focused_document() {
     let mut app = App::default();
 
-    app.open_document("test-data/sample_sheet_1.tiger").unwrap();
+    app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
     assert_eq!(
         app.current_document().unwrap().path(),
         Path::new("test-data/sample_sheet_1.tiger")
     );
 
-    app.open_document("test-data/sample_sheet_2.tiger").unwrap();
+    app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
     assert_eq!(
         app.current_document().unwrap().path(),
         Path::new("test-data/sample_sheet_2.tiger")
@@ -145,8 +145,9 @@ fn open_and_close_update_focused_document() {
 #[test]
 fn can_manually_focus_a_document() {
     let mut app = App::default();
-    app.open_document("test-data/sample_sheet_1.tiger").unwrap();
-    app.open_document("test-data/sample_sheet_2.tiger").unwrap();
+
+    app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+    app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
     app.focus_document("test-data/sample_sheet_1.tiger")
         .unwrap();
     assert_eq!(
