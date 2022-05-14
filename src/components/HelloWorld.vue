@@ -2,6 +2,7 @@
 import { useAppStore } from '@/stores/app'
 import { openFiles } from '@/commands/local'
 import Pane from '@/components/pane/Pane.vue'
+import PaneTab from '@/components/pane/PaneTab.vue'
 import TabList from '@/components/tabs/TabList.vue'
 import Tab from '@/components/tabs/Tab.vue'
 import Workbench from '@/components/Workbench.vue';
@@ -31,13 +32,18 @@ const app = useAppStore()
         </Workbench>
 
         <Pane class="basis-60">
-          <template #title>Timeline</template>
+          <template #header>
+            <PaneTab :selected="true">Timeline</PaneTab>
+          </template>
           <template #content>Beep boop I'm a timeline</template>
         </Pane>
       </div>
 
       <Pane class="basis-96 min-w-0">
-        <template #title>Content</template>
+        <template #header>
+          <PaneTab :selected="true">Frames</PaneTab>
+          <PaneTab :selected="false">Animations</PaneTab>
+        </template>
         <template #content>
           <ul v-if="app.currentDocument">
             <li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument.sheet.frames">{{ frame }}
