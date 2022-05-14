@@ -1,5 +1,6 @@
-import { useAppStore, AppState } from "@/stores/app";
-import { invoke } from "@tauri-apps/api/tauri";
+import { useAppStore } from "@/stores/app";
+import { AppState, ContentTab } from "@/api/dto";
+import { invoke } from "@tauri-apps/api";
 
 // TODO Replacing store.$state with command output will trigger reactive
 // changes througout the whole UI.

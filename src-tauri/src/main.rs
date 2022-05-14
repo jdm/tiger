@@ -18,6 +18,7 @@ fn main() {
             api::focus_document,
             api::close_document,
             api::save_current_document,
+            api::focus_content_tab,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

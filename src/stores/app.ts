@@ -1,19 +1,5 @@
+import { AppState } from "@/api/dto";
 import { defineStore, acceptHMRUpdate } from "pinia";
-
-export type AppState = {
-  documents: Document[];
-  currentDocumentPath: string | null;
-};
-
-type Document = {
-  path: string;
-  name: string;
-  sheet: Sheet;
-};
-
-type Sheet = {
-  frames: string[];
-};
 
 export const useAppStore = defineStore("app", {
   state: () =>

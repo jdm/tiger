@@ -1,5 +1,5 @@
 import { open as openFileDialog } from "@tauri-apps/api/dialog";
-import { openDocuments } from "@/commands/app";
+import { openDocuments } from "@/api/app";
 
 export async function openFiles() {
   const files = await openFileDialog({

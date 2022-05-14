@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::dto;
-use crate::state::{AppState, Document};
+use crate::state::{AppState, Command, Document};
 
 #[tauri::command]
 pub async fn open_documents(
@@ -29,7 +29,7 @@ pub async fn open_documents(
 }
 
 #[tauri::command]
-pub async fn focus_document(
+pub fn focus_document(
     app_state: tauri::State<'_, AppState>,
     path: PathBuf,
 ) -> Result<dto::App, ()> {
@@ -39,7 +39,7 @@ pub async fn focus_document(
 }
 
 #[tauri::command]
-pub async fn close_document(
+pub fn close_document(
     app_state: tauri::State<'_, AppState>,
     path: PathBuf,
 ) -> Result<dto::App, ()> {
@@ -77,5 +77,17 @@ pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Res
         )),
     }
 
+    Ok((&*app).into())
+}
+
+#[tauri::command]
+pub fn focus_content_tab(
+    app_state: tauri::State<'_, AppState>,
+    content_tab: dto::ContentTab,
+) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document.process_command(Command::FocusContentTab(content_tab.into()));
+    }
     Ok((&*app).into())
 }

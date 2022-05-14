@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
-import { openFiles } from '@/commands/local'
+import { openFiles } from '@/api/local'
 import Pane from '@/components/pane/Pane.vue'
 import PaneTab from '@/components/pane/PaneTab.vue'
 import TabList from '@/components/tabs/TabList.vue'
 import Tab from '@/components/tabs/Tab.vue'
 import Workbench from '@/components/Workbench.vue';
-import { closeDocument, focusDocument } from '@/commands/app'
+import { closeDocument, focusDocument } from '@/api/app'
+import ContentPane from './ContentPane.vue'
 
 const app = useAppStore()
 
@@ -39,18 +40,7 @@ const app = useAppStore()
         </Pane>
       </div>
 
-      <Pane class="basis-96 min-w-0">
-        <template #header>
-          <PaneTab :selected="true">Frames</PaneTab>
-          <PaneTab :selected="false">Animations</PaneTab>
-        </template>
-        <template #content>
-          <ul v-if="app.currentDocument">
-            <li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument.sheet.frames">{{ frame }}
-            </li>
-          </ul>
-        </template>
-      </Pane>
+      <ContentPane class="basis-96 min-w-0" />
 
     </div>
 
