@@ -22,7 +22,18 @@ const app = useAppStore()
     </TabList>
 
     <div class="flex-1 min-h-0 flex flex-row">
+      <div class="flex-1 flex flex-col">
+        <Workbench class="flex-1">
+        </Workbench>
 
+        <div class="basis-60 flex flex-col">
+          <h2 class="px-3 py-1 bg-zinc-800 text-slate-50 font-semibold">
+            Timeline</h2>
+          <div class="flex-1 px-4 py-2 overflow-y-auto bg-neutral-900 border-r border-zinc-800 text-gray-400">
+            Beep boop I'm a timeline
+          </div>
+        </div>
+      </div>
       <div class="basis-96 min-w-0 flex flex-col">
         <h2 class="px-3 py-1 bg-zinc-800 text-slate-50 font-semibold">
           Content</h2>
@@ -31,19 +42,6 @@ const app = useAppStore()
             <li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument.sheet.frames">{{ frame }}
             </li>
           </ul>
-        </div>
-      </div>
-
-      <div class="flex-1 flex flex-col">
-        <Workbench class="flex-1">
-        </Workbench>
-
-        <div class="basis-60 flex flex-col">
-          <h2 class="px-3 py-1 bg-zinc-800 text-slate-50 font-semibold">
-            Timeline</h2>
-          <div class="flex-1 px-4 py-2 overflow-y-auto bg-neutral-900 border-l border-zinc-800 text-gray-400">
-            Beep boop I'm a timeline
-          </div>
         </div>
       </div>
     </div>
