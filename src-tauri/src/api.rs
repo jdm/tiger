@@ -1,19 +1,30 @@
 use std::path::PathBuf;
 
 use crate::dto;
-use crate::state::AppState;
+use crate::state::{AppState, Document};
 
 #[tauri::command]
 pub async fn open_documents(
     app_state: tauri::State<'_, AppState>,
     paths: Vec<PathBuf>,
 ) -> Result<dto::App, ()> {
-    let mut app = app_state.0.lock().unwrap();
     for path in &paths {
-        if let Err(e) = app.open_document(path) {
-            app.show_error_message(format!("Could not open `{}`: {e}", path.to_string_lossy()));
+        let open_path = path.to_owned();
+        match tauri::async_runtime::spawn_blocking(move || Document::open(&open_path))
+            .await
+            .unwrap()
+        {
+            Ok(d) => {
+                let mut app = app_state.0.lock().unwrap();
+                app.open_document(d);
+            }
+            Err(e) => {
+                let mut app = app_state.0.lock().unwrap();
+                app.show_error_message(format!("Could not open `{}`: {e}", path.to_string_lossy()));
+            }
         }
     }
+    let app = app_state.0.lock().unwrap();
     Ok((&*app).into())
 }
 
@@ -48,7 +59,10 @@ pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Res
         }
     };
 
-    let result = sheet.write(&destination);
+    let write_destination = destination.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || sheet.write(&write_destination))
+        .await
+        .unwrap();
 
     let mut app = app_state.0.lock().unwrap();
     match result {

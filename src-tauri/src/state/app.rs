@@ -29,12 +29,12 @@ impl App {
         self.documents.iter()
     }
 
-    pub fn open_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
-        if self.document(&path).is_none() {
-            let document = Document::open(&path)?;
+    pub fn open_document(&mut self, document: Document) {
+        let path = document.path().to_owned();
+        if self.document(document.path()).is_none() {
             self.documents.push(document);
         }
-        self.focus_document(path)
+        self.focus_document(&path).unwrap();
     }
 
     pub fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
