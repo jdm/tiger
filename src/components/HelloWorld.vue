@@ -5,6 +5,7 @@ import Pane from '@/components/pane/Pane.vue'
 import TabList from '@/components/tabs/TabList.vue'
 import Tab from '@/components/tabs/Tab.vue'
 import Workbench from '@/components/Workbench.vue';
+import { closeDocument, focusDocument } from '@/commands/app'
 
 const app = useAppStore()
 
@@ -17,7 +18,8 @@ const app = useAppStore()
     <button @click="openFiles" class="place-self-start">Open document</button>
 
     <TabList>
-      <Tab v-for="document in app.documents" :selected="document.path == app.currentDocumentPath">
+      <Tab v-for="document in app.documents" @select="focusDocument(document.path)"
+        @close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
         {{ document.name }}
       </Tab>
     </TabList>

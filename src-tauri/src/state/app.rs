@@ -69,7 +69,7 @@ impl App {
             .find(|d| d.path() == path.as_ref())
     }
 
-    fn close_document<T: AsRef<Path>>(&mut self, path: T) {
+    pub fn close_document<T: AsRef<Path>>(&mut self, path: T) {
         if let Some(index) = self
             .documents
             .iter()

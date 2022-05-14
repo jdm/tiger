@@ -18,6 +18,27 @@ pub async fn open_documents(
 }
 
 #[tauri::command]
+pub async fn focus_document(
+    app_state: tauri::State<'_, AppState>,
+    path: PathBuf,
+) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    app.focus_document(&path).ok();
+    Ok((&*app).into())
+}
+
+#[tauri::command]
+pub async fn close_document(
+    app_state: tauri::State<'_, AppState>,
+    path: PathBuf,
+) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    // TODO save on close flow
+    app.close_document(&path);
+    Ok((&*app).into())
+}
+
+#[tauri::command]
 pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> {
     let (sheet, destination, version) = {
         let app = app_state.0.lock().unwrap();

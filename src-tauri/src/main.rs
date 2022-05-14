@@ -15,6 +15,8 @@ fn main() {
         .manage(AppState(Default::default()))
         .invoke_handler(tauri::generate_handler![
             api::open_documents,
+            api::focus_document,
+            api::close_document,
             api::save_current_document,
         ])
         .run(tauri::generate_context!())
