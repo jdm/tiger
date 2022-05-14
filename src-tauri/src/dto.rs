@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::path::Path;
 use std::path::PathBuf;
 
 use crate::sheet;
@@ -25,7 +26,14 @@ pub struct Document {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
-    frames: Vec<PathBuf>,
+    frames: Vec<Frame>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Frame {
+    path: PathBuf,
+    name: String,
 }
 
 #[derive(Serialize)]
@@ -41,9 +49,22 @@ pub enum ContentTab {
     Animations,
 }
 
+trait ToFileName {
+    fn to_file_name(&self) -> String;
+}
+
+impl<T: AsRef<Path>> ToFileName for T {
+    fn to_file_name(&self) -> String {
+        self.as_ref()
+            .file_name()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or("??".to_owned())
+    }
+}
+
 impl From<&state::App> for App {
     fn from(app: &state::App) -> Self {
-        App {
+        Self {
             documents: app.documents_iter().map(|d| d.into()).collect(),
             current_document_path: app
                 .current_document()
@@ -54,13 +75,9 @@ impl From<&state::App> for App {
 
 impl From<&state::Document> for Document {
     fn from(document: &state::Document) -> Self {
-        Document {
+        Self {
             path: document.path().to_owned(),
-            name: document
-                .path()
-                .file_name()
-                .map(|s| s.to_string_lossy().into_owned())
-                .unwrap_or("??".to_owned()),
+            name: document.path().to_file_name(),
             sheet: document.sheet().into(),
             view: document.view().into(),
         }
@@ -69,15 +86,24 @@ impl From<&state::Document> for Document {
 
 impl From<&sheet::Sheet> for Sheet {
     fn from(sheet: &sheet::Sheet) -> Self {
-        Sheet {
-            frames: sheet.frames_iter().map(|f| f.source().to_owned()).collect(),
+        Self {
+            frames: sheet.frames_iter().map(|f| f.into()).collect(),
+        }
+    }
+}
+
+impl From<&sheet::Frame> for Frame {
+    fn from(frame: &sheet::Frame) -> Self {
+        Self {
+            path: frame.source().to_owned(),
+            name: frame.source().to_file_name(),
         }
     }
 }
 
 impl From<&state::View> for View {
     fn from(view: &state::View) -> Self {
-        View {
+        Self {
             content_tab: view.content_tab.into(),
         }
     }

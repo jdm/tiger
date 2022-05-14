@@ -6,7 +6,8 @@
 		</template>
 		<template #content>
 			<ul v-if="currentTab == 'frames'">
-				<li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument?.sheet.frames">{{ frame
+				<li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument?.sheet.frames">{{
+						frame.name
 				}}
 				</li>
 			</ul>

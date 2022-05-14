@@ -11,7 +11,12 @@ export type Document = {
 };
 
 export type Sheet = {
-  frames: string[];
+  frames: Frame[];
+};
+
+export type Frame = {
+  path: string;
+  name: string;
 };
 
 export type View = {
