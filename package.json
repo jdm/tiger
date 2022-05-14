@@ -9,6 +9,7 @@
     "tauri": "tauri"
   },
   "dependencies": {
+    "@heroicons/vue": "^1.0.6",
     "@tauri-apps/api": "^1.0.0-rc.5",
     "pinia": "^2.0.14",
     "vue": "^3.2.25"
