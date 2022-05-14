@@ -12,10 +12,15 @@ export type Document = {
 
 export type Sheet = {
   frames: Frame[];
+  animations: Animation[];
 };
 
 export type Frame = {
   path: string;
+  name: string;
+};
+
+export type Animation = {
   name: string;
 };
 

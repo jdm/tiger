@@ -6,9 +6,12 @@
 		</template>
 		<template #content>
 			<ul v-if="currentTab == 'frames'">
-				<li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument?.sheet.frames">{{
-						frame.name
-				}}
+				<li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument?.sheet.frames">
+					{{ frame.name }}</li>
+			</ul>
+			<ul v-if="currentTab == 'animations'">
+				<li class="overflow-x-hidden text-ellipsis" v-for="animation in app.currentDocument?.sheet.animations">
+					{{ animation.name }}
 				</li>
 			</ul>
 		</template>

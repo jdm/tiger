@@ -27,12 +27,19 @@ pub struct Document {
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
     frames: Vec<Frame>,
+    animations: Vec<Animation>,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Frame {
     path: PathBuf,
+    name: String,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Animation {
     name: String,
 }
 
@@ -88,6 +95,10 @@ impl From<&sheet::Sheet> for Sheet {
     fn from(sheet: &sheet::Sheet) -> Self {
         Self {
             frames: sheet.frames_iter().map(|f| f.into()).collect(),
+            animations: sheet
+                .animations_iter()
+                .map(|(n, a)| (n, a).into())
+                .collect(),
         }
     }
 }
@@ -97,6 +108,17 @@ impl From<&sheet::Frame> for Frame {
         Self {
             path: frame.source().to_owned(),
             name: frame.source().to_file_name(),
+        }
+    }
+}
+
+impl<T> From<(T, &sheet::Animation)> for Animation
+where
+    T: AsRef<str>,
+{
+    fn from(animation: (T, &sheet::Animation)) -> Self {
+        Self {
+            name: animation.0.as_ref().to_owned(),
         }
     }
 }
