@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
 import { openFiles } from '@/commands/local'
+import Pane from '@/components/pane/Pane.vue'
 import TabList from '@/components/tabs/TabList.vue'
 import Tab from '@/components/tabs/Tab.vue'
 import Workbench from '@/components/Workbench.vue';
@@ -22,28 +23,27 @@ const app = useAppStore()
     </TabList>
 
     <div class="flex-1 min-h-0 flex flex-row">
+
       <div class="flex-1 flex flex-col">
         <Workbench class="flex-1">
         </Workbench>
 
-        <div class="basis-60 flex flex-col">
-          <h2 class="px-3 py-1 bg-zinc-800 text-slate-50 font-semibold">
-            Timeline</h2>
-          <div class="flex-1 px-4 py-2 overflow-y-auto bg-neutral-900 border-r border-zinc-800 text-gray-400">
-            Beep boop I'm a timeline
-          </div>
-        </div>
+        <Pane class="basis-60">
+          <template #title>Timeline</template>
+          <template #content>Beep boop I'm a timeline</template>
+        </Pane>
       </div>
-      <div class="basis-96 min-w-0 flex flex-col">
-        <h2 class="px-3 py-1 bg-zinc-800 text-slate-50 font-semibold">
-          Content</h2>
-        <div class="flex-1 px-4 py-2 overflow-y-auto bg-neutral-900 text-zinc-300">
+
+      <Pane class="basis-96 min-w-0">
+        <template #title>Content</template>
+        <template #content>
           <ul v-if="app.currentDocument">
             <li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument.sheet.frames">{{ frame }}
             </li>
           </ul>
-        </div>
-      </div>
+        </template>
+      </Pane>
+
     </div>
 
   </div>
