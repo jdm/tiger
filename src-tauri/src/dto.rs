@@ -35,12 +35,14 @@ pub struct Sheet {
 pub struct Frame {
     path: PathBuf,
     name: String,
+    selected: bool,
 }
 
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Animation {
     name: String,
+    selected: bool,
 }
 
 #[derive(Serialize)]
@@ -82,11 +84,21 @@ impl From<&state::App> for App {
 
 impl From<&state::Document> for Document {
     fn from(document: &state::Document) -> Self {
+        let mut sheet: Sheet = document.sheet().into();
+        for frame in sheet.frames.iter_mut() {
+            frame.selected = document.view().selection().is_frame_selected(&frame.path);
+        }
+        for animation in sheet.animations.iter_mut() {
+            animation.selected = document
+                .view()
+                .selection()
+                .is_animation_selected(&animation.name);
+        }
         Self {
             path: document.path().to_owned(),
             name: document.path().to_file_name(),
-            sheet: document.sheet().into(),
             view: document.view().into(),
+            sheet,
         }
     }
 }
@@ -108,6 +120,7 @@ impl From<&sheet::Frame> for Frame {
         Self {
             path: frame.source().to_owned(),
             name: frame.source().to_file_name(),
+            selected: false,
         }
     }
 }
@@ -119,6 +132,7 @@ where
     fn from(animation: (T, &sheet::Animation)) -> Self {
         Self {
             name: animation.0.as_ref().to_owned(),
+            selected: false,
         }
     }
 }

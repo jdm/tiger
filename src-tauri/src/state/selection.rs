@@ -7,6 +7,14 @@ pub struct MultiSelection {
     content: Option<TaggedMultiSelection>,
 }
 
+#[derive(Clone, Debug)]
+pub enum SingleSelection {
+    Frame(PathBuf),
+    Animation(String),
+    Hitbox(String),
+    Keyframe(usize),
+}
+
 pub enum MultiSelectionEdit {
     Frames(PathBuf, Vec<PathBuf>),
     Animations(String, Vec<String>),
@@ -32,8 +40,8 @@ where
 }
 
 impl MultiSelection {
-    pub fn alter(mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
-        if let Some(content) = self.content {
+    pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
+        if let Some(content) = &self.content {
             self.content = content.alter(edit, shift, ctrl);
         } else {
             self.content = Some(edit.into());
@@ -71,7 +79,7 @@ impl MultiSelection {
 
 impl TaggedMultiSelection {
     pub fn alter(
-        self,
+        &self,
         edit: MultiSelectionEdit,
         shift: bool,
         ctrl: bool,
@@ -145,43 +153,49 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
 
     // Desired behavior: https://stackoverflow.com/a/16530782
     pub fn alter(
-        mut self,
+        &self,
         interacted_item: T,
         all_items: &Vec<T>,
         shift: bool,
         ctrl: bool,
     ) -> Option<Self> {
-        assert!(self.selected_items.len() > 0);
+        let mut new_selection = self.clone();
+        assert!(new_selection.selected_items.len() > 0);
 
         let interacted_item_index = all_items.iter().position(|item| *item == interacted_item)?;
 
         if shift {
-            let pivot_index = all_items.iter().position(|item| item == &self.pivot)?;
+            let pivot_index = all_items
+                .iter()
+                .position(|item| item == &new_selection.pivot)?;
             let range_start = pivot_index.min(interacted_item_index);
             let range_end = pivot_index.max(interacted_item_index);
             if ctrl {
-                if self.contains(&self.pivot) {
-                    self.insert_items(all_items[range_start..=range_end].iter().cloned().collect());
+                if new_selection.contains(&new_selection.pivot) {
+                    new_selection
+                        .insert_items(all_items[range_start..=range_end].iter().cloned().collect());
                 } else {
-                    self.remove_items(&all_items[range_start..=range_end].iter().collect());
+                    new_selection
+                        .remove_items(&all_items[range_start..=range_end].iter().collect());
                 }
             } else {
-                self.selected_items = all_items[range_start..=range_end].iter().cloned().collect();
+                new_selection.selected_items =
+                    all_items[range_start..=range_end].iter().cloned().collect();
             }
         } else if ctrl {
-            self.toggle(&interacted_item);
+            new_selection.toggle(&interacted_item);
         } else {
-            self = interacted_item.clone().into();
+            new_selection = interacted_item.clone().into();
         }
 
         if ctrl {
-            self.pivot = interacted_item.clone();
+            new_selection.pivot = interacted_item.clone();
         }
 
-        if self.selected_items.is_empty() {
+        if new_selection.selected_items.is_empty() {
             None
         } else {
-            Some(self)
+            Some(new_selection)
         }
     }
 

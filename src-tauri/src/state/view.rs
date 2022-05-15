@@ -2,7 +2,7 @@ use euclid::default::*;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::state::MultiSelection;
+use crate::state::{MultiSelection, MultiSelectionEdit};
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ContentTab {
@@ -48,6 +48,14 @@ impl View {
 
     pub fn set_content_tab(&mut self, content_tab: ContentTab) {
         self.content_tab = content_tab;
+    }
+
+    pub fn selection(&self) -> &MultiSelection {
+        &self.selection
+    }
+
+    pub fn selection_mut(&mut self) -> &mut MultiSelection {
+        &mut self.selection
     }
 
     pub fn workbench_zoom_factor(&self) -> f32 {

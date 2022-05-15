@@ -60,6 +60,7 @@ pub enum DocumentError {
 #[derive(Clone, Debug)]
 pub enum Command {
     FocusContentTab(ContentTab),
+    AlterSelection(SingleSelection, bool, bool),
 }
 
 impl Document {
@@ -114,6 +115,28 @@ impl Document {
 
     fn focus_content_tab(&mut self, content_tab: ContentTab) {
         self.view.set_content_tab(content_tab);
+    }
+
+    fn alter_selection(&mut self, selection: &SingleSelection, shift: bool, ctrl: bool) {
+        let edit = match selection {
+            SingleSelection::Frame(f) => MultiSelectionEdit::Frames(
+                f.clone(),
+                self.sheet
+                    .frames_iter()
+                    .map(|f| f.source().to_owned())
+                    .collect(),
+            ),
+            SingleSelection::Animation(a) => MultiSelectionEdit::Animations(
+                a.clone(),
+                self.sheet
+                    .animations_iter()
+                    .map(|(n, _)| n.clone())
+                    .collect(),
+            ),
+            SingleSelection::Hitbox(_) => todo!(),
+            SingleSelection::Keyframe(_) => todo!(),
+        };
+        self.view.selection_mut().alter(edit, shift, ctrl);
     }
 
     fn push_undo_state(&mut self, entry: HistoryEntry) {
@@ -204,6 +227,9 @@ impl Document {
     pub fn process_command(&mut self, command: Command) {
         match command {
             Command::FocusContentTab(t) => self.focus_content_tab(t),
+            Command::AlterSelection(ref selection, shift, ctrl) => {
+                self.alter_selection(selection, shift, ctrl)
+            }
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;

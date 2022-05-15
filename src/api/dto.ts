@@ -18,10 +18,12 @@ export type Sheet = {
 export type Frame = {
   path: string;
   name: string;
+  selected: boolean;
 };
 
 export type Animation = {
   name: string;
+  selected: boolean;
 };
 
 export type View = {

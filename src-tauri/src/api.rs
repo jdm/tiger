@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use crate::dto;
-use crate::state::{AppState, Command, Document};
+use crate::state::{AppState, Command, Document, SingleSelection};
 
 #[tauri::command]
 pub async fn open_documents(
@@ -88,6 +88,42 @@ pub fn focus_content_tab(
     let mut app = app_state.0.lock().unwrap();
     if let Some(document) = app.current_document_mut() {
         document.process_command(Command::FocusContentTab(content_tab.into()));
+    }
+    Ok((&*app).into())
+}
+
+#[tauri::command]
+pub fn select_frame(
+    app_state: tauri::State<'_, AppState>,
+    path: PathBuf,
+    shift: bool,
+    ctrl: bool,
+) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document.process_command(Command::AlterSelection(
+            SingleSelection::Frame(path),
+            shift,
+            ctrl,
+        ));
+    }
+    Ok((&*app).into())
+}
+
+#[tauri::command]
+pub fn select_animation(
+    app_state: tauri::State<'_, AppState>,
+    name: String,
+    shift: bool,
+    ctrl: bool,
+) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document.process_command(Command::AlterSelection(
+            SingleSelection::Animation(name),
+            shift,
+            ctrl,
+        ));
     }
     Ok((&*app).into())
 }

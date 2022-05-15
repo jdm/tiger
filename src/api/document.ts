@@ -9,3 +9,31 @@ export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   const appStore = useAppStore();
   appStore.$state = app;
 }
+
+export async function selectFrame(
+  path: string,
+  shift: boolean,
+  ctrl: boolean
+): Promise<void> {
+  const app: AppState = await invoke("select_frame", {
+    path: path,
+    shift: shift,
+    ctrl: ctrl,
+  });
+  const appStore = useAppStore();
+  appStore.$state = app;
+}
+
+export async function selectAnimation(
+  name: string,
+  shift: boolean,
+  ctrl: boolean
+): Promise<void> {
+  const app: AppState = await invoke("select_animation", {
+    name: name,
+    shift: shift,
+    ctrl: ctrl,
+  });
+  const appStore = useAppStore();
+  appStore.$state = app;
+}
