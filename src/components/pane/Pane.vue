@@ -4,7 +4,7 @@
 			<slot name="header"></slot>
 			<div class="flex-1 border-zinc-700"></div>
 		</div>
-		<div class="flex-1 px-4 py-2 overflow-y-auto bg-zinc-800 text-gray-400">
+		<div class="flex-1 overflow-y-auto bg-zinc-800 text-zinc-400">
 			<slot name="content"></slot>
 		</div>
 	</div>

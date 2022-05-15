@@ -5,15 +5,18 @@
 			<PaneTab @select="focusContentTab('animations')" :selected="currentTab == 'animations'">Animations</PaneTab>
 		</template>
 		<template #content>
-			<ul v-if="currentTab == 'frames'">
-				<li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument?.sheet.frames">
-					{{ frame.name }}</li>
-			</ul>
-			<ul v-if="currentTab == 'animations'">
-				<li class="overflow-x-hidden text-ellipsis" v-for="animation in app.currentDocument?.sheet.animations">
-					{{ animation.name }}
-				</li>
-			</ul>
+			<div class="px-4 py-2 ">
+				<ul v-if="currentTab == 'frames'">
+					<li class="overflow-x-hidden text-ellipsis" v-for="frame in app.currentDocument?.sheet.frames">
+						{{ frame.name }}</li>
+				</ul>
+				<ul v-if="currentTab == 'animations'">
+					<li class="overflow-x-hidden text-ellipsis"
+						v-for="animation in app.currentDocument?.sheet.animations">
+						{{ animation.name }}
+					</li>
+				</ul>
+			</div>
 		</template>
 	</Pane>
 </template>
