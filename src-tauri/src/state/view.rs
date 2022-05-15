@@ -2,7 +2,7 @@ use euclid::default::*;
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::state::Selection;
+use crate::state::MultiSelection;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ContentTab {
@@ -18,11 +18,11 @@ pub enum WorkbenchItem {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
-    pub content_tab: ContentTab,
-    pub selection: Option<Selection>,
-    pub workbench_item: Option<WorkbenchItem>,
-    pub workbench_offset: Vector2D<f32>,
-    pub timeline_clock: Duration,
+    content_tab: ContentTab,
+    selection: MultiSelection,
+    workbench_item: Option<WorkbenchItem>,
+    workbench_offset: Vector2D<f32>,
+    timeline_clock: Duration,
     workbench_zoom_level: i32,
     timeline_zoom_level: i32,
 }
@@ -31,7 +31,7 @@ impl Default for View {
     fn default() -> View {
         View {
             content_tab: ContentTab::Frames,
-            selection: None,
+            selection: Default::default(),
             workbench_item: None,
             workbench_offset: Vector2D::<f32>::zero(),
             workbench_zoom_level: 1,
@@ -42,7 +42,15 @@ impl Default for View {
 }
 
 impl View {
-    pub fn get_workbench_zoom_factor(&self) -> f32 {
+    pub fn content_tab(&self) -> ContentTab {
+        self.content_tab
+    }
+
+    pub fn set_content_tab(&mut self, content_tab: ContentTab) {
+        self.content_tab = content_tab;
+    }
+
+    pub fn workbench_zoom_factor(&self) -> f32 {
         if self.workbench_zoom_level >= 0 {
             self.workbench_zoom_level as f32
         } else {
@@ -106,7 +114,7 @@ impl View {
         self.timeline_zoom_level = 1;
     }
 
-    pub fn get_timeline_zoom_factor(&self) -> f32 {
+    pub fn timeline_zoom_factor(&self) -> f32 {
         if self.timeline_zoom_level >= 0 {
             self.timeline_zoom_level as f32
         } else {

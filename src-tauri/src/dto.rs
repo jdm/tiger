@@ -126,7 +126,7 @@ where
 impl From<&state::View> for View {
     fn from(view: &state::View) -> Self {
         Self {
-            content_tab: view.content_tab.into(),
+            content_tab: view.content_tab().into(),
         }
     }
 }

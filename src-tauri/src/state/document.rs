@@ -113,7 +113,7 @@ impl Document {
     }
 
     fn focus_content_tab(&mut self, content_tab: ContentTab) {
-        self.view.content_tab = content_tab;
+        self.view.set_content_tab(content_tab);
     }
 
     fn push_undo_state(&mut self, entry: HistoryEntry) {
