@@ -1,3 +1,22 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+.styled-scrollbars {
+	--scrollbar-foreground: theme('colors.zinc.500');
+	--scrollbar-background: theme('colors.zinc.700');
+	scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
+}
+
+.styled-scrollbars::-webkit-scrollbar {
+	width: 14px;
+	height: 14px;
+}
+
+.styled-scrollbars::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-foreground);
+}
+
+.styled-scrollbars::-webkit-scrollbar-track {
+	background: var(--scrollbar-background);
+}
