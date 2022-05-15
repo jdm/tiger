@@ -17,7 +17,7 @@ const props = defineProps<{
 }>()
 
 const classes = computed(() => ({
-	...(props.selected ? { 'bg-zinc-800': true, 'text-zinc-200': true } : { 'bg-zinc-900': true, 'text-zinc-500': true, 'hover:bg-zinc-800': true }),
+	...(props.selected ? { 'bg-gray-800': true, 'text-white': true } : { 'bg-gray-900': true, 'text-gray-500': true, 'hover:bg-gray-800': true }),
 	...(props.closeable) ? { 'pr-2': true, 'pt-2': true, 'h-11': true } : {},
 }));
 
