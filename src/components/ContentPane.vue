@@ -6,15 +6,8 @@
 		</template>
 		<template #content>
 			<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4 m-4">
-				<div v-for="frame in app.currentDocument?.sheet.frames" @click="(event) => onFrameClicked(frame, event)"
-					class="flex flex-col rounded-sm cursor-pointer"
-					:class="frame.selected ? 'outline outline-4 outline-blue-500' : ''">
-					<div class="flex place-content-center aspect-square checkerboard rounded-sm overflow-hidden">
-						<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
-					</div>
-					<div class="text-xs p-1 overflow-hidden text-ellipsis"
-						:class="frame.selected ? 'bg-blue-500 text-white' : 'text-zinc-400'">{{ frame.name }}</div>
-				</div>
+				<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame"
+					@click="(event) => onFrameClicked(frame, event)" />
 			</div>
 			<div v-if="currentTab == 'animations'">
 				<button
@@ -40,14 +33,14 @@
 </template>
 
 <script setup lang="ts">
-import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { useAppStore } from '@/stores/app'
 import { computed } from '@vue/reactivity';
-import { FilmIcon, PlusIcon, PhotographIcon } from '@heroicons/vue/outline'
+import { FilmIcon, PlusIcon } from '@heroicons/vue/outline'
+import { focusContentTab, selectFrame, selectAnimation } from '@/api/document'
+import { Animation, Frame as FrameDTO } from '@/api/dto';
 import Pane from '@/components/pane/Pane.vue'
 import PaneTab from '@/components/pane/PaneTab.vue'
-import { focusContentTab, selectFrame, selectAnimation } from '@/api/document'
-import { Animation, Frame } from '@/api/dto';
+import Frame from '@/components/Frame.vue'
 
 const app = useAppStore()
 
@@ -55,7 +48,7 @@ const currentTab = computed(() => {
 	return app.currentDocument?.view?.contentTab
 })
 
-function onFrameClicked(frame: Frame, event: MouseEvent) {
+function onFrameClicked(frame: FrameDTO, event: MouseEvent) {
 	selectFrame(frame.path, event.shiftKey, event.ctrlKey)
 }
 
@@ -64,19 +57,3 @@ function onAnimationClicked(animation: Animation, event: MouseEvent) {
 }
 
 </script>
-
-<style scoped>
-.pixelated {
-	image-rendering: pixelated;
-}
-
-.checkerboard {
-	background-size: 16px 16px;
-	background-image:
-		linear-gradient(45deg, theme('colors.neutral.700') 25%, transparent 25%, transparent 75%, theme('colors.neutral.700') 75%, theme('colors.neutral.700') 100%),
-		linear-gradient(45deg, theme('colors.neutral.700') 25%, theme('colors.neutral.600') 25%, theme('colors.neutral.600') 75%, theme('colors.neutral.700') 75%, theme('colors.neutral.700') 100%);
-	background-position:
-		0px 0px,
-		8px 8px;
-}
-</style>
