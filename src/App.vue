@@ -1,10 +1,7 @@
 <script setup lang="ts">
-import { useAppStore } from '@/stores/app'
 import { openFiles } from '@/api/local'
 import Workbench from '@/components/Workbench.vue';
 import ContentPane from '@/components/ContentPane.vue'
-
-const app = useAppStore()
 
 </script>
 
