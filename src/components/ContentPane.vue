@@ -14,7 +14,7 @@
 						<div class="inline-block">Import</div>
 					</button>
 				</div>
-				<div class="h-0 border-y border-t-plastic-600 border-b-plastic-800" />
+				<Separator />
 				<div class="flex-1 m-4 ml-0 overflow-y-scroll styled-scrollbars">
 					<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4 p-4 pt-1">
 						<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame"
@@ -43,12 +43,13 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
 import { computed } from '@vue/reactivity';
-import { FilmIcon, PlusIcon } from '@heroicons/vue/outline'
+import { FilmIcon } from '@heroicons/vue/outline'
 import { focusContentTab, selectFrame, selectAnimation } from '@/api/document'
 import { Animation, Frame as FrameDTO } from '@/api/dto';
+import Frame from '@/components/Frame.vue'
 import Pane from '@/components/pane/Pane.vue'
 import PaneTab from '@/components/pane/PaneTab.vue'
-import Frame from '@/components/Frame.vue'
+import Separator from '@/components/Separator.vue'
 
 const app = useAppStore()
 
