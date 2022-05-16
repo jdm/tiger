@@ -8,17 +8,19 @@
 			<div class="flex-1 bg-plastic-900" />
 		</div>
 		<div @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove" class="flex-1 graph-paper"
-			:style="graphPaperStyle" />
+			:class="isDragging ? 'cursor-move' : 'cursor-default'" :style="graphPaperStyle" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed } from '@vue/reactivity';
+import { computed, ref } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
 import { pan } from '@/api/document'
 import { useAppStore } from '@/stores/app'
 import PaneTab from '@/components/pane/PaneTab.vue'
+
 const app = useAppStore();
+const isDragging = ref(false);
 
 const graphPaperStyle = computed(() => {
 	const offset = app.currentDocument?.view.workbenchOffset || [0, 0];
@@ -27,22 +29,20 @@ const graphPaperStyle = computed(() => {
 	}
 });
 
-let isDragging = false;
-
 function onMouseDown(event: MouseEvent) {
 	if (event.button == 2) {
-		isDragging = true;
+		isDragging.value = true;
 	}
 }
 
 function onMouseUp(event: MouseEvent) {
 	if (event.button == 2) {
-		isDragging = false;
+		isDragging.value = false;
 	}
 }
 
 function onMouseMove(event: MouseEvent) {
-	if (isDragging) {
+	if (isDragging.value) {
 		pan([event.movementX, event.movementY]);
 	}
 }
