@@ -4,7 +4,7 @@
 			<PaneTab @select="focusContentTab('frames')" :selected="currentTab == 'frames'">Frames</PaneTab>
 			<PaneTab @select="focusContentTab('animations')" :selected="currentTab == 'animations'">Animations</PaneTab>
 		</PaneTabList>
-		<div class="flex flex-col min-h-0">
+		<div class="flex-1 flex flex-col min-h-0">
 			<div class="w-full p-4 inline-flex items-center space-x-2">
 				<input type="text" placeholder="Idle"
 					class="w-full h-10 px-4 placeholder-plastic-500 font-bold bg-plastic-800 rounded-md border-y border-t-plastic-900 border-b-plastic-600" />
