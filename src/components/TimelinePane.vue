@@ -1,6 +1,6 @@
 <template>
 	<Pane>
-		beep beoop I'm a timeline
+		beep boop I'm a timeline
 	</Pane>
 </template>
 
