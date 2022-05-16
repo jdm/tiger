@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { Frame as FrameDTO } from '@/api/dto'
-const props = defineProps<{
+defineProps<{
 	frame: FrameDTO
 }>()
 </script>
