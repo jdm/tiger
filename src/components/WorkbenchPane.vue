@@ -1,15 +1,14 @@
 <template>
-	<div class="h-full flex flex-col">
-		<div class="flex flex-row ">
+	<Pane class="flex flex-col">
+		<PaneTabList>
 			<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
 				@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
 				{{ document.name }}
 			</PaneTab>
-			<div class="flex-1 bg-plastic-900" />
-		</div>
+		</PaneTabList>
 		<div @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove" class="flex-1 graph-paper"
 			:class="isDragging ? 'cursor-move' : 'cursor-default'" :style="graphPaperStyle" />
-	</div>
+	</Pane>
 </template>
 
 <script setup lang="ts">
@@ -17,7 +16,9 @@ import { computed, ref } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
 import { pan } from '@/api/document'
 import { useAppStore } from '@/stores/app'
+import Pane from '@/components/pane/Pane.vue'
 import PaneTab from '@/components/pane/PaneTab.vue'
+import PaneTabList from '@/components/pane/PaneTabList.vue'
 
 const app = useAppStore();
 const isDragging = ref(false);

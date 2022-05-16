@@ -6,21 +6,20 @@
     <button @click="openFiles" class="place-self-start">Open document</button>
 
     <div class="flex-1 min-h-0 flex flex-row space-x-5">
-      <ContentPane class="basis-96 min-w-0 rounded-sm outline outline-plastic-600" />
-      <Workbench class="flex-1 rounded-sm outline outline-plastic-600" />
+      <ContentPane class="basis-96 min-w-0" />
+      <WorkbenchPane class="flex-1" />
     </div>
 
-    <div class="p-4 basis-60 bg-plastic-700 rounded-sm outline outline-plastic-600">
-      Beep boop I'm a timeline
-    </div>
+    <TimelinePane class="basis-60" />
 
   </div>
 </template>
 
 <script setup lang="ts">
 import { openFiles } from '@/api/local'
-import Workbench from '@/components/Workbench.vue';
+import WorkbenchPane from '@/components/WorkbenchPane.vue';
 import ContentPane from '@/components/ContentPane.vue'
+import TimelinePane from '@/components/TimelinePane.vue'
 
 function onContextMenu(event: Event) {
   event.preventDefault();
