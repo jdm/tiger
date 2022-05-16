@@ -29,6 +29,17 @@ impl App {
         self.documents.iter()
     }
 
+    pub fn new_document<T: AsRef<Path>>(&mut self, path: T) -> () {
+        match self.document_mut(&path) {
+            Some(d) => *d = Document::new(path.as_ref()),
+            None => {
+                let document = Document::new(path.as_ref());
+                self.documents.push(document);
+            }
+        }
+        self.current_document = Some(path.as_ref().to_owned());
+    }
+
     pub fn open_document(&mut self, document: Document) {
         let path = document.path().to_owned();
         if self.document(document.path()).is_none() {

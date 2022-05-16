@@ -5,6 +5,13 @@ use crate::dto;
 use crate::state::{AppState, Command, Document, SingleSelection};
 
 #[tauri::command]
+pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    app.new_document(path);
+    Ok((&*app).into())
+}
+
+#[tauri::command]
 pub async fn open_documents(
     app_state: tauri::State<'_, AppState>,
     paths: Vec<PathBuf>,
