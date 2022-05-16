@@ -6,7 +6,7 @@
 		</template>
 		<template #content>
 			<div class="flex flex-col h-full">
-				<div class="w-full p-4 bg-plastic-700 inline-flex items-center space-x-2">
+				<div class="w-full p-4 inline-flex items-center space-x-2">
 					<input type="text" placeholder="Idle"
 						class="w-full h-10 px-4 placeholder-plastic-500 font-bold bg-plastic-800 rounded-md border-y border-t-plastic-900 border-b-plastic-600" />
 					<button
