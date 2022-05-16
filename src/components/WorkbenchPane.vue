@@ -6,15 +6,16 @@
 				{{ document.name }}
 			</PaneTab>
 		</PaneTabList>
-		<div @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove" class="flex-1 graph-paper"
-			:class="isDragging ? 'cursor-move' : 'cursor-default'" :style="graphPaperStyle" />
+		<div @click="onClick" @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove"
+			class="flex-1 graph-paper" :class="isDragging ? 'cursor-move' : 'cursor-default'"
+			:style="graphPaperStyle" />
 	</Pane>
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
-import { pan } from '@/api/document'
+import { clearSelection, pan } from '@/api/document'
 import { useAppStore } from '@/stores/app'
 import Pane from '@/components/pane/Pane.vue'
 import PaneTab from '@/components/pane/PaneTab.vue'
@@ -29,6 +30,10 @@ const graphPaperStyle = computed(() => {
 		'background-position': offset[0] + 'px ' + offset[1] + 'px',
 	}
 });
+
+function onClick() {
+	clearSelection();
+}
 
 function onMouseDown(event: MouseEvent) {
 	if (event.button == 2) {

@@ -101,6 +101,15 @@ pub fn focus_content_tab(
 }
 
 #[tauri::command]
+pub fn clear_selection(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document.process_command(Command::ClearSelection);
+    }
+    Ok((&*app).into())
+}
+
+#[tauri::command]
 pub fn select_frame(
     app_state: tauri::State<'_, AppState>,
     path: PathBuf,

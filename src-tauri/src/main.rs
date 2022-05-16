@@ -22,6 +22,7 @@ fn main() {
             api::save_current_document,
             api::focus_content_tab,
             // Document
+            api::clear_selection,
             api::select_frame,
             api::select_animation,
             api::pan,

@@ -60,6 +60,7 @@ pub enum DocumentError {
 #[derive(Clone, Debug)]
 pub enum Command {
     FocusContentTab(ContentTab),
+    ClearSelection,
     AlterSelection(SingleSelection, bool, bool),
     Pan(Vector2D<f32>),
 }
@@ -228,6 +229,7 @@ impl Document {
     pub fn process_command(&mut self, command: Command) {
         match command {
             Command::FocusContentTab(t) => self.focus_content_tab(t),
+            Command::ClearSelection => self.view.selection_mut().clear(),
             Command::AlterSelection(ref selection, shift, ctrl) => {
                 self.alter_selection(selection, shift, ctrl)
             }

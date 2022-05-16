@@ -10,6 +10,12 @@ export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   appStore.$state = app;
 }
 
+export async function clearSelection(): Promise<void> {
+  const app: AppState = await invoke("clear_selection");
+  const appStore = useAppStore();
+  appStore.$state = app;
+}
+
 export async function selectFrame(
   path: string,
   shift: boolean,

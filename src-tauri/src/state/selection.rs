@@ -40,6 +40,10 @@ where
 }
 
 impl MultiSelection {
+    pub fn clear(&mut self) {
+        self.content = None;
+    }
+
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
         if let Some(content) = &self.content {
             self.content = content.alter(edit, shift, ctrl);
