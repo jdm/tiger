@@ -6,7 +6,7 @@
 					@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
 					{{ document.name }}
 				</PaneTab>
-				<div class="flex-1 bg-zinc-900" />
+				<div class="flex-1 bg-plastic-900" />
 			</div>
 		</div>
 	</div>

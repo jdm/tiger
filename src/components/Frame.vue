@@ -5,7 +5,7 @@
 			<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
 		</div>
 		<div class="text-xs p-1 overflow-hidden text-ellipsis"
-			:class="frame.selected ? 'bg-blue-500 text-white' : 'text-zinc-400'">{{ frame.name }}</div>
+			:class="frame.selected ? 'bg-blue-500 text-plastic-100' : 'text-plastic-300'">{{ frame.name }}</div>
 	</div>
 </template>
 
@@ -26,8 +26,8 @@ const props = defineProps<{
 .checkerboard {
 	background-size: 16px 16px;
 	background-image:
-		linear-gradient(45deg, theme('colors.neutral.700') 25%, transparent 25%, transparent 75%, theme('colors.neutral.700') 75%, theme('colors.neutral.700') 100%),
-		linear-gradient(45deg, theme('colors.neutral.700') 25%, theme('colors.neutral.600') 25%, theme('colors.neutral.600') 75%, theme('colors.neutral.700') 75%, theme('colors.neutral.700') 100%);
+		linear-gradient(45deg, theme('colors.plastic.800') 25%, transparent 25%, transparent 75%, theme('colors.plastic.800') 75%, theme('colors.plastic.800') 100%),
+		linear-gradient(45deg, theme('colors.plastic.800') 25%, theme('colors.plastic.900') 25%, theme('colors.plastic.900') 75%, theme('colors.plastic.800') 75%, theme('colors.plastic.800') 100%);
 	background-position:
 		0px 0px,
 		8px 8px;

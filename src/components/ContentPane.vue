@@ -5,25 +5,33 @@
 			<PaneTab @select="focusContentTab('animations')" :selected="currentTab == 'animations'">Animations</PaneTab>
 		</template>
 		<template #content>
-			<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4 m-4">
-				<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame"
-					@click="(event) => onFrameClicked(frame, event)" />
-			</div>
-			<div v-if="currentTab == 'animations'">
-				<button
-					class="inline-flex items-center m-2 px-4 py-2 rounded-md uppercase text-xs font-bold  bg-blue-500">
-					<PlusIcon class="inline-block w-4 h-4" />
-					<div class="inline-block pl-2">New Animation</div>
-				</button>
-				<div v-for="animation in app.currentDocument?.sheet.animations"
-					@click="(event) => onAnimationClicked(animation, event)"
-					class="p-2 border-b last:border-0 border-gray-700 pl-4 overflow-x-hidden text-ellipsis hover:bg-gray-700"
-					:class="animation.selected ? 'text-sky-400 bg-gray-900' : ''">
-					<div class="flex flex-row">
-						<FilmIcon class="self-center w-6 h-6" />
-						<div class="px-4 flex flex-col">
-							<div class="">{{ animation.name }}</div>
-							<div class="text-xs text-gray-400">4 directions · 220ms</div>
+			<div class="flex flex-col h-full">
+				<div class="w-full p-4 bg-plastic-700 inline-flex items-center space-x-2">
+					<input type="text" placeholder="Idle"
+						class="w-full h-10 px-4 placeholder-plastic-500 font-bold bg-plastic-800 rounded-md border-y border-t-plastic-900 border-b-plastic-600" />
+					<button
+						class="inline-flex items-center m-2 px-4 py-2 rounded-md uppercase text-xs font-bold  bg-green-500 border-y border-t-green-400 border-b-green-600">
+						<div class="inline-block">Import</div>
+					</button>
+				</div>
+				<div class="h-0 border-y border-t-plastic-600 border-b-plastic-800" />
+				<div class="flex-1 m-4 ml-0 overflow-y-scroll styled-scrollbars">
+					<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4 p-4 pt-1">
+						<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame"
+							@click="(event) => onFrameClicked(frame, event)" />
+					</div>
+					<div v-if="currentTab == 'animations'">
+						<div v-for="animation in app.currentDocument?.sheet.animations"
+							@click="(event) => onAnimationClicked(animation, event)"
+							class="p-2 border-b last:border-0 border-gray-700 pl-4 overflow-x-hidden text-ellipsis hover:bg-gray-700"
+							:class="animation.selected ? 'text-sky-400 bg-gray-900' : ''">
+							<div class="flex flex-row">
+								<FilmIcon class="self-center w-6 h-6" />
+								<div class="px-4 flex flex-col">
+									<div class="">{{ animation.name }}</div>
+									<div class="text-xs text-gray-400">4 directions · 220ms</div>
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>

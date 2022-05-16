@@ -5,3 +5,24 @@
 body {
 	color-scheme: dark;
 }
+
+.styled-scrollbars {
+	--scrollbar-foreground: theme('colors.plastic.500');
+	--scrollbar-background: theme('colors.plastic.800');
+	scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
+}
+
+.styled-scrollbars::-webkit-scrollbar {
+	width: 4px;
+	height: 4px;
+}
+
+.styled-scrollbars::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-foreground);
+	border-radius: 4px;
+}
+
+.styled-scrollbars::-webkit-scrollbar-track {
+	background: var(--scrollbar-background);
+	border-radius: 4px;
+}
