@@ -1,5 +1,5 @@
 <template>
-	<div @click="$emit('select')" @mouseover="onMouseOver" @mouseout="onMouseOut"
+	<div @click="$emit('select')" @mouseover="onMouseOver" @mouseout="onMouseOut" @auxclick="test"
 		class="flex-initial px-4 py-3 font-medium text-sm" :class="classes">
 		<slot></slot>
 		<XIcon v-if="closeable" @click="$emit('close')" :class="(selected || hovered) ? 'visible' : 'invisible'"
@@ -14,7 +14,9 @@ import { computed, ref } from '@vue/reactivity';
 const props = defineProps<{
 	closeable?: Boolean
 	selected?: Boolean
-}>()
+}>();
+
+const emit = defineEmits(['select', 'close']);
 
 const classes = computed(() => ({
 	...(props.selected ? { 'bg-plastic-700': true, 'text-plastic-200': true } : { 'bg-plastic-800': true, 'text-plastic-400': true, 'hover:text-plastic-300': true }),
@@ -22,10 +24,17 @@ const classes = computed(() => ({
 }));
 
 let hovered = ref(false);
+
 function onMouseOver() {
 	hovered.value = true;
 }
 function onMouseOut() {
 	hovered.value = false;
+}
+
+function test(event: MouseEvent) {
+	if (props.closeable && event.button == 1) {
+		emit("close");
+	}
 }
 </script>
