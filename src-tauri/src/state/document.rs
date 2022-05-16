@@ -1,5 +1,5 @@
+use euclid::default::Vector2D;
 use std::path::{Path, PathBuf};
-
 use thiserror::Error;
 
 use crate::sheet::{Sheet, SheetError};
@@ -61,6 +61,7 @@ pub enum DocumentError {
 pub enum Command {
     FocusContentTab(ContentTab),
     AlterSelection(SingleSelection, bool, bool),
+    Pan(Vector2D<f32>),
 }
 
 impl Document {
@@ -230,6 +231,7 @@ impl Document {
             Command::AlterSelection(ref selection, shift, ctrl) => {
                 self.alter_selection(selection, shift, ctrl)
             }
+            Command::Pan(delta) => self.view.pan(delta),
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;

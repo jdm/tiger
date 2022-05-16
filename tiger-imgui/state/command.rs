@@ -72,7 +72,6 @@ pub enum DocumentCommand {
     WorkbenchZoomOut,
     WorkbenchResetZoom,
     WorkbenchCenter,
-    Pan(Vector2D<f32>),
     CreateHitbox(Vector2D<f32>),
     BeginHitboxScale(ResizeAxis),
     UpdateHitboxScale(Vector2D<f32>, bool),

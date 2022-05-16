@@ -1,22 +1,51 @@
 <template>
-	<div class="h-full">
-		<div class="h-full graph-paper">
-			<div class="flex flex-row ">
-				<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
-					@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
-					{{ document.name }}
-				</PaneTab>
-				<div class="flex-1 bg-plastic-900" />
-			</div>
+	<div class="h-full flex flex-col">
+		<div class="flex flex-row ">
+			<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
+				@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
+				{{ document.name }}
+			</PaneTab>
+			<div class="flex-1 bg-plastic-900" />
 		</div>
+		<div @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove" class="flex-1 graph-paper"
+			:style="graphPaperStyle" />
 	</div>
 </template>
 
 <script setup lang="ts">
+import { computed } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
+import { pan } from '@/api/document'
 import { useAppStore } from '@/stores/app'
 import PaneTab from '@/components/pane/PaneTab.vue'
-const app = useAppStore()
+const app = useAppStore();
+
+const graphPaperStyle = computed(() => {
+	const offset = app.currentDocument?.view.workbenchOffset || [0, 0];
+	return {
+		'background-position': offset[0] + 'px ' + offset[1] + 'px',
+	}
+});
+
+let isDragging = false;
+
+function onMouseDown(event: MouseEvent) {
+	if (event.button == 2) {
+		isDragging = true;
+	}
+}
+
+function onMouseUp(event: MouseEvent) {
+	if (event.button == 2) {
+		isDragging = false;
+	}
+}
+
+function onMouseMove(event: MouseEvent) {
+	if (isDragging) {
+		pan([event.movementX, event.movementY]);
+	}
+}
 </script>
 
 <style scoped>
@@ -32,6 +61,5 @@ const app = useAppStore()
 		128px 128px,
 		16px 16px,
 		16px 16px;
-	background-position: -64px -64px, -64px -64px, -64px -64px;
 }
 </style>

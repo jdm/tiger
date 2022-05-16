@@ -23,6 +23,7 @@ fn main() {
             // Document
             api::select_frame,
             api::select_animation,
+            api::pan,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

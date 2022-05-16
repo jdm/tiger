@@ -1,13 +1,7 @@
-<script setup lang="ts">
-import { openFiles } from '@/api/local'
-import Workbench from '@/components/Workbench.vue';
-import ContentPane from '@/components/ContentPane.vue'
-
-</script>
-
 <template>
 
-  <div class="flex flex-nowrap flex-col h-screen w-screen space-y-5 p-5 bg-plastic-900 overflow-clip select-none">
+  <div @contextmenu="onContextMenu"
+    class="flex flex-nowrap flex-col h-screen w-screen space-y-5 p-5 bg-plastic-900 overflow-clip select-none">
 
     <button @click="openFiles" class="place-self-start">Open document</button>
 
@@ -22,3 +16,13 @@ import ContentPane from '@/components/ContentPane.vue'
 
   </div>
 </template>
+
+<script setup lang="ts">
+import { openFiles } from '@/api/local'
+import Workbench from '@/components/Workbench.vue';
+import ContentPane from '@/components/ContentPane.vue'
+
+function onContextMenu(event: Event) {
+  event.preventDefault();
+}
+</script>

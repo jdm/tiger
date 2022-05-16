@@ -33,7 +33,7 @@ impl Default for View {
             content_tab: ContentTab::Frames,
             selection: Default::default(),
             workbench_item: None,
-            workbench_offset: Vector2D::<f32>::zero(),
+            workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
             workbench_zoom_level: 1,
             timeline_zoom_level: 1,
             timeline_clock: Default::default(),
@@ -56,6 +56,10 @@ impl View {
 
     pub fn selection_mut(&mut self) -> &mut MultiSelection {
         &mut self.selection
+    }
+
+    pub fn workbench_offset(&self) -> Vector2D<f32> {
+        self.workbench_offset
     }
 
     pub fn workbench_zoom_factor(&self) -> f32 {

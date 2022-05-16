@@ -1,3 +1,4 @@
+use euclid::vec2;
 use std::path::PathBuf;
 
 use crate::dto;
@@ -124,6 +125,15 @@ pub fn select_animation(
             shift,
             ctrl,
         ));
+    }
+    Ok((&*app).into())
+}
+
+#[tauri::command]
+pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document.process_command(Command::Pan(vec2(delta.0 as f32, delta.1 as f32)));
     }
     Ok((&*app).into())
 }

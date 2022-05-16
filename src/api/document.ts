@@ -37,3 +37,11 @@ export async function selectAnimation(
   const appStore = useAppStore();
   appStore.$state = app;
 }
+
+export async function pan(delta: [number, number]): Promise<void> {
+  const app: AppState = await invoke("pan", {
+    delta: delta,
+  });
+  const appStore = useAppStore();
+  appStore.$state = app;
+}

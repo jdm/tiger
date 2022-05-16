@@ -28,6 +28,7 @@ export type Animation = {
 
 export type View = {
   contentTab: ContentTab;
+  workbenchOffset: [number, number];
 };
 
 export type ContentTab = "frames" | "animations";
