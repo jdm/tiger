@@ -51,3 +51,11 @@ export async function pan(delta: [number, number]): Promise<void> {
   const appStore = useAppStore();
   appStore.$state = app;
 }
+
+export async function editAnimation(name: string): Promise<void> {
+  const app: AppState = await invoke("edit_animation", {
+    name: name,
+  });
+  const appStore = useAppStore();
+  appStore.$state = app;
+}

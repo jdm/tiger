@@ -29,6 +29,7 @@ export type Animation = {
 export type View = {
   contentTab: ContentTab;
   workbenchOffset: [number, number];
+  currentAnimationName: string | null;
 };
 
 export type ContentTab = "frames" | "animations";

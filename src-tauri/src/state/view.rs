@@ -1,8 +1,7 @@
 use euclid::default::*;
-use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::state::{MultiSelection, MultiSelectionEdit};
+use crate::state::MultiSelection;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ContentTab {
@@ -11,16 +10,10 @@ pub enum ContentTab {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub enum WorkbenchItem {
-    Frame(PathBuf),
-    Animation(String),
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub struct View {
     content_tab: ContentTab,
     selection: MultiSelection,
-    workbench_item: Option<WorkbenchItem>,
+    current_animation: Option<String>,
     workbench_offset: Vector2D<f32>,
     timeline_clock: Duration,
     workbench_zoom_level: i32,
@@ -32,7 +25,7 @@ impl Default for View {
         View {
             content_tab: ContentTab::Frames,
             selection: Default::default(),
-            workbench_item: None,
+            current_animation: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
             workbench_zoom_level: 1,
             timeline_zoom_level: 1,
@@ -58,11 +51,15 @@ impl View {
         &mut self.selection
     }
 
-    pub fn workbench_offset(&self) -> Vector2D<f32> {
-        self.workbench_offset
+    pub fn current_animation(&self) -> &Option<String> {
+        &self.current_animation
     }
 
-    pub fn workbench_zoom_factor(&self) -> f32 {
+    pub fn set_current_animation<T: AsRef<str>>(&mut self, name: T) {
+        self.current_animation = Some(name.as_ref().to_owned());
+    }
+
+    pub fn workbench_zoom(&self) -> f32 {
         if self.workbench_zoom_level >= 0 {
             self.workbench_zoom_level as f32
         } else {
@@ -70,7 +67,7 @@ impl View {
         }
     }
 
-    pub fn workbench_zoom_in(&mut self) {
+    pub fn zoom_in_workbench(&mut self) {
         if self.workbench_zoom_level >= 1 {
             self.workbench_zoom_level *= 2;
         } else if self.workbench_zoom_level == -2 {
@@ -81,7 +78,7 @@ impl View {
         self.workbench_zoom_level = std::cmp::min(self.workbench_zoom_level, 32);
     }
 
-    pub fn workbench_zoom_out(&mut self) {
+    pub fn zoom_out_workbench(&mut self) {
         if self.workbench_zoom_level > 1 {
             self.workbench_zoom_level /= 2;
         } else if self.workbench_zoom_level == 1 {
@@ -92,15 +89,19 @@ impl View {
         self.workbench_zoom_level = std::cmp::max(self.workbench_zoom_level, -4);
     }
 
-    pub fn workbench_reset_zoom(&mut self) {
+    pub fn reset_workbench_zoom(&mut self) {
         self.workbench_zoom_level = 1;
     }
 
-    pub fn workbench_center(&mut self) {
+    pub fn workbench_offset(&self) -> Vector2D<f32> {
+        self.workbench_offset
+    }
+
+    pub fn center_workbench(&mut self) {
         self.workbench_offset = Default::default();
     }
 
-    pub fn timeline_zoom_in(&mut self) {
+    pub fn zoom_in_timeline(&mut self) {
         if self.timeline_zoom_level >= 1 {
             self.timeline_zoom_level *= 2;
         } else if self.timeline_zoom_level == -2 {
@@ -111,7 +112,7 @@ impl View {
         self.timeline_zoom_level = std::cmp::min(self.timeline_zoom_level, 4);
     }
 
-    pub fn timeline_zoom_out(&mut self) {
+    pub fn zoom_out_timeline(&mut self) {
         if self.timeline_zoom_level > 1 {
             self.timeline_zoom_level /= 2;
         } else if self.timeline_zoom_level == 1 {
@@ -122,11 +123,11 @@ impl View {
         self.timeline_zoom_level = std::cmp::max(self.timeline_zoom_level, -4);
     }
 
-    pub fn timeline_reset_zoom(&mut self) {
+    pub fn reset_timeline_zoom(&mut self) {
         self.timeline_zoom_level = 1;
     }
 
-    pub fn timeline_zoom_factor(&self) -> f32 {
+    pub fn timeline_zoom(&self) -> f32 {
         if self.timeline_zoom_level >= 0 {
             self.timeline_zoom_level as f32
         } else {
@@ -136,5 +137,9 @@ impl View {
 
     pub fn pan(&mut self, delta: Vector2D<f32>) {
         self.workbench_offset += delta
+    }
+
+    pub fn skip_to_timeline_start(&mut self) {
+        self.timeline_clock = Duration::ZERO;
     }
 }

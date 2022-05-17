@@ -95,7 +95,9 @@ pub fn focus_content_tab(
 ) -> Result<dto::App, ()> {
     let mut app = app_state.0.lock().unwrap();
     if let Some(document) = app.current_document_mut() {
-        document.process_command(Command::FocusContentTab(content_tab.into()));
+        document
+            .process_command(Command::FocusContentTab(content_tab.into()))
+            .ok();
     }
     Ok((&*app).into())
 }
@@ -104,7 +106,7 @@ pub fn focus_content_tab(
 pub fn clear_selection(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> {
     let mut app = app_state.0.lock().unwrap();
     if let Some(document) = app.current_document_mut() {
-        document.process_command(Command::ClearSelection);
+        document.process_command(Command::ClearSelection).ok();
     }
     Ok((&*app).into())
 }
@@ -118,11 +120,13 @@ pub fn select_frame(
 ) -> Result<dto::App, ()> {
     let mut app = app_state.0.lock().unwrap();
     if let Some(document) = app.current_document_mut() {
-        document.process_command(Command::AlterSelection(
-            SingleSelection::Frame(path),
-            shift,
-            ctrl,
-        ));
+        document
+            .process_command(Command::AlterSelection(
+                SingleSelection::Frame(path),
+                shift,
+                ctrl,
+            ))
+            .ok();
     }
     Ok((&*app).into())
 }
@@ -136,11 +140,13 @@ pub fn select_animation(
 ) -> Result<dto::App, ()> {
     let mut app = app_state.0.lock().unwrap();
     if let Some(document) = app.current_document_mut() {
-        document.process_command(Command::AlterSelection(
-            SingleSelection::Animation(name),
-            shift,
-            ctrl,
-        ));
+        document
+            .process_command(Command::AlterSelection(
+                SingleSelection::Animation(name),
+                shift,
+                ctrl,
+            ))
+            .ok();
     }
     Ok((&*app).into())
 }
@@ -149,7 +155,18 @@ pub fn select_animation(
 pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<dto::App, ()> {
     let mut app = app_state.0.lock().unwrap();
     if let Some(document) = app.current_document_mut() {
-        document.process_command(Command::Pan(vec2(delta.0 as f32, delta.1 as f32)));
+        document
+            .process_command(Command::Pan(vec2(delta.0 as f32, delta.1 as f32)))
+            .ok();
+    }
+    Ok((&*app).into())
+}
+
+#[tauri::command]
+pub fn edit_animation(app_state: tauri::State<'_, AppState>, name: String) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document.process_command(Command::EditAnimation(name)).ok();
     }
     Ok((&*app).into())
 }

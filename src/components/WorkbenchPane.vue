@@ -6,9 +6,15 @@
 				{{ document.name }}
 			</PaneTab>
 		</PaneTabList>
-		<div @click="onClick" @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove"
-			class="flex-1 graph-paper" :class="isDragging ? 'cursor-move' : 'cursor-default'"
-			:style="graphPaperStyle" />
+		<div class="relative flex-1">
+			<div @click="onClick" @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove"
+				class="flex-1 graph-paper h-full" :class="isDragging ? 'cursor-move' : 'cursor-default'"
+				:style="graphPaperStyle">
+			</div>
+			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
+				{{ app.currentAnimation?.name }}
+			</div>
+		</div>
 	</Pane>
 </template>
 

@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-col rounded-sm cursor-pointer"
+	<div @click="(event) => onFrameClicked(event)" class="flex flex-col rounded-sm cursor-pointer"
 		:class="frame.selected ? 'outline outline-4 outline-blue-600' : ''">
 		<div class="flex place-content-center aspect-square checkerboard rounded-sm overflow-hidden">
 			<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
@@ -12,9 +12,15 @@
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { Frame as FrameDTO } from '@/api/dto'
-defineProps<{
+import { selectFrame } from '@/api/document'
+
+const props = defineProps<{
 	frame: FrameDTO
 }>();
+
+function onFrameClicked(event: MouseEvent) {
+	selectFrame(props.frame.path, event.shiftKey, event.ctrlKey)
+}
 </script>
 
 

@@ -1,6 +1,6 @@
 <template>
-	<div @mouseover="onMouseOver" @mouseout="onMouseOut"
-		class="px-4 py-1 inline-flex items-center space-x-4 cursor-pointer" :class="classes">
+	<div @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked" @mouseover="onMouseOver"
+		@mouseout="onMouseOut" class="px-4 py-1 inline-flex items-center space-x-4 cursor-pointer" :class="classes">
 		<div class="flex-1 space-x-1">
 			<DocumentIcon class="inline w-7 p-1.5 -mt-1" :class="decorativeIconClasses" />
 			<span class="flex-1 overflow-x-hidden text-ellipsis">{{ animation.name }}</span>
@@ -16,6 +16,7 @@
 import { computed, ref } from '@vue/reactivity';
 import { DocumentIcon, PencilAltIcon, XIcon } from '@heroicons/vue/solid'
 import { Animation as AnimationDTO } from '@/api/dto'
+import { editAnimation, selectAnimation } from '@/api/document'
 
 const props = defineProps<{
 	animation: AnimationDTO
@@ -42,5 +43,13 @@ function onMouseOver() {
 
 function onMouseOut() {
 	hovered.value = false;
+}
+
+function onAnimationClicked(event: MouseEvent) {
+	selectAnimation(props.animation.name, event.shiftKey, event.ctrlKey)
+}
+
+function onAnimationDoubleClicked() {
+	editAnimation(props.animation.name);
 }
 </script>

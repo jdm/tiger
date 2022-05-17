@@ -55,6 +55,8 @@ pub enum DocumentError {
     SheetError(#[from] SheetError),
     #[error("Cannot manipulate undo history")]
     UndoOperationNowAllowed,
+    #[error("Animation `{0}` does not exist")]
+    AnimationNotInDocument(String),
 }
 
 #[derive(Clone, Debug)]
@@ -63,6 +65,7 @@ pub enum Command {
     ClearSelection,
     AlterSelection(SingleSelection, bool, bool),
     Pan(Vector2D<f32>),
+    EditAnimation(String),
 }
 
 impl Document {
@@ -139,6 +142,19 @@ impl Document {
             SingleSelection::Keyframe(_) => todo!(),
         };
         self.view.selection_mut().alter(edit, shift, ctrl);
+    }
+
+    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
+        if !self.sheet.has_animation(&name) {
+            return Err(DocumentError::AnimationNotInDocument(
+                name.as_ref().to_owned(),
+            ));
+        }
+        self.view.set_current_animation(&name);
+        self.view.center_workbench();
+        self.view.skip_to_timeline_start();
+        self.persistent.timeline_is_playing = false;
+        Ok(())
     }
 
     fn push_undo_state(&mut self, entry: HistoryEntry) {
@@ -226,7 +242,7 @@ impl Document {
         }
     }
 
-    pub fn process_command(&mut self, command: Command) {
+    pub fn process_command(&mut self, command: Command) -> Result<(), DocumentError> {
         match command {
             Command::FocusContentTab(t) => self.focus_content_tab(t),
             Command::ClearSelection => self.view.selection_mut().clear(),
@@ -234,10 +250,12 @@ impl Document {
                 self.alter_selection(selection, shift, ctrl)
             }
             Command::Pan(delta) => self.view.pan(delta),
+            Command::EditAnimation(ref name) => self.edit_animation(name)?,
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;
         }
         self.record_command(command);
+        Ok(())
     }
 }

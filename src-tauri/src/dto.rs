@@ -50,6 +50,7 @@ pub struct Animation {
 pub struct View {
     content_tab: ContentTab,
     workbench_offset: (i32, i32),
+    current_animation_name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -143,6 +144,7 @@ impl From<&state::View> for View {
         Self {
             content_tab: view.content_tab().into(),
             workbench_offset: view.workbench_offset().to_i32().to_tuple(),
+            current_animation_name: view.current_animation().to_owned(),
         }
     }
 }
