@@ -32,8 +32,8 @@ function onFrameClicked(event: MouseEvent) {
 .checkerboard {
 	background-size: 16px 16px;
 	background-image:
-		linear-gradient(45deg, theme('colors.plastic.800') 25%, transparent 25%, transparent 75%, theme('colors.plastic.800') 75%, theme('colors.plastic.800') 100%),
-		linear-gradient(45deg, theme('colors.plastic.800') 25%, theme('colors.plastic.900') 25%, theme('colors.plastic.900') 75%, theme('colors.plastic.800') 75%, theme('colors.plastic.800') 100%);
+		linear-gradient(45deg, theme('colors.plastic.700') 25%, transparent 25%, transparent 75%, theme('colors.plastic.700') 75%, theme('colors.plastic.700') 100%),
+		linear-gradient(45deg, theme('colors.plastic.700') 25%, theme('colors.plastic.600') 25%, theme('colors.plastic.600') 75%, theme('colors.plastic.700') 75%, theme('colors.plastic.700') 100%);
 	background-position:
 		0px 0px,
 		8px 8px;

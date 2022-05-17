@@ -1,5 +1,5 @@
 <template>
-	<Pane class="flex flex-col">
+	<Pane class="flex flex-col overflow-hidden">
 		<PaneTabList>
 			<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
 				@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">

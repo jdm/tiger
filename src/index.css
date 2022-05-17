@@ -7,14 +7,14 @@ body {
 }
 
 .styled-scrollbars {
-	--scrollbar-foreground: theme('colors.plastic.500');
-	--scrollbar-background: theme('colors.plastic.800');
+	--scrollbar-foreground: theme('colors.neutral.700');
+	--scrollbar-background: theme('colors.neutral.900');
 	scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
 }
 
 .styled-scrollbars::-webkit-scrollbar {
-	width: 4px;
-	height: 4px;
+	width: 6px;
+	height: 6px;
 }
 
 .styled-scrollbars::-webkit-scrollbar-thumb {
