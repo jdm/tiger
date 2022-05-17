@@ -1,8 +1,10 @@
 <template>
 	<div @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked" @mouseover="onMouseOver"
-		@mouseout="onMouseOut" class="px-4 py-1 inline-flex items-center space-x-4 cursor-pointer" :class="classes">
+		@mouseout="onMouseOut" class="px-4 py-1 inline-flex items-center space-x-4 cursor-pointer"
+		:class="props.animation.selected ? 'text-blue-100 bg-blue-600' : 'text-plastic-200 hover:bg-plastic-600'">
 		<div class="flex-1 space-x-1">
-			<DocumentIcon class="inline w-7 p-1.5 -mt-1" :class="decorativeIconClasses" />
+			<DocumentIcon class="inline w-7 p-1.5 -mt-1"
+				:class="props.animation.selected ? 'text-blue-200' : 'text-plastic-300'" />
 			<span class="flex-1 overflow-x-hidden text-ellipsis">{{ animation.name }}</span>
 		</div>
 		<div>
@@ -23,14 +25,6 @@ const props = defineProps<{
 }>();
 
 const hovered = ref(false);
-
-const classes = computed(() => ({
-	...(props.animation.selected ? { 'text-blue-100': true, 'bg-blue-600': true } : { 'text-plastic-200': true, 'hover:bg-plastic-600': true }),
-}));
-
-const decorativeIconClasses = computed(() => ({
-	...(props.animation.selected ? { 'text-blue-200': true } : { 'text-plastic-300': true }),
-}));
 
 const interactiveIconClasses = computed(() => ({
 	...(props.animation.selected ? { 'text-blue-200': true, 'hover:bg-blue-900': true } : { 'text-plastic-300': true, 'hover:bg-plastic-900': true }),

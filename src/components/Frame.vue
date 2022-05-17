@@ -1,22 +1,30 @@
 <template>
-	<div @click="(event) => onFrameClicked(event)" class="flex flex-col rounded-sm cursor-pointer"
-		:class="frame.selected ? 'outline outline-4 outline-blue-600' : ''">
-		<div class="flex place-content-center aspect-square checkerboard rounded-sm overflow-hidden">
-			<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
-		</div>
-		<div class="text-xs p-1 overflow-hidden text-ellipsis"
-			:class="frame.selected ? 'bg-blue-600 text-blue-100' : 'text-plastic-300'">{{ frame.name }}</div>
+	<div @click="(event) => onFrameClicked(event)" @mouseover="onMouseOver" @mouseout="onMouseOut"
+		class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
+		:class="props.frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
+		<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { ref } from '@vue/reactivity';
 import { Frame as FrameDTO } from '@/api/dto'
 import { selectFrame } from '@/api/document'
 
 const props = defineProps<{
 	frame: FrameDTO
 }>();
+
+const hovered = ref(false);
+
+function onMouseOver() {
+	hovered.value = true;
+}
+
+function onMouseOut() {
+	hovered.value = false;
+}
 
 function onFrameClicked(event: MouseEvent) {
 	selectFrame(props.frame.path, event.shiftKey, event.ctrlKey)
