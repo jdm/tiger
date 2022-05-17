@@ -9,7 +9,7 @@
     </div>
 
     <div class="flex-1 min-h-0 flex flex-row space-x-5">
-      <ContentPane class="basis-96" />
+      <ContentPane class="basis-96 min-w-0" />
       <WorkbenchPane class="flex-1" />
     </div>
 

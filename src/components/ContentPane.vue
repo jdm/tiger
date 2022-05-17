@@ -19,19 +19,9 @@
 					<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame"
 						@click="(event) => onFrameClicked(frame, event)" />
 				</div>
-				<div v-if="currentTab == 'animations'" class="text-gray-200">
-					<div v-for="animation in app.currentDocument?.sheet.animations"
-						@click="(event) => onAnimationClicked(animation, event)"
-						class="p-2 border-b last:border-0 border-gray-700 pl-4 overflow-x-hidden text-ellipsis hover:bg-gray-700"
-						:class="animation.selected ? 'text-sky-400 bg-gray-900' : ''">
-						<div class="flex flex-row">
-							<FilmIcon class="self-center w-6 h-6" />
-							<div class="px-4 flex flex-col">
-								<div>{{ animation.name }}</div>
-								<div class="text-xs text-gray-400">4 directions · 220ms</div>
-							</div>
-						</div>
-					</div>
+				<div v-if="currentTab == 'animations'" class="text-plastic-200 px-4 flex flex-col">
+					<Animation v-for="animation in app.currentDocument?.sheet.animations" :animation="animation"
+						@click="(event) => onAnimationClicked(animation, event)" />
 				</div>
 			</div>
 		</div>
@@ -41,14 +31,14 @@
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
 import { computed } from '@vue/reactivity';
-import { FilmIcon } from '@heroicons/vue/outline'
 import { focusContentTab, selectFrame, selectAnimation } from '@/api/document'
-import { Animation, Frame as FrameDTO } from '@/api/dto';
+import { Animation as AnimationDTO, Frame as FrameDTO } from '@/api/dto';
 import Frame from '@/components/Frame.vue'
 import Pane from '@/components/pane/Pane.vue'
 import PaneTab from '@/components/pane/PaneTab.vue'
 import PaneTabList from '@/components/pane/PaneTabList.vue'
 import Separator from '@/components/Separator.vue'
+import Animation from './Animation.vue'
 
 const app = useAppStore()
 
@@ -60,8 +50,7 @@ function onFrameClicked(frame: FrameDTO, event: MouseEvent) {
 	selectFrame(frame.path, event.shiftKey, event.ctrlKey)
 }
 
-function onAnimationClicked(animation: Animation, event: MouseEvent) {
+function onAnimationClicked(animation: AnimationDTO, event: MouseEvent) {
 	selectAnimation(animation.name, event.shiftKey, event.ctrlKey)
 }
-
 </script>

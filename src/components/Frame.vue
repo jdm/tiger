@@ -1,11 +1,11 @@
 <template>
 	<div class="flex flex-col rounded-sm cursor-pointer"
-		:class="frame.selected ? 'outline outline-4 outline-blue-500' : ''">
+		:class="frame.selected ? 'outline outline-4 outline-blue-600' : ''">
 		<div class="flex place-content-center aspect-square checkerboard rounded-sm overflow-hidden">
 			<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
 		</div>
 		<div class="text-xs p-1 overflow-hidden text-ellipsis"
-			:class="frame.selected ? 'bg-blue-500 text-plastic-100' : 'text-plastic-300'">{{ frame.name }}</div>
+			:class="frame.selected ? 'bg-blue-600 text-blue-100' : 'text-plastic-300'">{{ frame.name }}</div>
 	</div>
 </template>
 
@@ -14,7 +14,7 @@ import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { Frame as FrameDTO } from '@/api/dto'
 defineProps<{
 	frame: FrameDTO
-}>()
+}>();
 </script>
 
 
