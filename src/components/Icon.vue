@@ -8,7 +8,7 @@ import * as solid from '@heroicons/vue/solid';
 import * as outline from '@heroicons/vue/outline';
 
 const props = defineProps<{
-	name: keyof typeof solid | keyof typeof outline,
+	name: keyof typeof solid,
 	outline?: boolean,
 }>();
 

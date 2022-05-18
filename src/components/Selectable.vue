@@ -18,13 +18,12 @@
 import { computed, ref } from '@vue/reactivity';
 import Icon from '@/components/Icon.vue';
 import * as solid from '@heroicons/vue/solid';
-import * as outline from '@heroicons/vue/outline';
 
 const props = defineProps<{
 	selected: boolean
 	text: string
-	leftIcon?: keyof typeof solid | keyof typeof outline
-	actions?: { icon: keyof typeof solid | keyof typeof outline, callback: () => void }[],
+	leftIcon?: keyof typeof solid
+	actions?: { icon: keyof typeof solid, callback: () => void }[],
 }>();
 
 const hovered = ref(false);
