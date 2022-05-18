@@ -1,6 +1,6 @@
 <template>
 
-  <div @contextmenu="onContextMenu"
+  <div @contextmenu.prevent
     class="flex flex-nowrap flex-col h-screen w-screen space-y-5 p-5 bg-plastic-900 overflow-clip select-none">
 
     <div class="space-x-4 text-white flex flex-row">
@@ -23,8 +23,4 @@ import { newDocument, openDocuments } from '@/api/local'
 import WorkbenchPane from '@/components/WorkbenchPane.vue';
 import ContentPane from '@/components/ContentPane.vue'
 import TimelinePane from '@/components/TimelinePane.vue'
-
-function onContextMenu(event: Event) {
-  event.preventDefault();
-}
 </script>
