@@ -170,3 +170,18 @@ pub fn edit_animation(app_state: tauri::State<'_, AppState>, name: String) -> Re
     }
     Ok((&*app).into())
 }
+
+#[tauri::command]
+pub fn rename_animation(
+    app_state: tauri::State<'_, AppState>,
+    old_name: String,
+    new_name: String,
+) -> Result<dto::App, ()> {
+    let mut app = app_state.0.lock().unwrap();
+    if let Some(document) = app.current_document_mut() {
+        document
+            .process_command(Command::RenameAnimation(old_name, new_name))
+            .ok();
+    }
+    Ok((&*app).into())
+}

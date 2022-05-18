@@ -44,6 +44,10 @@ impl MultiSelection {
         self.content = None;
     }
 
+    pub fn select_single(&mut self, new_selection: SingleSelection) {
+        self.content = Some(new_selection.into());
+    }
+
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
         if let Some(content) = &self.content {
             self.content = content.alter(edit, shift, ctrl);
@@ -123,6 +127,17 @@ impl TaggedMultiSelection {
 
             // Change selection type altogether
             (_, edit) => Some(edit.into()),
+        }
+    }
+}
+
+impl From<SingleSelection> for TaggedMultiSelection {
+    fn from(selection: SingleSelection) -> Self {
+        match selection {
+            SingleSelection::Frame(f) => TaggedMultiSelection::Frames(f.into()),
+            SingleSelection::Animation(a) => TaggedMultiSelection::Animations(a.into()),
+            SingleSelection::Hitbox(h) => TaggedMultiSelection::Hitboxes(h.into()),
+            SingleSelection::Keyframe(k) => TaggedMultiSelection::Keyframes(k.into()),
         }
     }
 }

@@ -66,6 +66,7 @@ pub enum Command {
     AlterSelection(SingleSelection, bool, bool),
     Pan(Vector2D<f32>),
     EditAnimation(String),
+    RenameAnimation(String, String),
 }
 
 impl Document {
@@ -144,7 +145,7 @@ impl Document {
         self.view.selection_mut().alter(edit, shift, ctrl);
     }
 
-    pub fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
+    fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
         if !self.sheet.has_animation(&name) {
             return Err(DocumentError::AnimationNotInDocument(
                 name.as_ref().to_owned(),
@@ -154,6 +155,21 @@ impl Document {
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
         self.persistent.timeline_is_playing = false;
+        Ok(())
+    }
+
+    fn rename_animation<T: AsRef<str>, U: AsRef<str>>(
+        &mut self,
+        old_name: T,
+        new_name: U,
+    ) -> Result<(), DocumentError> {
+        self.sheet.rename_animation(&old_name, &new_name)?;
+        self.view
+            .selection_mut()
+            .select_single(SingleSelection::Animation(new_name.as_ref().to_owned()));
+        if Some(old_name.as_ref()) == self.view.current_animation().as_deref() {
+            self.view.set_current_animation(new_name);
+        }
         Ok(())
     }
 
@@ -251,6 +267,9 @@ impl Document {
             }
             Command::Pan(delta) => self.view.pan(delta),
             Command::EditAnimation(ref name) => self.edit_animation(name)?,
+            Command::RenameAnimation(ref old_name, ref new_name) => {
+                self.rename_animation(old_name, new_name)?
+            }
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;
