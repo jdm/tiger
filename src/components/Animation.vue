@@ -1,43 +1,18 @@
 <template>
-	<div @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked" @mouseover="onMouseOver"
-		@mouseout="onMouseOut" class="px-4 py-1 inline-flex items-center space-x-4 cursor-pointer"
-		:class="props.animation.selected ? 'text-blue-100 bg-blue-600' : 'text-plastic-200 hover:bg-plastic-600'">
-		<div class="flex-1 space-x-1">
-			<DocumentIcon class="inline w-7 p-1.5 -mt-1"
-				:class="props.animation.selected ? 'text-blue-200' : 'text-plastic-300'" />
-			<span class="flex-1 overflow-x-hidden text-ellipsis">{{ animation.name }}</span>
-		</div>
-		<div>
-			<PencilAltIcon class="inline w-7 p-1.5 rounded-lg hover:visible" :class="interactiveIconClasses" />
-			<XIcon class="inline w-7 p-1.5 rounded-lg hover:visible" :class="interactiveIconClasses" />
-		</div>
-	</div>
+	<Selectable @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked"
+		:selected="animation.selected" :text="animation.name" left-icon="DocumentIcon"
+		:actions="[{ icon: 'PencilAltIcon', callback: onRenameClicked }, { icon: 'XIcon', callback: onDeleteClicked }]">
+	</Selectable>
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from '@vue/reactivity';
-import { DocumentIcon, PencilAltIcon, XIcon } from '@heroicons/vue/solid'
 import { Animation as AnimationDTO } from '@/api/dto'
 import { editAnimation, selectAnimation } from '@/api/document'
+import Selectable from '@/components/Selectable.vue'
 
 const props = defineProps<{
 	animation: AnimationDTO
 }>();
-
-const hovered = ref(false);
-
-const interactiveIconClasses = computed(() => ({
-	...(props.animation.selected ? { 'text-blue-200': true, 'hover:bg-blue-900': true } : { 'text-plastic-300': true, 'hover:bg-plastic-900': true }),
-	...(hovered.value ? { 'visible': true } : { 'invisible': true })
-}));
-
-function onMouseOver() {
-	hovered.value = true;
-}
-
-function onMouseOut() {
-	hovered.value = false;
-}
 
 function onAnimationClicked(event: MouseEvent) {
 	selectAnimation(props.animation.name, event.shiftKey, event.ctrlKey)
@@ -45,5 +20,13 @@ function onAnimationClicked(event: MouseEvent) {
 
 function onAnimationDoubleClicked() {
 	editAnimation(props.animation.name);
+}
+
+function onRenameClicked() {
+
+}
+
+function onDeleteClicked() {
+
 }
 </script>
