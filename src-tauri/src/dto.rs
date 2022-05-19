@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
 
@@ -27,7 +28,7 @@ pub struct Document {
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
     frames: Vec<Frame>,
-    animations: Vec<Animation>,
+    animations: HashMap<String, Animation>,
 }
 
 #[derive(Serialize)]
@@ -90,11 +91,8 @@ impl From<&state::Document> for Document {
         for frame in sheet.frames.iter_mut() {
             frame.selected = document.view().selection().is_frame_selected(&frame.path);
         }
-        for animation in sheet.animations.iter_mut() {
-            animation.selected = document
-                .view()
-                .selection()
-                .is_animation_selected(&animation.name);
+        for (name, animation) in sheet.animations.iter_mut() {
+            animation.selected = document.view().selection().is_animation_selected(name);
         }
         Self {
             path: document.path().to_owned(),
@@ -111,7 +109,7 @@ impl From<&sheet::Sheet> for Sheet {
             frames: sheet.frames_iter().map(|f| f.into()).collect(),
             animations: sheet
                 .animations_iter()
-                .map(|(n, a)| (n, a).into())
+                .map(|(n, a)| (n.to_owned(), (n, a).into()))
                 .collect(),
         }
     }

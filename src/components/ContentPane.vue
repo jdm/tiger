@@ -20,8 +20,8 @@
 					<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame" :key="frame.name" />
 				</div>
 				<div v-if="currentTab == 'animations'" class="text-plastic-200 flex flex-col">
-					<Animation v-for="animation in app.currentDocument?.sheet.animations" :animation="animation"
-						ref="animationRefs" :key="animation.name" />
+					<Animation v-for="animation in app.sortedAnimations" :animation="animation" ref="animationRefs"
+						:key="animation.name" />
 				</div>
 			</div>
 		</div>
@@ -54,19 +54,22 @@ const currentTab = computed(() => {
 // Auto-scroll to new animation
 watch([
 	() => app.currentDocument,
-	() => app.currentDocument?.sheet.animations.map((a) => a.name)],
-	([newDocument, newAnimations], [oldDocument, oldAnimations]) => {
-		if (newDocument != oldDocument || !oldAnimations || !newAnimations || app.currentDocument?.view.contentTab != "animations") {
+	() => Object.keys(app.currentDocument?.sheet.animations || [])],
+	([newDocument, newAnimationNames], [oldDocument, oldAnimationNames]) => {
+		if (newDocument != oldDocument
+			|| !oldAnimationNames || !newAnimationNames
+			|| app.currentDocument?.view.contentTab != "animations") {
 			return;
 		}
-		const oldAnimationsSet = new Set(oldAnimations);
-		const createdAnimations = newAnimations.filter((a) => !oldAnimationsSet.has(a));
-		if (createdAnimations.length == 0) {
-			return;
+		const oldSet = new Set(oldAnimationNames);
+		for (const name of newAnimationNames) {
+			if (!oldSet.has(name)) {
+				nextTick(() => {
+					scrollToAnimation(name);
+				});
+				return;
+			}
 		}
-		nextTick(() => {
-			scrollToAnimation(createdAnimations[0]);
-		});
 	});
 
 function scrollToAnimation(name: string) {

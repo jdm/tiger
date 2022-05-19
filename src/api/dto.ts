@@ -16,7 +16,7 @@ export type Document = {
 
 export type Sheet = {
   frames: Frame[];
-  animations: Animation[];
+  animations: Record<string, Animation>;
 };
 
 export type Frame = {

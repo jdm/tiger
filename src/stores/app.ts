@@ -22,15 +22,29 @@ export const useAppStore = defineStore("app", {
       }
       return null;
     },
-    currentAnimation(): Animation | null {
-      if (this.currentDocument) {
-        for (let animation of this.currentDocument.sheet.animations) {
-          if (
-            animation.name == this.currentDocument.view.currentAnimationName
-          ) {
-            return animation;
-          }
+    sortedAnimations(): Animation[] | null {
+      if (!this.currentDocument?.sheet.animations) {
+        return null;
+      }
+      let animations = Object.values(this.currentDocument.sheet.animations);
+      animations.sort((a, b) => {
+        const nameA = a.name.toLowerCase();
+        const nameB = b.name.toLowerCase();
+        if (nameA < nameB) {
+          return -1;
         }
+        if (nameA > nameB) {
+          return 1;
+        }
+        return 0;
+      });
+      return animations;
+    },
+    currentAnimation(): Animation | null {
+      if (this.currentDocument?.view.currentAnimationName) {
+        return this.currentDocument.sheet.animations[
+          this.currentDocument.view.currentAnimationName
+        ];
       }
       return null;
     },
