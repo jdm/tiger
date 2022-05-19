@@ -447,3 +447,20 @@ fn can_adjust_multiple_ranges() {
         );
     }
 }
+
+#[test]
+fn can_remove_individual_item() {
+    let selection: MultiSelectionData<i32> = MultiSelectionData::new(vec![3, 4, 5, 6]);
+    let without_4 = selection.without(&4).unwrap();
+    assert!(without_4.contains(&3));
+    assert!(!without_4.contains(&4));
+    assert!(without_4.contains(&5));
+    assert!(without_4.contains(&6));
+}
+
+#[test]
+fn removing_item_can_nullify_selection() {
+    let selection: MultiSelectionData<i32> = MultiSelectionData::new(vec![4]);
+    let without_4 = selection.without(&4);
+    assert!(without_4.is_none());
+}
