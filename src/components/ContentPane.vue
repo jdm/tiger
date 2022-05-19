@@ -52,20 +52,22 @@ const currentTab = computed(() => {
 });
 
 // Auto-scroll to new animation
-// TODO watch current document instead of currentDocumentPath (looks cleaner) when store patching is implemented
-watch([() => app.currentDocumentPath, () => app.currentDocument?.sheet.animations], ([newPath, newAnimations], [oldPath, oldAnimations]) => {
-	if (newPath != oldPath || !oldAnimations || !newAnimations || app.currentDocument?.view.contentTab != "animations") {
-		return;
-	}
-	const oldNames = new Set(oldAnimations.map((a) => a.name));
-	const createdAnimations = newAnimations.filter((a) => !oldNames.has(a.name));
-	if (createdAnimations.length == 0) {
-		return;
-	}
-	nextTick(() => {
-		scrollToAnimation(createdAnimations[0].name);
+watch([
+	() => app.currentDocument,
+	() => app.currentDocument?.sheet.animations.map((a) => a.name)],
+	([newDocument, newAnimations], [oldDocument, oldAnimations]) => {
+		if (newDocument != oldDocument || !oldAnimations || !newAnimations || app.currentDocument?.view.contentTab != "animations") {
+			return;
+		}
+		const oldAnimationsSet = new Set(oldAnimations);
+		const createdAnimations = newAnimations.filter((a) => !oldAnimationsSet.has(a));
+		if (createdAnimations.length == 0) {
+			return;
+		}
+		nextTick(() => {
+			scrollToAnimation(createdAnimations[0]);
+		});
 	});
-});
 
 function scrollToAnimation(name: string) {
 	for (let animationRef of animationRefs.value) {

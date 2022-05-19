@@ -1,19 +1,19 @@
-import { AppState, ContentTab } from "@/api/dto";
+import { ContentTab } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
 export async function focusContentTab(contentTab: ContentTab): Promise<void> {
-  const app: AppState = await invoke("focus_content_tab", {
-    contentTab: contentTab,
-  });
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(
+    await invoke("focus_content_tab", {
+      contentTab: contentTab,
+    })
+  );
 }
 
 export async function clearSelection(): Promise<void> {
-  const app: AppState = await invoke("clear_selection");
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(await invoke("clear_selection"));
 }
 
 export async function selectFrame(
@@ -21,13 +21,14 @@ export async function selectFrame(
   shift: boolean,
   ctrl: boolean
 ): Promise<void> {
-  const app: AppState = await invoke("select_frame", {
-    path: path,
-    shift: shift,
-    ctrl: ctrl,
-  });
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(
+    await invoke("select_frame", {
+      path: path,
+      shift: shift,
+      ctrl: ctrl,
+    })
+  );
 }
 
 export async function selectAnimation(
@@ -35,39 +36,43 @@ export async function selectAnimation(
   shift: boolean,
   ctrl: boolean
 ): Promise<void> {
-  const app: AppState = await invoke("select_animation", {
-    name: name,
-    shift: shift,
-    ctrl: ctrl,
-  });
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(
+    await invoke("select_animation", {
+      name: name,
+      shift: shift,
+      ctrl: ctrl,
+    })
+  );
 }
 
 export async function pan(delta: [number, number]): Promise<void> {
-  const app: AppState = await invoke("pan", {
-    delta: delta,
-  });
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(
+    await invoke("pan", {
+      delta: delta,
+    })
+  );
 }
 
 export async function editAnimation(name: string): Promise<void> {
-  const app: AppState = await invoke("edit_animation", {
-    name: name,
-  });
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(
+    await invoke("edit_animation", {
+      name: name,
+    })
+  );
 }
 
 export async function renameAnimation(
   oldName: string,
   newName: string
 ): Promise<void> {
-  const app: AppState = await invoke("rename_animation", {
-    oldName: oldName,
-    newName: newName,
-  });
   const appStore = useAppStore();
-  appStore.$state = app;
+  appStore.patch(
+    await invoke("rename_animation", {
+      oldName: oldName,
+      newName: newName,
+    })
+  );
 }

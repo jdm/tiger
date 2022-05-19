@@ -1,3 +1,7 @@
+import { Operation } from "fast-json-patch";
+
+export type Patch = ReadonlyArray<Operation>;
+
 export type AppState = {
   documents: Document[];
   currentDocumentPath: string | null;

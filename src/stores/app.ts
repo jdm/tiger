@@ -1,4 +1,5 @@
-import { Animation, AppState } from "@/api/dto";
+import { Animation, AppState, Patch } from "@/api/dto";
+import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
 
 export const useAppStore = defineStore("app", {
@@ -7,6 +8,11 @@ export const useAppStore = defineStore("app", {
       documents: [],
       currentDocumentPath: null,
     } as AppState),
+  actions: {
+    patch(patch: Patch) {
+      applyPatch(this.$state, patch, false);
+    },
+  },
   getters: {
     currentDocument(state) {
       for (let document of state.documents) {
