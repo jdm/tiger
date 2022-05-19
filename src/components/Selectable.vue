@@ -2,16 +2,16 @@
 	<div @mouseover="onMouseOver" @mouseout="onMouseOut"
 		class="px-4 py-1 flex flex-row items-center space-x-4 cursor-pointer"
 		:class="selected ? 'text-blue-100 bg-blue-600' : 'text-plastic-200 hover:bg-plastic-600'">
-		<div class="flex-1 flex flex-row items-center space-x-1">
+		<div class="flex-1 flex flex-row items-center space-x-1 min-w-0">
 			<Icon v-if="leftIcon" :name="leftIcon" class="inline w-7 p-1.5"
 				:class="selected ? 'text-blue-200' : 'text-plastic-300'" />
-			<div class="flex-1">
+			<div class="flex-1 overflow-x-hidden">
 				<slot name="content">
-					<span class="overflow-x-hidden text-ellipsis">{{ text }}</span>
+					<div class=" whitespace-nowrap overflow-x-hidden text-ellipsis">{{ text }}</div>
 				</slot>
 			</div>
 		</div>
-		<div v-if="actions && actions.length > 0">
+		<div v-if="actions && actions.length > 0" class="flex flex-row">
 			<Icon v-for="action in actions" @click="action.callback" :name="action.icon"
 				class="inline w-7 p-1.5 rounded-lg hover:visible" :class="interactiveIconClasses" />
 		</div>
