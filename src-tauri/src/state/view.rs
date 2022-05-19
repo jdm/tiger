@@ -55,6 +55,10 @@ impl View {
         &self.current_animation
     }
 
+    pub fn clear_current_animation(&mut self) {
+        self.current_animation = None;
+    }
+
     pub fn set_current_animation<T: AsRef<str>>(&mut self, name: T) {
         self.current_animation = Some(name.as_ref().to_owned());
     }

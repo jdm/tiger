@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { Animation as AnimationDTO } from '@/api/dto'
-import { editAnimation, renameAnimation, selectAnimation } from '@/api/document'
+import { deleteAnimation, editAnimation, renameAnimation, selectAnimation } from '@/api/document'
 import { Ref, ref } from '@vue/reactivity';
 import Selectable from '@/components/basic/Selectable.vue'
 import InputRename from '@/components/basic/InputRename.vue';
@@ -61,6 +61,6 @@ function onRenameInputCancelled() {
 }
 
 function onDeleteClicked() {
-
+	deleteAnimation(props.animation.name);
 }
 </script>

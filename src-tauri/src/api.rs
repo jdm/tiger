@@ -209,3 +209,14 @@ pub fn rename_animation(
         }
     }))
 }
+
+#[tauri::command]
+pub fn delete_animation(app_state: tauri::State<'_, AppState>, name: String) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::DeleteAnimation(name))
+                .ok();
+        }
+    }))
+}

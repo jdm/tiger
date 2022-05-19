@@ -4,11 +4,7 @@ import { invoke } from "@tauri-apps/api";
 
 export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   const appStore = useAppStore();
-  appStore.patch(
-    await invoke("focus_content_tab", {
-      contentTab: contentTab,
-    })
-  );
+  appStore.patch(await invoke("focus_content_tab", { contentTab: contentTab }));
 }
 
 export async function clearSelection(): Promise<void> {
@@ -48,20 +44,12 @@ export async function selectAnimation(
 
 export async function pan(delta: [number, number]): Promise<void> {
   const appStore = useAppStore();
-  appStore.patch(
-    await invoke("pan", {
-      delta: delta,
-    })
-  );
+  appStore.patch(await invoke("pan", { delta: delta }));
 }
 
 export async function editAnimation(name: string): Promise<void> {
   const appStore = useAppStore();
-  appStore.patch(
-    await invoke("edit_animation", {
-      name: name,
-    })
-  );
+  appStore.patch(await invoke("edit_animation", { name: name }));
 }
 
 export async function renameAnimation(
@@ -75,4 +63,9 @@ export async function renameAnimation(
       newName: newName,
     })
   );
+}
+
+export async function deleteAnimation(name: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_animation", { name: name }));
 }

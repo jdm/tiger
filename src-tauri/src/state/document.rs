@@ -67,6 +67,7 @@ pub enum Command {
     Pan(Vector2D<f32>),
     EditAnimation(String),
     RenameAnimation(String, String),
+    DeleteAnimation(String),
 }
 
 impl Document {
@@ -166,11 +167,21 @@ impl Document {
         self.sheet.rename_animation(&old_name, &new_name)?;
         self.view
             .selection_mut()
-            .select_single(SingleSelection::Animation(new_name.as_ref().to_owned()));
+            .select(SingleSelection::Animation(new_name.as_ref().to_owned()));
         if Some(old_name.as_ref()) == self.view.current_animation().as_deref() {
             self.view.set_current_animation(new_name);
         }
         Ok(())
+    }
+
+    fn delete_animation<T: AsRef<str>>(&mut self, name: T) {
+        self.sheet.delete_animation(&name);
+        self.view
+            .selection_mut()
+            .remove(SingleSelection::Animation(name.as_ref().to_owned()));
+        if Some(name.as_ref()) == self.view.current_animation().as_deref() {
+            self.view.clear_current_animation();
+        }
     }
 
     fn push_undo_state(&mut self, entry: HistoryEntry) {
@@ -270,6 +281,7 @@ impl Document {
             Command::RenameAnimation(ref old_name, ref new_name) => {
                 self.rename_animation(old_name, new_name)?
             }
+            Command::DeleteAnimation(ref name) => self.delete_animation(name),
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;

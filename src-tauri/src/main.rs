@@ -28,6 +28,7 @@ fn main() {
             api::pan,
             api::edit_animation,
             api::rename_animation,
+            api::delete_animation,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

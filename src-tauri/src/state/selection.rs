@@ -44,8 +44,14 @@ impl MultiSelection {
         self.content = None;
     }
 
-    pub fn select_single(&mut self, new_selection: SingleSelection) {
+    pub fn select(&mut self, new_selection: SingleSelection) {
         self.content = Some(new_selection.into());
+    }
+
+    pub fn remove(&mut self, single_selection: SingleSelection) {
+        if let Some(content) = &self.content {
+            self.content = content.without(single_selection);
+        }
     }
 
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
@@ -86,6 +92,33 @@ impl MultiSelection {
 }
 
 impl TaggedMultiSelection {
+    pub fn without(&self, item: SingleSelection) -> Option<TaggedMultiSelection> {
+        match (self, item) {
+            // Remove frame from selection
+            (TaggedMultiSelection::Frames(data), SingleSelection::Frame(frame)) => {
+                data.without(&frame).map(TaggedMultiSelection::Frames)
+            }
+
+            // Remove animation from selection
+            (TaggedMultiSelection::Animations(data), SingleSelection::Animation(animation)) => data
+                .without(&animation)
+                .map(TaggedMultiSelection::Animations),
+
+            // Remove hitbox from selection
+            (TaggedMultiSelection::Hitboxes(data), SingleSelection::Hitbox(hitbox)) => {
+                data.without(&hitbox).map(TaggedMultiSelection::Hitboxes)
+            }
+
+            // Remove keyframe from selection
+            (TaggedMultiSelection::Keyframes(data), SingleSelection::Keyframe(keyframe)) => {
+                data.without(&keyframe).map(TaggedMultiSelection::Keyframes)
+            }
+
+            // No-op
+            _ => Some(self.clone()),
+        }
+    }
+
     pub fn alter(
         &self,
         edit: MultiSelectionEdit,
@@ -179,7 +212,6 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         ctrl: bool,
     ) -> Option<Self> {
         let mut new_selection = self.clone();
-        assert!(new_selection.selected_items.len() > 0);
 
         let interacted_item_index = all_items.iter().position(|item| *item == interacted_item)?;
 
@@ -211,6 +243,16 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
             new_selection.pivot = interacted_item.clone();
         }
 
+        if new_selection.selected_items.is_empty() {
+            None
+        } else {
+            Some(new_selection)
+        }
+    }
+
+    pub fn without(&self, item: &T) -> Option<Self> {
+        let mut new_selection = self.clone();
+        new_selection.remove(item);
         if new_selection.selected_items.is_empty() {
             None
         } else {
