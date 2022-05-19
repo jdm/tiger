@@ -35,10 +35,10 @@ import { computed, Ref, ref } from '@vue/reactivity';
 import { focusContentTab } from '@/api/document'
 import Animation from '@/components/Animation.vue'
 import Frame from '@/components/Frame.vue'
-import Pane from '@/components/pane/Pane.vue'
-import PaneTab from '@/components/pane/PaneTab.vue'
-import PaneTabList from '@/components/pane/PaneTabList.vue'
-import Separator from '@/components/Separator.vue'
+import Pane from '@/components/basic/Pane.vue'
+import PaneTab from '@/components/basic/PaneTab.vue'
+import PaneTabList from '@/components/basic/PaneTabList.vue'
+import Separator from '@/components/basic/Separator.vue'
 import { nextTick } from 'vue';
 
 // TODO Consider saving and restoring scroll positions between content tab or document changes

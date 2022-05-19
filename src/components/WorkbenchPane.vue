@@ -23,9 +23,9 @@ import { computed, ref } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
 import { clearSelection, pan } from '@/api/document'
 import { useAppStore } from '@/stores/app'
-import Pane from '@/components/pane/Pane.vue'
-import PaneTab from '@/components/pane/PaneTab.vue'
-import PaneTabList from '@/components/pane/PaneTabList.vue'
+import Pane from '@/components/basic/Pane.vue'
+import PaneTab from '@/components/basic/PaneTab.vue'
+import PaneTabList from '@/components/basic/PaneTabList.vue'
 
 const app = useAppStore();
 const isDragging = ref(false);

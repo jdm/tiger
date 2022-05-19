@@ -5,5 +5,5 @@
 </template>
 
 <script setup lang="ts">
-import Pane from '@/components/pane/Pane.vue'
+import Pane from '@/components/basic/Pane.vue'
 </script>
