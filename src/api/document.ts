@@ -59,3 +59,15 @@ export async function editAnimation(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.$state = app;
 }
+
+export async function renameAnimation(
+  oldName: string,
+  newName: string
+): Promise<void> {
+  const app: AppState = await invoke("rename_animation", {
+    oldName: oldName,
+    newName: newName,
+  });
+  const appStore = useAppStore();
+  appStore.$state = app;
+}
