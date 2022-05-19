@@ -1,6 +1,11 @@
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
+export async function getState(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.$state = await invoke("get_state");
+}
+
 export async function newDocument(path: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("new_document", { path: path }));

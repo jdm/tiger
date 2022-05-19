@@ -30,6 +30,12 @@ impl AppState {
 }
 
 #[tauri::command]
+pub fn get_state(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> {
+    let app = app_state.0.lock().unwrap();
+    Ok((&*app).into())
+}
+
+#[tauri::command]
 pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         app.new_document(path);

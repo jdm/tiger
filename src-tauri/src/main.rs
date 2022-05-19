@@ -15,6 +15,7 @@ fn main() {
         .manage(AppState(Default::default()))
         .invoke_handler(tauri::generate_handler![
             // App
+            api::get_state,
             api::new_document,
             api::open_documents,
             api::focus_document,
