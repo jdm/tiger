@@ -5,7 +5,7 @@
 		<div class="flex-1 flex flex-row items-center space-x-1 min-w-0">
 			<Icon v-if="leftIcon" :name="leftIcon" class="inline w-7 p-1.5"
 				:class="selected ? 'text-blue-200' : 'text-plastic-300'" />
-			<div class="flex-1 overflow-x-hidden">
+			<div class="flex-1 min-w-0">
 				<slot name="content">
 					<div class=" whitespace-nowrap overflow-x-hidden text-ellipsis">{{ text }}</div>
 				</slot>
