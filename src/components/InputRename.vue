@@ -1,5 +1,6 @@
 <template>
-	<input type="text" ref="renameInput" v-model="value" @dblclick.stop @click.stop @change="onRenameInputComplete"
+	<input type="text" ref="renameInput" v-model="value" @dblclick.stop @click.stop
+		@keydown.enter="onRenameInputComplete" @keydown.escape="onRenameInputCancelled" @change="onRenameInputComplete"
 		@focusout="onRenameInputCancelled"
 		class="w-full rounded-sm bg-plastic-100 px-2 -ml-[0.55rem] -mt-0.5 h-7 text-plastic-700">
 </template>
@@ -26,6 +27,14 @@ onMounted(() => {
 		renameInput.value.select();
 	}
 });
+
+function onKeyDown(event: KeyboardEvent) {
+	if (event.key == "Enter") {
+		onRenameInputComplete();
+	} else if (event.key == "Escape") {
+		onRenameInputCancelled();
+	}
+}
 
 function onRenameInputComplete() {
 	emit("completeRename", { newName: props.modelValue });
