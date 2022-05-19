@@ -12,7 +12,7 @@
 			</div>
 		</div>
 		<div v-if="actions && actions.length > 0" class="flex flex-row">
-			<Icon v-for="action in actions" @click="action.callback" :name="action.icon"
+			<Icon v-for="action in actions" @click.stop="action.callback" :name="action.icon"
 				class="inline w-7 p-1.5 rounded-lg hover:visible" :class="interactiveIconClasses" />
 		</div>
 	</div>
