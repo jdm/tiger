@@ -28,6 +28,13 @@ export type Frame = {
 export type Animation = {
   name: string;
   selected: boolean;
+  timeline: Keyframe[];
+};
+
+export type Keyframe = {
+  source: string;
+  name: string;
+  duration_millis: number;
 };
 
 export type View = {

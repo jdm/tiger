@@ -22,5 +22,5 @@
 import { newDocument, openDocuments } from '@/api/local'
 import WorkbenchPane from '@/components/WorkbenchPane.vue';
 import ContentPane from '@/components/ContentPane.vue'
-import TimelinePane from '@/components/TimelinePane.vue'
+import TimelinePane from '@/components/timeline/TimelinePane.vue'
 </script>

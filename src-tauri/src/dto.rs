@@ -44,6 +44,15 @@ pub struct Frame {
 pub struct Animation {
     name: String,
     selected: bool,
+    timeline: Vec<Keyframe>,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Keyframe {
+    frame: PathBuf,
+    name: String,
+    duration_millis: u32,
 }
 
 #[derive(Serialize)]
@@ -133,6 +142,17 @@ where
         Self {
             name: animation.0.as_ref().to_owned(),
             selected: false,
+            timeline: animation.1.keyframes_iter().map(|k| k.into()).collect(),
+        }
+    }
+}
+
+impl From<&sheet::Keyframe> for Keyframe {
+    fn from(keyframe: &sheet::Keyframe) -> Self {
+        Self {
+            frame: keyframe.frame().to_owned(),
+            name: keyframe.frame().to_file_name(),
+            duration_millis: keyframe.duration_millis(),
         }
     }
 }
