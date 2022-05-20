@@ -6,29 +6,43 @@
 				Import
 			</button>
 		</div>
-		<div class="flex-1 m-4 mt-2 rounded-md bg-plastic-800 border-y border-plastic-800 border-b-plastic-600">
+		<div class="flex-1 m-4 mt-2 rounded-md bg-plastic-900 border-y border-plastic-800 border-b-plastic-600">
 			<div class="relative flex flex-row h-full">
-				<div class="w-40 flex flex-col">
-					<div class="h-6 bg-plastic-500" />
-					<div class="flex-initial flex flex-col text-plastic-300 text-right font-semibold space-y-px">
-						<div class="bg-plastic-600 px-2">E</div>
-						<div class="bg-plastic-600 px-2">SE</div>
-						<div class="bg-plastic-600 px-2">S</div>
-						<div class="bg-plastic-600 px-2">SW</div>
-						<div class="bg-plastic-600 px-2">W</div>
-						<div class="bg-plastic-600 px-2">NW</div>
-						<div class="bg-plastic-600 px-2">N</div>
-						<div class="bg-plastic-600 px-2">NE</div>
+				<div class="flex flex-col">
+					<div class="h-6 bg-plastic-600" />
+					<div
+						class="w-40 flex-initial flex flex-col bg-plastic-900 pt-1 space-y-px divide-plastic-800 text-plastic-300 text-right">
+						<div class="h-7 bg-plastic-500 px-4">North</div>
+						<div class="h-7 bg-plastic-500 px-4">North East</div>
+						<div class="h-7 bg-plastic-500 px-4">East</div>
+						<div class="h-7 bg-plastic-500 px-4">South East</div>
+						<div class="h-7 bg-plastic-500 px-4">South</div>
+						<div class="h-7 bg-plastic-500 px-4">South West</div>
+						<div class="h-7 bg-plastic-500 px-4">West</div>
+						<div class="h-7 bg-plastic-500 px-4">North West</div>
 					</div>
 				</div>
-				<div class="flex-1 flex flex-col relative overflow-x-auto styled-scrollbars">
+				<div class="flex-1 flex flex-col relative overflow-x-scroll styled-scrollbars">
 					<div class="h-6 w-[2800px] self-stretch ruler" />
-					<div class="flex-1 flex flex-col min-w-0">
-						<div class="flex flex-row min-w-fit">
-							<div class="w-60 px-3 bg-yellow-400 border-r border-orange-700">Frame A</div>
+					<div class="flex-1 flex flex-col min-w-0 pt-1 space-y-px">
+						<div class="h-7 flex flex-row min-w-fit font-semibold text-orange-900">
+							<div class="w-60 px-3 bg-yellow-400 border-r border-orange-700 border-t-yellow-200">Frame A
+							</div>
 							<div class="w-40 px-3 bg-yellow-400 border-r border-orange-700">Frame B</div>
 							<div class="w-[2200px] px-3 bg-yellow-400 border-r border-orange-700">Frame C</div>
 						</div>
+						<div class="h-7 flex flex-row min-w-fit font-semibold text-orange-900">
+							<div class="w-60 px-3 bg-yellow-400 border-r border-orange-700 border-t-yellow-200">Frame A
+							</div>
+							<div class="w-40 px-3 bg-yellow-400 border-r border-orange-700">Frame B</div>
+							<div class="w-[2200px] px-3 bg-yellow-400 border-r border-orange-700">Frame C</div>
+						</div>
+						<div class="w-full bg-plastic-600 h-7" />
+						<div class="w-full bg-plastic-600 h-7" />
+						<div class="w-full bg-plastic-600 h-7" />
+						<div class="w-full bg-plastic-600 h-7" />
+						<div class="w-full bg-plastic-600 h-7" />
+						<div class="w-full bg-plastic-600 h-7" />
 					</div>
 					<div class="absolute top-0 left-44 ml-[0px] h-full w-px bg-red-500" />
 				</div>
