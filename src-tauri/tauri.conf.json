@@ -68,10 +68,10 @@
         "fullscreen": false,
         "maximized": true,
         "width": 800,
-        "height": 600,
+        "height": 800,
         "resizable": true,
         "minWidth": 800,
-        "minHeight": 600
+        "minHeight": 800
       }
     ]
   }
