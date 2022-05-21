@@ -226,3 +226,21 @@ pub fn delete_animation(app_state: tauri::State<'_, AppState>, name: String) -> 
         }
     }))
 }
+
+#[tauri::command]
+pub fn play(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::Play).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn pause(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::Pause).ok();
+        }
+    }))
+}

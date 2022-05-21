@@ -1,9 +1,13 @@
 <template>
 	<Pane>
 		<div class="w-full pl-4 p-2 pb-0 flex flex-row items-center space-x-2">
-			<button
-				class="px-4 py-2 rounded-md uppercase text-xs font-bold bg-green-500 border-y border-t-green-400 border-b-green-600">
-				Import
+			<button v-if="app.currentDocument?.timelineIsPlaying" @click="pause"
+				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
+				<PauseIcon class="w-6" />
+			</button>
+			<button v-if="!app.currentDocument?.timelineIsPlaying" @click="play"
+				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
+				<PlayIcon class="w-6" />
 			</button>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-2 ">
@@ -54,10 +58,12 @@
 </template>
 
 <script setup lang="ts">
+import { play, pause } from '@/api/document'
 import Pane from '@/components/basic/Pane.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
 import Keyframe from '@/components/timeline/Keyframe.vue'
 import { useAppStore } from '@/stores/app'
+import { PauseIcon, PlayIcon } from '@heroicons/vue/solid'
 
 const app = useAppStore()
 

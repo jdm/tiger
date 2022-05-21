@@ -69,3 +69,13 @@ export async function deleteAnimation(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("delete_animation", { name: name }));
 }
+
+export async function play(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("play"));
+}
+
+export async function pause(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("pause"));
+}

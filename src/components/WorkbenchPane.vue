@@ -31,7 +31,7 @@ const app = useAppStore();
 const isDragging = ref(false);
 
 const graphPaperStyle = computed(() => {
-	const offset = app.currentDocument?.view.workbenchOffset || [0, 0];
+	const offset = app.currentDocument?.workbenchOffset || [0, 0];
 	return {
 		'background-position': offset[0] + 'px ' + offset[1] + 'px',
 	}

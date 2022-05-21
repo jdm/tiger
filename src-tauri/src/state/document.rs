@@ -2,7 +2,7 @@ use euclid::default::Vector2D;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::sheet::{Sheet, SheetError};
+use crate::sheet::{Animation, Sheet, SheetError};
 use crate::state::*;
 
 #[derive(Debug)]
@@ -35,20 +35,6 @@ struct HistoryEntry {
     version: i32,
 }
 
-#[derive(Clone, Debug, Default)]
-pub struct Persistent {
-    pub close_state: Option<CloseState>,
-    timeline_is_playing: bool,
-    disk_version: i32,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum CloseState {
-    Requested,
-    Saving,
-    Allowed,
-}
-
 #[derive(Error, Debug)]
 pub enum DocumentError {
     #[error(transparent)]
@@ -57,6 +43,8 @@ pub enum DocumentError {
     UndoOperationNowAllowed,
     #[error("Animation `{0}` does not exist")]
     AnimationNotInDocument(String),
+    #[error("Not currently editing an animation")]
+    NotEditingAnyAnimation,
 }
 
 #[derive(Clone, Debug)]
@@ -68,6 +56,8 @@ pub enum Command {
     EditAnimation(String),
     RenameAnimation(String, String),
     DeleteAnimation(String),
+    Play,
+    Pause,
 }
 
 impl Document {
@@ -96,16 +86,20 @@ impl Document {
         &self.view
     }
 
+    pub fn persistent(&self) -> &Persistent {
+        &self.persistent
+    }
+
     pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, DocumentError> {
         let mut document = Document::new(&path);
         document.sheet = Sheet::read(path.as_ref())?;
         document.history[0].sheet = document.sheet.clone();
-        document.persistent.disk_version = document.next_version;
+        document.persistent.set_disk_version(document.next_version);
         Ok(document)
     }
 
     pub fn mark_as_saved(&mut self, saved_version: i32) {
-        self.persistent.disk_version = saved_version;
+        self.persistent.set_disk_version(saved_version);
     }
 
     pub fn version(&self) -> i32 {
@@ -155,7 +149,7 @@ impl Document {
         self.view.set_current_animation(&name);
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
-        self.persistent.timeline_is_playing = false;
+        self.persistent.set_timeline_is_playing(false);
         Ok(())
     }
 
@@ -182,6 +176,55 @@ impl Document {
         if Some(name.as_ref()) == self.view.current_animation().as_deref() {
             self.view.clear_current_animation();
         }
+    }
+
+    fn play(&mut self) -> Result<(), DocumentError> {
+        if self.persistent.is_timeline_playing() {
+            return Ok(());
+        }
+
+        let animation = self.get_workbench_animation()?;
+        if let Some(d) = animation.duration_millis() {
+            if d > 0 && self.view.timeline_clock().as_millis() >= u128::from(d) {
+                self.view.skip_to_timeline_start();
+            }
+        }
+
+        self.persistent.set_timeline_is_playing(true);
+
+        if self.view.selection().has_hitboxes() || self.view.selection().has_keyframes() {
+            self.view.selection_mut().clear();
+        }
+
+        Ok(())
+    }
+
+    fn pause(&mut self) {
+        self.persistent.set_timeline_is_playing(false);
+    }
+
+    fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
+        match self.view.current_animation() {
+            Some(n) => Some(
+                self.sheet
+                    .animation(n)
+                    .ok_or(DocumentError::AnimationNotInDocument(n.to_owned()))?,
+            ),
+            _ => None,
+        }
+        .ok_or_else(|| DocumentError::NotEditingAnyAnimation)
+    }
+
+    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
+        match self.view.current_animation() {
+            Some(n) => Some(
+                self.sheet
+                    .animation_mut(n)
+                    .ok_or(DocumentError::AnimationNotInDocument(n.to_owned()))?,
+            ),
+            _ => None,
+        }
+        .ok_or_else(|| DocumentError::NotEditingAnyAnimation)
     }
 
     fn push_undo_state(&mut self, entry: HistoryEntry) {
@@ -239,7 +282,7 @@ impl Document {
             self.history_index -= 1;
             self.sheet = self.history[self.history_index].sheet.clone();
             self.view = self.history[self.history_index].view.clone();
-            self.persistent.timeline_is_playing = false;
+            self.persistent.set_timeline_is_playing(false);
         }
         Ok(())
     }
@@ -252,7 +295,7 @@ impl Document {
             self.history_index += 1;
             self.sheet = self.history[self.history_index].sheet.clone();
             self.view = self.history[self.history_index].view.clone();
-            self.persistent.timeline_is_playing = false;
+            self.persistent.set_timeline_is_playing(false);
         }
         Ok(())
     }
@@ -282,6 +325,8 @@ impl Document {
                 self.rename_animation(old_name, new_name)?
             }
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
+            Command::Play => self.play()?,
+            Command::Pause => self.pause(),
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;

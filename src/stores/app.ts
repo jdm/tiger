@@ -41,9 +41,9 @@ export const useAppStore = defineStore("app", {
       return animations;
     },
     currentAnimation(): Animation | null {
-      if (this.currentDocument?.view.currentAnimationName) {
+      if (this.currentDocument?.currentAnimationName) {
         return this.currentDocument.sheet.animations[
-          this.currentDocument.view.currentAnimationName
+          this.currentDocument.currentAnimationName
         ];
       }
       return null;

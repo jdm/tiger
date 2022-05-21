@@ -21,7 +21,11 @@ pub struct Document {
     path: PathBuf,
     name: String,
     sheet: Sheet,
-    view: View,
+    content_tab: ContentTab,
+    workbench_offset: (i32, i32),
+    current_animation_name: Option<String>,
+    timeline_clock_millis: u64,
+    timeline_is_playing: bool,
 }
 
 #[derive(Serialize)]
@@ -53,14 +57,6 @@ pub struct Keyframe {
     frame: PathBuf,
     name: String,
     duration_millis: u32,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct View {
-    content_tab: ContentTab,
-    workbench_offset: (i32, i32),
-    current_animation_name: Option<String>,
 }
 
 #[derive(Deserialize, Serialize)]
@@ -106,8 +102,12 @@ impl From<&state::Document> for Document {
         Self {
             path: document.path().to_owned(),
             name: document.path().to_file_name(),
-            view: document.view().into(),
             sheet,
+            content_tab: document.view().content_tab().into(),
+            workbench_offset: document.view().workbench_offset().to_i32().to_tuple(),
+            current_animation_name: document.view().current_animation().to_owned(),
+            timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
+            timeline_is_playing: document.persistent().is_timeline_playing(),
         }
     }
 }
@@ -153,16 +153,6 @@ impl From<&sheet::Keyframe> for Keyframe {
             frame: keyframe.frame().to_owned(),
             name: keyframe.frame().to_file_name(),
             duration_millis: keyframe.duration_millis(),
-        }
-    }
-}
-
-impl From<&state::View> for View {
-    fn from(view: &state::View) -> Self {
-        Self {
-            content_tab: view.content_tab().into(),
-            workbench_offset: view.workbench_offset().to_i32().to_tuple(),
-            current_animation_name: view.current_animation().to_owned(),
         }
     }
 }

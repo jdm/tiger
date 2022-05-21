@@ -62,6 +62,22 @@ impl MultiSelection {
         }
     }
 
+    pub fn has_frames(&self) -> bool {
+        matches!(self.content, Some(TaggedMultiSelection::Frames(_)))
+    }
+
+    pub fn has_animations(&self) -> bool {
+        matches!(self.content, Some(TaggedMultiSelection::Animations(_)))
+    }
+
+    pub fn has_hitboxes(&self) -> bool {
+        matches!(self.content, Some(TaggedMultiSelection::Hitboxes(_)))
+    }
+
+    pub fn has_keyframes(&self) -> bool {
+        matches!(self.content, Some(TaggedMultiSelection::Keyframes(_)))
+    }
+
     pub fn is_frame_selected(&self, path: &Path) -> bool {
         match &self.content {
             Some(TaggedMultiSelection::Frames(s)) => s.contains(path),

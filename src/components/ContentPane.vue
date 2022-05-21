@@ -50,7 +50,7 @@ const app = useAppStore()
 const animationRefs: Ref<{ name: string, scrollIntoView: () => void }[]> = ref([]);
 
 const currentTab = computed(() => {
-	return app.currentDocument?.view?.contentTab
+	return app.currentDocument?.contentTab
 });
 
 // Auto-scroll to new animation
@@ -60,7 +60,7 @@ watch([
 	([newDocument, newAnimationNames], [oldDocument, oldAnimationNames]) => {
 		if (newDocument != oldDocument
 			|| !oldAnimationNames || !newAnimationNames
-			|| app.currentDocument?.view.contentTab != "animations") {
+			|| app.currentDocument?.contentTab != "animations") {
 			return;
 		}
 		const oldSet = new Set(oldAnimationNames);

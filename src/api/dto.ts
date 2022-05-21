@@ -11,7 +11,11 @@ export type Document = {
   path: string;
   name: string;
   sheet: Sheet;
-  view: View;
+  contentTab: ContentTab;
+  workbenchOffset: [number, number];
+  currentAnimationName: string | null;
+  timelineClockMillis: number;
+  timelineIsPlaying: boolean;
 };
 
 export type Sheet = {
@@ -35,12 +39,6 @@ export type Keyframe = {
   source: string;
   name: string;
   duration_millis: number;
-};
-
-export type View = {
-  contentTab: ContentTab;
-  workbenchOffset: [number, number];
-  currentAnimationName: string | null;
 };
 
 export type ContentTab = "frames" | "animations";

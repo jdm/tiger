@@ -143,6 +143,10 @@ impl View {
         self.workbench_offset += delta
     }
 
+    pub fn timeline_clock(&self) -> Duration {
+        self.timeline_clock
+    }
+
     pub fn skip_to_timeline_start(&mut self) {
         self.timeline_clock = Duration::ZERO;
     }
