@@ -6,7 +6,7 @@
 				Import
 			</button>
 		</div>
-		<div class="flex-1 m-4 mt-2 rounded-md bg-plastic-900 border-y border-plastic-800 border-b-plastic-600">
+		<PaneInset class="flex-1 m-4 mt-2 ">
 			<div class="relative flex flex-row h-full">
 				<div class="flex flex-col">
 					<div class="h-8 bg-plastic-900" />
@@ -38,15 +38,14 @@
 					</div>
 					<div class="absolute top-0 left-[200px] h-full w-px bg-white" />
 				</div>
-				<div
-					class="absolute top-0 left-0 w-full h-full shadow-inner shadow-neutral-900/70 pointer-events-none" />
 			</div>
-		</div>
+		</PaneInset>
 	</Pane>
 </template>
 
 <script setup lang="ts">
 import Pane from '@/components/basic/Pane.vue'
+import PaneInset from '@/components/basic/PaneInset.vue'
 import Keyframe from '@/components/timeline/Keyframe.vue'
 import { useAppStore } from '@/stores/app'
 

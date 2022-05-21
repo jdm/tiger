@@ -14,16 +14,17 @@
 				</button>
 			</div>
 			<Separator />
-			<div
-				class="flex-1 m-4 p-4 overflow-y-auto styled-scrollbars rounded-md bg-plastic-800 border-y border-plastic-900 border-b-plastic-600">
-				<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4">
-					<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame" :key="frame.name" />
+			<PaneInset class="flex-1 m-4 min-h-0">
+				<div class="p-4 overflow-y-auto h-full styled-scrollbars">
+					<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4">
+						<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame" :key="frame.name" />
+					</div>
+					<div v-if="currentTab == 'animations'" class="text-plastic-200 flex flex-col">
+						<Animation v-for="animation in app.sortedAnimations" :animation="animation" ref="animationRefs"
+							:key="animation.name" />
+					</div>
 				</div>
-				<div v-if="currentTab == 'animations'" class="text-plastic-200 flex flex-col">
-					<Animation v-for="animation in app.sortedAnimations" :animation="animation" ref="animationRefs"
-						:key="animation.name" />
-				</div>
-			</div>
+			</PaneInset>
 		</div>
 	</Pane>
 </template>
@@ -36,6 +37,7 @@ import { focusContentTab } from '@/api/document'
 import Animation from '@/components/Animation.vue'
 import Frame from '@/components/Frame.vue'
 import Pane from '@/components/basic/Pane.vue'
+import PaneInset from '@/components/basic/PaneInset.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
 import PaneTabList from '@/components/basic/PaneTabList.vue'
 import Separator from '@/components/basic/Separator.vue'
