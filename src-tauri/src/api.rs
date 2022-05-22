@@ -244,3 +244,21 @@ pub fn pause(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
         }
     }))
 }
+
+#[tauri::command]
+pub fn zoom_in(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ZoomIn).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn zoom_out(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ZoomOut).ok();
+        }
+    }))
+}

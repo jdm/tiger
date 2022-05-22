@@ -17,6 +17,7 @@ export type Document = {
   currentSequenceDirection: Direction | null;
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
+  timelineZoom: number;
 };
 
 export type Sheet = {

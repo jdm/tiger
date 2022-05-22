@@ -32,6 +32,8 @@ fn main() {
             api::delete_animation,
             api::play,
             api::pause,
+            api::zoom_in,
+            api::zoom_out,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

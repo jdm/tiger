@@ -62,6 +62,8 @@ pub enum Command {
     DeleteAnimation(String),
     Play,
     Pause,
+    ZoomIn,
+    ZoomOut,
 }
 
 impl Document {
@@ -350,6 +352,8 @@ impl Document {
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
             Command::Play => self.play()?,
             Command::Pause => self.pause(),
+            Command::ZoomIn => self.view.zoom_in_timeline(),
+            Command::ZoomOut => self.view.zoom_out_timeline(),
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;

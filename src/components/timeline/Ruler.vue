@@ -1,6 +1,24 @@
 <template>
-	<div class="h-6 px-1 ruler" />
+	<div class="h-6 px-1 ruler transition-[background-size]" :style="rulerStyle" />
 </template>
+
+<script setup lang="ts">
+import { useAppStore } from '@/stores/app'
+import { computed } from '@vue/reactivity';
+
+const app = useAppStore();
+
+const rulerStyle = computed(() => {
+	const zoom = app.currentDocument?.timelineZoom || 1;
+	const secondTicks = (1000 * zoom) + "px 100%";
+	const hundredMsTicks = (100 * zoom) + "px 10px";
+	const msTicks = (10 * zoom) + "px 4px";
+	const mainBG = "100% 100%";
+	return {
+		backgroundSize: [secondTicks, hundredMsTicks, msTicks, mainBG].join()
+	};
+});
+</script>
 
 <style scoped>
 .ruler {
@@ -14,10 +32,5 @@
 		/* Solig BG */
 		theme('colors.plastic.600') repeat-x;
 	background-origin: content-box;
-	background-size:
-		1000px 100%,
-		100px 10px,
-		10px 4px,
-		100% 100%;
 }
 </style>

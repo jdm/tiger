@@ -79,3 +79,13 @@ export async function pause(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("pause"));
 }
+
+export async function zoomIn(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("zoom_in"));
+}
+
+export async function zoomOut(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("zoom_out"));
+}

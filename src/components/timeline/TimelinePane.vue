@@ -9,6 +9,14 @@
 				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
 				<PlayIcon class="w-6" />
 			</button>
+			<button @click="zoomIn"
+				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
+				<ZoomInIcon class="w-6" />
+			</button>
+			<button @click="zoomOut"
+				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
+				<ZoomOutIcon class="w-6" />
+			</button>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-2 ">
 			<div class="relative flex flex-row h-full bg-plastic-700">
@@ -37,19 +45,19 @@
 </template>
 
 <script setup lang="ts">
-import { play, pause } from '@/api/document'
+import { play, pause, zoomIn, zoomOut } from '@/api/document'
 import Pane from '@/components/basic/Pane.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
 import Ruler from '@/components/timeline/Ruler.vue'
 import Sequence from '@/components/timeline/Sequence.vue'
 import { useAppStore } from '@/stores/app'
-import { PauseIcon, PlayIcon } from '@heroicons/vue/solid'
+import { PauseIcon, PlayIcon, ZoomInIcon, ZoomOutIcon } from '@heroicons/vue/solid'
 import { computed } from '@vue/reactivity'
 
 const app = useAppStore();
 
 const timelineDuration = computed(() => {
-	const zoom = 1;
+	const zoom = app.currentDocument?.timelineZoom || 1;
 	const bonusDuration = 500;
 	const animationDuration = Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
 	return zoom * (animationDuration + bonusDuration);

@@ -27,6 +27,7 @@ pub struct Document {
     current_sequence_direction: Option<Direction>,
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
+    timeline_zoom: f32,
 }
 
 #[derive(Serialize)]
@@ -128,6 +129,7 @@ impl From<&state::Document> for Document {
             current_sequence_direction: document.view().current_sequence().map(|d| d.into()),
             timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
             timeline_is_playing: document.persistent().is_timeline_playing(),
+            timeline_zoom: document.view().timeline_zoom(),
         }
     }
 }
