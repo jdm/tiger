@@ -54,7 +54,7 @@ export type Sequence = {
 export type Keyframe = {
   source: string;
   name: string;
-  duration_millis: number;
+  durationMillis: number;
 };
 
 export enum ContentTab {

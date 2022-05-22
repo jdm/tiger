@@ -15,7 +15,7 @@
 				<div class="flex flex-col bg-plastic-700">
 					<div class="h-6 bg-plastic-600" />
 					<div
-						class="w-36 flex-initial flex flex-col py-2 space-y-1 divide-plastic-800 text-plastic-300 text-xs uppercase font-semibold text-right">
+						class="w-36 flex-initial flex flex-col py-2 space-y-1 text-plastic-300 text-xs uppercase font-semibold text-right">
 						<div v-for="sequence, direction in app.currentAnimation?.sequences"
 							class="h-9 px-4 mx-2 inline-flex items-center justify-end">
 							{{ direction }}
@@ -23,11 +23,11 @@
 					</div>
 				</div>
 				<div class="flex-1 flex flex-col relative overflow-x-scroll styled-scrollbars">
-					<div class="h-6 w-[2800px] px-1 self-stretch ruler" />
-					<div class="flex-1 flex flex-col min-w-0 py-2 space-y-1 bg-plastic-700">
+					<Ruler />
+					<div class="flex-1 flex flex-col py-2 space-y-1 bg-plastic-700">
 						<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
 					</div>
-					<div class="absolute top-0 left-[200px] h-full w-px bg-white" />
+					<div class="absolute top-0 mx-1 left-[0px] h-full w-px bg-white" />
 				</div>
 			</div>
 		</PaneInset>
@@ -38,30 +38,11 @@
 import { play, pause } from '@/api/document'
 import Pane from '@/components/basic/Pane.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
+import Ruler from '@/components/timeline/Ruler.vue'
 import Sequence from '@/components/timeline/Sequence.vue'
 import { useAppStore } from '@/stores/app'
 import { PauseIcon, PlayIcon } from '@heroicons/vue/solid'
 
-const app = useAppStore()
+const app = useAppStore();
 
 </script>
-
-<style scoped>
-.ruler {
-	background:
-		/* 1s ticks */
-		linear-gradient(90deg, theme('colors.plastic.400') 1px, transparent 1px) left bottom repeat-x,
-		/* 100ms ticks */
-		linear-gradient(90deg, theme('colors.plastic.400') 1px, transparent 1px) left bottom repeat-x,
-		/* 10ms tick */
-		linear-gradient(90deg, theme('colors.plastic.400') 1px, transparent 1px) left bottom repeat-x,
-		/* Solig BG */
-		theme('colors.plastic.600') repeat-x;
-	background-origin: content-box;
-	background-size:
-		1000px 100%,
-		100px 10px,
-		10px 4px,
-		100% 100%;
-}
-</style>
