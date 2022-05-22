@@ -25,10 +25,7 @@
 				<div class="flex-1 flex flex-col relative overflow-x-scroll styled-scrollbars">
 					<div class="h-6 w-[2800px] px-1 self-stretch ruler" />
 					<div class="flex-1 flex flex-col min-w-0 py-2 space-y-1 bg-plastic-700">
-						<div v-for="sequence in app.currentAnimation?.sequences"
-							class="w-full h-9 flex flex-row p-1 rounded-sm bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600">
-							<Keyframe v-for="keyframe in app.currentSequence?.keyframes" :keyframe="keyframe" />
-						</div>
+						<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
 					</div>
 					<div class="absolute top-0 left-[200px] h-full w-px bg-white" />
 				</div>
@@ -41,7 +38,7 @@
 import { play, pause } from '@/api/document'
 import Pane from '@/components/basic/Pane.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
-import Keyframe from '@/components/timeline/Keyframe.vue'
+import Sequence from '@/components/timeline/Sequence.vue'
 import { useAppStore } from '@/stores/app'
 import { PauseIcon, PlayIcon } from '@heroicons/vue/solid'
 
