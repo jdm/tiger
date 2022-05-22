@@ -68,6 +68,7 @@ pub enum Direction {
 #[serde(rename_all = "camelCase")]
 pub struct Sequence {
     keyframes: Vec<Keyframe>,
+    duration_millis: Option<u32>,
 }
 
 #[derive(Serialize)]
@@ -189,6 +190,7 @@ impl From<&sheet::Sequence> for Sequence {
     fn from(sequence: &sheet::Sequence) -> Self {
         Self {
             keyframes: sequence.keyframes_iter().map(|k| k.into()).collect(),
+            duration_millis: sequence.duration_millis(),
         }
     }
 }

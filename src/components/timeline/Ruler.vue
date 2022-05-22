@@ -1,5 +1,5 @@
 <template>
-	<div class="h-6 px-1 w-[2800px] min-w-full ruler" />
+	<div class="h-6 px-1 ruler" />
 </template>
 
 <style scoped>

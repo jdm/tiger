@@ -49,6 +49,7 @@ export enum Direction {
 
 export type Sequence = {
   keyframes: Keyframe[];
+  durationMillis: number | null;
 };
 
 export type Keyframe = {

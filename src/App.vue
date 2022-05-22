@@ -1,7 +1,6 @@
 <template>
 
-  <div @contextmenu.prevent
-    class="flex flex-nowrap flex-col h-screen w-screen space-y-5 p-5 bg-plastic-900 overflow-clip select-none">
+  <div class="flex flex-nowrap flex-col h-screen w-screen space-y-5 p-5 bg-plastic-900 overflow-clip select-none">
 
     <div class="space-x-4 text-white flex flex-row">
       <button @click="newDocument" class="place-self-start">New Document</button>

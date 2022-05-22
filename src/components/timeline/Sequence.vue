@@ -14,10 +14,10 @@ defineProps<{
 	sequence: SequenceDTO,
 }>();
 
-
 function keyframeStyle(keyframe: KeyframeDTO) {
+	const zoom = 1;
 	return {
-		"flex-basis": keyframe.durationMillis + "px"
+		"flex-basis": (zoom * keyframe.durationMillis) + "px"
 	};
 }
 </script>

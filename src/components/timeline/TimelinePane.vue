@@ -11,8 +11,8 @@
 			</button>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-2 ">
-			<div class="relative flex flex-row h-full">
-				<div class="flex flex-col bg-plastic-700">
+			<div class="relative flex flex-row h-full bg-plastic-700">
+				<div class="flex flex-col">
 					<div class="h-6 bg-plastic-600" />
 					<div
 						class="w-36 flex-initial flex flex-col py-2 space-y-1 text-plastic-300 text-xs uppercase font-semibold text-right">
@@ -22,12 +22,14 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex-1 flex flex-col relative overflow-x-scroll styled-scrollbars">
-					<Ruler />
-					<div class="flex-1 flex flex-col py-2 space-y-1 bg-plastic-700">
-						<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
+				<div class="flex-1 relative overflow-x-scroll styled-scrollbars">
+					<div class="min-w-full flex flex-col" :style="timelineStyle">
+						<Ruler />
+						<div class="flex flex-col py-2 space-y-1 ">
+							<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
+						</div>
+						<div class="absolute top-0 mx-1 left-[0px] h-full w-px bg-white" />
 					</div>
-					<div class="absolute top-0 mx-1 left-[0px] h-full w-px bg-white" />
 				</div>
 			</div>
 		</PaneInset>
@@ -42,7 +44,21 @@ import Ruler from '@/components/timeline/Ruler.vue'
 import Sequence from '@/components/timeline/Sequence.vue'
 import { useAppStore } from '@/stores/app'
 import { PauseIcon, PlayIcon } from '@heroicons/vue/solid'
+import { computed } from '@vue/reactivity'
 
 const app = useAppStore();
+
+const timelineDuration = computed(() => {
+	const zoom = 1;
+	const bonusDuration = 500;
+	const animationDuration = Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
+	return zoom * (animationDuration + bonusDuration);
+});
+
+const timelineStyle = computed(() => {
+	return {
+		width: timelineDuration.value + "px"
+	}
+});
 
 </script>
