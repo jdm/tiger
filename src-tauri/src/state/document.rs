@@ -2,7 +2,7 @@ use euclid::default::Vector2D;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::sheet::{Animation, Sheet, SheetError};
+use crate::sheet::{Animation, Direction, Sequence, Sheet, SheetError};
 use crate::state::*;
 
 #[derive(Debug)]
@@ -40,11 +40,15 @@ pub enum DocumentError {
     #[error(transparent)]
     SheetError(#[from] SheetError),
     #[error("Cannot manipulate undo history")]
-    UndoOperationNowAllowed,
+    UndoOperationNotAllowed,
     #[error("Animation `{0}` does not exist")]
     AnimationNotInDocument(String),
+    #[error("Current animation does not have a `{0:?}` sequence")]
+    SequenceNotInAnimation(Direction),
     #[error("Not currently editing an animation")]
     NotEditingAnyAnimation,
+    #[error("Not currently editing a sequence")]
+    NotEditingAnySequence,
 }
 
 #[derive(Clone, Debug)]
@@ -141,15 +145,21 @@ impl Document {
     }
 
     fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
-        if !self.sheet.has_animation(&name) {
-            return Err(DocumentError::AnimationNotInDocument(
-                name.as_ref().to_owned(),
-            ));
-        }
+        let animation =
+            self.sheet
+                .animation(&name)
+                .ok_or(DocumentError::AnimationNotInDocument(
+                    name.as_ref().to_owned(),
+                ))?;
         self.view.set_current_animation(&name);
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
         self.persistent.set_timeline_is_playing(false);
+        // TODO preserve current direction if possible?
+        match animation.sequences_iter().next().map(|(d, s)| d) {
+            Some(d) => self.view.set_current_sequence(*d),
+            None => self.view.clear_current_sequence(),
+        }
         Ok(())
     }
 
@@ -183,8 +193,8 @@ impl Document {
             return Ok(());
         }
 
-        let animation = self.get_workbench_animation()?;
-        if let Some(d) = animation.duration_millis() {
+        let sequence = self.get_workbench_sequence()?;
+        if let Some(d) = sequence.duration_millis() {
             if d > 0 && self.view.timeline_clock().as_millis() >= u128::from(d) {
                 self.view.skip_to_timeline_start();
             }
@@ -203,28 +213,41 @@ impl Document {
         self.persistent.set_timeline_is_playing(false);
     }
 
+    fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
+        let animation = self.get_workbench_animation()?;
+        let direction = self
+            .view
+            .current_sequence()
+            .ok_or_else(|| DocumentError::NotEditingAnySequence)?;
+        animation
+            .sequence(direction)
+            .ok_or(DocumentError::SequenceNotInAnimation(direction))
+    }
+
     fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
-        match self.view.current_animation() {
-            Some(n) => Some(
-                self.sheet
-                    .animation(n)
-                    .ok_or(DocumentError::AnimationNotInDocument(n.to_owned()))?,
-            ),
-            _ => None,
-        }
-        .ok_or_else(|| DocumentError::NotEditingAnyAnimation)
+        let animation_name = self
+            .view
+            .current_animation()
+            .clone()
+            .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
+        self.sheet
+            .animation(&animation_name)
+            .ok_or(DocumentError::AnimationNotInDocument(
+                animation_name.to_owned(),
+            ))
     }
 
     fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
-        match self.view.current_animation() {
-            Some(n) => Some(
-                self.sheet
-                    .animation_mut(n)
-                    .ok_or(DocumentError::AnimationNotInDocument(n.to_owned()))?,
-            ),
-            _ => None,
-        }
-        .ok_or_else(|| DocumentError::NotEditingAnyAnimation)
+        let animation_name = self
+            .view
+            .current_animation()
+            .clone()
+            .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
+        self.sheet
+            .animation_mut(&animation_name)
+            .ok_or(DocumentError::AnimationNotInDocument(
+                animation_name.to_owned(),
+            ))
     }
 
     fn push_undo_state(&mut self, entry: HistoryEntry) {
@@ -276,7 +299,7 @@ impl Document {
 
     pub fn undo(&mut self) -> Result<(), DocumentError> {
         if !self.can_use_undo_system() {
-            return Err(DocumentError::UndoOperationNowAllowed);
+            return Err(DocumentError::UndoOperationNotAllowed);
         }
         if self.history_index > 0 {
             self.history_index -= 1;
@@ -289,7 +312,7 @@ impl Document {
 
     pub fn redo(&mut self) -> Result<(), DocumentError> {
         if !self.can_use_undo_system() {
-            return Err(DocumentError::UndoOperationNowAllowed);
+            return Err(DocumentError::UndoOperationNotAllowed);
         }
         if self.history_index < self.history.len() - 1 {
             self.history_index += 1;

@@ -27,8 +27,25 @@ pub struct Frame {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Animation {
-    pub(in crate::sheet) timeline: Vec<Keyframe>,
+    pub(in crate::sheet) sequences: BTreeMap<Direction, Sequence>,
     pub(in crate::sheet) is_looping: bool,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq, PartialOrd, Ord, Serialize, Deserialize)]
+pub enum Direction {
+    East,
+    NorthEast,
+    North,
+    NorthWest,
+    West,
+    SouthWest,
+    South,
+    SouthEast,
+}
+
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+pub struct Sequence {
+    pub(in crate::sheet) keyframes: Vec<Keyframe>,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -97,8 +114,16 @@ impl From<previous_version::Sheet> for Sheet {
 impl From<previous_version::Animation> for Animation {
     fn from(old: previous_version::Animation) -> Animation {
         Animation {
-            timeline: old.timeline.into_iter().map(|o| o.into()).collect(),
+            sequences: BTreeMap::from([(Direction::East, old.timeline.into())]),
             is_looping: old.is_looping,
+        }
+    }
+}
+
+impl From<Vec<previous_version::Keyframe>> for Sequence {
+    fn from(keyframes: Vec<previous_version::Keyframe>) -> Sequence {
+        Sequence {
+            keyframes: keyframes.into_iter().map(|k| k.into()).collect(),
         }
     }
 }

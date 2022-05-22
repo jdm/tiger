@@ -14,6 +14,7 @@ export type Document = {
   contentTab: ContentTab;
   workbenchOffset: [number, number];
   currentAnimationName: string | null;
+  currentSequenceDirection: Direction | null;
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
 };
@@ -32,7 +33,22 @@ export type Frame = {
 export type Animation = {
   name: string;
   selected: boolean;
-  timeline: Keyframe[];
+  sequences: Record<Direction, Sequence>;
+};
+
+export enum Direction {
+  East = "East",
+  NorthEast = "NorthEast",
+  North = "North",
+  NorthWest = "NorthWest",
+  West = "West",
+  SouthWest = "SouthWest",
+  South = "South",
+  SouthEast = "SouthEast",
+}
+
+export type Sequence = {
+  keyframes: Keyframe[];
 };
 
 export type Keyframe = {
@@ -41,4 +57,7 @@ export type Keyframe = {
   duration_millis: number;
 };
 
-export type ContentTab = "frames" | "animations";
+export enum ContentTab {
+  Frames = "Frames",
+  Animations = "Animations",
+}

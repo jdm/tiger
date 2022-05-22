@@ -108,9 +108,11 @@ impl Sheet {
                 .ok_or(SheetError::AbsoluteToRelativePath)?;
         }
         for (_name, animation) in sheet.animations.iter_mut() {
-            for keyframe in animation.keyframes_iter_mut() {
-                keyframe.frame = diff_paths(&keyframe.frame, relative_to.as_ref())
-                    .ok_or(SheetError::AbsoluteToRelativePath)?;
+            for (_direction, sequence) in animation.sequences.iter_mut() {
+                for keyframe in sequence.keyframes_iter_mut() {
+                    keyframe.frame = diff_paths(&keyframe.frame, relative_to.as_ref())
+                        .ok_or(SheetError::AbsoluteToRelativePath)?;
+                }
             }
         }
         if let Some(e) = sheet.export_settings {
@@ -125,8 +127,10 @@ impl Sheet {
             frame.source = relative_to.as_ref().join(&frame.source)
         }
         for (_name, animation) in sheet.animations.iter_mut() {
-            for keyframe in animation.keyframes_iter_mut() {
-                keyframe.frame = relative_to.as_ref().join(&&keyframe.frame);
+            for (_direction, sequence) in animation.sequences.iter_mut() {
+                for keyframe in sequence.keyframes_iter_mut() {
+                    keyframe.frame = relative_to.as_ref().join(&&keyframe.frame);
+                }
             }
         }
         if let Some(e) = sheet.export_settings {
@@ -220,7 +224,9 @@ impl Sheet {
     pub fn delete_frame<T: AsRef<Path>>(&mut self, path: T) {
         self.frames.retain(|f| f.source != path.as_ref());
         for (_name, animation) in self.animations.iter_mut() {
-            animation.timeline.retain(|kf| kf.frame != path.as_ref())
+            for (_direction, sequence) in animation.sequences.iter_mut() {
+                sequence.keyframes.retain(|k| k.frame != path.as_ref())
+            }
         }
     }
 
@@ -256,10 +262,6 @@ impl PartialOrd for Frame {
 }
 
 impl Animation {
-    pub fn num_keyframes(&self) -> usize {
-        self.timeline.len()
-    }
-
     pub fn looping(&self) -> bool {
         self.is_looping
     }
@@ -268,56 +270,57 @@ impl Animation {
         self.is_looping = new_is_looping;
     }
 
-    pub fn duration_millis(&self) -> Option<u32> {
-        if self.timeline.is_empty() {
-            return None;
-        }
-        Some(self.timeline.iter().map(|f| f.duration_millis).sum())
+    pub fn sequence(&self, direction: Direction) -> Option<&Sequence> {
+        self.sequences.get(&direction)
+    }
+
+    pub fn sequence_mut(&mut self, direction: Direction) -> Option<&mut Sequence> {
+        self.sequences.get_mut(&direction)
+    }
+
+    pub fn sequences_iter(&self) -> impl Iterator<Item = (&Direction, &Sequence)> {
+        self.sequences.iter()
+    }
+}
+
+impl Sequence {
+    pub fn num_keyframes(&self) -> usize {
+        self.keyframes.len()
     }
 
     pub fn keyframe(&self, index: usize) -> Option<&Keyframe> {
-        if index >= self.timeline.len() {
+        if index >= self.keyframes.len() {
             return None;
         }
-        Some(&self.timeline[index])
+        Some(&self.keyframes[index])
     }
 
     pub fn keyframe_mut(&mut self, index: usize) -> Option<&mut Keyframe> {
-        if index >= self.timeline.len() {
+        if index >= self.keyframes.len() {
             return None;
         }
-        Some(&mut self.timeline[index])
+        Some(&mut self.keyframes[index])
     }
 
     pub fn keyframe_index_at(&self, time: Duration) -> Option<usize> {
-        let duration = match self.duration_millis() {
-            None => return None,
-            Some(0) => return None,
-            Some(d) => d,
-        };
-        let time = if self.is_looping {
-            Duration::from_millis(time.as_millis() as u64 % u64::from(duration))
-        } else {
-            time
-        };
         let mut cursor = Duration::new(0, 0);
-        for (index, frame) in self.timeline.iter().enumerate() {
+        for (index, frame) in self.keyframes.iter().enumerate() {
             cursor += Duration::from_millis(u64::from(frame.duration_millis));
             if time < cursor {
                 return Some(index);
             }
         }
-        Some(self.timeline.len() - 1)
+        Some(self.keyframes.len() - 1)
     }
 
     pub fn keyframe_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
         let keyframe_index = self.keyframe_index_at(time)?;
-        Some((keyframe_index, self.timeline.get(keyframe_index)?))
+        Some((keyframe_index, self.keyframes.get(keyframe_index)?))
     }
 
     pub fn keyframe_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe)> {
         let keyframe_index = self.keyframe_index_at(time)?;
-        Some((keyframe_index, self.timeline.get_mut(keyframe_index)?))
+        Some((keyframe_index, self.keyframes.get_mut(keyframe_index)?))
     }
 
     pub fn keyframe_times(&self) -> Vec<u64> {
@@ -332,26 +335,33 @@ impl Animation {
     }
 
     pub fn insert_keyframe(&mut self, keyframe: Keyframe, index: usize) -> Result<(), SheetError> {
-        if index > self.timeline.len() {
+        if index > self.keyframes.len() {
             return Err(SheetError::InvalidFrameIndex(index));
         }
-        self.timeline.insert(index, keyframe);
+        self.keyframes.insert(index, keyframe);
         Ok(())
     }
 
     pub fn delete_keyframe(&mut self, index: usize) -> Result<Keyframe, SheetError> {
-        if index >= self.timeline.len() {
+        if index >= self.keyframes.len() {
             return Err(SheetError::InvalidFrameIndex(index));
         }
-        Ok(self.timeline.remove(index))
+        Ok(self.keyframes.remove(index))
     }
 
     pub fn keyframes_iter(&self) -> impl Iterator<Item = &Keyframe> {
-        self.timeline.iter()
+        self.keyframes.iter()
     }
 
     pub fn keyframes_iter_mut(&mut self) -> impl Iterator<Item = &mut Keyframe> {
-        self.timeline.iter_mut()
+        self.keyframes.iter_mut()
+    }
+
+    pub fn duration_millis(&self) -> Option<u32> {
+        if self.keyframes.is_empty() {
+            return None;
+        }
+        Some(self.keyframes.iter().map(|f| f.duration_millis).sum())
     }
 }
 
@@ -617,80 +627,71 @@ fn can_read_write_animation_looping() {
 }
 
 #[test]
-fn can_add_and_remove_animation_keyframe() {
-    let mut animation = Animation::default();
+fn can_add_and_remove_sequence_keyframe() {
+    let mut sequence = Sequence::default();
     let keyframe_a = Keyframe::new(&Path::new("a.png"));
     let keyframe_b = Keyframe::new(&Path::new("b.png"));
 
-    animation.insert_keyframe(keyframe_a, 0).unwrap();
-    animation.insert_keyframe(keyframe_b, 1).unwrap();
-    assert_eq!(animation.num_keyframes(), 2);
-    assert_eq!(animation.keyframe(0).unwrap().frame(), Path::new("a.png"));
+    sequence.insert_keyframe(keyframe_a, 0).unwrap();
+    sequence.insert_keyframe(keyframe_b, 1).unwrap();
+    assert_eq!(sequence.num_keyframes(), 2);
+    assert_eq!(sequence.keyframe(0).unwrap().frame(), Path::new("a.png"));
     assert_eq!(
-        animation.keyframe_mut(0).unwrap().frame(),
+        sequence.keyframe_mut(0).unwrap().frame(),
         Path::new("a.png")
     );
-    assert_eq!(animation.keyframe(1).unwrap().frame(), Path::new("b.png"));
+    assert_eq!(sequence.keyframe(1).unwrap().frame(), Path::new("b.png"));
     assert_eq!(
-        animation.keyframe_mut(1).unwrap().frame(),
+        sequence.keyframe_mut(1).unwrap().frame(),
         Path::new("b.png")
     );
 
-    animation.delete_keyframe(0).unwrap();
-    assert_eq!(animation.num_keyframes(), 1);
-    assert_eq!(animation.keyframe(0).unwrap().frame(), Path::new("b.png"));
-    assert!(animation.keyframe(1).is_none());
+    sequence.delete_keyframe(0).unwrap();
+    assert_eq!(sequence.num_keyframes(), 1);
+    assert_eq!(sequence.keyframe(0).unwrap().frame(), Path::new("b.png"));
+    assert!(sequence.keyframe(1).is_none());
 }
 
 #[test]
-fn can_measure_animation_duration() {
-    let mut animation = Animation::default();
-    assert_eq!(animation.duration_millis(), None);
+fn can_measure_sequence_duration() {
+    let mut sequence = Sequence::default();
+    assert_eq!(sequence.duration_millis(), None);
 
     let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
     let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
     keyframe_a.set_duration_millis(150);
     keyframe_b.set_duration_millis(250);
-    animation.insert_keyframe(keyframe_a, 0).unwrap();
-    animation.insert_keyframe(keyframe_b, 1).unwrap();
+    sequence.insert_keyframe(keyframe_a, 0).unwrap();
+    sequence.insert_keyframe(keyframe_b, 1).unwrap();
 
-    assert_eq!(animation.duration_millis(), Some(400));
+    assert_eq!(sequence.duration_millis(), Some(400));
 }
 
 #[test]
-fn can_query_animation_by_time_elapsed() {
-    let mut animation = Animation::default();
+fn can_query_sequence_by_time_elapsed() {
+    let mut sequence = Sequence::default();
     let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
     keyframe_a.set_duration_millis(200);
     let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
     keyframe_b.set_duration_millis(200);
 
-    animation.insert_keyframe(keyframe_a, 0).unwrap();
-    animation.insert_keyframe(keyframe_b, 1).unwrap();
-    assert_eq!(animation.keyframe_times(), vec![0, 200]);
+    sequence.insert_keyframe(keyframe_a, 0).unwrap();
+    sequence.insert_keyframe(keyframe_b, 1).unwrap();
+    assert_eq!(sequence.keyframe_times(), vec![0, 200]);
 
-    for (time, frame_index) in [(0, 0), (199, 0), (200, 1), (399, 1), (400, 1)] {
+    for (time, frame_index) in [(0, 0), (199, 0), (200, 1), (399, 1), (400, 1), (401, 1)] {
         assert_eq!(
-            animation
-                .keyframe_at(Duration::from_millis(time))
-                .unwrap()
-                .0,
+            sequence.keyframe_at(Duration::from_millis(time)).unwrap().0,
             frame_index
         );
         assert_eq!(
-            animation
+            sequence
                 .keyframe_at_mut(Duration::from_millis(time))
                 .unwrap()
                 .0,
             frame_index
         );
     }
-
-    animation.set_looping(true);
-    assert_eq!(
-        animation.keyframe_at(Duration::from_millis(400)).unwrap().0,
-        0
-    );
 }
 
 #[test]

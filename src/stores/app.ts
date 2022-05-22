@@ -1,4 +1,4 @@
-import { Animation, AppState, Patch } from "@/api/dto";
+import { Animation, AppState, Patch, Sequence } from "@/api/dto";
 import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
 
@@ -45,6 +45,16 @@ export const useAppStore = defineStore("app", {
         return this.currentDocument.sheet.animations[
           this.currentDocument.currentAnimationName
         ];
+      }
+      return null;
+    },
+    currentSequence(): Sequence | null {
+      if (this.currentDocument?.currentSequenceDirection) {
+        if (this.currentAnimation) {
+          return this.currentAnimation.sequences[
+            this.currentDocument.currentSequenceDirection
+          ];
+        }
       }
       return null;
     },

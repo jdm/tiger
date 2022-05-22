@@ -1,8 +1,11 @@
 <template>
 	<Pane>
 		<PaneTabList>
-			<PaneTab @select="focusContentTab('frames')" :selected="currentTab == 'frames'">Frames</PaneTab>
-			<PaneTab @select="focusContentTab('animations')" :selected="currentTab == 'animations'">Animations</PaneTab>
+			<PaneTab @select="focusContentTab(ContentTab.Frames)" :selected="currentTab == ContentTab.Frames">Frames
+			</PaneTab>
+			<PaneTab @select="focusContentTab(ContentTab.Animations)" :selected="currentTab == ContentTab.Animations">
+				Animations
+			</PaneTab>
 		</PaneTabList>
 		<div class="flex-1 flex flex-col min-h-0">
 			<div class="w-full p-4 flex flex-row items-center space-x-2">
@@ -16,10 +19,10 @@
 			<Separator />
 			<PaneInset class="flex-1 m-4 min-h-0">
 				<div class="p-4 overflow-y-auto h-full styled-scrollbars">
-					<div v-if="currentTab == 'frames'" class="grid grid-cols-4 gap-4">
+					<div v-if="currentTab == ContentTab.Frames" class="grid grid-cols-4 gap-4">
 						<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame" :key="frame.name" />
 					</div>
-					<div v-if="currentTab == 'animations'" class="text-plastic-200 flex flex-col">
+					<div v-if="currentTab == ContentTab.Animations" class="text-plastic-200 flex flex-col">
 						<Animation v-for="animation in app.sortedAnimations" :animation="animation" ref="animationRefs"
 							:key="animation.name" />
 					</div>
@@ -34,6 +37,7 @@ import { useAppStore } from '@/stores/app'
 import { watch } from 'vue';
 import { computed, Ref, ref } from '@vue/reactivity';
 import { focusContentTab } from '@/api/document'
+import { ContentTab } from '@/api/dto'
 import Animation from '@/components/Animation.vue'
 import Frame from '@/components/Frame.vue'
 import Pane from '@/components/basic/Pane.vue'
@@ -60,7 +64,7 @@ watch([
 	([newDocument, newAnimationNames], [oldDocument, oldAnimationNames]) => {
 		if (newDocument != oldDocument
 			|| !oldAnimationNames || !newAnimationNames
-			|| app.currentDocument?.contentTab != "animations") {
+			|| app.currentDocument?.contentTab != ContentTab.Animations) {
 			return;
 		}
 		const oldSet = new Set(oldAnimationNames);

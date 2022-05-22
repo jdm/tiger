@@ -1,6 +1,7 @@
 use euclid::default::*;
 use std::time::Duration;
 
+use crate::sheet::Direction;
 use crate::state::MultiSelection;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -14,6 +15,7 @@ pub struct View {
     content_tab: ContentTab,
     selection: MultiSelection,
     current_animation: Option<String>,
+    current_sequence: Option<Direction>,
     workbench_offset: Vector2D<f32>,
     timeline_clock: Duration,
     workbench_zoom_level: i32,
@@ -26,6 +28,7 @@ impl Default for View {
             content_tab: ContentTab::Frames,
             selection: Default::default(),
             current_animation: None,
+            current_sequence: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
             workbench_zoom_level: 1,
             timeline_zoom_level: 1,
@@ -61,6 +64,18 @@ impl View {
 
     pub fn set_current_animation<T: AsRef<str>>(&mut self, name: T) {
         self.current_animation = Some(name.as_ref().to_owned());
+    }
+
+    pub fn current_sequence(&self) -> &Option<Direction> {
+        &self.current_sequence
+    }
+
+    pub fn clear_current_sequence(&mut self) {
+        self.current_sequence = None;
+    }
+
+    pub fn set_current_sequence(&mut self, direction: Direction) {
+        self.current_sequence = Some(direction);
     }
 
     pub fn workbench_zoom(&self) -> f32 {

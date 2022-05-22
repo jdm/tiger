@@ -24,6 +24,7 @@ pub struct Document {
     content_tab: ContentTab,
     workbench_offset: (i32, i32),
     current_animation_name: Option<String>,
+    current_sequence_direction: Option<Direction>,
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
 }
@@ -48,7 +49,25 @@ pub struct Frame {
 pub struct Animation {
     name: String,
     selected: bool,
-    timeline: Vec<Keyframe>,
+    sequences: HashMap<Direction, Sequence>,
+}
+
+#[derive(Eq, PartialEq, Hash, Serialize)]
+pub enum Direction {
+    East,
+    NorthEast,
+    North,
+    NorthWest,
+    West,
+    SouthWest,
+    South,
+    SouthEast,
+}
+
+#[derive(Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Sequence {
+    keyframes: Vec<Keyframe>,
 }
 
 #[derive(Serialize)]
@@ -60,7 +79,6 @@ pub struct Keyframe {
 }
 
 #[derive(Deserialize, Serialize)]
-#[serde(rename_all = "camelCase")]
 pub enum ContentTab {
     Frames,
     Animations,
@@ -106,6 +124,7 @@ impl From<&state::Document> for Document {
             content_tab: document.view().content_tab().into(),
             workbench_offset: document.view().workbench_offset().to_i32().to_tuple(),
             current_animation_name: document.view().current_animation().to_owned(),
+            current_sequence_direction: document.view().current_sequence().map(|d| d.into()),
             timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
             timeline_is_playing: document.persistent().is_timeline_playing(),
         }
@@ -142,7 +161,34 @@ where
         Self {
             name: animation.0.as_ref().to_owned(),
             selected: false,
-            timeline: animation.1.keyframes_iter().map(|k| k.into()).collect(),
+            sequences: animation
+                .1
+                .sequences_iter()
+                .map(|(d, s)| ((*d).into(), s.into()))
+                .collect(),
+        }
+    }
+}
+
+impl From<sheet::Direction> for Direction {
+    fn from(direction: sheet::Direction) -> Self {
+        match direction {
+            sheet::Direction::East => Direction::East,
+            sheet::Direction::NorthEast => Direction::NorthEast,
+            sheet::Direction::North => Direction::North,
+            sheet::Direction::NorthWest => Direction::NorthWest,
+            sheet::Direction::West => Direction::West,
+            sheet::Direction::SouthWest => Direction::SouthWest,
+            sheet::Direction::South => Direction::South,
+            sheet::Direction::SouthEast => Direction::SouthEast,
+        }
+    }
+}
+
+impl From<&sheet::Sequence> for Sequence {
+    fn from(sequence: &sheet::Sequence) -> Self {
+        Self {
+            keyframes: sequence.keyframes_iter().map(|k| k.into()).collect(),
         }
     }
 }
