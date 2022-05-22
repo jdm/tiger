@@ -1,5 +1,6 @@
 use euclid::default::Vector2D;
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 use thiserror::Error;
 
 use crate::sheet::{Animation, Direction, Sequence, Sheet, SheetError};
@@ -60,6 +61,7 @@ pub enum Command {
     EditAnimation(String),
     RenameAnimation(String, String),
     DeleteAnimation(String),
+    Tick(Duration),
     Play,
     Pause,
     ZoomIn,
@@ -187,6 +189,44 @@ impl Document {
             .remove(SingleSelection::Animation(name.as_ref().to_owned()));
         if Some(name.as_ref()) == self.view.current_animation().as_deref() {
             self.view.clear_current_animation();
+        }
+    }
+
+    fn tick(&mut self, delta: Duration) {
+        self.advance_timeline(delta);
+        // self.try_close(); // TODO
+    }
+
+    fn advance_timeline(&mut self, delta: Duration) {
+        if self.persistent.is_timeline_playing() {
+            self.view
+                .set_timeline_clock(self.view.timeline_clock() + delta);
+            if let Ok(animation) = self.get_workbench_animation() {
+                if let Ok(sequence) = self.get_workbench_sequence() {
+                    match sequence.duration_millis() {
+                        Some(d) if d > 0 => {
+                            let clock_ms = self.view.timeline_clock().as_millis() as u64;
+                            // Loop animation
+                            if animation.looping() {
+                                self.view
+                                    .set_timeline_clock(Duration::from_millis(clock_ms % d));
+
+                            // Stop playhead at the end of animation
+                            } else if clock_ms >= d {
+                                self.persistent.set_timeline_is_playing(false);
+                                self.view
+                                    .set_timeline_clock(Duration::from_millis(u64::from(d)));
+                            }
+                        }
+
+                        // Reset playhead
+                        _ => {
+                            self.persistent.set_timeline_is_playing(false);
+                            self.view.skip_to_timeline_start();
+                        }
+                    };
+                }
+            }
         }
     }
 
@@ -354,6 +394,7 @@ impl Document {
             Command::Pause => self.pause(),
             Command::ZoomIn => self.view.zoom_in_timeline(),
             Command::ZoomOut => self.view.zoom_out_timeline(),
+            Command::Tick(dt) => self.tick(dt),
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;

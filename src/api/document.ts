@@ -70,6 +70,11 @@ export async function deleteAnimation(name: string): Promise<void> {
   appStore.patch(await invoke("delete_animation", { name: name }));
 }
 
+export async function tick(deltaTimeMillis: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("tick", { deltaTimeMillis: deltaTimeMillis }));
+}
+
 export async function play(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("play"));

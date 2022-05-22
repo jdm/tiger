@@ -357,7 +357,11 @@ impl Sequence {
         self.keyframes.iter_mut()
     }
 
-    pub fn duration_millis(&self) -> Option<u32> {
+    pub fn duration(&self) -> Option<Duration> {
+        self.duration_millis().map(Duration::from_millis)
+    }
+
+    pub fn duration_millis(&self) -> Option<u64> {
         if self.keyframes.is_empty() {
             return None;
         }
@@ -379,7 +383,7 @@ impl Keyframe {
         &self.frame
     }
 
-    pub fn duration_millis(&self) -> u32 {
+    pub fn duration_millis(&self) -> u64 {
         self.duration_millis
     }
 
@@ -391,7 +395,7 @@ impl Keyframe {
         self.frame = new_frame.as_ref().to_owned();
     }
 
-    pub fn set_duration_millis(&mut self, new_duration: u32) {
+    pub fn set_duration_millis(&mut self, new_duration: u64) {
         self.duration_millis = new_duration;
     }
 

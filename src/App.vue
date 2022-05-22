@@ -22,4 +22,28 @@ import { newDocument, openDocuments } from '@/api/local'
 import WorkbenchPane from '@/components/WorkbenchPane.vue';
 import ContentPane from '@/components/ContentPane.vue'
 import TimelinePane from '@/components/timeline/TimelinePane.vue'
+import { useAppStore } from '@/stores/app'
+import { watch } from 'vue';
+import { tick } from '@/api/document';
+
+const app = useAppStore();
+let previousTimestamp: number | null = null;
+
+function runTick(timestamp: number) {
+  if (previousTimestamp != null) {
+    tick(timestamp - previousTimestamp);
+  }
+  previousTimestamp = timestamp;
+  if (app.currentDocument?.timelineIsPlaying) {
+    window.requestAnimationFrame(runTick);
+  }
+}
+
+watch(() => app.currentDocument?.timelineIsPlaying, (isPlaying) => {
+  if (isPlaying) {
+    previousTimestamp = null;
+    window.requestAnimationFrame(runTick);
+  }
+});
+
 </script>

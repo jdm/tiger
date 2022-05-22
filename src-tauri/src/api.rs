@@ -1,6 +1,7 @@
 use euclid::vec2;
 use json_patch::Patch;
 use std::path::PathBuf;
+use std::time::Duration;
 
 use crate::dto;
 use crate::state::{App, AppState, Command, Document, DocumentError, SingleSelection};
@@ -222,6 +223,19 @@ pub fn delete_animation(app_state: tauri::State<'_, AppState>, name: String) -> 
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DeleteAnimation(name))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn tick(app_state: tauri::State<'_, AppState>, delta_time_millis: f64) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::Tick(Duration::from_nanos(
+                    (delta_time_millis * 1_000_000.0) as u64,
+                )))
                 .ok();
         }
     }))

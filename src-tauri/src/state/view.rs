@@ -162,6 +162,10 @@ impl View {
         self.timeline_clock
     }
 
+    pub fn set_timeline_clock(&mut self, new_clock: Duration) {
+        self.timeline_clock = new_clock;
+    }
+
     pub fn skip_to_timeline_start(&mut self) {
         self.timeline_clock = Duration::ZERO;
     }

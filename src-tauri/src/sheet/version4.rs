@@ -52,7 +52,7 @@ pub struct Sequence {
 pub struct Keyframe {
     pub(in crate::sheet) frame: PathBuf,
     pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
-    pub(in crate::sheet) duration_millis: u32,
+    pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),
 }
 
@@ -138,7 +138,7 @@ impl From<previous_version::Keyframe> for Keyframe {
     fn from(old: previous_version::Keyframe) -> Keyframe {
         Keyframe {
             frame: old.frame,
-            duration_millis: old.duration_millis,
+            duration_millis: old.duration_millis as u64,
             offset: old.offset,
             hitboxes: old
                 .hitboxes

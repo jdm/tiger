@@ -69,7 +69,7 @@ pub enum Direction {
 #[serde(rename_all = "camelCase")]
 pub struct Sequence {
     keyframes: Vec<Keyframe>,
-    duration_millis: Option<u32>,
+    duration_millis: Option<u64>,
 }
 
 #[derive(Serialize)]
@@ -77,7 +77,7 @@ pub struct Sequence {
 pub struct Keyframe {
     frame: PathBuf,
     name: String,
-    duration_millis: u32,
+    duration_millis: u64,
 }
 
 #[derive(Deserialize, Serialize)]

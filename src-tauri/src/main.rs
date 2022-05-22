@@ -30,6 +30,7 @@ fn main() {
             api::edit_animation,
             api::rename_animation,
             api::delete_animation,
+            api::tick,
             api::play,
             api::pause,
             api::zoom_in,

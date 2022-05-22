@@ -36,7 +36,7 @@
 						<div class="flex flex-col py-2 space-y-1 ">
 							<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
 						</div>
-						<div class="absolute top-0 mx-1 left-[0px] h-full w-px bg-white" />
+						<div class="absolute top-0 mx-1 h-full w-px bg-white" :style="playheadStyle" />
 					</div>
 				</div>
 			</div>
@@ -67,6 +67,14 @@ const timelineStyle = computed(() => {
 	return {
 		width: timelineDuration.value + "px"
 	}
+});
+
+const playheadStyle = computed(() => {
+	const zoom = app.currentDocument?.timelineZoom || 1;
+	const time = app.currentDocument?.timelineClockMillis || 0;
+	return {
+		left: (zoom * time) + "px",
+	};
 });
 
 </script>
