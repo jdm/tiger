@@ -29,9 +29,9 @@ import { tick } from '@/api/document';
 const app = useAppStore();
 let previousTimestamp: number | null = null;
 
-function runTick(timestamp: number) {
+async function runTick(timestamp: number) {
   if (previousTimestamp != null) {
-    tick(timestamp - previousTimestamp);
+    await tick(timestamp - previousTimestamp);
   }
   previousTimestamp = timestamp;
   if (app.currentDocument?.timelineIsPlaying) {
