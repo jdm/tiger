@@ -46,6 +46,8 @@ pub enum DocumentError {
     AnimationNotInDocument(String),
     #[error("Current animation does not have a `{0:?}` sequence")]
     SequenceNotInAnimation(Direction),
+    #[error("Sequence does not have a keyframe at time `{0:?}`")]
+    NoKeyframeAtTime(Duration),
     #[error("Not currently editing an animation")]
     NotEditingAnyAnimation,
     #[error("Not currently editing a sequence")]
@@ -66,6 +68,7 @@ pub enum Command {
     Tick(Duration),
     Play,
     Pause,
+    ScrubTimeline(Duration),
     ZoomInTimeline,
     ZoomOutTimeline,
 }
@@ -257,6 +260,25 @@ impl Document {
         self.persistent.set_timeline_is_playing(false);
     }
 
+    fn scrub_timeline(&mut self, time: Duration) -> Result<(), DocumentError> {
+        let sequence = self.get_workbench_sequence()?;
+        let new_time = match sequence.duration() {
+            Some(d) if d < time => d,
+            Some(_) => time,
+            None => Duration::ZERO,
+        };
+        let (index, _) = sequence
+            .keyframe_at(new_time)
+            .ok_or(DocumentError::NoKeyframeAtTime(new_time))?;
+
+        self.view.set_timeline_clock(new_time);
+        self.view
+            .selection_mut()
+            .select(SingleSelection::Keyframe(index));
+
+        Ok(())
+    }
+
     pub fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
         let animation = self.get_workbench_animation()?;
         let direction = self
@@ -396,6 +418,7 @@ impl Document {
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
             Command::Play => self.play()?,
             Command::Pause => self.pause(),
+            Command::ScrubTimeline(t) => self.scrub_timeline(t)?,
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::Tick(dt) => self.tick(dt),

@@ -95,6 +95,11 @@ export async function pause(): Promise<void> {
   appStore.patch(await invoke("pause"));
 }
 
+export async function scrubTimeline(timeMillis: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("scrub_timeline", { timeMillis: timeMillis }));
+}
+
 export async function zoomInTimeline(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("zoom_in_timeline"));

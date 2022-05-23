@@ -35,6 +35,7 @@ fn main() {
             api::tick,
             api::play,
             api::pause,
+            api::scrub_timeline,
             api::zoom_in_timeline,
             api::zoom_out_timeline,
         ])

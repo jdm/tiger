@@ -278,6 +278,20 @@ pub fn pause(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
+pub fn scrub_timeline(
+    app_state: tauri::State<'_, AppState>,
+    time_millis: u64,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

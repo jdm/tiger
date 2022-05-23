@@ -303,6 +303,9 @@ impl Sequence {
     }
 
     pub fn keyframe_index_at(&self, time: Duration) -> Option<usize> {
+        if self.keyframes.is_empty() {
+            return None;
+        }
         let mut cursor = Duration::new(0, 0);
         for (index, frame) in self.keyframes.iter().enumerate() {
             cursor += Duration::from_millis(u64::from(frame.duration_millis));

@@ -32,7 +32,7 @@
 				</div>
 				<div class="flex-1 relative overflow-x-scroll styled-scrollbars">
 					<div class="min-w-full flex flex-col" :style="timelineStyle">
-						<Ruler />
+						<Ruler v-model:scrubbing="scrubbing" />
 						<div class="flex flex-col py-2 space-y-1 ">
 							<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
 						</div>
@@ -57,6 +57,8 @@ import { watch } from 'vue'
 
 const app = useAppStore();
 
+const scrubbing = ref(false);
+
 const timelineDuration = computed(() => {
 	const zoom = app.currentDocument?.timelineZoom || 1;
 	const bonusDuration = 500;
@@ -72,14 +74,14 @@ const timelineStyle = computed(() => {
 
 const transitionProperty: Ref<string> = ref("none");
 
-watch(() => app.currentDocument?.timelineIsPlaying, (isPlaying) => {
-	if (isPlaying) {
+watch([() => app.currentDocument?.timelineIsPlaying, scrubbing], ([isPlaying, isScrubbing]) => {
+	if (isPlaying || isScrubbing) {
 		transitionProperty.value = "none";
 	} else {
 		// Delay so the transition doesn't kick in as the animation ends and the playhead
 		// still has to reach its final location.
 		setTimeout(() => {
-			if (!app.currentDocument?.timelineIsPlaying) {
+			if (!app.currentDocument?.timelineIsPlaying && !isScrubbing) {
 				transitionProperty.value = "left";
 			}
 		}, 300);
