@@ -79,6 +79,7 @@ pub struct Keyframe {
     frame: PathBuf,
     name: String,
     duration_millis: u64,
+    offset: (i32, i32),
 }
 
 #[derive(Deserialize, Serialize)]
@@ -208,6 +209,7 @@ impl From<&sheet::Keyframe> for Keyframe {
             frame: keyframe.frame().to_owned(),
             name: keyframe.frame().to_file_name(),
             duration_millis: keyframe.duration_millis(),
+            offset: keyframe.offset().to_tuple(),
         }
     }
 }

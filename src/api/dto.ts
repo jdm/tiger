@@ -58,6 +58,7 @@ export type Keyframe = {
   frame: string;
   name: string;
   durationMillis: number;
+  offset: [number, number];
 };
 
 export enum ContentTab {
