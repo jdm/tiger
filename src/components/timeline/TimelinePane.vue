@@ -36,7 +36,7 @@
 						<div class="flex flex-col py-2 space-y-1 ">
 							<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
 						</div>
-						<div class="absolute top-0 mx-1 h-full w-px bg-white" :style="playheadStyle" />
+						<div class="absolute top-0 mx-1 h-full w-px bg-white transition" :style="playheadStyle" />
 					</div>
 				</div>
 			</div>
@@ -52,7 +52,8 @@ import Ruler from '@/components/timeline/Ruler.vue'
 import Sequence from '@/components/timeline/Sequence.vue'
 import { useAppStore } from '@/stores/app'
 import { PauseIcon, PlayIcon, ZoomInIcon, ZoomOutIcon } from '@heroicons/vue/solid'
-import { computed } from '@vue/reactivity'
+import { computed, Ref, ref } from '@vue/reactivity'
+import { watch } from 'vue'
 
 const app = useAppStore();
 
@@ -69,11 +70,28 @@ const timelineStyle = computed(() => {
 	}
 });
 
+const transitionProperty: Ref<string> = ref("none");
+
+watch(() => app.currentDocument?.timelineIsPlaying, (isPlaying) => {
+	if (isPlaying) {
+		transitionProperty.value = "none";
+	} else {
+		// Delay so the transition doesn't kick in as the animation ends and the playhead
+		// still has to reach its final location.
+		setTimeout(() => {
+			if (!app.currentDocument?.timelineIsPlaying) {
+				transitionProperty.value = "left";
+			}
+		}, 300);
+	}
+});
+
 const playheadStyle = computed(() => {
 	const zoom = app.currentDocument?.timelineZoom || 1;
 	const time = app.currentDocument?.timelineClockMillis || 0;
 	return {
-		left: (zoom * time) + "px",
+		transitionProperty: transitionProperty.value,
+		left: Math.floor(zoom * time) + "px",
 	};
 });
 
