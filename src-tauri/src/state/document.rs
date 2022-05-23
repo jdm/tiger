@@ -58,14 +58,16 @@ pub enum Command {
     ClearSelection,
     AlterSelection(SingleSelection, bool, bool),
     Pan(Vector2D<f32>),
+    ZoomInWorkbench,
+    ZoomOutWorkbench,
     EditAnimation(String),
     RenameAnimation(String, String),
     DeleteAnimation(String),
     Tick(Duration),
     Play,
     Pause,
-    ZoomIn,
-    ZoomOut,
+    ZoomInTimeline,
+    ZoomOutTimeline,
 }
 
 impl Document {
@@ -385,6 +387,8 @@ impl Document {
                 self.alter_selection(selection, shift, ctrl)
             }
             Command::Pan(delta) => self.view.pan(delta),
+            Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
+            Command::ZoomOutWorkbench => self.view.zoom_out_workbench(),
             Command::EditAnimation(ref name) => self.edit_animation(name)?,
             Command::RenameAnimation(ref old_name, ref new_name) => {
                 self.rename_animation(old_name, new_name)?
@@ -392,8 +396,8 @@ impl Document {
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
             Command::Play => self.play()?,
             Command::Pause => self.pause(),
-            Command::ZoomIn => self.view.zoom_in_timeline(),
-            Command::ZoomOut => self.view.zoom_out_timeline(),
+            Command::ZoomInTimeline => self.view.zoom_in_timeline(),
+            Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::Tick(dt) => self.tick(dt),
         }
         if !Transient::is_transient_command(&command) {

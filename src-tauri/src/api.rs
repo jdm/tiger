@@ -194,6 +194,24 @@ pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<P
 }
 
 #[tauri::command]
+pub fn zoom_in_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ZoomInWorkbench).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn zoom_out_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ZoomOutWorkbench).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn edit_animation(app_state: tauri::State<'_, AppState>, name: String) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
@@ -260,19 +278,19 @@ pub fn pause(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn zoom_in(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::ZoomIn).ok();
+            document.process_command(Command::ZoomInTimeline).ok();
         }
     }))
 }
 
 #[tauri::command]
-pub fn zoom_out(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub fn zoom_out_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::ZoomOut).ok();
+            document.process_command(Command::ZoomOutTimeline).ok();
         }
     }))
 }

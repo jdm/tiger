@@ -23,6 +23,7 @@ pub struct Document {
     sheet: Sheet,
     content_tab: ContentTab,
     workbench_offset: (i32, i32),
+    workbench_zoom: f32,
     current_animation_name: Option<String>,
     current_sequence_direction: Option<Direction>,
     current_keyframe_index: Option<usize>,
@@ -127,6 +128,7 @@ impl From<&state::Document> for Document {
             sheet,
             content_tab: document.view().content_tab().into(),
             workbench_offset: document.view().workbench_offset().to_i32().to_tuple(),
+            workbench_zoom: document.view().workbench_zoom(),
             current_animation_name: document.view().current_animation().to_owned(),
             current_sequence_direction: document.view().current_sequence().map(|d| d.into()),
             current_keyframe_index: document

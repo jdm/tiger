@@ -33,10 +33,6 @@ function onFrameClicked(event: MouseEvent) {
 
 
 <style scoped>
-.pixelated {
-	image-rendering: pixelated;
-}
-
 .checkerboard {
 	background-size: 16px 16px;
 	background-image:

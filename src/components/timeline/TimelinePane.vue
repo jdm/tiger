@@ -9,11 +9,11 @@
 				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
 				<PlayIcon class="w-6" />
 			</button>
-			<button @click="zoomIn"
+			<button @click="zoomInTimeline"
 				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
 				<ZoomInIcon class="w-6" />
 			</button>
-			<button @click="zoomOut"
+			<button @click="zoomOutTimeline"
 				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
 				<ZoomOutIcon class="w-6" />
 			</button>
@@ -45,7 +45,7 @@
 </template>
 
 <script setup lang="ts">
-import { play, pause, zoomIn, zoomOut } from '@/api/document'
+import { play, pause, zoomInTimeline, zoomOutTimeline } from '@/api/document'
 import Pane from '@/components/basic/Pane.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
 import Ruler from '@/components/timeline/Ruler.vue'

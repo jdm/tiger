@@ -6,6 +6,10 @@ body {
 	color-scheme: dark;
 }
 
+.pixelated {
+	image-rendering: pixelated;
+}
+
 .styled-scrollbars {
 	--scrollbar-foreground: theme('colors.neutral.700');
 	--scrollbar-background: theme('colors.neutral.900');

@@ -13,6 +13,7 @@ export type Document = {
   sheet: Sheet;
   contentTab: ContentTab;
   workbenchOffset: [number, number];
+  workbenchZoom: number;
   currentAnimationName: string | null;
   currentSequenceDirection: Direction | null;
   currentKeyframeIndex: number | null;

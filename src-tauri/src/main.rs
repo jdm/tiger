@@ -27,14 +27,16 @@ fn main() {
             api::select_frame,
             api::select_animation,
             api::pan,
+            api::zoom_in_workbench,
+            api::zoom_out_workbench,
             api::edit_animation,
             api::rename_animation,
             api::delete_animation,
             api::tick,
             api::play,
             api::pause,
-            api::zoom_in,
-            api::zoom_out,
+            api::zoom_in_timeline,
+            api::zoom_out_timeline,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
