@@ -41,12 +41,19 @@ onUnmounted(() => {
 
 function beginScrub(e: MouseEvent) {
 	emit("update:scrubbing", true);
-	window.addEventListener("mousemove", updateScrub);
+	window.addEventListener("mousemove", onMouseMove);
+	updateScrub(e);
+}
+
+function onMouseMove(e: MouseEvent) {
+	if (!props.scrubbing) {
+		return;
+	}
 	updateScrub(e);
 }
 
 function updateScrub(e: MouseEvent) {
-	if (!props.scrubbing || !el.value) {
+	if (!el.value) {
 		return;
 	}
 	const rulerStartX = el.value.getBoundingClientRect().left;
@@ -57,7 +64,7 @@ function updateScrub(e: MouseEvent) {
 
 function endScrub() {
 	emit("update:scrubbing", false);
-	window.removeEventListener("mousemove", updateScrub);
+	window.removeEventListener("mousemove", onMouseMove);
 }
 </script>
 

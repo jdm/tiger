@@ -165,7 +165,7 @@ impl Document {
         self.view.skip_to_timeline_start();
         self.persistent.set_timeline_is_playing(false);
         // TODO preserve current direction if possible?
-        match animation.sequences_iter().next().map(|(d, s)| d) {
+        match animation.sequences_iter().next().map(|(d, _s)| d) {
             Some(d) => self.view.set_current_sequence(*d),
             None => self.view.clear_current_sequence(),
         }
