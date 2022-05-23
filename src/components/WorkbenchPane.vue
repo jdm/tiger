@@ -11,6 +11,8 @@
 				class="flex-1 graph-paper h-full" :class="isDragging ? 'cursor-move' : 'cursor-default'"
 				:style="graphPaperStyle">
 			</div>
+			<img v-if="app.currentKeyframe" :src="convertFileSrc(app.currentKeyframe.frame)"
+				class="absolute top-0 left-0 pixelated object-none" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
@@ -19,6 +21,7 @@
 </template>
 
 <script setup lang="ts">
+import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { computed, ref } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
 import { clearSelection, pan } from '@/api/document'

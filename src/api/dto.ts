@@ -15,6 +15,7 @@ export type Document = {
   workbenchOffset: [number, number];
   currentAnimationName: string | null;
   currentSequenceDirection: Direction | null;
+  currentKeyframeIndex: number | null;
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
   timelineZoom: number;
@@ -54,7 +55,7 @@ export type Sequence = {
 };
 
 export type Keyframe = {
-  source: string;
+  frame: string;
   name: string;
   durationMillis: number;
 };

@@ -255,7 +255,7 @@ impl Document {
         self.persistent.set_timeline_is_playing(false);
     }
 
-    fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
+    pub fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
         let animation = self.get_workbench_animation()?;
         let direction = self
             .view
@@ -266,7 +266,7 @@ impl Document {
             .ok_or(DocumentError::SequenceNotInAnimation(direction))
     }
 
-    fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
+    pub fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
         let animation_name = self
             .view
             .current_animation()
@@ -279,7 +279,7 @@ impl Document {
             ))
     }
 
-    fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
+    pub fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
         let animation_name = self
             .view
             .current_animation()

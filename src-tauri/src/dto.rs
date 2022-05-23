@@ -25,6 +25,7 @@ pub struct Document {
     workbench_offset: (i32, i32),
     current_animation_name: Option<String>,
     current_sequence_direction: Option<Direction>,
+    current_keyframe_index: Option<usize>,
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
     timeline_zoom: f32,
@@ -127,6 +128,10 @@ impl From<&state::Document> for Document {
             workbench_offset: document.view().workbench_offset().to_i32().to_tuple(),
             current_animation_name: document.view().current_animation().to_owned(),
             current_sequence_direction: document.view().current_sequence().map(|d| d.into()),
+            current_keyframe_index: document
+                .get_workbench_sequence()
+                .ok()
+                .and_then(|s| s.keyframe_index_at(document.view().timeline_clock())),
             timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
             timeline_is_playing: document.persistent().is_timeline_playing(),
             timeline_zoom: document.view().timeline_zoom(),
