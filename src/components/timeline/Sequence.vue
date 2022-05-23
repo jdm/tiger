@@ -1,6 +1,5 @@
 <template>
-	<div
-		class="w-full h-9 flex flex-row p-1 rounded-sm bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600">
+	<div class="h-9 flex flex-row p-1 rounded-sm bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600">
 		<Keyframe v-for="keyframe, index in sequence.keyframes" :keyframe="keyframe" class="transition-[flex-basis]"
 			:key="index + '_' + keyframe.name" :style="keyframeStyle(keyframe)" />
 	</div>

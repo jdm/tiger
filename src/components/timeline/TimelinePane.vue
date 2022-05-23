@@ -61,7 +61,7 @@ const scrubbing = ref(false);
 
 const timelineDuration = computed(() => {
 	const zoom = app.currentDocument?.timelineZoom || 1;
-	const bonusDuration = 500;
+	const bonusDuration = 500 / zoom;
 	const animationDuration = Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
 	return zoom * (animationDuration + bonusDuration);
 });
