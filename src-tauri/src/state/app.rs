@@ -8,8 +8,6 @@ use crate::state::{Document, DocumentError};
 
 #[derive(Error, Debug)]
 pub enum AppError {
-    #[error("No document is open")]
-    NoDocumentOpen,
     #[error("The requested document (`{0}`) is not currently opened.")]
     DocumentNotFound(PathBuf),
     #[error(transparent)]
