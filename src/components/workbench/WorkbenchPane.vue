@@ -24,6 +24,7 @@
 			<img v-if="app.currentKeyframe" ref="frame" :key="app.currentKeyframe.frame"
 				:src="convertFileSrc(app.currentKeyframe.frame)" class="absolute pixelated" :style="frameStyle"
 				@load="onFrameLoaded" />
+			<Origin class="absolute" :style="originStyle" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
@@ -40,6 +41,7 @@ import { useAppStore } from '@/stores/app'
 import Pane from '@/components/basic/Pane.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
 import PaneTabList from '@/components/basic/PaneTabList.vue'
+import Origin from '@/components/workbench/Origin.vue'
 import { ZoomInIcon, ZoomOutIcon } from '@heroicons/vue/solid'
 import { onUnmounted, watch } from 'vue';
 
@@ -99,6 +101,17 @@ const frameStyle = computed(() => {
 		top: top + "px",
 		width: drawSize[0] + "px",
 		height: drawSize[1] + "px"
+	};
+});
+
+
+const originStyle = computed(() => {
+	const workbenchOffset = app.currentDocument?.workbenchOffset || [0, 0];
+	const left = Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0];
+	const top = Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1];
+	return {
+		left: left + "px",
+		top: top + "px",
 	};
 });
 

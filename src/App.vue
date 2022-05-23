@@ -19,9 +19,9 @@
 
 <script setup lang="ts">
 import { newDocument, openDocuments } from '@/api/local'
-import WorkbenchPane from '@/components/WorkbenchPane.vue';
 import ContentPane from '@/components/ContentPane.vue'
 import TimelinePane from '@/components/timeline/TimelinePane.vue'
+import WorkbenchPane from '@/components/workbench/WorkbenchPane.vue';
 import { useAppStore } from '@/stores/app'
 import { watch } from 'vue';
 import { tick } from '@/api/document';
