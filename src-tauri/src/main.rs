@@ -29,6 +29,7 @@ fn main() {
             api::pan,
             api::zoom_in_workbench,
             api::zoom_out_workbench,
+            api::reset_workbench_zoom,
             api::edit_animation,
             api::rename_animation,
             api::delete_animation,
@@ -38,6 +39,7 @@ fn main() {
             api::scrub_timeline,
             api::zoom_in_timeline,
             api::zoom_out_timeline,
+            api::reset_timeline_zoom,
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

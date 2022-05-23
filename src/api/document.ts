@@ -57,6 +57,11 @@ export async function zoomOutWorkbench(): Promise<void> {
   appStore.patch(await invoke("zoom_out_workbench"));
 }
 
+export async function resetWorkbenchZoom(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("reset_workbench_zoom"));
+}
+
 export async function editAnimation(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("edit_animation", { name: name }));
@@ -108,4 +113,9 @@ export async function zoomInTimeline(): Promise<void> {
 export async function zoomOutTimeline(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("zoom_out_timeline"));
+}
+
+export async function resetTimelineZoom(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("reset_timeline_zoom"));
 }

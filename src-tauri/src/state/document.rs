@@ -62,6 +62,7 @@ pub enum Command {
     Pan(Vector2D<f32>),
     ZoomInWorkbench,
     ZoomOutWorkbench,
+    ResetWorkbenchZoom,
     EditAnimation(String),
     RenameAnimation(String, String),
     DeleteAnimation(String),
@@ -71,6 +72,7 @@ pub enum Command {
     ScrubTimeline(Duration),
     ZoomInTimeline,
     ZoomOutTimeline,
+    ResetTimelineZoom,
 }
 
 impl Document {
@@ -411,17 +413,19 @@ impl Document {
             Command::Pan(delta) => self.view.pan(delta),
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
             Command::ZoomOutWorkbench => self.view.zoom_out_workbench(),
+            Command::ResetWorkbenchZoom => self.view.reset_workbench_zoom(),
             Command::EditAnimation(ref name) => self.edit_animation(name)?,
             Command::RenameAnimation(ref old_name, ref new_name) => {
                 self.rename_animation(old_name, new_name)?
             }
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
+            Command::Tick(dt) => self.tick(dt),
             Command::Play => self.play()?,
             Command::Pause => self.pause(),
             Command::ScrubTimeline(t) => self.scrub_timeline(t)?,
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
-            Command::Tick(dt) => self.tick(dt),
+            Command::ResetTimelineZoom => self.view.reset_timeline_zoom(),
         }
         if !Transient::is_transient_command(&command) {
             self.transient = None;
