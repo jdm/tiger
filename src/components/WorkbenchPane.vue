@@ -21,8 +21,9 @@
 				class="flex-1 graph-paper h-full" :class="isDragging ? 'cursor-move' : 'cursor-default'"
 				:style="graphPaperStyle">
 			</div>
-			<img v-if="app.currentKeyframe" ref="frame" :src="convertFileSrc(app.currentKeyframe.frame)"
-				class="absolute pixelated" :style="frameStyle" />
+			<img v-if="app.currentKeyframe" ref="frame" :key="app.currentKeyframe.frame"
+				:src="convertFileSrc(app.currentKeyframe.frame)" class="absolute pixelated" :style="frameStyle"
+				@load="onFrameLoaded" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
@@ -47,6 +48,7 @@ const isDragging = ref(false);
 const drawingArea: Ref<HTMLElement | null> = ref(null);
 const frame: Ref<HTMLImageElement | null> = ref(null);
 const drawingAreaSize = ref([0, 0]);
+const frameSize = ref([0, 0]);
 
 const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
@@ -69,6 +71,12 @@ onUnmounted(() => {
 	resizeObserver.disconnect();
 });
 
+function onFrameLoaded() {
+	if (frame.value) {
+		frameSize.value = [frame.value?.naturalWidth || 0, frame.value?.naturalHeight || 0];
+	}
+}
+
 const graphPaperStyle = computed(() => {
 	const workbenchOffset = app.currentDocument?.workbenchOffset || [0, 0];
 	const left = Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0];
@@ -82,8 +90,7 @@ const frameStyle = computed(() => {
 	const zoom = app.currentDocument?.workbenchZoom || 1;
 	const workbenchOffset = app.currentDocument?.workbenchOffset || [0, 0];
 	const keyframeOffset = app.currentKeyframe?.offset || [0, 0];
-	const frameSize = [frame.value?.naturalWidth || 0, frame.value?.naturalHeight || 0];
-	const drawSize = [frameSize[0] * zoom, frameSize[1] * zoom];
+	const drawSize = [frameSize.value[0] * zoom, frameSize.value[1] * zoom];
 	const left = Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0] - Math.floor(drawSize[0] / zoom / 2) * zoom + (zoom * keyframeOffset[0]);
 	const top = Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1] - Math.floor(drawSize[1] / zoom / 2) * zoom + (zoom * keyframeOffset[1]);
 
