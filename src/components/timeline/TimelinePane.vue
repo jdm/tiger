@@ -78,10 +78,10 @@ watch([() => app.currentDocument?.timelineIsPlaying, scrubbing], ([isPlaying, is
 	if (isPlaying || isScrubbing) {
 		transitionProperty.value = "none";
 	} else {
-		// Delay so the transition doesn't kick in as the animation ends and the playhead
-		// still has to reach its final location.
+		// Delay so the transition doesn't kick in as playback is ending
+		// and the playhead still has to reach its final location.
 		setTimeout(() => {
-			if (!app.currentDocument?.timelineIsPlaying && !isScrubbing) {
+			if (!app.currentDocument?.timelineIsPlaying && !scrubbing.value) {
 				transitionProperty.value = "left";
 			}
 		}, 300);
