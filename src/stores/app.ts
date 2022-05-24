@@ -7,6 +7,7 @@ export const useAppStore = defineStore("app", {
     ({
       documents: [],
       currentDocumentPath: null,
+      isReleaseBuild: false,
     } as AppState),
   actions: {
     patch(patch: Patch) {

@@ -13,6 +13,7 @@ use crate::state;
 pub struct App {
     documents: Vec<Document>,
     current_document_path: Option<String>,
+    is_release_build: bool,
 }
 
 #[derive(Serialize)]
@@ -109,6 +110,7 @@ impl From<&state::App> for App {
             current_document_path: app
                 .current_document()
                 .map(|d| d.path().to_string_lossy().into_owned()),
+            is_release_build: !cfg!(debug_assertions),
         }
     }
 }

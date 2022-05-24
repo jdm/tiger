@@ -5,6 +5,7 @@ export type Patch = ReadonlyArray<Operation>;
 export type AppState = {
   documents: Document[];
   currentDocumentPath: string | null;
+  isReleaseBuild: boolean;
 };
 
 export type Document = {
