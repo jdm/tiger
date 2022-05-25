@@ -1,10 +1,7 @@
 <template>
 	<WindowTitleBar>
 		<template #left>
-			<div class="px-5 flex flex-row space-x-6 text-plastic-300">
-				<button @click="newDocument" class="place-self-start">New Document</button>
-				<button @click="openDocuments" class="place-self-start">Open Document</button>
-			</div>
+			<MenuBar :entries="menuEntries" class="h-full px-5" />
 		</template>
 		<template #right>
 			<div>
@@ -18,8 +15,8 @@
 </template>
 
 <script setup lang="ts">
+import MenuBar from '@/components/basic/MenuBar.vue';
 import WindowTitleBar from '@/components/basic/WindowTitleBar.vue';
-import { newDocument, openDocuments } from '@/api/local'
 import { useAppStore } from '@/stores/app'
 
 const props = defineProps<{ debugMode: boolean, }>();
@@ -30,5 +27,41 @@ const app = useAppStore();
 function onToggleDevTools() {
 	emit("update:debugMode", !props.debugMode);
 }
+
+const menuEntries = [
+	{
+		name: "File", content: [
+			{ name: "New Spritesheet…" },
+			{ name: "Open Spritesheet…" },
+			{},
+			{ name: "Save" },
+			{ name: "Save As…" },
+			{ name: "Save All" },
+			{ name: "Export" },
+			{ name: "Export As…" },
+			{},
+			{ name: "Close" },
+			{ name: "Close All" },
+		]
+	},
+	{
+		name: "Edit", content: [
+			{ name: "Undo" },
+			{ name: "Redo" },
+		]
+	},
+	{
+		name: "View", content: [
+			{ name: "Center Workbench" },
+			{ name: "Zoom In (Workbench)" },
+			{ name: "Zoom Out (Workbench)" },
+			{ name: "Reset Zoom (Workbench)" },
+			{},
+			{ name: "Zoom In (Timeline)" },
+			{ name: "Zoom Out (Timeline)" },
+			{ name: "Reset Zoom (Timeline)" },
+		]
+	}
+];
 
 </script>
