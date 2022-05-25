@@ -26,7 +26,6 @@
         "minimize": true,
         "maximize": true,
         "unmaximize": true,
-        "unminimize": true,
         "close": true,
         "startDragging": true
       }
