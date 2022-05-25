@@ -21,6 +21,14 @@
         "assetScope": {
           "allow": ["**"]
         }
+      },
+      "window": {
+        "minimize": true,
+        "maximize": true,
+        "unmaximize": true,
+        "unminimize": true,
+        "close": true,
+        "startDragging": true
       }
     },
     "bundle": {
@@ -71,7 +79,8 @@
         "height": 800,
         "resizable": true,
         "minWidth": 800,
-        "minHeight": 800
+        "minHeight": 800,
+        "decorations": false
       }
     ]
   }
