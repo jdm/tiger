@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { redo, undo } from '@/api/document';
 import { newDocument, openDocuments } from '@/api/local';
 import MenuBar from '@/components/basic/MenuBar.vue';
 import WindowTitleBar from '@/components/basic/WindowTitleBar.vue';
@@ -50,8 +51,8 @@ const menuEntries = [
 	},
 	{
 		name: "Edit", content: [
-			{ name: "Undo", shortcut: "Ctrl+Z" },
-			{ name: "Redo", shortcut: "Ctrl+Shift+Z" },
+			{ name: "Undo", shortcut: "Ctrl+Z", action: undo },
+			{ name: "Redo", shortcut: "Ctrl+Shift+Z", action: redo },
 		]
 	},
 	{

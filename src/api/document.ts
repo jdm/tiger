@@ -2,6 +2,16 @@ import { ContentTab } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
+export async function undo(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("undo"));
+}
+
+export async function redo(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("redo"));
+}
+
 export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("focus_content_tab", { contentTab: contentTab }));

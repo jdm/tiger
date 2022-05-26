@@ -120,6 +120,24 @@ pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Res
 }
 
 #[tauri::command]
+pub fn undo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::Undo).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn redo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::Redo).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn focus_content_tab(
     app_state: tauri::State<'_, AppState>,
     content_tab: dto::ContentTab,

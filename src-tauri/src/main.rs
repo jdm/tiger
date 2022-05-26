@@ -23,6 +23,8 @@ fn main() {
             api::save_current_document,
             api::focus_content_tab,
             // Document
+            api::undo,
+            api::redo,
             api::clear_selection,
             api::select_frame,
             api::select_animation,
