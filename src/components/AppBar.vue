@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { redo, undo } from '@/api/document';
+import { redo, resetTimelineZoom, resetWorkbenchZoom, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from '@/api/document';
 import { newDocument, openDocuments } from '@/api/local';
 import MenuBar from '@/components/basic/MenuBar.vue';
 import WindowTitleBar from '@/components/basic/WindowTitleBar.vue';
@@ -58,13 +58,13 @@ const menuEntries = [
 	{
 		name: "View", content: [
 			{ name: "Center Workbench", shortcut: "Ctrl+Space" },
-			{ name: "Zoom In (Workbench)", shortcut: "Ctrl++" },
-			{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-" },
-			{ name: "Reset Zoom (Workbench)", shortcut: "Ctrl+0" },
+			{ name: "Zoom In (Workbench)", shortcut: "Ctrl++", action: zoomInWorkbench },
+			{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-", action: zoomOutWorkbench },
+			{ name: "Reset Zoom (Workbench)", shortcut: "Ctrl+0", action: resetWorkbenchZoom },
 			{},
-			{ name: "Zoom In (Timeline)", shortcut: "Ctrl+Alt++" },
-			{ name: "Zoom Out (Timeline)", shortcut: "Ctrl+Alt+-" },
-			{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0" },
+			{ name: "Zoom In (Timeline)", shortcut: "Ctrl+Alt++", action: zoomInTimeline },
+			{ name: "Zoom Out (Timeline)", shortcut: "Ctrl+Alt+-", action: zoomOutTimeline },
+			{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0", action: resetTimelineZoom },
 		]
 	}
 ];
