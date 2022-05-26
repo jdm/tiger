@@ -57,6 +57,11 @@ export async function pan(delta: [number, number]): Promise<void> {
   appStore.patch(await invoke("pan", { delta: delta }));
 }
 
+export async function centerWorkbench(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("center_workbench"));
+}
+
 export async function zoomInWorkbench(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("zoom_in_workbench"));

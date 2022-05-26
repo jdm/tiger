@@ -29,6 +29,7 @@ fn main() {
             api::select_frame,
             api::select_animation,
             api::pan,
+            api::center_workbench,
             api::zoom_in_workbench,
             api::zoom_out_workbench,
             api::reset_workbench_zoom,

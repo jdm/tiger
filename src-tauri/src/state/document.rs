@@ -62,6 +62,7 @@ pub enum Command {
     ClearSelection,
     AlterSelection(SingleSelection, bool, bool),
     Pan(Vector2D<f32>),
+    CenterWorkbench,
     ZoomInWorkbench,
     ZoomOutWorkbench,
     ResetWorkbenchZoom,
@@ -415,6 +416,7 @@ impl Document {
                 self.alter_selection(selection, shift, ctrl)
             }
             Command::Pan(delta) => self.view.pan(delta),
+            Command::CenterWorkbench => self.view.center_workbench(),
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
             Command::ZoomOutWorkbench => self.view.zoom_out_workbench(),
             Command::ResetWorkbenchZoom => self.view.reset_workbench_zoom(),

@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { redo, resetTimelineZoom, resetWorkbenchZoom, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from '@/api/document';
+import { centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from '@/api/document';
 import { newDocument, openDocuments } from '@/api/local';
 import MenuBar from '@/components/basic/MenuBar.vue';
 import WindowTitleBar from '@/components/basic/WindowTitleBar.vue';
@@ -57,7 +57,7 @@ const menuEntries = [
 	},
 	{
 		name: "View", content: [
-			{ name: "Center Workbench", shortcut: "Ctrl+Space" },
+			{ name: "Center Workbench", shortcut: "Ctrl+Space", action: centerWorkbench },
 			{ name: "Zoom In (Workbench)", shortcut: "Ctrl++", action: zoomInWorkbench },
 			{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-", action: zoomOutWorkbench },
 			{ name: "Reset Zoom (Workbench)", shortcut: "Ctrl+0", action: resetWorkbenchZoom },

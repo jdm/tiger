@@ -212,6 +212,15 @@ pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<P
 }
 
 #[tauri::command]
+pub fn center_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::CenterWorkbench).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn zoom_in_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

@@ -117,7 +117,7 @@ impl View {
     }
 
     pub fn center_workbench(&mut self) {
-        self.workbench_offset = Default::default();
+        self.workbench_offset = Vector2D::zero();
     }
 
     pub fn zoom_in_timeline(&mut self) {
