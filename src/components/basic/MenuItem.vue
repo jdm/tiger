@@ -1,5 +1,5 @@
 <template>
-	<div class="px-8 pr-16 py-1.5 whitespace-nowrap hover:text-blue-500 hover:bg-plastic-800">
+	<div class="px-8 pr-16 py-1.5 whitespace-nowrap hover:text-blue-100 hover:bg-blue-600">
 		{{ entry.name }}
 	</div>
 </template>

@@ -1,13 +1,22 @@
 <template>
-	<div class="flex flex-row items-center text-plastic-300 hover:text-plastic-200 hover:bg-plastic-500">
+	<div class="flex flex-row items-center hover:text-plastic-200 hover:bg-plastic-500" :class="dynamicClasses">
 		<div>{{ entry.name }}</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { MenuBarEntry } from '@/components/basic/MenuBar.vue';
+import { computed } from 'vue';
 
-defineProps<{
-	entry: MenuBarEntry
+const props = defineProps<{
+	entry: MenuBarEntry,
+	active: boolean,
 }>();
+
+
+const dynamicClasses = computed(() => {
+	return {
+		...(props.active ? { 'text-plastic-200': true, 'bg-plastic-500': true } : { 'text-plastic-300': true }),
+	}
+});
 </script>
