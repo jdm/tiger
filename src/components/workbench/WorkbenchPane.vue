@@ -21,12 +21,14 @@
 				class="flex-1 graph-paper h-full" :class="panning ? 'cursor-move' : 'cursor-default'"
 				:style="graphPaperStyle">
 			</div>
-			<img v-if="app.currentKeyframe" ref="frame" :key="app.currentKeyframe.frame"
-				:src="convertFileSrc(app.currentKeyframe.frame)" class="absolute pixelated transition"
-				:style="frameStyle" @load="onFrameLoaded" />
-			<Origin class="absolute" :style="originStyle" />
-			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
-				{{ app.currentAnimation?.name }}
+			<div class="pointer-events-none">
+				<img v-if="app.currentKeyframe" ref="frame" :key="app.currentKeyframe.frame"
+					:src="convertFileSrc(app.currentKeyframe.frame)" class="absolute pixelated transition"
+					:style="frameStyle" @load="onFrameLoaded" />
+				<Origin class="absolute" :style="originStyle" />
+				<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
+					{{ app.currentAnimation?.name }}
+				</div>
 			</div>
 		</div>
 	</Pane>
