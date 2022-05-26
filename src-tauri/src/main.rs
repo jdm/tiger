@@ -20,11 +20,11 @@ fn main() {
             api::open_documents,
             api::focus_document,
             api::close_document,
-            api::save_current_document,
-            api::focus_content_tab,
             // Document
+            api::save,
             api::undo,
             api::redo,
+            api::focus_content_tab,
             api::clear_selection,
             api::select_frame,
             api::select_animation,

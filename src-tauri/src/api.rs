@@ -92,7 +92,7 @@ pub fn close_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> R
 }
 
 #[tauri::command]
-pub async fn save_current_document(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub async fn save(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     let (sheet, destination, version) = {
         let app = app_state.0.lock().unwrap();
         match app.current_document() {

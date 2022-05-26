@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from '@/api/document';
+import { centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from '@/api/document';
 import { newDocument, openDocuments } from '@/api/local';
 import MenuBar from '@/components/basic/MenuBar.vue';
 import WindowTitleBar from '@/components/basic/WindowTitleBar.vue';
@@ -39,7 +39,7 @@ const menuEntries = [
 			{ name: "New Spritesheet…", shortcut: "Ctrl+N", action: newDocument },
 			{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
 			{},
-			{ name: "Save", shortcut: "Ctrl+S" },
+			{ name: "Save", shortcut: "Ctrl+S", action: save },
 			{ name: "Save As…", shortcut: "Ctrl+Shift+S" },
 			{ name: "Save All", shortcut: "Ctrl+Alt+S" },
 			{ name: "Export", shortcut: "Ctrl+E" },
