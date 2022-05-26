@@ -21,6 +21,10 @@ impl Persistent {
         self.timeline_is_playing = playing;
     }
 
+    pub fn disk_version(&self) -> i32 {
+        self.disk_version
+    }
+
     pub fn set_disk_version(&mut self, version: i32) {
         self.disk_version = version;
     }

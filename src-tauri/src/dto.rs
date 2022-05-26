@@ -21,6 +21,7 @@ pub struct App {
 pub struct Document {
     path: PathBuf,
     name: String,
+    has_unsaved_changes: bool,
     sheet: Sheet,
     content_tab: ContentTab,
     workbench_offset: (i32, i32),
@@ -127,6 +128,7 @@ impl From<&state::Document> for Document {
         Self {
             path: document.path().to_owned(),
             name: document.path().to_file_name(),
+            has_unsaved_changes: !document.is_saved(),
             sheet,
             content_tab: document.view().content_tab().into(),
             workbench_offset: document.view().workbench_offset().to_i32().to_tuple(),

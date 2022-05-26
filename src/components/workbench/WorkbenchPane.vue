@@ -3,7 +3,7 @@
 		<PaneTabList>
 			<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
 				@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
-				{{ document.name }}
+				{{ document.name + (document.hasUnsavedChanges ? "*" : "") }}
 			</PaneTab>
 		</PaneTabList>
 		<div class="w-full p-2 flex flex-row items-center space-x-2">

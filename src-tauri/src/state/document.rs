@@ -116,6 +116,10 @@ impl Document {
         Ok(document)
     }
 
+    pub fn is_saved(&self) -> bool {
+        self.persistent.disk_version() == self.version()
+    }
+
     pub fn mark_as_saved(&mut self, saved_version: i32) {
         self.persistent.set_disk_version(saved_version);
     }
