@@ -31,35 +31,35 @@ function onToggleDevTools() {
 const menuEntries = [
 	{
 		name: "File", content: [
-			{ name: "New Spritesheet…" },
-			{ name: "Open Spritesheet…" },
+			{ name: "New Spritesheet…", shortcut: "Ctrl+N" },
+			{ name: "Open Spritesheet…", shortcut: "Ctrl+O" },
 			{},
-			{ name: "Save" },
-			{ name: "Save As…" },
-			{ name: "Save All" },
-			{ name: "Export" },
-			{ name: "Export As…" },
+			{ name: "Save", shortcut: "Ctrl+S" },
+			{ name: "Save As…", shortcut: "Ctrl+Shift+S" },
+			{ name: "Save All", shortcut: "Ctrl+Alt+S" },
+			{ name: "Export", shortcut: "Ctrl+E" },
+			{ name: "Export As…", shortcut: "Ctrl+Shift+E" },
 			{},
-			{ name: "Close" },
-			{ name: "Close All" },
+			{ name: "Close", shortcut: "Ctrl+W" },
+			{ name: "Close All", shortcut: "Ctrl+Shift+W" },
 		]
 	},
 	{
 		name: "Edit", content: [
-			{ name: "Undo" },
-			{ name: "Redo" },
+			{ name: "Undo", shortcut: "Ctrl+Z" },
+			{ name: "Redo", shortcut: "Ctrl+Shift+Z" },
 		]
 	},
 	{
 		name: "View", content: [
-			{ name: "Center Workbench" },
-			{ name: "Zoom In (Workbench)" },
-			{ name: "Zoom Out (Workbench)" },
-			{ name: "Reset Zoom (Workbench)" },
+			{ name: "Center Workbench", shortcut: "Ctrl+Space" },
+			{ name: "Zoom In (Workbench)", shortcut: "Ctrl++" },
+			{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-" },
+			{ name: "Reset Zoom (Workbench)", shortcut: "Ctrl+0" },
 			{},
-			{ name: "Zoom In (Timeline)" },
-			{ name: "Zoom Out (Timeline)" },
-			{ name: "Reset Zoom (Timeline)" },
+			{ name: "Zoom In (Timeline)", shortcut: "Ctrl+Alt++" },
+			{ name: "Zoom Out (Timeline)", shortcut: "Ctrl+Alt+-" },
+			{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0" },
 		]
 	}
 ];
