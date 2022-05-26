@@ -18,6 +18,7 @@
 </template>
 
 <script setup lang="ts">
+import { newDocument, openDocuments } from '@/api/local';
 import MenuBar from '@/components/basic/MenuBar.vue';
 import WindowTitleBar from '@/components/basic/WindowTitleBar.vue';
 import { useAppStore } from '@/stores/app'
@@ -34,8 +35,8 @@ function onToggleDevTools() {
 const menuEntries = [
 	{
 		name: "File", content: [
-			{ name: "New Spritesheet…", shortcut: "Ctrl+N" },
-			{ name: "Open Spritesheet…", shortcut: "Ctrl+O" },
+			{ name: "New Spritesheet…", shortcut: "Ctrl+N", action: newDocument },
+			{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
 			{},
 			{ name: "Save", shortcut: "Ctrl+S" },
 			{ name: "Save As…", shortcut: "Ctrl+Shift+S" },

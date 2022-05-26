@@ -4,7 +4,10 @@
 			<MenuBarItem v-for="entry in entries" :entry="entry" :active="entry.name == currentEntry?.name"
 				@click="onItemClicked($event, entry)" @mouseover="onItemHovered($event, entry)" class="px-4" />
 		</div>
-		<Menu v-if="currentEntry" class="absolute z-50" :style="menuPosition" :content="currentEntry.content" />
+		<div ref="menuHTMLElement">
+			<Menu v-if="currentEntry" :content="currentEntry.content" @executed="onExecuted" class="absolute z-50"
+				:style="menuPosition" />
+		</div>
 	</div>
 </template>
 
@@ -33,6 +36,7 @@ defineProps<{
 
 const currentItem: Ref<HTMLElement | null> = ref(null);
 const currentEntry: Ref<MenuBarEntry | null> = ref(null);
+const menuHTMLElement: Ref<HTMLElement | null> = ref(null);
 
 function onItemClicked(event: MouseEvent, entry: MenuBarEntry) {
 	currentItem.value = event.currentTarget as HTMLElement;
@@ -46,7 +50,13 @@ function onItemHovered(event: MouseEvent, entry: MenuBarEntry) {
 	}
 }
 
-function onClickedAnywhere() {
+function onClickedAnywhere(e: MouseEvent) {
+	if (!menuHTMLElement.value?.contains(e.target as HTMLElement)) {
+		currentEntry.value = null;
+	}
+}
+
+function onExecuted() {
 	currentEntry.value = null;
 }
 

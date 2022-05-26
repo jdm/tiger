@@ -1,5 +1,5 @@
 <template>
-	<div @mouseover="onMouseOver" @mouseout="onMouseOut"
+	<div @mouseover="onMouseOver" @mouseout="onMouseOut" @click="onClick"
 		class="flex flex-row justify-between px-8 space-x-20 py-1.5 whitespace-nowrap hover:text-blue-100 hover:bg-blue-600">
 		<div>{{ entry.name }}</div>
 		<div :class="hovered ? 'text-blue-400' : 'text-plastic-400'">{{ entry.shortcut }}</div>
@@ -10,9 +10,11 @@
 import { MenuEntry } from '@/components/basic/MenuBar.vue';
 import { ref } from 'vue';
 
-defineProps<{
+const props = defineProps<{
 	entry: MenuEntry,
 }>();
+
+const emit = defineEmits(["executed"]);
 
 const hovered = ref(false);
 
@@ -22,6 +24,13 @@ function onMouseOver() {
 
 function onMouseOut() {
 	hovered.value = false;
+}
+
+function onClick() {
+	if (props.entry.action) {
+		emit("executed");
+		props.entry.action();
+	}
 }
 
 </script>

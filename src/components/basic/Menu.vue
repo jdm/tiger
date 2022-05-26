@@ -1,6 +1,9 @@
 <template>
 	<div class="py-2 text-plastic-300 bg-plastic-700  shadow-md  shadow-black/30">
-		<component v-for="entry of content" :is="('name' in entry) ? MenuItem : MenuSeparator" :entry="entry" />
+		<div v-for="entry of content">
+			<MenuItem v-if="'name' in entry" :entry="entry" @executed="onExecuted" />
+			<MenuSeparator v-else />
+		</div>
 	</div>
 </template>
 
@@ -12,4 +15,10 @@ import MenuSeparator from '@/components/basic/MenuSeparator.vue';
 defineProps<{
 	content: (MenuEntry | Separator)[],
 }>();
+
+const emit = defineEmits(["executed"]);
+
+function onExecuted() {
+	emit("executed");
+}
 </script>
