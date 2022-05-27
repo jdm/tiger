@@ -5,9 +5,8 @@
 				modified. Would you like to save changes before closing the spritesheet?</p>
 		</template>
 		<template #actions>
-			<!-- TODO Button colors (and button style in general) -->
-			<Button label="Yes" @click="save" />
-			<Button label="No" @click="closeWithoutSaving" />
+			<Button label="Yes" @click="save" :positive="true" />
+			<Button label="No" @click="closeWithoutSaving" :danger="true" />
 			<Button label="Cancel" @click="cancelExit" />
 		</template>
 	</ModalDialog>
