@@ -23,7 +23,9 @@ fn main() {
             api::focus_document,
             api::close_document,
             api::request_exit,
+            api::cancel_exit,
             // Document
+            api::close_without_saving,
             api::save,
             api::undo,
             api::redo,

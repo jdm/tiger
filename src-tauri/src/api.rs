@@ -114,6 +114,30 @@ pub fn request_exit(
 }
 
 #[tauri::command]
+pub fn cancel_exit(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        app.cancel_exit();
+    }))
+}
+
+#[tauri::command]
+pub fn close_without_saving(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        let path = app.current_document().map(|d| d.path().to_owned());
+        if let Some(path) = path {
+            app.close_document(path);
+            app.advance_exit();
+            if app.should_exit() {
+                window.close().ok();
+            }
+        }
+    }))
+}
+
+#[tauri::command]
 pub async fn save(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,

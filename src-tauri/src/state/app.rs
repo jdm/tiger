@@ -111,6 +111,13 @@ impl App {
         self.advance_exit();
     }
 
+    pub fn cancel_exit(&mut self) {
+        self.exit_requested = false;
+        for document in &mut self.documents {
+            document.cancel_close();
+        }
+    }
+
     pub fn advance_exit(&mut self) {
         let closable_documents: Vec<PathBuf> = self
             .documents

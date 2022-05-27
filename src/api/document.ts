@@ -2,6 +2,11 @@ import { ContentTab } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
+export async function closeWithoutSaving(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("close_without_saving"));
+}
+
 export async function save(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("save"));

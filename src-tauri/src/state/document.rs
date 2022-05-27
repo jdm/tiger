@@ -140,6 +140,10 @@ impl Document {
         self.persistent.set_close_requested(true);
     }
 
+    pub fn cancel_close(&mut self) {
+        self.persistent.set_close_requested(false);
+    }
+
     pub fn should_close(&self) -> bool {
         self.persistent.close_requested() && self.is_saved()
     }

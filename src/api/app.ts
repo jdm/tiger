@@ -30,3 +30,8 @@ export async function requestExit(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("request_exit"));
 }
+
+export async function cancelExit(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("cancel_exit"));
+}
