@@ -1,18 +1,19 @@
 #[derive(Clone, Debug, Default)]
 pub struct Persistent {
-    close_state: Option<CloseState>,
+    close_requested: bool,
     timeline_is_playing: bool,
     disk_version: i32,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum CloseState {
-    Requested,
-    Saving,
-    Allowed,
-}
-
 impl Persistent {
+    pub fn close_requested(&self) -> bool {
+        self.close_requested
+    }
+
+    pub fn set_close_requested(&mut self, requested: bool) {
+        self.close_requested = requested;
+    }
+
     pub fn is_timeline_playing(&self) -> bool {
         self.timeline_is_playing
     }

@@ -84,15 +84,40 @@ pub fn focus_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> R
 }
 
 #[tauri::command]
-pub fn close_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
+pub fn close_document(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState>,
+    path: PathBuf,
+) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
-        // TODO save on close flow
-        app.close_document(&path);
+        if let Some(document) = app.document_mut(&path) {
+            document.request_close();
+        }
+        app.advance_exit();
+        if app.should_exit() {
+            window.close().ok();
+        }
     }))
 }
 
 #[tauri::command]
-pub async fn save(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub fn request_exit(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        app.request_exit();
+        if app.should_exit() {
+            window.close().ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub async fn save(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
     let (sheet, destination, version) = {
         let app = app_state.0.lock().unwrap();
         match app.current_document() {
@@ -110,6 +135,10 @@ pub async fn save(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
         Ok(_) => {
             if let Some(document) = app.document_mut(&destination) {
                 document.mark_as_saved(version);
+            }
+            app.advance_exit();
+            if app.should_exit() {
+                window.close().ok();
             }
         }
         Err(e) => app.show_error_message(format!(

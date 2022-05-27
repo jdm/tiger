@@ -25,3 +25,8 @@ export async function closeDocument(path: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("close_document", { path: path }));
 }
+
+export async function requestExit(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("request_exit"));
+}

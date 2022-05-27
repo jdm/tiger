@@ -9,10 +9,12 @@ mod sheet;
 mod state;
 
 use state::AppState;
+use tauri::WindowEvent;
 
 fn main() {
+    let app_state = AppState(Default::default());
     tauri::Builder::default()
-        .manage(AppState(Default::default()))
+        .manage(app_state.clone())
         .invoke_handler(tauri::generate_handler![
             // App
             api::get_state,
@@ -20,6 +22,7 @@ fn main() {
             api::open_documents,
             api::focus_document,
             api::close_document,
+            api::request_exit,
             // Document
             api::save,
             api::undo,
@@ -44,6 +47,16 @@ fn main() {
             api::zoom_out_timeline,
             api::reset_timeline_zoom,
         ])
+        .on_window_event(move |event| match event.event() {
+            WindowEvent::CloseRequested { api, .. } => {
+                let mut app = app_state.0.lock().unwrap();
+                app.request_exit();
+                if !app.should_exit() {
+                    api.prevent_close();
+                }
+            }
+            _ => (),
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

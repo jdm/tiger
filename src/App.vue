@@ -13,11 +13,11 @@
       </div>
     </div>
 
-    <div v-if="false">
+    <div v-if="app.currentDocument?.wasCloseRequested">
       <div class="absolute inset-0 bg-black/70" />
       <div class="absolute inset-0">
         <div class="h-full flex items-center justify-center">
-          <div class="max-w-lg rounded-md bg-plastic-900 border-2 border-plastic-700 shadow-lg shadow-blue-900/25">
+          <div class="max-w-lg rounded-md bg-plastic-900 border-4 border-plastic-700 shadow-lg shadow-blue-900/25">
             <div class="flex p-6 pb-5 space-x-6 bg-plastic-900">
               <div class="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full bg-amber-300">
                 <ExclamationIcon class="h-6 w-6 text-amber-900" />

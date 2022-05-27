@@ -136,6 +136,14 @@ impl Document {
         self.transient = None;
     }
 
+    pub fn request_close(&mut self) {
+        self.persistent.set_close_requested(true);
+    }
+
+    pub fn should_close(&self) -> bool {
+        self.persistent.close_requested() && self.is_saved()
+    }
+
     fn focus_content_tab(&mut self, content_tab: ContentTab) {
         self.view.set_content_tab(content_tab);
     }

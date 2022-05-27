@@ -12,7 +12,7 @@
 					class="h-full p-2 px-6 hover:bg-plastic-600">🚸</button>
 				<button v-if="!isMaximized" @click="appWindow.maximize"
 					class="h-full p-2 px-6 hover:bg-plastic-600">⬜</button>
-				<XIcon @click="appWindow.close" class="h-full p-2 px-6 hover:bg-red-700 hover:text-plastic-100" />
+				<XIcon @click="requestExit" class="h-full p-2 px-6 hover:bg-red-700 hover:text-plastic-100" />
 			</div>
 		</div>
 	</div>
@@ -22,6 +22,7 @@
 import { appWindow } from '@tauri-apps/api/window';
 import { XIcon } from '@heroicons/vue/solid'
 import { onMounted, ref } from 'vue';
+import { requestExit } from '@/api/app';
 
 const isMaximized = ref(false);
 

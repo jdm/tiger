@@ -1,6 +1,6 @@
 use std::{
     path::{Path, PathBuf},
-    sync::Mutex,
+    sync::{Arc, Mutex},
 };
 use thiserror::Error;
 
@@ -14,12 +14,14 @@ pub enum AppError {
     DocumentError(#[from] DocumentError),
 }
 
-pub struct AppState(pub Mutex<App>);
+#[derive(Clone)]
+pub struct AppState(pub Arc<Mutex<App>>);
 #[derive(Debug, Default)]
 pub struct App {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
     errors: Vec<String>,
+    exit_requested: bool,
 }
 
 impl App {
@@ -99,6 +101,30 @@ impl App {
 
     pub fn show_error_message<T: AsRef<str>>(&mut self, message: T) {
         self.errors.push(message.as_ref().to_owned());
+    }
+
+    pub fn request_exit(&mut self) {
+        self.exit_requested = true;
+        for document in &mut self.documents {
+            document.request_close();
+        }
+        self.advance_exit();
+    }
+
+    pub fn advance_exit(&mut self) {
+        let closable_documents: Vec<PathBuf> = self
+            .documents
+            .iter()
+            .filter(|d| d.should_close())
+            .map(|d| d.path().to_owned())
+            .collect();
+        for path in closable_documents {
+            self.close_document(path);
+        }
+    }
+
+    pub fn should_exit(&self) -> bool {
+        self.exit_requested && self.documents.len() == 0
     }
 
     pub fn acknowledge_error(&mut self) {
