@@ -24,6 +24,6 @@ const palette = computed(() => {
 	} else if (props.positive) {
 		return ["text-green-100", "bg-green-600", "border-t-green-500", "border-b-green-900", "ring-plastic-900"];
 	}
-	return ["text-plastic-200", "bg-plastic-500", "border-t-plastic-400", "border-b-plastic-900", "ring-plastic-900"];
+	return ["text-plastic-200", "bg-plastic-500", "border-t-plastic-400", "border-b-plastic-700", "ring-plastic-900"];
 });
 </script>
