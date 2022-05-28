@@ -7,25 +7,8 @@
 				Animations
 			</PaneTab>
 		</PaneTabList>
-		<div class="flex-1 flex flex-col min-h-0">
-			<div class="w-full p-4 flex flex-row items-center space-x-2">
-				<input type="text" placeholder="Idle"
-					class="w-full h-10 px-4 placeholder-plastic-500 font-bold bg-plastic-800 rounded-md border-y border-plastic-900 border-b-plastic-600" />
-				<Button :positive="true" label="Import" />
-			</div>
-			<Separator />
-			<PaneInset class="flex-1 m-4 min-h-0">
-				<div class="p-4 overflow-y-auto h-full styled-scrollbars">
-					<div v-if="currentTab == ContentTab.Frames" class="grid grid-cols-4 gap-4">
-						<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame" :key="frame.name" />
-					</div>
-					<div v-if="currentTab == ContentTab.Animations" class="text-plastic-200 flex flex-col">
-						<Animation v-for="animation in app.sortedAnimations" :animation="animation" ref="animationRefs"
-							:key="animation.name" />
-					</div>
-				</div>
-			</PaneInset>
-		</div>
+		<Frames v-if="currentTab == ContentTab.Frames" />
+		<Animations v-if="currentTab == ContentTab.Animations" />
 	</Pane>
 </template>
 
@@ -35,19 +18,16 @@ import { watch } from 'vue';
 import { computed, Ref, ref } from '@vue/reactivity';
 import { focusContentTab } from '@/api/document'
 import { ContentTab } from '@/api/dto'
-import Animation from '@/components/Animation.vue'
-import Frame from '@/components/Frame.vue'
-import Button from '@/components/basic/Button.vue'
 import Pane from '@/components/basic/Pane.vue'
-import PaneInset from '@/components/basic/PaneInset.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
 import PaneTabList from '@/components/basic/PaneTabList.vue'
-import Separator from '@/components/basic/Separator.vue'
+import Animations from '@/components/content/Animations.vue'
+import Frames from '@/components/content/Frames.vue'
 import { nextTick } from 'vue';
 
 // TODO Consider saving and restoring scroll positions between content tab or document changes
 
-const app = useAppStore()
+const app = useAppStore();
 
 const animationRefs: Ref<{ name: string, scrollIntoView: () => void }[]> = ref([]);
 
