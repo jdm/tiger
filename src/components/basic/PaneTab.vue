@@ -1,6 +1,6 @@
 <template>
 	<div @click="$emit('select')" @mouseover="onMouseOver" @mouseout="onMouseOut" @auxclick="onMiddleClick"
-		class="flex-initial px-4 py-3 font-medium text-sm" :class="classes">
+		class="flex-initial px-4 py-3 font-medium text-sm cursor-pointer" :class="classes">
 		<slot></slot>
 		<XIcon v-if="closeable" @click="$emit('close')" :class="(selected || hovered) ? 'visible' : 'invisible'"
 			class="inline w-7 p-1.5 ml-2 rounded-lg hover:bg-plastic-900 hover:visible" />
