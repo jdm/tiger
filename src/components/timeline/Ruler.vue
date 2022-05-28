@@ -1,24 +1,24 @@
 <template>
 	<div class="h-6 px-1 bg-plastic-600">
-		<div ref="el" class="h-full ruler transition-[background-size]" :style="rulerStyle" @mousedown="beginScrub" />
+		<DragArea button="left" inactive-cursor="cursor-pointer" active-cursor="cursor-pointer"
+			class="h-full ruler transition-[background-size]" :style="rulerStyle" @drag-start="startScrub"
+			@drag-end="endScrub" @drag-update="updateScrub" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
-import { computed, Ref, ref } from '@vue/reactivity';
+import { computed } from '@vue/reactivity';
 import { scrubTimeline } from '@/api/document'
-import { onMounted, onUnmounted } from 'vue';
+import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
 
-const props = defineProps<{
+defineProps<{
 	scrubbing: boolean,
 }>();
 
 const emit = defineEmits(['update:scrubbing']);
 
 const app = useAppStore();
-
-const el: Ref<HTMLElement | null> = ref(null);
 
 const rulerStyle = computed(() => {
 	const zoom = app.currentDocument?.timelineZoom || 1;
@@ -30,41 +30,20 @@ const rulerStyle = computed(() => {
 	};
 });
 
-onMounted(() => {
-	endScrub();
-	window.addEventListener("mouseup", endScrub)
-})
-
-onUnmounted(() => {
-	window.removeEventListener("mouseup", endScrub)
-})
-
-function beginScrub(e: MouseEvent) {
+function startScrub(e: DragAreaEvent) {
 	emit("update:scrubbing", true);
-	window.addEventListener("mousemove", onMouseMove);
 	updateScrub(e);
 }
 
-function onMouseMove(e: MouseEvent) {
-	if (!props.scrubbing) {
-		return;
-	}
-	updateScrub(e);
-}
-
-function updateScrub(e: MouseEvent) {
-	if (!el.value) {
-		return;
-	}
-	const rulerStartX = el.value.getBoundingClientRect().left;
-	const zoom = app.currentDocument?.timelineZoom || 1;
-	const newTime = Math.max(0, Math.round((e.clientX - rulerStartX) / zoom));
-	scrubTimeline(newTime);
-}
-
-function endScrub() {
+function endScrub(e: DragAreaEvent) {
 	emit("update:scrubbing", false);
-	window.removeEventListener("mousemove", onMouseMove);
+}
+
+function updateScrub(event: DragAreaEvent) {
+	const rulerStartX = event.htmlElement.getBoundingClientRect().left;
+	const zoom = app.currentDocument?.timelineZoom || 1;
+	const newTime = Math.max(0, Math.round((event.mouseEvent.clientX - rulerStartX) / zoom));
+	scrubTimeline(newTime);
 }
 </script>
 

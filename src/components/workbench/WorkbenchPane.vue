@@ -17,9 +17,8 @@
 			</button>
 		</div>
 		<div class="relative flex-1 overflow-hidden" ref="drawingArea">
-			<div @click="onClick" @mousedown="onMouseDown" class="flex-1 graph-paper h-full"
-				:class="panning ? 'cursor-move' : 'cursor-default'" :style="graphPaperStyle">
-			</div>
+			<DragArea button="right" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
+				class="flex-1 graph-paper h-full" :style="graphPaperStyle" />
 			<div class="pointer-events-none">
 				<img v-for="keyframe, index in app.currentSequence?.keyframes" :key="index + '_' + keyframe.frame"
 					ref="frameRefs" :src="convertFileSrc(keyframe.frame)"
@@ -38,20 +37,20 @@
 
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/tauri'
+import { onUnmounted, watch } from 'vue';
 import { computed, Ref, ref } from '@vue/reactivity';
 import { closeDocument, focusDocument } from '@/api/app'
 import { Keyframe } from '@/api/dto'
 import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from '@/api/document'
 import { useAppStore } from '@/stores/app'
+import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue'
 import Pane from '@/components/basic/Pane.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
 import PaneTabList from '@/components/basic/PaneTabList.vue'
 import Origin from '@/components/workbench/Origin.vue'
 import { ZoomInIcon, ZoomOutIcon } from '@heroicons/vue/solid'
-import { onUnmounted, watch } from 'vue';
 
 const app = useAppStore();
-const panning = ref(false);
 const drawingArea: Ref<HTMLElement | null> = ref(null);
 const drawingAreaSize = ref([0, 0]);
 const frameRefs: Ref<HTMLImageElement[]> = ref([]);
@@ -131,26 +130,8 @@ function onClick() {
 	clearSelection();
 }
 
-function onMouseDown(event: MouseEvent) {
-	if (event.button == 2) {
-		panning.value = true;
-		window.addEventListener("mouseup", onMouseUp);
-		window.addEventListener("mousemove", onMouseMove);
-	}
-}
-
-function onMouseUp(event: MouseEvent) {
-	if (event.button == 2) {
-		panning.value = false;
-		window.removeEventListener("mouseup", onMouseUp);
-		window.removeEventListener("mousemove", onMouseMove);
-	}
-}
-
-function onMouseMove(event: MouseEvent) {
-	if (panning.value) {
-		pan([event.movementX, event.movementY]);
-	}
+function updatePanning(event: DragAreaEvent) {
+	pan([event.mouseEvent.movementX, event.mouseEvent.movementY]);
 }
 </script>
 
