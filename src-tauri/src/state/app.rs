@@ -29,6 +29,10 @@ impl App {
         self.documents.iter()
     }
 
+    pub fn documents_iter_mut(&mut self) -> impl Iterator<Item = &mut Document> {
+        self.documents.iter_mut()
+    }
+
     pub fn new_document<T: AsRef<Path>>(&mut self, path: T) -> () {
         match self.document_mut(&path) {
             Some(d) => *d = Document::new(path.as_ref()),

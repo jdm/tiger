@@ -22,6 +22,8 @@ fn main() {
             api::open_documents,
             api::focus_document,
             api::close_document,
+            api::close_current_document,
+            api::close_all_documents,
             api::request_exit,
             api::cancel_exit,
             // Document

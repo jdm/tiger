@@ -101,6 +101,38 @@ pub fn close_document(
 }
 
 #[tauri::command]
+pub fn close_current_document(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.request_close();
+        }
+        app.advance_exit();
+        if app.should_exit() {
+            window.close().ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn close_all_documents(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        for document in app.documents_iter_mut() {
+            document.request_close();
+        }
+        app.advance_exit();
+        if app.should_exit() {
+            window.close().ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn request_exit(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,
