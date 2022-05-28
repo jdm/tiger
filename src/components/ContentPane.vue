@@ -11,10 +11,7 @@
 			<div class="w-full p-4 flex flex-row items-center space-x-2">
 				<input type="text" placeholder="Idle"
 					class="w-full h-10 px-4 placeholder-plastic-500 font-bold bg-plastic-800 rounded-md border-y border-plastic-900 border-b-plastic-600" />
-				<button
-					class="m-2 px-4 py-2 rounded-md uppercase text-xs font-bold bg-green-500 border-y border-t-green-400 border-b-green-600">
-					<div class="inline-block">Import</div>
-				</button>
+				<Button :positive="true" label="Import" />
 			</div>
 			<Separator />
 			<PaneInset class="flex-1 m-4 min-h-0">
@@ -40,6 +37,7 @@ import { focusContentTab } from '@/api/document'
 import { ContentTab } from '@/api/dto'
 import Animation from '@/components/Animation.vue'
 import Frame from '@/components/Frame.vue'
+import Button from '@/components/basic/Button.vue'
 import Pane from '@/components/basic/Pane.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
