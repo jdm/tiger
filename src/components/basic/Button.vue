@@ -1,5 +1,6 @@
 <template>
-	<button type="button" class="w-20 min-w-fit px-4 py-2 rounded-md text-sm upper font-medium "
+	<button type="button"
+		class="w-20 min-w-fit px-4 py-1.5 rounded-md text-sm upper font-medium border-t border-b-2 ring-2"
 		:class="dynamicClasses">{{ label }}</button>
 </template>
 
@@ -12,17 +13,17 @@ const props = defineProps<{
 }>();
 
 const dynamicClasses = computed(() => {
-	return {
+	return [
 		...palette.value,
-	}
+	]
 });
 
 const palette = computed(() => {
 	if (props.danger) {
-		return { "text-white": true, "bg-red-500": true, "border-y": true, "border-t-red-400": true, "border-b-red-700": true };
+		return ["text-red-100", "bg-red-600", "border-t-red-500", "border-b-red-900", "ring-plastic-900"];
 	} else if (props.positive) {
-		return { "text-white": true, "bg-green-500": true, "border-y": true, "border-t-green-400": true, "border-b-green-700": true };
+		return ["text-green-100", "bg-green-600", "border-t-green-500", "border-b-green-900", "ring-plastic-900"];
 	}
-	return { "text-black": true, "bg-gray-300": true, "border-y": true, "border-t-gray-100": true, "border-b-gray-400": true };
+	return ["text-plastic-200", "bg-plastic-500", "border-t-plastic-400", "border-b-plastic-900", "ring-plastic-900"];
 });
 </script>
