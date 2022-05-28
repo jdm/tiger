@@ -57,6 +57,11 @@ fn main() {
                 app.request_exit();
                 if !app.should_exit() {
                     api.prevent_close();
+                    let new_state: dto::App = (&*app).into();
+                    event
+                        .window()
+                        .emit("force-refresh-state", new_state)
+                        .unwrap();
                 }
             }
             _ => (),

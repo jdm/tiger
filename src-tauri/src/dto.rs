@@ -8,7 +8,7 @@ use crate::state;
 
 // Typescript: @/stores/app
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct App {
     documents: Vec<Document>,
@@ -16,7 +16,7 @@ pub struct App {
     is_release_build: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
     path: PathBuf,
@@ -35,14 +35,14 @@ pub struct Document {
     timeline_zoom: f32,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
     frames: Vec<Frame>,
     animations: HashMap<String, Animation>,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Frame {
     path: PathBuf,
@@ -50,7 +50,7 @@ pub struct Frame {
     selected: bool,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Animation {
     name: String,
@@ -58,7 +58,7 @@ pub struct Animation {
     sequences: HashMap<Direction, Sequence>,
 }
 
-#[derive(Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Eq, PartialEq, Hash, Serialize)]
 pub enum Direction {
     East,
     NorthEast,
@@ -70,14 +70,14 @@ pub enum Direction {
     SouthEast,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sequence {
     keyframes: Vec<Keyframe>,
     duration_millis: Option<u64>,
 }
 
-#[derive(Serialize)]
+#[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Keyframe {
     frame: PathBuf,
@@ -86,7 +86,7 @@ pub struct Keyframe {
     offset: (i32, i32),
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum ContentTab {
     Frames,
     Animations,

@@ -12,24 +12,30 @@
         </div>
       </div>
     </div>
-
     <ModalLayer class="absolute inset-0" />
-
   </div>
 </template>
 
 <script setup lang="ts">
+import { appWindow } from '@tauri-apps/api/window';
+import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { tick } from '@/api/document';
 import AppBar from '@/components/AppBar.vue'
 import ContentPane from '@/components/ContentPane.vue'
 import TimelinePane from '@/components/timeline/TimelinePane.vue'
 import WorkbenchPane from '@/components/workbench/WorkbenchPane.vue';
 import { useAppStore } from '@/stores/app'
-import { ref, watch } from 'vue';
-import { tick } from '@/api/document';
 import ModalLayer from '@/components/ModalLayer.vue';
+import { AppState } from '@/api/dto';
 
 const app = useAppStore();
 const allowContextMenu = ref(false);
+
+onMounted(() => {
+  appWindow.listen("force-refresh-state", event => {
+    app.$state = event.payload as AppState;
+  });
+});
 
 let previousTimestamp: number | null = null;
 async function runTick(timestamp: number) {
