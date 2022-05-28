@@ -32,10 +32,10 @@ const props = defineProps<{
 
 const hovered = ref(false);
 
-const interactiveIconClasses = computed(() => ({
-	...(props.selected ? { 'text-blue-200': true, 'hover:bg-blue-900': true } : { 'text-plastic-300': true, 'hover:bg-plastic-900': true }),
-	...(hovered.value ? { 'visible': true } : { 'invisible': true })
-}));
+const interactiveIconClasses = computed(() => ([
+	...(props.selected ? ['text-blue-200', 'hover:bg-blue-900'] : ['text-plastic-300', 'hover:bg-plastic-900']),
+	...(hovered.value ? ['visible'] : ['invisible'])
+]));
 
 function onMouseOver() {
 	hovered.value = true;

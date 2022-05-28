@@ -18,10 +18,10 @@ const props = defineProps<{
 
 const emit = defineEmits(['select', 'close']);
 
-const classes = computed(() => ({
-	...(props.selected ? { 'bg-plastic-700': true, 'text-plastic-200': true } : { 'bg-plastic-800': true, 'text-plastic-400': true, 'hover:text-plastic-300': true }),
-	...(props.closeable) ? { 'pr-2': true, 'pt-2': true, 'h-11': true } : {},
-}));
+const classes = computed(() => ([
+	...(props.selected ? ['bg-plastic-700', 'text-plastic-200'] : ['bg-plastic-800', 'text-plastic-400', 'hover:text-plastic-300']),
+	...(props.closeable) ? ['pr-2', 'pt-2', 'h-11'] : [],
+]));
 
 let hovered = ref(false);
 

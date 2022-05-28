@@ -15,8 +15,7 @@ const props = defineProps<{
 
 
 const dynamicClasses = computed(() => {
-	return {
-		...(props.active ? { 'text-plastic-200': true, 'bg-plastic-500': true } : { 'text-plastic-300': true }),
-	}
+	return props.active ? ['text-plastic-200', 'bg-plastic-500'] : ['text-plastic-300'];
+
 });
 </script>
