@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { appWindow } from '@tauri-apps/api/window';
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { onMounted, ref, watch } from 'vue';
 import { tick } from '@/api/document';
 import AppBar from '@/components/AppBar.vue'
 import ContentPane from '@/components/ContentPane.vue'
