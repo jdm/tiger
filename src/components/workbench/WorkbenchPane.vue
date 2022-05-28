@@ -17,9 +17,8 @@
 			</button>
 		</div>
 		<div class="relative flex-1 overflow-hidden" ref="drawingArea">
-			<div @click="onClick" @mousedown="onMouseDown" @mouseup="onMouseUp" @mousemove="onMouseMove"
-				class="flex-1 graph-paper h-full" :class="panning ? 'cursor-move' : 'cursor-default'"
-				:style="graphPaperStyle">
+			<div @click="onClick" @mousedown="onMouseDown" class="flex-1 graph-paper h-full"
+				:class="panning ? 'cursor-move' : 'cursor-default'" :style="graphPaperStyle">
 			</div>
 			<div class="pointer-events-none">
 				<img v-for="keyframe, index in app.currentSequence?.keyframes" :key="index + '_' + keyframe.frame"
@@ -135,12 +134,16 @@ function onClick() {
 function onMouseDown(event: MouseEvent) {
 	if (event.button == 2) {
 		panning.value = true;
+		window.addEventListener("mouseup", onMouseUp);
+		window.addEventListener("mousemove", onMouseMove);
 	}
 }
 
 function onMouseUp(event: MouseEvent) {
 	if (event.button == 2) {
 		panning.value = false;
+		window.removeEventListener("mouseup", onMouseUp);
+		window.removeEventListener("mousemove", onMouseMove);
 	}
 }
 
