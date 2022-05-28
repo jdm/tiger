@@ -1,13 +1,15 @@
 <template>
-	<Transition name="fade">
-		<div v-if="activeModalID" class="absolute inset-0 bg-black/70" />
-	</Transition>
-	<Transition name="slide-fade">
-		<div v-if="activeModalID" :key="activeModalID" class="absolute inset-0 flex items-center justify-center">
-			<UnsavedChangesDialog v-if="app.currentDocument?.wasCloseRequested" />
-			<!-- TODO Error dialogs go here -->
-		</div>
-	</Transition>
+	<div>
+		<Transition name="fade">
+			<div v-if="activeModalID" class="absolute inset-0 bg-black/70" />
+		</Transition>
+		<Transition name="slide-fade">
+			<div v-if="activeModalID" :key="activeModalID" class="absolute inset-0 flex items-center justify-center">
+				<UnsavedChangesDialog v-if="app.currentDocument?.wasCloseRequested" />
+				<!-- TODO Error dialogs go here -->
+			</div>
+		</Transition>
+	</div>
 </template>
 
 <script setup lang="ts">
