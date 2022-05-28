@@ -1,5 +1,5 @@
 <template>
-  <div class="relative h-screen w-screen select-none" @contextmenu="onContextMenu">
+  <div class="relative h-screen w-screen overflow-hidden select-none" @contextmenu="onContextMenu">
     <div class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
       <AppBar v-model:debugMode="allowContextMenu" />
       <div class="flex-1 min-h-0 flex flex-col space-y-5">
@@ -13,10 +13,7 @@
       </div>
     </div>
 
-    <ModalOverlay v-if="app.currentDocument?.wasCloseRequested" class="absolute inset-0">
-      <UnsavedChangesDialog v-if="app.currentDocument?.wasCloseRequested" />
-      <!-- TODO Error dialogs go here -->
-    </ModalOverlay>
+    <ModalLayer class="absolute inset-0" />
 
   </div>
 </template>
@@ -29,8 +26,7 @@ import WorkbenchPane from '@/components/workbench/WorkbenchPane.vue';
 import { useAppStore } from '@/stores/app'
 import { ref, watch } from 'vue';
 import { tick } from '@/api/document';
-import ModalOverlay from '@/components/basic/ModalOverlay.vue';
-import UnsavedChangesDialog from './components/UnsavedChangesDialog.vue';
+import ModalLayer from '@/components/ModalLayer.vue';
 
 const app = useAppStore();
 const allowContextMenu = ref(false);
