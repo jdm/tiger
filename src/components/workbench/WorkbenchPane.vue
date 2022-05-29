@@ -7,14 +7,8 @@
 			</PaneTab>
 		</PaneTabList>
 		<div class="w-full p-2 flex flex-row items-center space-x-2">
-			<button @click="zoomInWorkbench"
-				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
-				<ZoomInIcon class="w-6" />
-			</button>
-			<button @click="zoomOutWorkbench"
-				class="py-1 px-2 rounded-md uppercase text-xs text-gray-800 font-bold bg-gray-300 border-y border-t-gray-100 border-b-gray-900">
-				<ZoomOutIcon class="w-6" />
-			</button>
+			<Button @click="zoomInWorkbench" icon="ZoomInIcon" />
+			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
 		</div>
 		<div class="relative flex-1 overflow-hidden" ref="drawingArea">
 			<DragArea button="right" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
@@ -43,6 +37,7 @@ import { closeDocument, focusDocument } from '@/api/app'
 import { Keyframe } from '@/api/dto'
 import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from '@/api/document'
 import { useAppStore } from '@/stores/app'
+import Button from '@/components/basic/Button.vue'
 import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue'
 import Pane from '@/components/basic/Pane.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
