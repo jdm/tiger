@@ -1,10 +1,10 @@
 <template>
-	<div class="relative min-w-0 px-2 rounded-sm border-x border-x-plastic-800" :class="dynamicClasses">
-		<div @click="onKeyframeClicked" class="h-full flex items-center font-semibold text-xs overflow-hidden">
-			{{ keyframe.name }}
+	<div class="relative min-w-0 px-2 rounded-sm border-x border-x-plastic-800 cursor-pointer" :class="dynamicClasses">
+		<div @click="onKeyframeClicked" class="h-full flex items-center font-semibold text-xs">
+			<div class="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">{{ keyframe.name }}</div>
 		</div>
 		<DragArea @drag-start="beginDurationDrag" @drag-update="updateDurationDrag" inactive-cursor="cursor-ew-resize"
-			active-cursor="cursor-ew-resize" class="absolute top-0 -right-[7px] z-10 h-full w-[15px]" />
+			active-cursor="cursor-ew-resize" class="absolute top-0 -right-[1px] translate-x-1/2 z-10 h-full w-[16px]" />
 	</div>
 </template>
 
