@@ -1,15 +1,22 @@
 <template>
 	<button type="button"
-		class="w-20 min-w-fit px-4 py-1.5 rounded-md text-sm upper font-medium border-t border-b-2 ring-2"
-		:class="dynamicClasses">{{ label }}</button>
+		class="flex flex-row items-center justify-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium border-t border-b-2 ring-2"
+		:class="dynamicClasses">
+		<Icon v-if="icon" :name="icon" class="w-6 h-6" />
+		<div v-if="label">{{ label }}</div>
+	</button>
 </template>
 
-<script setup lang="ts">import { computed } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
+import Icon from '@/components/basic/Icon.vue';
+import * as solid from '@heroicons/vue/solid';
 
 const props = defineProps<{
-	label: string,
+	label?: string,
 	positive?: boolean,
 	danger?: boolean,
+	icon?: keyof typeof solid,
 }>();
 
 const dynamicClasses = computed(() => {
