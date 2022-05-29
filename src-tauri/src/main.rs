@@ -32,6 +32,7 @@ fn main() {
             api::undo,
             api::redo,
             api::focus_content_tab,
+            api::import_frames,
             api::clear_selection,
             api::select_frame,
             api::select_animation,

@@ -6,6 +6,7 @@ import {
   newDocument as doNewDocument,
   openDocuments as doOpenDocuments,
 } from "@/api/app";
+import { importFrames as doImportFrames } from "@/api/document";
 
 export async function newDocument() {
   const file = await saveFileDialog({
@@ -25,5 +26,17 @@ export async function openDocuments() {
     doOpenDocuments([files]);
   } else if (files) {
     doOpenDocuments(files);
+  }
+}
+
+export async function importFrames() {
+  const files = await openFileDialog({
+    filters: [{ name: "Image Files", extensions: ["png", "bmp"] }],
+    multiple: true,
+  });
+  if (typeof files === "string") {
+    doImportFrames([files]);
+  } else if (files) {
+    doImportFrames(files);
   }
 }

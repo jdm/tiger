@@ -27,6 +27,11 @@ export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   appStore.patch(await invoke("focus_content_tab", { contentTab: contentTab }));
 }
 
+export async function importFrames(paths: string[]): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("import_frames", { paths: paths }));
+}
+
 export async function clearSelection(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("clear_selection"));

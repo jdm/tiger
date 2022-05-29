@@ -167,6 +167,12 @@ impl Sheet {
         self.frames.push(frame);
     }
 
+    pub fn add_frames<T: AsRef<Path>>(&mut self, paths: &Vec<T>) {
+        for path in paths {
+            self.add_frame(path);
+        }
+    }
+
     pub fn create_animation(&mut self) -> (String, &mut Animation) {
         let mut name = "New Animation".to_owned();
         let mut index = 2;

@@ -12,7 +12,7 @@
 				<input type="text" placeholder="Filter Frames"
 					class="w-full h-[2.55rem] px-4 font-medium bg-transparent border-0" />
 			</div>
-			<Button :positive="true" icon="PhotographIcon" label="Import" />
+			<Button :positive="true" icon="PhotographIcon" label="Import" @click="importFrames" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
 			<div class="p-4 overflow-y-auto h-full styled-scrollbars">
@@ -25,11 +25,12 @@
 </template>
 
 <script setup lang="ts">
+import { ViewGridIcon, ViewListIcon } from '@heroicons/vue/solid'
 import { useAppStore } from '@/stores/app'
+import { importFrames } from '@/api/local'
 import Button from '@/components/basic/Button.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
 import Frame from '@/components/content/Frame.vue'
-import { ViewGridIcon, ViewListIcon } from '@heroicons/vue/solid'
 
 const app = useAppStore();
 </script>

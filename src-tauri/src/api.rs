@@ -237,6 +237,18 @@ pub fn focus_content_tab(
 }
 
 #[tauri::command]
+pub fn import_frames(
+    app_state: tauri::State<'_, AppState>,
+    paths: Vec<PathBuf>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ImportFrames(paths)).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn clear_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
