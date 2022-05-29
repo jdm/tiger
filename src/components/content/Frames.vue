@@ -1,12 +1,20 @@
 <template>
-	<div class="flex-1 flex flex-col min-h-0">
-		<div class="w-full p-4 flex flex-row items-center space-x-2">
-			<input type="text" placeholder="Idle"
-				class="w-full h-10 px-4 placeholder-plastic-500 font-bold bg-plastic-800 rounded-md border-y border-plastic-900 border-b-plastic-600" />
-			<Button :positive="true" label="Import" />
+	<div class="flex-1 flex flex-col items-stretch min-h-0 p-4 space-y-4">
+		<div class="w-full flex flex-row space-x-2">
+			<div
+				class="h-10 flex flex-row rounded-md items-center cursor-pointer bg-plastic-800 ring-2 ring-plastic-900">
+				<ViewGridIcon
+					class="w-10 p-2 rounded-md text-plastic-200 bg-sky-600 border-y border-t-sky-500 border-b-sky-900" />
+				<ViewListIcon class="w-10 p-2 text-plastic-700" />
+			</div>
+			<div
+				class="flex-1 rounded-md overflow-hidden bg-plastic-800 border-y border-plastic-900 border-b-plastic-600">
+				<input type="text" placeholder="Filter Frames"
+					class="w-full h-[2.55rem] px-4 font-medium bg-transparent border-0" />
+			</div>
+			<Button :positive="true" icon="PhotographIcon" label="Import" />
 		</div>
-		<Separator />
-		<PaneInset class="flex-1 m-4 min-h-0">
+		<PaneInset class="flex-1 min-h-0">
 			<div class="p-4 overflow-y-auto h-full styled-scrollbars">
 				<div class="grid grid-cols-4 gap-4">
 					<Frame v-for="frame in app.currentDocument?.sheet.frames" :frame="frame" :key="frame.name" />
@@ -20,8 +28,8 @@
 import { useAppStore } from '@/stores/app'
 import Button from '@/components/basic/Button.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'
-import Separator from '@/components/basic/Separator.vue'
 import Frame from '@/components/content/Frame.vue'
+import { ViewGridIcon, ViewListIcon } from '@heroicons/vue/solid'
 
 const app = useAppStore();
 </script>

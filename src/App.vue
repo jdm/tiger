@@ -5,7 +5,7 @@
       <div class="flex-1 min-h-0 flex flex-col space-y-5">
         <div class="flex-1 min-h-0 flex flex-col p-5">
           <div class="flex-1 min-h-0 flex flex-row space-x-5 pb-5">
-            <ContentPane class="basis-96 min-w-0" />
+            <ContentPane class="basis-[28rem] min-w-0" />
             <WorkbenchPane class="flex-1" />
           </div>
           <TimelinePane class="basis-60" />
