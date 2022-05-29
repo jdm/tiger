@@ -6,15 +6,13 @@
 </template>
 
 <script setup lang="ts">
-import { Keyframe as KeyframeDTO, Sequence as SequenceDTO } from '@/api/dto'
-import { useAppStore } from '@/stores/app'
-import Keyframe from '@/components/timeline/Keyframe.vue'
+import { Keyframe as KeyframeDTO, Sequence as SequenceDTO } from '@/api/dto';
+import { useAppStore } from '@/stores/app';
+import Keyframe from '@/components/timeline/Keyframe.vue';
 
 const app = useAppStore();
 
-defineProps<{
-	sequence: SequenceDTO,
-}>();
+defineProps<{ sequence: SequenceDTO }>();
 
 function keyframeStyle(keyframe: KeyframeDTO) {
 	const zoom = app.currentDocument?.timelineZoom || 1;

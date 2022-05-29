@@ -12,14 +12,14 @@ export type DragAreaEvent = {
 
 type DragButton = "left" | "middle" | "right";
 
-type Cursor = "cursor-move" | "cursor-pointer";
+type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
 
 const el: Ref<HTMLElement | null> = ref(null)
 const dragActive = ref(false);
 defineExpose({ dragActive });
 
 const props = defineProps<{
-  button: DragButton,
+  button?: DragButton,
   inactiveCursor?: Cursor,
   activeCursor?: Cursor,
 }>();
@@ -33,9 +33,9 @@ const emit =
 
 const buttonIndex = computed(() => {
   switch (props.button) {
-    case "left": return 0;
     case "middle": return 1;
     case "right": return 2;
+    default: return 0;
   }
 });
 
