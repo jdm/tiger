@@ -67,6 +67,7 @@ pub enum Command {
     ZoomInWorkbench,
     ZoomOutWorkbench,
     ResetWorkbenchZoom,
+    CreateAnimation,
     EditAnimation(String),
     RenameAnimation(String, String),
     DeleteAnimation(String),
@@ -173,6 +174,17 @@ impl Document {
             SingleSelection::Keyframe(_) => todo!(),
         };
         self.view.selection_mut().alter(edit, shift, ctrl);
+    }
+
+    pub fn create_animation(&mut self) -> Result<(), DocumentError> {
+        let animation_name = {
+            let (animation_name, _) = self.sheet.create_animation();
+            animation_name
+        };
+        self.view
+            .selection_mut()
+            .select(SingleSelection::Animation(animation_name.clone()));
+        self.edit_animation(animation_name)
     }
 
     fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
@@ -438,6 +450,7 @@ impl Document {
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
             Command::ZoomOutWorkbench => self.view.zoom_out_workbench(),
             Command::ResetWorkbenchZoom => self.view.reset_workbench_zoom(),
+            Command::CreateAnimation => self.create_animation()?,
             Command::EditAnimation(ref name) => self.edit_animation(name)?,
             Command::RenameAnimation(ref old_name, ref new_name) => {
                 self.rename_animation(old_name, new_name)?

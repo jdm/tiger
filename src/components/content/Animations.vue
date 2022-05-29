@@ -12,7 +12,7 @@
 				<input type="text" placeholder="Filter Animations"
 					class="w-full h-[2.55rem] px-4 font-medium bg-transparent border-0" />
 			</div>
-			<Button :positive="true" icon="FilmIcon" label="New" />
+			<Button :positive="true" icon="FilmIcon" label="New" @click="createAnimation" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
 			<div class="p-4 overflow-y-auto h-full styled-scrollbars">
@@ -26,6 +26,7 @@
 </template>
 
 <script setup lang="ts">
+import { createAnimation } from '@/api/document'
 import { useAppStore } from '@/stores/app'
 import Button from '@/components/basic/Button.vue'
 import PaneInset from '@/components/basic/PaneInset.vue'

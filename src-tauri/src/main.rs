@@ -41,6 +41,7 @@ fn main() {
             api::zoom_in_workbench,
             api::zoom_out_workbench,
             api::reset_workbench_zoom,
+            api::create_animation,
             api::edit_animation,
             api::rename_animation,
             api::delete_animation,

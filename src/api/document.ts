@@ -92,6 +92,11 @@ export async function resetWorkbenchZoom(): Promise<void> {
   appStore.patch(await invoke("reset_workbench_zoom"));
 }
 
+export async function createAnimation(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("create_animation"));
+}
+
 export async function editAnimation(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("edit_animation", { name: name }));
