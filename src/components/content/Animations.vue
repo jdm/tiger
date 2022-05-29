@@ -26,6 +26,9 @@
 </template>
 
 <script setup lang="ts">
+import { watch, nextTick } from 'vue';
+import { Ref, ref } from '@vue/reactivity';
+import { ContentTab } from '@/api/dto'
 import { createAnimation } from '@/api/document'
 import { useAppStore } from '@/stores/app'
 import Button from '@/components/basic/Button.vue'
@@ -34,4 +37,36 @@ import Animation from '@/components/content/Animation.vue'
 import { ViewGridIcon, ViewListIcon } from '@heroicons/vue/solid'
 
 const app = useAppStore();
+
+
+// Auto-scroll to new animation
+const animationRefs: Ref<{ name: string, scrollIntoView: () => void }[]> = ref([]);
+watch([
+	() => app.currentDocument,
+	() => Object.keys(app.currentDocument?.sheet.animations || [])],
+	([newDocument, newAnimationNames], [oldDocument, oldAnimationNames]) => {
+		if (newDocument != oldDocument
+			|| !oldAnimationNames || !newAnimationNames
+			|| app.currentDocument?.contentTab != ContentTab.Animations) {
+			return;
+		}
+		const oldSet = new Set(oldAnimationNames);
+		for (const name of newAnimationNames) {
+			if (!oldSet.has(name)) {
+				nextTick(() => {
+					scrollToAnimation(name);
+				});
+				return;
+			}
+		}
+	});
+
+function scrollToAnimation(name: string) {
+	for (let animationRef of animationRefs.value) {
+		if (animationRef.name == name) {
+			animationRef.scrollIntoView();
+			return;
+		}
+	}
+}
 </script>
