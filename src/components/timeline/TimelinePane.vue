@@ -40,7 +40,6 @@ import PaneInset from '@/components/basic/PaneInset.vue'
 import Ruler from '@/components/timeline/Ruler.vue'
 import Sequence from '@/components/timeline/Sequence.vue'
 import { useAppStore } from '@/stores/app'
-import { PauseIcon, PlayIcon, ZoomInIcon, ZoomOutIcon } from '@heroicons/vue/solid'
 import { computed, Ref, ref } from '@vue/reactivity'
 import { watch } from 'vue'
 

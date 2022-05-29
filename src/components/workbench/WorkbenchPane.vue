@@ -43,7 +43,6 @@ import Pane from '@/components/basic/Pane.vue'
 import PaneTab from '@/components/basic/PaneTab.vue'
 import PaneTabList from '@/components/basic/PaneTabList.vue'
 import Origin from '@/components/workbench/Origin.vue'
-import { ZoomInIcon, ZoomOutIcon } from '@heroicons/vue/solid'
 
 const app = useAppStore();
 const drawingArea: Ref<HTMLElement | null> = ref(null);
