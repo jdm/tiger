@@ -1,7 +1,8 @@
 <template>
 	<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
 		<div class="w-full flex flex-row space-x-2 items-center">
-			<div class="flex flex-row rounded-md items-center cursor-pointer bg-plastic-800 ring-2 ring-plastic-900">
+			<div
+				class="flex flex-row rounded-md items-center cursor-pointer bg-plastic-800 border-2 border-plastic-900">
 				<ViewGridIcon class="w-9 p-2 text-plastic-700" />
 				<ViewListIcon
 					class="w-9 p-2 rounded-md text-plastic-200 border-y border-t-amber-600 border-b-amber-900 bg-gradient-to-b from-amber-800 to-amber-600" />
