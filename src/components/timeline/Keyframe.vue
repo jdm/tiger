@@ -1,7 +1,7 @@
 <template>
-	<div class="relative">
+	<div class="relative min-w-0">
 		<div
-			class="h-full flex min-w-0 items-center rounded-sm px-2 bg-amber-500 border-r border-amber-900 text-amber-900 text-xs font-semibold overflow-hidden">
+			class="h-full flex items-center rounded-sm px-2 bg-amber-500 border-r border-amber-900 text-amber-900 text-xs font-semibold overflow-hidden">
 			{{ keyframe.name }}
 		</div>
 		<DragArea @drag-start="beginDurationDrag" @drag-update="updateDurationDrag" inactive-cursor="cursor-ew-resize"
