@@ -5,7 +5,7 @@
 				class="h-10 flex flex-row rounded-md items-center cursor-pointer bg-plastic-800 ring-2 ring-plastic-900">
 				<ViewGridIcon class="w-10 p-2 text-plastic-700" />
 				<ViewListIcon
-					class="w-10 p-2 rounded-md text-plastic-200 bg-sky-600 border-y border-t-sky-500 border-b-sky-900" />
+					class="w-10 p-2 rounded-md text-plastic-200 border-y border-t-amber-600 border-b-amber-900 bg-gradient-to-b from-amber-800 to-amber-600" />
 			</div>
 			<div
 				class="flex-1 rounded-md overflow-hidden bg-plastic-800 border-y border-plastic-900 border-b-plastic-600">
