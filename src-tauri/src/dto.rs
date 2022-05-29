@@ -58,7 +58,7 @@ pub struct Animation {
     sequences: HashMap<Direction, Sequence>,
 }
 
-#[derive(Clone, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
 pub enum Direction {
     East,
     NorthEast,
@@ -82,6 +82,7 @@ pub struct Sequence {
 pub struct Keyframe {
     frame: PathBuf,
     name: String,
+    selected: bool,
     duration_millis: u64,
     offset: (i32, i32),
 }
@@ -125,6 +126,14 @@ impl From<&state::Document> for Document {
         }
         for (name, animation) in sheet.animations.iter_mut() {
             animation.selected = document.view().selection().is_animation_selected(name);
+            for (direction, sequence) in animation.sequences.iter_mut() {
+                for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
+                    keyframe.selected = document
+                        .view()
+                        .selection()
+                        .is_keyframe_selected((*direction).into(), index);
+                }
+            }
         }
         Self {
             path: document.path().to_owned(),
@@ -202,6 +211,21 @@ impl From<sheet::Direction> for Direction {
     }
 }
 
+impl From<Direction> for sheet::Direction {
+    fn from(direction: Direction) -> Self {
+        match direction {
+            Direction::East => sheet::Direction::East,
+            Direction::NorthEast => sheet::Direction::NorthEast,
+            Direction::North => sheet::Direction::North,
+            Direction::NorthWest => sheet::Direction::NorthWest,
+            Direction::West => sheet::Direction::West,
+            Direction::SouthWest => sheet::Direction::SouthWest,
+            Direction::South => sheet::Direction::South,
+            Direction::SouthEast => sheet::Direction::SouthEast,
+        }
+    }
+}
+
 impl From<&sheet::Sequence> for Sequence {
     fn from(sequence: &sheet::Sequence) -> Self {
         Self {
@@ -216,6 +240,7 @@ impl From<&sheet::Keyframe> for Keyframe {
         Self {
             frame: keyframe.frame().to_owned(),
             name: keyframe.frame().to_file_name(),
+            selected: false,
             duration_millis: keyframe.duration_millis(),
             offset: keyframe.offset().to_tuple(),
         }

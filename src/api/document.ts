@@ -1,4 +1,4 @@
-import { ContentTab } from "@/api/dto";
+import { ContentTab, Direction } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
@@ -61,6 +61,23 @@ export async function selectAnimation(
   appStore.patch(
     await invoke("select_animation", {
       name: name,
+      shift: shift,
+      ctrl: ctrl,
+    })
+  );
+}
+
+export async function selectKeyframe(
+  direction: Direction,
+  index: number,
+  shift: boolean,
+  ctrl: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("select_keyframe", {
+      direction: direction,
+      index: index,
       shift: shift,
       ctrl: ctrl,
     })

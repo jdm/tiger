@@ -22,7 +22,8 @@
 					<div class="min-w-full flex flex-col" :style="timelineStyle">
 						<Ruler v-model:scrubbing="scrubbing" />
 						<div class="flex flex-col py-2 space-y-1 ">
-							<Sequence v-for="sequence in app.currentAnimation?.sequences" :sequence="sequence" />
+							<Sequence v-for="sequence, direction in app.currentAnimation?.sequences"
+								:sequence="sequence" :direction="direction" />
 						</div>
 						<div class="absolute top-0 mx-1 h-full w-px bg-white transition" :style="playheadStyle" />
 					</div>

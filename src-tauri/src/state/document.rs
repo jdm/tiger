@@ -154,7 +154,12 @@ impl Document {
         self.view.set_content_tab(content_tab);
     }
 
-    fn alter_selection(&mut self, selection: &SingleSelection, shift: bool, ctrl: bool) {
+    fn alter_selection(
+        &mut self,
+        selection: &SingleSelection,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<(), DocumentError> {
         let edit = match selection {
             SingleSelection::Frame(f) => MultiSelectionEdit::Frames(
                 f.clone(),
@@ -171,9 +176,17 @@ impl Document {
                     .collect(),
             ),
             SingleSelection::Hitbox(_) => todo!(),
-            SingleSelection::Keyframe(_) => todo!(),
+            SingleSelection::Keyframe(d, i) => {
+                let animation = self.get_workbench_animation()?;
+                let all_keyframes: Vec<(Direction, usize)> = animation
+                    .sequences_iter()
+                    .flat_map(|(d, s)| (0..s.num_keyframes()).map(|i| (*d, i)))
+                    .collect();
+                MultiSelectionEdit::Keyframes((*d, *i), all_keyframes)
+            }
         };
         self.view.selection_mut().alter(edit, shift, ctrl);
+        Ok(())
     }
 
     pub fn create_animation(&mut self) -> Result<(), DocumentError> {
@@ -301,15 +314,7 @@ impl Document {
             Some(_) => time,
             None => Duration::ZERO,
         };
-        let (index, _) = sequence
-            .keyframe_at(new_time)
-            .ok_or(DocumentError::NoKeyframeAtTime(new_time))?;
-
         self.view.set_timeline_clock(new_time);
-        self.view
-            .selection_mut()
-            .select(SingleSelection::Keyframe(index));
-
         Ok(())
     }
 
@@ -443,7 +448,7 @@ impl Document {
             Command::ImportFrames(ref p) => self.sheet.add_frames(p),
             Command::ClearSelection => self.view.selection_mut().clear(),
             Command::AlterSelection(ref selection, shift, ctrl) => {
-                self.alter_selection(selection, shift, ctrl)
+                self.alter_selection(selection, shift, ctrl)?
             }
             Command::Pan(delta) => self.view.pan(delta),
             Command::CenterWorkbench => self.view.center_workbench(),

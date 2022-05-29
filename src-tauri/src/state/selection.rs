@@ -1,3 +1,4 @@
+use crate::sheet::Direction;
 use std::borrow::Borrow;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
@@ -12,14 +13,14 @@ pub enum SingleSelection {
     Frame(PathBuf),
     Animation(String),
     Hitbox(String),
-    Keyframe(usize),
+    Keyframe(Direction, usize),
 }
 
 pub enum MultiSelectionEdit {
     Frames(PathBuf, Vec<PathBuf>),
     Animations(String, Vec<String>),
     Hitboxes(String, Vec<String>),
-    Keyframes(usize, Vec<usize>),
+    Keyframes((Direction, usize), Vec<(Direction, usize)>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -27,7 +28,7 @@ enum TaggedMultiSelection {
     Frames(MultiSelectionData<PathBuf>),
     Animations(MultiSelectionData<String>),
     Hitboxes(MultiSelectionData<String>),
-    Keyframes(MultiSelectionData<usize>),
+    Keyframes(MultiSelectionData<(Direction, usize)>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -99,9 +100,9 @@ impl MultiSelection {
         }
     }
 
-    pub fn is_keyframe_selected(&self, index: usize) -> bool {
+    pub fn is_keyframe_selected(&self, direction: Direction, index: usize) -> bool {
         match &self.content {
-            Some(TaggedMultiSelection::Keyframes(s)) => s.contains(&index),
+            Some(TaggedMultiSelection::Keyframes(s)) => s.contains(&(direction, index)),
             _ => false,
         }
     }
@@ -126,9 +127,12 @@ impl TaggedMultiSelection {
             }
 
             // Remove keyframe from selection
-            (TaggedMultiSelection::Keyframes(data), SingleSelection::Keyframe(keyframe)) => {
-                data.without(&keyframe).map(TaggedMultiSelection::Keyframes)
-            }
+            (
+                TaggedMultiSelection::Keyframes(data),
+                SingleSelection::Keyframe(direction, index),
+            ) => data
+                .without(&(direction, index))
+                .map(TaggedMultiSelection::Keyframes),
 
             // No-op
             _ => Some(self.clone()),
@@ -186,7 +190,7 @@ impl From<SingleSelection> for TaggedMultiSelection {
             SingleSelection::Frame(f) => TaggedMultiSelection::Frames(f.into()),
             SingleSelection::Animation(a) => TaggedMultiSelection::Animations(a.into()),
             SingleSelection::Hitbox(h) => TaggedMultiSelection::Hitboxes(h.into()),
-            SingleSelection::Keyframe(k) => TaggedMultiSelection::Keyframes(k.into()),
+            SingleSelection::Keyframe(d, i) => TaggedMultiSelection::Keyframes((d, i).into()),
         }
     }
 }

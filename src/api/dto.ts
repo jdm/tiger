@@ -61,6 +61,7 @@ export type Sequence = {
 export type Keyframe = {
   frame: string;
   name: string;
+  selected: boolean;
   durationMillis: number;
   offset: [number, number];
 };

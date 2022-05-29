@@ -298,6 +298,27 @@ pub fn select_animation(
 }
 
 #[tauri::command]
+pub fn select_keyframe(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+    index: usize,
+    shift: bool,
+    ctrl: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::AlterSelection(
+                    SingleSelection::Keyframe(direction.into(), index),
+                    shift,
+                    ctrl,
+                ))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

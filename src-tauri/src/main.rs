@@ -36,6 +36,7 @@ fn main() {
             api::clear_selection,
             api::select_frame,
             api::select_animation,
+            api::select_keyframe,
             api::pan,
             api::center_workbench,
             api::zoom_in_workbench,
