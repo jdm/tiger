@@ -1,6 +1,5 @@
 <template>
-	<div ref="el" class="relative min-w-0 rounded-sm border-x border-x-plastic-800 cursor-pointer"
-		:class="dynamicClasses">
+	<div ref="el" class="relative min-w-0 rounded-md mx-[2px] cursor-pointer" :class="dynamicClasses">
 		<div @click="onKeyframeClicked" class="h-full flex items-center font-semibold text-xs">
 			<div class="min-w-0 px-2 overflow-hidden whitespace-nowrap text-ellipsis">{{ keyframe.name }}</div>
 		</div>
@@ -27,7 +26,9 @@ const props = defineProps<{
 
 const dynamicClasses = computed(() => {
 	return [
-		...props.keyframe.selected ? ["text-rose-900", "bg-rose-200",] : ["text-rose-200", "bg-rose-600",],
+		...props.keyframe.selected ?
+			["text-blue-100", "bg-slate-900", "border-2", "border-blue-600", "outline", "outline-plastic-800"]
+			: ["text-orange-200", "bg-plastic-900", "border-2", "border-orange-600", "outline", "outline-plastic-800"],
 	];
 });
 

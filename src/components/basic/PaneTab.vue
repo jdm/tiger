@@ -9,7 +9,7 @@
 
 
 <script setup lang="ts">
-import { XIcon } from '@heroicons/vue/solid'
+import { XIcon } from '@heroicons/vue/solid';
 import { computed, ref } from '@vue/reactivity';
 const props = defineProps<{
 	closeable?: Boolean
