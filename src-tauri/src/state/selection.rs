@@ -305,10 +305,6 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
             self.selected_items.remove(item);
         }
     }
-
-    fn iter(&self) -> impl Iterator<Item = &T> {
-        self.selected_items.iter()
-    }
 }
 
 impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> From<T>
