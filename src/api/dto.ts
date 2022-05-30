@@ -63,6 +63,7 @@ export type Keyframe = {
   frame: string;
   name: string;
   selected: boolean;
+  startTimeMillis: number;
   durationMillis: number;
   offset: [number, number];
 };

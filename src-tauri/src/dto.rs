@@ -84,6 +84,7 @@ pub struct Keyframe {
     frame: PathBuf,
     name: String,
     selected: bool,
+    start_time_millis: u64,
     duration_millis: u64,
     offset: (i32, i32),
 }
@@ -128,11 +129,14 @@ impl From<&state::Document> for Document {
         for (name, animation) in sheet.animations.iter_mut() {
             animation.selected = document.view().selection().is_animation_selected(name);
             for (direction, sequence) in animation.sequences.iter_mut() {
+                let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
                     keyframe.selected = document
                         .view()
                         .selection()
                         .is_keyframe_selected((*direction).into(), index);
+                    keyframe.start_time_millis = time_millis;
+                    time_millis += keyframe.duration_millis;
                 }
             }
         }
@@ -243,6 +247,7 @@ impl From<&sheet::Keyframe> for Keyframe {
             frame: keyframe.frame().to_owned(),
             name: keyframe.frame().to_file_name(),
             selected: false,
+            start_time_millis: 0,
             duration_millis: keyframe.duration_millis(),
             offset: keyframe.offset().to_tuple(),
         }

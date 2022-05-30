@@ -18,7 +18,8 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex-1 relative overflow-x-scroll styled-scrollbars">
+				<div ref="scrollableElement" @scroll="onScroll"
+					class="flex-1 relative overflow-x-scroll styled-scrollbars">
 					<div class="min-w-full flex flex-col" :style="timelineStyle">
 						<Ruler v-model:scrubbing="scrubbing" />
 						<div class="flex flex-col py-2 space-y-1 ">
@@ -46,18 +47,29 @@ import { watch } from 'vue'
 
 const app = useAppStore();
 
+const scrollableElement: Ref<HTMLElement | null> = ref(null);
 const scrubbing = ref(false);
+const scrollLeft = ref(0);
 
-const timelineDuration = computed(() => {
+function onScroll() {
+	scrollLeft.value = scrollableElement.value?.scrollLeft || 0;
+}
+
+const animationDuration = computed(() => {
+	return Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
+});
+
+const timelineSize = computed(() => {
 	const zoom = app.currentDocument?.timelineZoom || 1;
+	const visibleSize = scrollLeft.value + (scrollableElement.value?.clientWidth || 0);
+	const visibleDuration = visibleSize / zoom;
 	const bonusDuration = 500 / zoom;
-	const animationDuration = Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
-	return zoom * (animationDuration + bonusDuration);
+	return zoom * Math.max(visibleDuration, animationDuration.value + bonusDuration);
 });
 
 const timelineStyle = computed(() => {
 	return {
-		width: timelineDuration.value + "px"
+		width: timelineSize.value + "px"
 	}
 });
 
