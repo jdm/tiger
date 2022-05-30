@@ -1,25 +1,34 @@
 use euclid::default::Vector2D;
+use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::sheet::{Animation, Direction, Sequence, Sheet, SheetError};
+use crate::sheet::{Animation, Direction, Keyframe, Sequence, Sheet, SheetError};
 use crate::state::*;
 
 #[derive(Debug)]
 pub struct Document {
     path: PathBuf,
-    sheet: Sheet,                 // Sheet being edited, fully recorded in history
+    sheet: Sheet,           // Sheet being edited, fully recorded in history
     view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
-    transient: Option<Transient>, // State preventing undo actions when not default, not recorded in history
-    persistent: Persistent,       // Other state not recorded in history
+    transient: Transient, // State preventing undo actions when not default, not recorded in history
+    persistent: Persistent, // Other state not recorded in history
     next_version: i32,
     history: Vec<HistoryEntry>,
     history_index: usize,
 }
 
-#[derive(Debug)]
-pub struct Transient {}
+#[derive(Debug, Default)]
+pub struct Transient {
+    keyframe_duration_drag: Option<KeyframeDurationDrag>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+struct KeyframeDurationDrag {
+    frame_being_dragged: (Direction, usize),
+    original_durations: HashMap<(Direction, usize), u64>,
+}
 
 impl Transient {
     fn is_transient_command(command: &Command) -> bool {
@@ -40,18 +49,22 @@ struct HistoryEntry {
 pub enum DocumentError {
     #[error(transparent)]
     SheetError(#[from] SheetError),
-    #[error("Cannot manipulate undo history")]
-    UndoOperationNotAllowed,
     #[error("Animation `{0}` does not exist")]
     AnimationNotInDocument(String),
     #[error("Current animation does not have a `{0:?}` sequence")]
     SequenceNotInAnimation(Direction),
     #[error("Sequence does not have a keyframe at time `{0:?}`")]
     NoKeyframeAtTime(Duration),
+    #[error("Sequence does not have a keyframe at index `{0}`")]
+    NoKeyframeAtIndex(usize),
     #[error("Not currently editing an animation")]
     NotEditingAnyAnimation,
     #[error("Not currently editing a sequence")]
     NotEditingAnySequence,
+    #[error("Not currently dragging a keyframe duration")]
+    NotDraggingKeyframeDuration,
+    #[error("Could not find duration of keyframe when drag started")]
+    MissingKeyframeDragData,
 }
 
 #[derive(Clone, Debug)]
@@ -78,6 +91,9 @@ pub enum Command {
     ZoomInTimeline,
     ZoomOutTimeline,
     ResetTimelineZoom,
+    BeginDragKeyframeDuration(Direction, usize),
+    UpdateDragKeyframeDuration(i64),
+    EndDragKeyframeDuration(),
 }
 
 impl Document {
@@ -91,7 +107,7 @@ impl Document {
             history: vec![history_entry],
             sheet: sheet,
             view: view,
-            transient: None,
+            transient: Default::default(),
             persistent: Default::default(),
             next_version: next_version,
             history_index: 0,
@@ -135,7 +151,7 @@ impl Document {
     }
 
     pub fn clear_transient(&mut self) {
-        self.transient = None;
+        self.transient = Default::default();
     }
 
     pub fn request_close(&mut self) {
@@ -318,6 +334,57 @@ impl Document {
         Ok(())
     }
 
+    fn begin_drag_keyframe_duration(
+        &mut self,
+        direction: Direction,
+        index: usize,
+    ) -> Result<(), DocumentError> {
+        self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
+            frame_being_dragged: (direction, index),
+            original_durations: self
+                .get_selected_keyframes()?
+                .into_iter()
+                .map(|(d, i, k)| ((d, i), k.duration_millis()))
+                .collect(),
+        });
+        Ok(())
+    }
+
+    fn update_drag_keyframe_duration(&mut self, delta_millis: i64) -> Result<(), DocumentError> {
+        let drag_state = self
+            .transient
+            .keyframe_duration_drag
+            .clone()
+            .ok_or_else(|| DocumentError::NotDraggingKeyframeDuration)?;
+
+        let minimum_duration = (20.0 / self.view.timeline_zoom()) as u64;
+        let duration_delta_per_frame = delta_millis
+            / self
+                .get_selected_keyframes()?
+                .iter()
+                .filter(|(d, i, _k)| {
+                    drag_state.frame_being_dragged.0 == *d && drag_state.frame_being_dragged.1 >= *i
+                })
+                .count()
+                .max(1) as i64;
+
+        for (d, i, keyframe) in self.get_selected_keyframes_mut()? {
+            let old_duration = drag_state
+                .original_durations
+                .get(&(d, i))
+                .ok_or_else(|| DocumentError::MissingKeyframeDragData)?;
+            let new_duration = if duration_delta_per_frame > 0 {
+                old_duration.saturating_add(duration_delta_per_frame as u64)
+            } else {
+                old_duration.saturating_sub(duration_delta_per_frame.unsigned_abs())
+            }
+            .max(minimum_duration);
+            keyframe.set_duration_millis(new_duration);
+        }
+
+        Ok(())
+    }
+
     pub fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
         let animation = self.get_workbench_animation()?;
         let direction = self
@@ -355,6 +422,53 @@ impl Document {
             ))
     }
 
+    pub fn get_selected_keyframes(
+        &self,
+    ) -> Result<Vec<(Direction, usize, &Keyframe)>, DocumentError> {
+        let animation = self.get_workbench_animation()?;
+        Ok(animation
+            .sequences_iter()
+            .flat_map(|(direction, sequence)| {
+                sequence
+                    .keyframes_iter()
+                    .enumerate()
+                    .filter_map(|(index, keyframe)| {
+                        if self
+                            .view
+                            .selection()
+                            .is_keyframe_selected(*direction, index)
+                        {
+                            Some((*direction, index, keyframe))
+                        } else {
+                            None
+                        }
+                    })
+            })
+            .collect())
+    }
+
+    pub fn get_selected_keyframes_mut(
+        &mut self,
+    ) -> Result<Vec<(Direction, usize, &mut Keyframe)>, DocumentError> {
+        let selection = self.view().selection().clone();
+        let animation = self.get_workbench_animation_mut()?;
+        Ok(animation
+            .sequences_iter_mut()
+            .flat_map(|(direction, sequence)| {
+                sequence
+                    .keyframes_iter_mut()
+                    .enumerate()
+                    .filter_map(|(index, keyframe)| {
+                        if selection.is_keyframe_selected(*direction, index) {
+                            Some((*direction, index, keyframe))
+                        } else {
+                            None
+                        }
+                    })
+            })
+            .collect())
+    }
+
     fn push_undo_state(&mut self, entry: HistoryEntry) {
         self.history.truncate(self.history_index + 1);
         self.history.push(entry);
@@ -366,15 +480,7 @@ impl Document {
         }
     }
 
-    fn can_use_undo_system(&self) -> bool {
-        self.transient.is_none()
-    }
-
     fn record_command(&mut self, command: Command) {
-        if !self.can_use_undo_system() {
-            return;
-        }
-
         let has_sheet_changes = &self.history[self.history_index].sheet != &self.sheet;
 
         if has_sheet_changes {
@@ -403,9 +509,6 @@ impl Document {
     }
 
     pub fn undo(&mut self) -> Result<(), DocumentError> {
-        if !self.can_use_undo_system() {
-            return Err(DocumentError::UndoOperationNotAllowed);
-        }
         if self.history_index > 0 {
             self.history_index -= 1;
             self.sheet = self.history[self.history_index].sheet.clone();
@@ -416,9 +519,6 @@ impl Document {
     }
 
     pub fn redo(&mut self) -> Result<(), DocumentError> {
-        if !self.can_use_undo_system() {
-            return Err(DocumentError::UndoOperationNotAllowed);
-        }
         if self.history_index < self.history.len() - 1 {
             self.history_index += 1;
             self.sheet = self.history[self.history_index].sheet.clone();
@@ -468,10 +568,18 @@ impl Document {
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::ResetTimelineZoom => self.view.reset_timeline_zoom(),
+            Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
+            Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
+            Command::EndDragKeyframeDuration() => (),
         }
-        if !Transient::is_transient_command(&command) {
-            self.transient = None;
+
+        if !matches!(
+            command,
+            Command::BeginDragKeyframeDuration(_, _) | Command::UpdateDragKeyframeDuration(_)
+        ) {
+            self.transient = Default::default();
         }
+
         self.record_command(command);
         Ok(())
     }

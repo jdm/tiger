@@ -287,6 +287,10 @@ impl Animation {
     pub fn sequences_iter(&self) -> impl Iterator<Item = (&Direction, &Sequence)> {
         self.sequences.iter()
     }
+
+    pub fn sequences_iter_mut(&mut self) -> impl Iterator<Item = (&Direction, &mut Sequence)> {
+        self.sequences.iter_mut()
+    }
 }
 
 impl Sequence {

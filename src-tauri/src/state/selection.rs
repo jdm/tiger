@@ -63,6 +63,14 @@ impl MultiSelection {
         }
     }
 
+    pub fn keyframes(&self) -> Vec<(Direction, usize)> {
+        if let Some(TaggedMultiSelection::Keyframes(ms)) = &self.content {
+            ms.iter().cloned().collect()
+        } else {
+            Vec::new()
+        }
+    }
+
     pub fn has_frames(&self) -> bool {
         matches!(self.content, Some(TaggedMultiSelection::Frames(_)))
     }
@@ -304,6 +312,10 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         for item in items {
             self.selected_items.remove(item);
         }
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &T> {
+        self.selected_items.iter()
     }
 }
 

@@ -171,3 +171,30 @@ export async function resetTimelineZoom(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("reset_timeline_zoom"));
 }
+
+export async function beginDragKeyframeDuration(
+  direction: Direction,
+  index: number
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("begin_drag_keyframe_duration", {
+      direction: direction,
+      index: index,
+    })
+  );
+}
+
+export async function updateDragKeyframeDuration(
+  deltaMillis: number
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("update_drag_keyframe_duration", { deltaMillis: deltaMillis })
+  );
+}
+
+export async function endDragKeyframeDuration(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_drag_keyframe_duration"));
+}

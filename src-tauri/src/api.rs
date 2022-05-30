@@ -480,3 +480,43 @@ pub fn reset_timeline_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patc
         }
     }))
 }
+
+#[tauri::command]
+pub fn begin_drag_keyframe_duration(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+    index: usize,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn update_drag_keyframe_duration(
+    app_state: tauri::State<'_, AppState>,
+    delta_millis: i64,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::UpdateDragKeyframeDuration(delta_millis))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_drag_keyframe_duration(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::EndDragKeyframeDuration())
+                .ok();
+        }
+    }))
+}

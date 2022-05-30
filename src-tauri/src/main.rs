@@ -53,6 +53,9 @@ fn main() {
             api::zoom_in_timeline,
             api::zoom_out_timeline,
             api::reset_timeline_zoom,
+            api::begin_drag_keyframe_duration,
+            api::update_drag_keyframe_duration,
+            api::end_drag_keyframe_duration,
         ])
         .on_window_event(move |event| match event.event() {
             WindowEvent::CloseRequested { api, .. } => {
