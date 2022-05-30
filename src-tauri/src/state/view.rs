@@ -30,7 +30,7 @@ impl Default for View {
             current_animation: None,
             current_sequence: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
-            workbench_zoom_level: 1,
+            workbench_zoom_level: 4,
             timeline_zoom_level: 1,
             timeline_clock: Default::default(),
         }
