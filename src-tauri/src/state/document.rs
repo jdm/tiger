@@ -342,6 +342,11 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> Result<(), DocumentError> {
+        if !self.view.selection().is_keyframe_selected(direction, index) {
+            self.view
+                .selection_mut()
+                .select(SingleSelection::Keyframe(direction, index));
+        }
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
             frame_being_dragged: (direction, index),
             original_durations: self
