@@ -1,11 +1,13 @@
 <template>
-	<div ref="el" class="relative min-w-0 rounded-md mx-[2px] cursor-pointer" :class="dynamicClasses">
-		<div @click="onKeyframeClicked" class="h-full flex items-center font-semibold text-xs">
-			<div class="min-w-0 px-2 overflow-hidden whitespace-nowrap text-ellipsis">{{ keyframe.name }}</div>
+	<div class="border-r-4 border-plastic-800">
+		<div ref="el" class="h-full min-w-0 relative rounded-md border-2 cursor-pointer" :class="dynamicClasses">
+			<div @click="onKeyframeClicked" class="h-full px-2 flex items-center font-semibold text-xs">
+				<div class="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">{{ keyframe.name }}</div>
+			</div>
 		</div>
 		<DragArea @drag-start="beginDurationDrag" @drag-update="updateDurationDrag" @drag-end="endDurationDrag"
 			inactive-cursor="cursor-ew-resize" active-cursor="cursor-ew-resize"
-			class="absolute top-0 -right-[1px] translate-x-1/2 z-10 h-full w-[16px]" />
+			class="absolute top-0 right-[-4px] h-full w-[16px]" />
 	</div>
 </template>
 
@@ -27,8 +29,8 @@ const props = defineProps<{
 const dynamicClasses = computed(() => {
 	return [
 		...props.keyframe.selected ?
-			["text-blue-100", "bg-slate-900", "border-2", "border-blue-600", "outline", "outline-plastic-800"]
-			: ["text-orange-200", "bg-plastic-900", "border-2", "border-orange-600", "outline", "outline-plastic-800"],
+			["text-blue-100", "bg-slate-900", "border-blue-600"]
+			: ["text-orange-200", "bg-plastic-900", "border-orange-600"],
 	];
 });
 
@@ -41,7 +43,6 @@ function mouseEventToTime(event: MouseEvent) {
 	}
 	const pixelDelta = event.clientX - el.value.getBoundingClientRect().left;
 	const durationDelta = pixelDelta / (app.currentDocument?.timelineZoom || 1);
-	console.log(props.keyframe.startTimeMillis + durationDelta);
 	return props.keyframe.startTimeMillis + durationDelta;
 }
 

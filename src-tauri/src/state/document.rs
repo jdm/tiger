@@ -365,7 +365,7 @@ impl Document {
             .clone()
             .ok_or_else(|| DocumentError::NotDraggingKeyframeDuration)?;
 
-        let minimum_duration = (20.0 / self.view.timeline_zoom()) as u64;
+        let minimum_duration = 20.0 as u64;
         let duration_delta_per_frame = delta_millis
             / self
                 .get_selected_keyframes()?

@@ -1,7 +1,10 @@
 <template>
-	<div class="h-9 flex flex-row p-1 rounded-sm bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600">
-		<Keyframe v-for="keyframe, index in sequence.keyframes" :keyframe="keyframe" :direction="direction"
-			:index="index" :key="index + '_' + keyframe.name" class="transition" :style="keyframeStyle(keyframe)" />
+	<div class="h-9 p-1 rounded-sm bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600">
+		<div class="relative h-full">
+			<Keyframe v-for="keyframe, index in sequence.keyframes" :keyframe="keyframe" :direction="direction"
+				:index="index" :key="index + '_' + keyframe.name"
+				class="absolute h-full transition top-1/2 -translate-y-1/2" :style="keyframeStyle(keyframe)" />
+		</div>
 	</div>
 </template>
 
@@ -20,8 +23,9 @@ defineProps<{
 function keyframeStyle(keyframe: KeyframeDTO) {
 	const zoom = app.currentDocument?.timelineZoom || 1;
 	return {
-		"transitionProperty": app.currentDocument?.isDraggingKeyframeDuration ? "none" : "flex-basis",
-		"flex-basis": (zoom * keyframe.durationMillis) + "px"
+		"transitionProperty": app.currentDocument?.isDraggingKeyframeDuration ? "none" : "width, left",
+		"left": (zoom * keyframe.startTimeMillis) + "px",
+		"width": (zoom * keyframe.durationMillis) + "px"
 	};
 }
 </script>
