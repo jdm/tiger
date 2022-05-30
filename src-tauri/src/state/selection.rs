@@ -63,14 +63,6 @@ impl MultiSelection {
         }
     }
 
-    pub fn keyframes(&self) -> Vec<(Direction, usize)> {
-        if let Some(TaggedMultiSelection::Keyframes(ms)) = &self.content {
-            ms.iter().cloned().collect()
-        } else {
-            Vec::new()
-        }
-    }
-
     pub fn has_frames(&self) -> bool {
         matches!(self.content, Some(TaggedMultiSelection::Frames(_)))
     }
