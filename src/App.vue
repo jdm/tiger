@@ -8,7 +8,7 @@
             <ContentPane class="basis-[28rem] min-w-0" />
             <WorkbenchPane class="flex-1" />
           </div>
-          <TimelinePane class="basis-60" />
+          <TimelinePane />
         </div>
       </div>
     </div>
