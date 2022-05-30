@@ -10,7 +10,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from 'vue';
+import { computed } from 'vue';
 import { Direction, Keyframe as KeyframeDTO } from '@/api/dto'
 import { useAppStore } from '@/stores/app';
 import { updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration } from '@/api/document';

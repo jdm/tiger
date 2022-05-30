@@ -33,6 +33,7 @@ pub struct Document {
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
     timeline_zoom: f32,
+    is_dragging_keyframe_duration: bool,
 }
 
 #[derive(Clone, Serialize)]
@@ -153,6 +154,7 @@ impl From<&state::Document> for Document {
             timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
             timeline_is_playing: document.persistent().is_timeline_playing(),
             timeline_zoom: document.view().timeline_zoom(),
+            is_dragging_keyframe_duration: document.transient().is_dragging_keyframe_duration(),
         }
     }
 }

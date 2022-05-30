@@ -23,6 +23,7 @@ export type Document = {
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
   timelineZoom: number;
+  isDraggingKeyframeDuration: boolean;
 };
 
 export type Sheet = {

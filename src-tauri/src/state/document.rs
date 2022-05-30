@@ -31,9 +31,8 @@ struct KeyframeDurationDrag {
 }
 
 impl Transient {
-    fn is_transient_command(command: &Command) -> bool {
-        // TODO list transient commands
-        false
+    pub fn is_dragging_keyframe_duration(&self) -> bool {
+        self.keyframe_duration_drag.is_some()
     }
 }
 
@@ -124,6 +123,10 @@ impl Document {
 
     pub fn persistent(&self) -> &Persistent {
         &self.persistent
+    }
+
+    pub fn transient(&self) -> &Transient {
+        &self.transient
     }
 
     pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, DocumentError> {
