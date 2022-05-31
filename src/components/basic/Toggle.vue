@@ -1,6 +1,6 @@
 <template>
 	<div class="rounded-md border-2 border-plastic-900">
-		<div @click="onClicked" class="py-1.5 px-2 cursor-pointer" :class="dynamicClasses">
+		<div @click="onClicked" class="py-1.5 px-2 rounded-md border-2 cursor-pointer" :class="dynamicClasses">
 			<Icon :name="icon" class="w-6" />
 		</div>
 	</div>
@@ -23,8 +23,16 @@ const emit = defineEmits<{
 const dynamicClasses = computed(() => {
 	return [
 		...(props.toggled ?
-			["text-blue-600", "border-2", "rounded-md", "border-blue-600", "bg-zinc-900"]
-			: ["text-zinc-500", "border-2", "rounded-md", "border-plastic-500", "bg-plastic-800"]),
+			[
+				"text-emerald-200",
+				"border-emerald-600", "border-t-emerald-500",
+				"bg-gradient-to-b", "from-emerald-900", "to-emerald-700"
+			]
+			: [
+				"text-zinc-700",
+				"border-zinc-700",
+				"bg-zinc-900"
+			]),
 	];
 });
 
