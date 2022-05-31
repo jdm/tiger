@@ -1,11 +1,12 @@
 use core::cmp::Ordering;
+use enum_iterator::all;
 use euclid::default::*;
 use euclid::rect;
 #[cfg(test)]
 use euclid::vec2;
 use pathdiff::diff_paths;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufWriter;
@@ -290,6 +291,56 @@ impl Animation {
 
     pub fn sequences_iter_mut(&mut self) -> impl Iterator<Item = (&Direction, &mut Sequence)> {
         self.sequences.iter_mut()
+    }
+
+    pub fn apply_direction_preset(&mut self, preset: DirectionPreset) {
+        let directions = preset.directions();
+        self.sequences.retain(|d, _s| directions.contains(d));
+        for d in directions {
+            self.sequences.entry(d).or_default();
+        }
+    }
+}
+
+impl DirectionPreset {
+    pub fn from_directions<T: Iterator<Item = Direction>>(directions: T) -> Option<Self> {
+        let directions_set: HashSet<Direction> = directions.collect();
+        for preset in all::<DirectionPreset>() {
+            if directions_set == preset.directions() {
+                return Some(preset);
+            }
+        }
+        None
+    }
+
+    pub fn directions(&self) -> HashSet<Direction> {
+        match self {
+            DirectionPreset::FourDirections => HashSet::from([
+                Direction::North,
+                Direction::South,
+                Direction::East,
+                Direction::West,
+            ]),
+            DirectionPreset::EightDirections => HashSet::from([
+                Direction::East,
+                Direction::NorthEast,
+                Direction::North,
+                Direction::NorthWest,
+                Direction::West,
+                Direction::SouthWest,
+                Direction::South,
+                Direction::SouthEast,
+            ]),
+            DirectionPreset::LeftRight => HashSet::from([Direction::East, Direction::West]),
+            DirectionPreset::UpDown => HashSet::from([Direction::North, Direction::South]),
+            DirectionPreset::Isometric => HashSet::from([
+                Direction::NorthEast,
+                Direction::NorthWest,
+                Direction::SouthWest,
+                Direction::SouthEast,
+            ]),
+            DirectionPreset::FixedAngle => HashSet::from([Direction::North]),
+        }
     }
 }
 

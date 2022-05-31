@@ -43,6 +43,16 @@ pub enum Direction {
     SouthEast,
 }
 
+#[derive(Clone, Copy, Debug, Eq, PartialEq, enum_iterator::Sequence)]
+pub enum DirectionPreset {
+    FourDirections,
+    EightDirections,
+    LeftRight,
+    UpDown,
+    Isometric,
+    FixedAngle,
+}
+
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Sequence {
     pub(in crate::sheet) keyframes: Vec<Keyframe>,

@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::sheet::{Animation, Direction, Keyframe, Sequence, Sheet, SheetError};
+use crate::sheet::{Animation, Direction, DirectionPreset, Keyframe, Sequence, Sheet, SheetError};
 use crate::state::*;
 
 #[derive(Debug)]
@@ -90,6 +90,7 @@ pub enum Command {
     ZoomInTimeline,
     ZoomOutTimeline,
     ResetTimelineZoom,
+    ApplyDirectionPreset(DirectionPreset),
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
     EndDragKeyframeDuration(),
@@ -337,6 +338,14 @@ impl Document {
         Ok(())
     }
 
+    fn apply_direction_preset(&mut self, preset: DirectionPreset) -> Result<(), DocumentError> {
+        let animation = self.get_workbench_animation_mut()?;
+        animation.apply_direction_preset(preset);
+        // TODO update view.current_sequence if no longer valid
+        // TODO update selection if it contains keyframes from missing sequences, or hitboxes within said keyframes
+        Ok(())
+    }
+
     fn begin_drag_keyframe_duration(
         &mut self,
         direction: Direction,
@@ -576,6 +585,7 @@ impl Document {
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::ResetTimelineZoom => self.view.reset_timeline_zoom(),
+            Command::ApplyDirectionPreset(p) => self.apply_direction_preset(p)?,
             Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
             Command::EndDragKeyframeDuration() => (),

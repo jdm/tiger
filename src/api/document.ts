@@ -1,4 +1,4 @@
-import { ContentTab, Direction } from "@/api/dto";
+import { ContentTab, Direction, DirectionPreset } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
@@ -170,6 +170,13 @@ export async function zoomOutTimeline(): Promise<void> {
 export async function resetTimelineZoom(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("reset_timeline_zoom"));
+}
+
+export async function applyDirectionPreset(
+  preset: DirectionPreset
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("apply_direction_preset", { preset: preset }));
 }
 
 export async function beginDragKeyframeDuration(

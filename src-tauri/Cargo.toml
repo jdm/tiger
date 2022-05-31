@@ -13,6 +13,7 @@ rust-version = "1.57"
 tauri-build = { version = "1.0.0-rc.8", features = [] }
 
 [dependencies]
+enum-iterator = "1.1.1"
 euclid = "0.22"
 image = "0.24"
 json-patch = "0.2.6"

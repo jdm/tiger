@@ -53,6 +53,7 @@ fn main() {
             api::zoom_in_timeline,
             api::zoom_out_timeline,
             api::reset_timeline_zoom,
+            api::apply_direction_preset,
             api::begin_drag_keyframe_duration,
             api::update_drag_keyframe_duration,
             api::end_drag_keyframe_duration,

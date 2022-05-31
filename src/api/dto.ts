@@ -41,6 +41,7 @@ export type Animation = {
   name: string;
   selected: boolean;
   sequences: Record<Direction, Sequence>;
+  directionPreset: DirectionPreset | null;
 };
 
 export enum Direction {
@@ -55,12 +56,12 @@ export enum Direction {
 }
 
 export enum DirectionPreset {
-  FourDirections,
-  EightDirections,
-  LeftRight,
-  UpDown,
-  Isometric,
-  FixedAngle,
+  FourDirections = "FourDirections",
+  EightDirections = "EightDirections",
+  LeftRight = "LeftRight",
+  UpDown = "UpDown",
+  Isometric = "Isometric",
+  FixedAngle = "FixedAngle",
 }
 
 export type Sequence = {

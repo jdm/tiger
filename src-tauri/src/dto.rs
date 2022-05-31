@@ -57,6 +57,7 @@ pub struct Animation {
     name: String,
     selected: bool,
     sequences: HashMap<Direction, Sequence>,
+    direction_preset: Option<DirectionPreset>,
 }
 
 #[derive(Clone, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
@@ -69,6 +70,16 @@ pub enum Direction {
     SouthWest,
     South,
     SouthEast,
+}
+
+#[derive(Clone, Copy, Deserialize, Eq, PartialEq, Serialize)]
+pub enum DirectionPreset {
+    FourDirections,
+    EightDirections,
+    LeftRight,
+    UpDown,
+    Isometric,
+    FixedAngle,
 }
 
 #[derive(Clone, Serialize)]
@@ -198,6 +209,10 @@ where
                 .sequences_iter()
                 .map(|(d, s)| ((*d).into(), s.into()))
                 .collect(),
+            direction_preset: sheet::DirectionPreset::from_directions(
+                animation.1.sequences_iter().map(|(d, _s)| *d),
+            )
+            .map(|p| p.into()),
         }
     }
 }
@@ -228,6 +243,32 @@ impl From<Direction> for sheet::Direction {
             Direction::SouthWest => sheet::Direction::SouthWest,
             Direction::South => sheet::Direction::South,
             Direction::SouthEast => sheet::Direction::SouthEast,
+        }
+    }
+}
+
+impl From<sheet::DirectionPreset> for DirectionPreset {
+    fn from(preset: sheet::DirectionPreset) -> Self {
+        match preset {
+            sheet::DirectionPreset::FourDirections => DirectionPreset::FourDirections,
+            sheet::DirectionPreset::EightDirections => DirectionPreset::EightDirections,
+            sheet::DirectionPreset::LeftRight => DirectionPreset::LeftRight,
+            sheet::DirectionPreset::UpDown => DirectionPreset::UpDown,
+            sheet::DirectionPreset::Isometric => DirectionPreset::Isometric,
+            sheet::DirectionPreset::FixedAngle => DirectionPreset::FixedAngle,
+        }
+    }
+}
+
+impl From<DirectionPreset> for sheet::DirectionPreset {
+    fn from(preset: DirectionPreset) -> Self {
+        match preset {
+            DirectionPreset::FourDirections => sheet::DirectionPreset::FourDirections,
+            DirectionPreset::EightDirections => sheet::DirectionPreset::EightDirections,
+            DirectionPreset::LeftRight => sheet::DirectionPreset::LeftRight,
+            DirectionPreset::UpDown => sheet::DirectionPreset::UpDown,
+            DirectionPreset::Isometric => sheet::DirectionPreset::Isometric,
+            DirectionPreset::FixedAngle => sheet::DirectionPreset::FixedAngle,
         }
     }
 }

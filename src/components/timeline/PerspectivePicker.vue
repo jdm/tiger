@@ -1,13 +1,16 @@
 <template>
-	<Select :options="options" :selected="currentOption" @selected="onSelected" />
+	<Select :options="options" :selected="currentPreset" @selected="onSelected" />
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from 'vue';
+import { computed } from 'vue';
 import Select, { SelectOption } from '@/components/basic/Select.vue'
 import { DirectionPreset } from '@/api/dto';
+import { applyDirectionPreset } from '@/api/document';
+import { useAppStore } from '@/stores/app';
 
-const currentOption = ref(DirectionPreset.FixedAngle);
+const app = useAppStore();
+const currentPreset = computed(() => app.currentAnimation?.directionPreset);
 
 const options = computed((): SelectOption[] => {
 	return [
@@ -21,7 +24,7 @@ const options = computed((): SelectOption[] => {
 });
 
 function onSelected(option: SelectOption) {
-	currentOption.value = option.value;
+	applyDirectionPreset(option.value);
 }
 
 </script>

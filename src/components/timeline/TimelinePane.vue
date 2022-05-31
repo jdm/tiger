@@ -31,7 +31,7 @@
 						<div class="flex flex-col py-2 space-y-1">
 							<Sequence v-for="sequence, direction in app.currentAnimation?.sequences"
 								:sequence="sequence" :direction="direction" />
-							<div v-for="n in (8 - Object.keys(app.currentAnimation?.sequences || []).length)"
+							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
 								class="h-9" />
 						</div>
 						<div class="absolute top-0 mx-1 h-full w-px bg-white transition" :style="playheadStyle" />
