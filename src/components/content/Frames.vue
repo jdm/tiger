@@ -4,7 +4,7 @@
 			<div
 				class="flex flex-row rounded-md items-center cursor-pointer bg-plastic-800 border-2 border-plastic-900">
 				<ViewGridIcon
-					class="w-9 p-2 rounded-md text-plastic-200 border-y border-t-amber-600 border-b-amber-900 bg-gradient-to-b from-amber-800 to-amber-600" />
+					class="w-9 p-2 rounded-md text-plastic-200 border-y border-t-blue-600 border-b-blue-900 bg-gradient-to-b from-blue-800 to-blue-600" />
 				<ViewListIcon class="w-9 p-2 text-plastic-700" />
 			</div>
 			<div
