@@ -42,6 +42,7 @@ export type Animation = {
   selected: boolean;
   sequences: Record<Direction, Sequence>;
   directionPreset: DirectionPreset | null;
+  isLooping: boolean;
 };
 
 export enum Direction {

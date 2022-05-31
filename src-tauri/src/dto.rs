@@ -58,6 +58,7 @@ pub struct Animation {
     selected: bool,
     sequences: HashMap<Direction, Sequence>,
     direction_preset: Option<DirectionPreset>,
+    is_looping: bool,
 }
 
 #[derive(Clone, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
@@ -213,6 +214,7 @@ where
                 animation.1.sequences_iter().map(|(d, _s)| *d),
             )
             .map(|p| p.into()),
+            is_looping: animation.1.looping(),
         }
     }
 }

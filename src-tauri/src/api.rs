@@ -482,6 +482,20 @@ pub fn reset_timeline_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patc
 }
 
 #[tauri::command]
+pub fn set_animation_looping(
+    app_state: tauri::State<'_, AppState>,
+    is_looping: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetAnimationLooping(is_looping))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn apply_direction_preset(
     app_state: tauri::State<'_, AppState>,
     preset: dto::DirectionPreset,

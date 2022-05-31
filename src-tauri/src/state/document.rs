@@ -90,6 +90,7 @@ pub enum Command {
     ZoomInTimeline,
     ZoomOutTimeline,
     ResetTimelineZoom,
+    SetAnimationLooping(bool),
     ApplyDirectionPreset(DirectionPreset),
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
@@ -335,6 +336,12 @@ impl Document {
             None => Duration::ZERO,
         };
         self.view.set_timeline_clock(new_time);
+        Ok(())
+    }
+
+    fn set_animation_looping(&mut self, is_looping: bool) -> Result<(), DocumentError> {
+        let animation = self.get_workbench_animation_mut()?;
+        animation.set_looping(is_looping);
         Ok(())
     }
 
@@ -585,6 +592,7 @@ impl Document {
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::ResetTimelineZoom => self.view.reset_timeline_zoom(),
+            Command::SetAnimationLooping(l) => self.set_animation_looping(l)?,
             Command::ApplyDirectionPreset(p) => self.apply_direction_preset(p)?,
             Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,

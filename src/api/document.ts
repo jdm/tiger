@@ -172,6 +172,13 @@ export async function resetTimelineZoom(): Promise<void> {
   appStore.patch(await invoke("reset_timeline_zoom"));
 }
 
+export async function setAnimationLooping(isLooping: boolean): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_animation_looping", { isLooping: isLooping })
+  );
+}
+
 export async function applyDirectionPreset(
   preset: DirectionPreset
 ): Promise<void> {
