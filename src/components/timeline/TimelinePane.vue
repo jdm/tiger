@@ -2,12 +2,12 @@
 	<Pane>
 		<div class="w-full pl-4 p-2 pb-0 flex flex-row items-center space-x-2">
 			<PerspectivePicker />
-			<Button @click="zoomInTimeline" icon="RefreshIcon" />
+			<Button icon="RefreshIcon" />
 			<Separator :vertical="true" class="h-full px-2 py-1" />
-			<Button @click="zoomInTimeline" icon="ChevronLeftIcon" />
+			<Button icon="ChevronLeftIcon" />
 			<Button v-if="app.currentDocument?.timelineIsPlaying" @click="pause" icon="PauseIcon" :danger="true" />
 			<Button v-if="!app.currentDocument?.timelineIsPlaying" @click="play" icon="PlayIcon" :positive="true" />
-			<Button @click="zoomInTimeline" icon="ChevronRightIcon" />
+			<Button icon="ChevronRightIcon" />
 			<Separator :vertical="true" class="h-full px-2 py-1" />
 			<Button @click="zoomInTimeline" icon="ZoomInIcon" />
 			<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
