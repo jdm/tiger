@@ -54,6 +54,15 @@ export enum Direction {
   SouthEast = "SouthEast",
 }
 
+export enum DirectionPreset {
+  FourDirections,
+  EightDirections,
+  LeftRight,
+  UpDown,
+  Isometric,
+  FixedAngle,
+}
+
 export type Sequence = {
   keyframes: Keyframe[];
   durationMillis: number | null;

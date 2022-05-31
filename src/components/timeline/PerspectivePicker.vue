@@ -1,24 +1,27 @@
 <template>
-	<MultiSwitch :items="items" @activate="onActivate" />
+	<Select :options="options" :selected="currentOption" @selected="onSelected" />
 </template>
 
 <script setup lang="ts">
-import { Ref, ref } from 'vue';
-import MultiSwitch, { MultiSwitchItem } from '@/components/basic/MultiSwitch.vue'
+import { computed, Ref, ref } from 'vue';
+import Select, { SelectOption } from '@/components/basic/Select.vue'
+import { DirectionPreset } from '@/api/dto';
 
-const items: Ref<MultiSwitchItem[]> = ref([
-	{ icon: "ArrowsExpandIcon", rotate: true } as MultiSwitchItem,
-	{ icon: "ArrowsExpandIcon" } as MultiSwitchItem,
-	{ icon: "SunIcon" } as MultiSwitchItem,
-	{ icon: "SwitchHorizontalIcon" } as MultiSwitchItem,
-	{ icon: "SwitchVerticalIcon" } as MultiSwitchItem,
-	{ icon: "CubeIcon" } as MultiSwitchItem,
-]);
+const currentOption = ref(DirectionPreset.FixedAngle);
 
-function onActivate(activatedItem: MultiSwitchItem) {
-	for (let item of items.value) {
-		item.active = item == activatedItem;
-	}
+const options = computed((): SelectOption[] => {
+	return [
+		{ name: "4 Directions", value: DirectionPreset.FourDirections },
+		{ name: "8 Directions", value: DirectionPreset.EightDirections },
+		{ name: "Left / Right", value: DirectionPreset.LeftRight },
+		{ name: "Up / Down", value: DirectionPreset.UpDown },
+		{ name: "Isometric", value: DirectionPreset.Isometric },
+		{ name: "Fixed Angle", value: DirectionPreset.FixedAngle },
+	];
+});
+
+function onSelected(option: SelectOption) {
+	currentOption.value = option.value;
 }
 
 </script>
