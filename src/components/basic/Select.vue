@@ -15,7 +15,7 @@
 		<Transition>
 			<div v-if="open" class="absolute mt-2 z-50 w-full shadow-lg shadow-black/30 origin-top">
 				<div
-					class="flex flex-col py-2 rounded-md mx-0.5 bg-plastic-900 border-2 border-zinc-700 outline outline-zinc-900">
+					class="flex flex-col py-2 rounded-md mx-0.5 bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900">
 					<div v-for="option in options" @click="onOptionSelected(option)"
 						class="px-4 py-1 font-semibold text-zinc-400 hover:bg-blue-600 hover:text-blue-100">
 						{{ option.name }}

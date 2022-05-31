@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row items-center hover:text-plastic-200 hover:bg-plastic-500" :class="dynamicClasses">
+	<div class="flex flex-row items-center text-zinc-400 hover:bg-zinc-900" :class="dynamicClasses">
 		<div>{{ entry.name }}</div>
 	</div>
 </template>
@@ -15,7 +15,7 @@ const props = defineProps<{
 
 
 const dynamicClasses = computed(() => {
-	return props.active ? ['text-plastic-200', 'bg-plastic-500'] : ['text-plastic-300'];
+	return props.active ? ['bg-zinc-900'] : [];
 
 });
 </script>

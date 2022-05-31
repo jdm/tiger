@@ -1,5 +1,5 @@
 <template>
-	<div class="py-2 text-plastic-300 bg-plastic-700 shadow-md shadow-black/30">
+	<div class="py-2 bg-zinc-900 shadow-lg shadow-black/30">
 		<div v-for="entry of content">
 			<MenuItem v-if="'name' in entry" :entry="entry" @executed="onExecuted" />
 			<MenuSeparator v-else />
