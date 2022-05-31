@@ -267,7 +267,6 @@ impl Document {
 
     fn tick(&mut self, delta: Duration) {
         self.advance_timeline(delta);
-        // self.try_close(); // TODO
     }
 
     fn advance_timeline(&mut self, delta: Duration) {
@@ -317,7 +316,7 @@ impl Document {
 
         self.persistent.set_timeline_is_playing(true);
 
-        if self.view.selection().has_hitboxes() || self.view.selection().has_keyframes() {
+        if self.view.selection().has_hitboxes() {
             self.view.selection_mut().clear();
         }
 
@@ -349,6 +348,7 @@ impl Document {
         let animation = self.get_workbench_animation_mut()?;
         animation.apply_direction_preset(preset);
         // TODO update view.current_sequence if no longer valid
+        // TODO update playhead if past the end of current sequence
         // TODO update selection if it contains keyframes from missing sequences, or hitboxes within said keyframes
         Ok(())
     }
