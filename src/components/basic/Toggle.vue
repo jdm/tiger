@@ -1,7 +1,7 @@
 <template>
 	<div class="rounded-md border-2 border-plastic-900">
 		<div @click="onClicked" class="py-1.5 px-2 rounded-md border-2 cursor-pointer" :class="dynamicClasses">
-			<Icon :name="icon" class="w-6" />
+			<Icon :name="icon" class="w-6 -mb-px" />
 		</div>
 	</div>
 </template>
