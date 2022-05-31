@@ -24,9 +24,9 @@ const dynamicClasses = computed(() => {
 	return [
 		...(props.toggled ?
 			[
-				"text-emerald-200",
-				"border-emerald-600", "border-t-emerald-500",
-				"bg-gradient-to-b", "from-emerald-900", "to-emerald-700"
+				"text-cyan-200",
+				"border-cyan-600", "border-t-cyan-500",
+				"bg-gradient-to-b", "from-cyan-900", "to-cyan-700"
 			]
 			: [
 				"text-zinc-700",
