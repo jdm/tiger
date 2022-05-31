@@ -601,7 +601,9 @@ impl Document {
 
         if !matches!(
             command,
-            Command::BeginDragKeyframeDuration(_, _) | Command::UpdateDragKeyframeDuration(_)
+            Command::Tick(_)
+                | Command::BeginDragKeyframeDuration(_, _)
+                | Command::UpdateDragKeyframeDuration(_)
         ) {
             self.transient = Default::default();
         }
