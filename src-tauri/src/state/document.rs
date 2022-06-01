@@ -192,8 +192,30 @@ impl Document {
             .unwrap_or_default();
         self.view.timeline_clock = self.view.timeline_clock.min(timeline_cap);
 
-        // TODO update selection if it contains anything no longer in the sheet
-        // Also cleanup selection if it contains anything inside a keyframe not currently visible
+        self.view
+            .selection
+            .frames
+            .retain(|path| self.sheet.has_frame(path));
+
+        self.view
+            .selection
+            .animations
+            .retain(|name| self.sheet.has_animation(name));
+
+        self.view
+            .selection
+            .keyframes
+            .retain(|(name, direction, index)| {
+                Some(name) == self.view.current_animation.as_ref()
+                    && self
+                        .sheet
+                        .animation(name)
+                        .and_then(|a| a.sequence(*direction))
+                        .map(|s| *index < s.num_keyframes())
+                        .unwrap_or_default()
+            });
+
+        // TODO hitbox selection cleanup
     }
 
     fn alter_selection(
@@ -357,14 +379,15 @@ impl Document {
         index: usize,
     ) -> Result<(), DocumentError> {
         let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
         if !self
             .view
-            .selection()
-            .is_keyframe_selected(animation_name, direction, index)
+            .selection
+            .is_keyframe_selected(&animation_name, direction, index)
         {
             self.view
                 .selection
-                .select_keyframe(animation_name.clone(), direction, index);
+                .select_keyframe(animation_name, direction, index);
         }
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
             frame_being_dragged: (direction, index),

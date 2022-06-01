@@ -144,6 +144,14 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         self.selected_items.remove(item);
     }
 
+    pub fn retain<F>(&mut self, mut f: F)
+    where
+        F: FnMut(&T) -> bool,
+    {
+        self.pivot = self.pivot.take().filter(&mut f);
+        self.selected_items.retain(f);
+    }
+
     pub fn select(&mut self, item: T) {
         *self = Self::new(vec![item]);
     }
