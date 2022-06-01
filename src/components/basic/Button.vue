@@ -29,10 +29,10 @@ const dynamicClasses = computed(() => {
 
 const palette = computed(() => {
 	if (props.danger) {
-		return ["text-red-100", "bg-red-600", "border-t-red-500", "border-b-red-900"];
+		return ["text-red-100", "bg-gradient-to-b", "from-red-800", "to-red-600", "border-t-red-600", "border-b-red-900"];
 	} else if (props.positive) {
-		return ["text-green-100", "bg-green-600", "border-t-green-500", "border-b-green-900"];
+		return ["text-green-100", "bg-gradient-to-b", "from-green-800", "to-green-600", "border-t-green-600", "border-b-green-900"];
 	}
-	return ["text-plastic-200", "bg-plastic-500", "border-t-plastic-400", "border-b-plastic-700"];
+	return ["text-plastic-200", "bg-gradient-to-b", "from-plastic-600", "to-plastic-500", "border-t-plastic-500", "border-b-plastic-700"];
 });
 </script>
