@@ -12,14 +12,14 @@ pub enum ContentTab {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
-    content_tab: ContentTab,
-    selection: MultiSelection,
-    current_animation: Option<String>,
-    current_sequence: Option<Direction>,
-    workbench_offset: Vector2D<f32>,
-    timeline_clock: Duration,
-    workbench_zoom_level: i32,
-    timeline_zoom_level: i32,
+    pub(in crate::state) content_tab: ContentTab,
+    pub(in crate::state) selection: MultiSelection,
+    pub(in crate::state) current_animation: Option<String>,
+    pub(in crate::state) current_sequence: Option<Direction>,
+    pub(in crate::state) workbench_offset: Vector2D<f32>,
+    pub(in crate::state) timeline_clock: Duration,
+    pub(in crate::state) workbench_zoom_level: i32,
+    pub(in crate::state) timeline_zoom_level: i32,
 }
 
 impl Default for View {
@@ -42,40 +42,16 @@ impl View {
         self.content_tab
     }
 
-    pub fn set_content_tab(&mut self, content_tab: ContentTab) {
-        self.content_tab = content_tab;
-    }
-
     pub fn selection(&self) -> &MultiSelection {
         &self.selection
-    }
-
-    pub fn selection_mut(&mut self) -> &mut MultiSelection {
-        &mut self.selection
     }
 
     pub fn current_animation(&self) -> &Option<String> {
         &self.current_animation
     }
 
-    pub fn clear_current_animation(&mut self) {
-        self.current_animation = None;
-    }
-
-    pub fn set_current_animation<T: AsRef<str>>(&mut self, name: T) {
-        self.current_animation = Some(name.as_ref().to_owned());
-    }
-
     pub fn current_sequence(&self) -> &Option<Direction> {
         &self.current_sequence
-    }
-
-    pub fn clear_current_sequence(&mut self) {
-        self.current_sequence = None;
-    }
-
-    pub fn set_current_sequence(&mut self, direction: Direction) {
-        self.current_sequence = Some(direction);
     }
 
     pub fn workbench_zoom(&self) -> f32 {
@@ -160,10 +136,6 @@ impl View {
 
     pub fn timeline_clock(&self) -> Duration {
         self.timeline_clock
-    }
-
-    pub fn set_timeline_clock(&mut self, new_clock: Duration) {
-        self.timeline_clock = new_clock;
     }
 
     pub fn skip_to_timeline_start(&mut self) {

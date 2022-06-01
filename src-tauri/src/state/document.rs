@@ -135,7 +135,7 @@ impl Document {
         let mut document = Document::new(&path);
         document.sheet = Sheet::read(path.as_ref())?;
         document.history[0].sheet = document.sheet.clone();
-        document.persistent.set_disk_version(document.next_version);
+        document.persistent.disk_version = document.next_version;
         Ok(document)
     }
 
@@ -144,7 +144,7 @@ impl Document {
     }
 
     pub fn mark_as_saved(&mut self, saved_version: i32) {
-        self.persistent.set_disk_version(saved_version);
+        self.persistent.disk_version = saved_version;
     }
 
     pub fn version(&self) -> i32 {
@@ -160,19 +160,39 @@ impl Document {
     }
 
     pub fn request_close(&mut self) {
-        self.persistent.set_close_requested(true);
+        self.persistent.close_requested = true;
     }
 
     pub fn cancel_close(&mut self) {
-        self.persistent.set_close_requested(false);
+        self.persistent.close_requested = false;
     }
 
     pub fn should_close(&self) -> bool {
         self.persistent.close_requested() && self.is_saved()
     }
 
-    fn focus_content_tab(&mut self, content_tab: ContentTab) {
-        self.view.set_content_tab(content_tab);
+    fn sanitize_view(&mut self) {
+        match self.get_workbench_animation() {
+            Ok(animation) => {
+                if self.get_workbench_sequence().is_err() {
+                    let any_direction = animation.sequences_iter().next().map(|(d, _s)| *d);
+                    self.view.current_sequence = any_direction;
+                }
+            }
+            Err(_) => {
+                self.view.current_animation = None;
+                self.view.current_sequence = None;
+            }
+        };
+
+        let timeline_cap = self
+            .get_workbench_sequence()
+            .ok()
+            .and_then(|s| s.duration())
+            .unwrap_or_default();
+        self.view.timeline_clock = self.view.timeline_clock.min(timeline_cap);
+
+        // TODO update selection if it contains anything no longer in the sheet
     }
 
     fn alter_selection(
@@ -206,7 +226,7 @@ impl Document {
                 MultiSelectionEdit::Keyframes((*d, *i), all_keyframes)
             }
         };
-        self.view.selection_mut().alter(edit, shift, ctrl);
+        self.view.selection.alter(edit, shift, ctrl);
         Ok(())
     }
 
@@ -216,7 +236,7 @@ impl Document {
             animation_name
         };
         self.view
-            .selection_mut()
+            .selection
             .select(SingleSelection::Animation(animation_name.clone()));
         self.edit_animation(animation_name)
     }
@@ -228,15 +248,10 @@ impl Document {
                 .ok_or(DocumentError::AnimationNotInDocument(
                     name.as_ref().to_owned(),
                 ))?;
-        self.view.set_current_animation(&name);
+        self.view.current_animation = Some(name.as_ref().to_owned());
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
-        self.persistent.set_timeline_is_playing(false);
-        // TODO preserve current direction if possible?
-        match animation.sequences_iter().next().map(|(d, _s)| d) {
-            Some(d) => self.view.set_current_sequence(*d),
-            None => self.view.clear_current_sequence(),
-        }
+        self.persistent.timeline_is_playing = false;
         Ok(())
     }
 
@@ -247,10 +262,10 @@ impl Document {
     ) -> Result<(), DocumentError> {
         self.sheet.rename_animation(&old_name, &new_name)?;
         self.view
-            .selection_mut()
+            .selection
             .select(SingleSelection::Animation(new_name.as_ref().to_owned()));
         if Some(old_name.as_ref()) == self.view.current_animation().as_deref() {
-            self.view.set_current_animation(new_name);
+            self.view.current_animation = Some(new_name.as_ref().to_owned());
         }
         Ok(())
     }
@@ -258,11 +273,8 @@ impl Document {
     fn delete_animation<T: AsRef<str>>(&mut self, name: T) {
         self.sheet.delete_animation(&name);
         self.view
-            .selection_mut()
+            .selection
             .remove(SingleSelection::Animation(name.as_ref().to_owned()));
-        if Some(name.as_ref()) == self.view.current_animation().as_deref() {
-            self.view.clear_current_animation();
-        }
     }
 
     fn tick(&mut self, delta: Duration) {
@@ -271,8 +283,7 @@ impl Document {
 
     fn advance_timeline(&mut self, delta: Duration) {
         if self.persistent.is_timeline_playing() {
-            self.view
-                .set_timeline_clock(self.view.timeline_clock() + delta);
+            self.view.timeline_clock += delta;
             if let Ok(animation) = self.get_workbench_animation() {
                 if let Ok(sequence) = self.get_workbench_sequence() {
                     match sequence.duration_millis() {
@@ -280,20 +291,18 @@ impl Document {
                             let clock_ms = self.view.timeline_clock().as_millis() as u64;
                             // Loop animation
                             if animation.looping() {
-                                self.view
-                                    .set_timeline_clock(Duration::from_millis(clock_ms % d));
+                                self.view.timeline_clock = Duration::from_millis(clock_ms % d);
 
                             // Stop playhead at the end of animation
                             } else if clock_ms >= d {
-                                self.persistent.set_timeline_is_playing(false);
-                                self.view
-                                    .set_timeline_clock(Duration::from_millis(u64::from(d)));
+                                self.persistent.timeline_is_playing = false;
+                                self.view.timeline_clock = Duration::from_millis(u64::from(d));
                             }
                         }
 
                         // Reset playhead
                         _ => {
-                            self.persistent.set_timeline_is_playing(false);
+                            self.persistent.timeline_is_playing = false;
                             self.view.skip_to_timeline_start();
                         }
                     };
@@ -314,17 +323,17 @@ impl Document {
             }
         }
 
-        self.persistent.set_timeline_is_playing(true);
+        self.persistent.timeline_is_playing = true;
 
         if self.view.selection().has_hitboxes() {
-            self.view.selection_mut().clear();
+            self.view.selection.clear();
         }
 
         Ok(())
     }
 
     fn pause(&mut self) {
-        self.persistent.set_timeline_is_playing(false);
+        self.persistent.timeline_is_playing = false;
     }
 
     fn scrub_timeline(&mut self, time: Duration) -> Result<(), DocumentError> {
@@ -334,7 +343,7 @@ impl Document {
             Some(_) => time,
             None => Duration::ZERO,
         };
-        self.view.set_timeline_clock(new_time);
+        self.view.timeline_clock = new_time;
         Ok(())
     }
 
@@ -347,9 +356,6 @@ impl Document {
     fn apply_direction_preset(&mut self, preset: DirectionPreset) -> Result<(), DocumentError> {
         let animation = self.get_workbench_animation_mut()?;
         animation.apply_direction_preset(preset);
-        // TODO update view.current_sequence if no longer valid
-        // TODO update playhead if past the end of current sequence
-        // TODO update selection if it contains keyframes from missing sequences, or hitboxes within said keyframes
         Ok(())
     }
 
@@ -360,7 +366,7 @@ impl Document {
     ) -> Result<(), DocumentError> {
         if !self.view.selection().is_keyframe_selected(direction, index) {
             self.view
-                .selection_mut()
+                .selection
                 .select(SingleSelection::Keyframe(direction, index));
         }
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
@@ -537,7 +543,7 @@ impl Document {
             self.history_index -= 1;
             self.sheet = self.history[self.history_index].sheet.clone();
             self.view = self.history[self.history_index].view.clone();
-            self.persistent.set_timeline_is_playing(false);
+            self.persistent.timeline_is_playing = false;
         }
         Ok(())
     }
@@ -547,7 +553,7 @@ impl Document {
             self.history_index += 1;
             self.sheet = self.history[self.history_index].sheet.clone();
             self.view = self.history[self.history_index].view.clone();
-            self.persistent.set_timeline_is_playing(false);
+            self.persistent.timeline_is_playing = false;
         }
         Ok(())
     }
@@ -568,9 +574,9 @@ impl Document {
         match command {
             Command::Undo => self.undo()?,
             Command::Redo => self.redo()?,
-            Command::FocusContentTab(t) => self.focus_content_tab(t),
+            Command::FocusContentTab(t) => self.view.content_tab = t,
             Command::ImportFrames(ref p) => self.sheet.add_frames(p),
-            Command::ClearSelection => self.view.selection_mut().clear(),
+            Command::ClearSelection => self.view.selection.clear(),
             Command::AlterSelection(ref selection, shift, ctrl) => {
                 self.alter_selection(selection, shift, ctrl)?
             }
@@ -607,6 +613,8 @@ impl Document {
         ) {
             self.transient = Default::default();
         }
+
+        self.sanitize_view();
 
         self.record_command(command);
         Ok(())
