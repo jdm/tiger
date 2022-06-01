@@ -102,8 +102,10 @@ impl MultiSelection {
         direction: Direction,
         index: usize,
     ) -> bool {
+        // TODO Unwanted copy here! (and this gets called a lot)
+        // Potential solution (not on stable atm)
         self.keyframes
-            .contains(&(animation_name.as_ref().to_owned(), direction, index)) // TODO Unwanted copy here! (and this is called a lot)
+            .contains(&(animation_name.as_ref().to_owned(), direction, index))
     }
 }
 
