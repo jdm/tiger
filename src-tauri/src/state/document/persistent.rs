@@ -1,8 +1,8 @@
 #[derive(Clone, Debug, Default)]
 pub struct Persistent {
-    pub(in crate::state) close_requested: bool,
-    pub(in crate::state) timeline_is_playing: bool,
-    pub(in crate::state) disk_version: i32,
+    pub(super) close_requested: bool,
+    pub(super) timeline_is_playing: bool,
+    pub(super) disk_version: i32,
 }
 
 impl Persistent {
@@ -12,9 +12,5 @@ impl Persistent {
 
     pub fn is_timeline_playing(&self) -> bool {
         self.timeline_is_playing
-    }
-
-    pub fn disk_version(&self) -> i32 {
-        self.disk_version
     }
 }

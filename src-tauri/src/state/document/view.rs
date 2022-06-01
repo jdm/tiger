@@ -12,14 +12,14 @@ pub enum ContentTab {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
-    pub(in crate::state) content_tab: ContentTab,
-    pub(in crate::state) selection: MultiSelection,
-    pub(in crate::state) current_animation: Option<String>,
-    pub(in crate::state) current_sequence: Option<Direction>,
-    pub(in crate::state) workbench_offset: Vector2D<f32>,
-    pub(in crate::state) timeline_clock: Duration,
-    pub(in crate::state) workbench_zoom_level: i32,
-    pub(in crate::state) timeline_zoom_level: i32,
+    pub(super) content_tab: ContentTab,
+    pub(super) selection: MultiSelection,
+    pub(super) current_animation: Option<String>,
+    pub(super) current_sequence: Option<Direction>,
+    pub(super) workbench_offset: Vector2D<f32>,
+    pub(super) timeline_clock: Duration,
+    pub(super) workbench_zoom_level: i32,
+    pub(super) timeline_zoom_level: i32,
 }
 
 impl Default for View {
@@ -62,7 +62,7 @@ impl View {
         }
     }
 
-    pub fn zoom_in_workbench(&mut self) {
+    pub(super) fn zoom_in_workbench(&mut self) {
         if self.workbench_zoom_level >= 1 {
             self.workbench_zoom_level *= 2;
         } else if self.workbench_zoom_level == -2 {
@@ -73,7 +73,7 @@ impl View {
         self.workbench_zoom_level = std::cmp::min(self.workbench_zoom_level, 32);
     }
 
-    pub fn zoom_out_workbench(&mut self) {
+    pub(super) fn zoom_out_workbench(&mut self) {
         if self.workbench_zoom_level > 1 {
             self.workbench_zoom_level /= 2;
         } else if self.workbench_zoom_level == 1 {
@@ -84,7 +84,7 @@ impl View {
         self.workbench_zoom_level = std::cmp::max(self.workbench_zoom_level, -4);
     }
 
-    pub fn reset_workbench_zoom(&mut self) {
+    pub(super) fn reset_workbench_zoom(&mut self) {
         self.workbench_zoom_level = 1;
     }
 
@@ -92,11 +92,11 @@ impl View {
         self.workbench_offset
     }
 
-    pub fn center_workbench(&mut self) {
+    pub(super) fn center_workbench(&mut self) {
         self.workbench_offset = Vector2D::zero();
     }
 
-    pub fn zoom_in_timeline(&mut self) {
+    pub(super) fn zoom_in_timeline(&mut self) {
         if self.timeline_zoom_level >= 1 {
             self.timeline_zoom_level *= 2;
         } else if self.timeline_zoom_level == -2 {
@@ -107,7 +107,7 @@ impl View {
         self.timeline_zoom_level = std::cmp::min(self.timeline_zoom_level, 4);
     }
 
-    pub fn zoom_out_timeline(&mut self) {
+    pub(super) fn zoom_out_timeline(&mut self) {
         if self.timeline_zoom_level > 1 {
             self.timeline_zoom_level /= 2;
         } else if self.timeline_zoom_level == 1 {
@@ -118,7 +118,7 @@ impl View {
         self.timeline_zoom_level = std::cmp::max(self.timeline_zoom_level, -4);
     }
 
-    pub fn reset_timeline_zoom(&mut self) {
+    pub(super) fn reset_timeline_zoom(&mut self) {
         self.timeline_zoom_level = 1;
     }
 
@@ -130,7 +130,7 @@ impl View {
         }
     }
 
-    pub fn pan(&mut self, delta: Vector2D<f32>) {
+    pub(super) fn pan(&mut self, delta: Vector2D<f32>) {
         self.workbench_offset += delta
     }
 
@@ -138,7 +138,7 @@ impl View {
         self.timeline_clock
     }
 
-    pub fn skip_to_timeline_start(&mut self) {
+    pub(super) fn skip_to_timeline_start(&mut self) {
         self.timeline_clock = Duration::ZERO;
     }
 }

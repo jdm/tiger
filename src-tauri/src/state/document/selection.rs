@@ -5,10 +5,10 @@ use std::path::{Path, PathBuf};
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct MultiSelection {
-    pub(in crate::state) frames: MultiSelectionData<PathBuf>,
-    pub(in crate::state) animations: MultiSelectionData<String>,
-    pub(in crate::state) hitboxes: MultiSelectionData<String>,
-    pub(in crate::state) keyframes: MultiSelectionData<(String, Direction, usize)>,
+    pub(super) frames: MultiSelectionData<PathBuf>,
+    pub(super) animations: MultiSelectionData<String>,
+    pub(super) hitboxes: MultiSelectionData<String>,
+    pub(super) keyframes: MultiSelectionData<(String, Direction, usize)>,
 }
 
 #[derive(Clone, Debug)]
