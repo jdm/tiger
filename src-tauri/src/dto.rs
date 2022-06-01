@@ -143,10 +143,11 @@ impl From<&state::Document> for Document {
             for (direction, sequence) in animation.sequences.iter_mut() {
                 let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
-                    keyframe.selected = document
-                        .view()
-                        .selection()
-                        .is_keyframe_selected((*direction).into(), index);
+                    keyframe.selected = document.view().selection().is_keyframe_selected(
+                        name,
+                        (*direction).into(),
+                        index,
+                    );
                     keyframe.start_time_millis = time_millis;
                     time_millis += keyframe.duration_millis;
                 }

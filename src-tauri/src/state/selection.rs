@@ -8,11 +8,11 @@ pub struct MultiSelection {
     pub(in crate::state) frames: MultiSelectionData<PathBuf>,
     pub(in crate::state) animations: MultiSelectionData<String>,
     pub(in crate::state) hitboxes: MultiSelectionData<String>,
-    pub(in crate::state) keyframes: MultiSelectionData<(Direction, usize)>,
+    pub(in crate::state) keyframes: MultiSelectionData<(String, Direction, usize)>,
 }
 
 #[derive(Clone, Debug)]
-pub enum SingleSelection {
+pub enum SelectionInput {
     Frame(PathBuf),
     Animation(String),
     Hitbox(String),
@@ -23,7 +23,7 @@ pub enum MultiSelectionEdit {
     Frames(PathBuf, Vec<PathBuf>),
     Animations(String, Vec<String>),
     Hitboxes(String, Vec<String>),
-    Keyframes((Direction, usize), Vec<(Direction, usize)>),
+    Keyframes((String, Direction, usize), Vec<(String, Direction, usize)>),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -40,14 +40,19 @@ impl MultiSelection {
         *self = Default::default();
     }
 
-    pub fn select(&mut self, new_selection: SingleSelection) {
+    pub fn select_frame(&mut self, frame: PathBuf) {
         self.clear();
-        match new_selection {
-            SingleSelection::Frame(f) => self.frames.select(f),
-            SingleSelection::Animation(a) => self.animations.select(a),
-            SingleSelection::Hitbox(h) => self.hitboxes.select(h),
-            SingleSelection::Keyframe(d, i) => self.keyframes.select((d, i)),
-        }
+        self.frames.select(frame);
+    }
+
+    pub fn select_animation(&mut self, animation: String) {
+        self.clear();
+        self.animations.select(animation);
+    }
+
+    pub fn select_keyframe(&mut self, animation: String, direction: Direction, index: usize) {
+        self.clear();
+        self.keyframes.select((animation, direction, index));
     }
 
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
@@ -91,8 +96,14 @@ impl MultiSelection {
         self.hitboxes.contains(name.as_ref())
     }
 
-    pub fn is_keyframe_selected(&self, direction: Direction, index: usize) -> bool {
-        self.keyframes.contains(&(direction, index))
+    pub fn is_keyframe_selected<T: AsRef<str>>(
+        &self,
+        animation_name: T,
+        direction: Direction,
+        index: usize,
+    ) -> bool {
+        self.keyframes
+            .contains(&(animation_name.as_ref().to_owned(), direction, index)) // TODO Unwanted copy here! (and this is called a lot)
     }
 }
 

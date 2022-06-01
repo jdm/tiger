@@ -4,7 +4,7 @@ use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::dto;
-use crate::state::{App, AppState, Command, Document, DocumentError, SingleSelection};
+use crate::state::{App, AppState, Command, Document, DocumentError, SelectionInput};
 
 impl AppState {
     pub fn mutate<F>(&self, operation: F) -> Patch
@@ -268,7 +268,7 @@ pub fn select_frame(
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::AlterSelection(
-                    SingleSelection::Frame(path),
+                    SelectionInput::Frame(path),
                     shift,
                     ctrl,
                 ))
@@ -288,7 +288,7 @@ pub fn select_animation(
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::AlterSelection(
-                    SingleSelection::Animation(name),
+                    SelectionInput::Animation(name),
                     shift,
                     ctrl,
                 ))
@@ -309,7 +309,7 @@ pub fn select_keyframe(
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::AlterSelection(
-                    SingleSelection::Keyframe(direction.into(), index),
+                    SelectionInput::Keyframe(direction.into(), index),
                     shift,
                     ctrl,
                 ))

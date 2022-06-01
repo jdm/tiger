@@ -73,7 +73,7 @@ pub enum Command {
     FocusContentTab(ContentTab),
     ImportFrames(Vec<PathBuf>),
     ClearSelection,
-    AlterSelection(SingleSelection, bool, bool),
+    AlterSelection(SelectionInput, bool, bool),
     Pan(Vector2D<f32>),
     CenterWorkbench,
     ZoomInWorkbench,
@@ -173,7 +173,7 @@ impl Document {
 
     fn sanitize_view(&mut self) {
         match self.get_workbench_animation() {
-            Ok(animation) => {
+            Ok((_, animation)) => {
                 if self.get_workbench_sequence().is_err() {
                     let any_direction = animation.sequences_iter().next().map(|(d, _s)| *d);
                     self.view.current_sequence = any_direction;
@@ -198,33 +198,41 @@ impl Document {
 
     fn alter_selection(
         &mut self,
-        selection: &SingleSelection,
+        selection: &SelectionInput,
         shift: bool,
         ctrl: bool,
     ) -> Result<(), DocumentError> {
         let edit = match selection {
-            SingleSelection::Frame(f) => MultiSelectionEdit::Frames(
+            SelectionInput::Frame(f) => MultiSelectionEdit::Frames(
                 f.clone(),
                 self.sheet
                     .frames_iter()
                     .map(|f| f.source().to_owned())
                     .collect(),
             ),
-            SingleSelection::Animation(a) => MultiSelectionEdit::Animations(
+            SelectionInput::Animation(a) => MultiSelectionEdit::Animations(
                 a.clone(),
                 self.sheet
                     .animations_iter()
                     .map(|(n, _)| n.clone())
                     .collect(),
             ),
-            SingleSelection::Hitbox(_) => todo!(),
-            SingleSelection::Keyframe(d, i) => {
-                let animation = self.get_workbench_animation()?;
-                let all_keyframes: Vec<(Direction, usize)> = animation
-                    .sequences_iter()
-                    .flat_map(|(d, s)| (0..s.num_keyframes()).map(|i| (*d, i)))
+            SelectionInput::Hitbox(_) => todo!(),
+            SelectionInput::Keyframe(d, i) => {
+                let (animation_name, _) = self.get_workbench_animation()?;
+                let all_keyframes: Vec<(String, Direction, usize)> = self
+                    .sheet
+                    .animations_iter()
+                    .flat_map(|(name, animation)| {
+                        animation
+                            .sequences_iter()
+                            .flat_map(|(direction, sequence)| {
+                                (0..sequence.num_keyframes())
+                                    .map(|index| (name.clone(), *direction, index))
+                            })
+                    })
                     .collect();
-                MultiSelectionEdit::Keyframes((*d, *i), all_keyframes)
+                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), all_keyframes)
             }
         };
         self.view.selection.alter(edit, shift, ctrl);
@@ -236,19 +244,11 @@ impl Document {
             let (animation_name, _) = self.sheet.create_animation();
             animation_name
         };
-        self.view
-            .selection
-            .select(SingleSelection::Animation(animation_name.clone()));
+        self.view.selection.select_animation(animation_name.clone());
         self.edit_animation(animation_name)
     }
 
     fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
-        let animation =
-            self.sheet
-                .animation(&name)
-                .ok_or(DocumentError::AnimationNotInDocument(
-                    name.as_ref().to_owned(),
-                ))?;
         self.view.current_animation = Some(name.as_ref().to_owned());
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
@@ -264,7 +264,7 @@ impl Document {
         self.sheet.rename_animation(&old_name, &new_name)?;
         self.view
             .selection
-            .select(SingleSelection::Animation(new_name.as_ref().to_owned()));
+            .select_animation(new_name.as_ref().to_owned());
         if Some(old_name.as_ref()) == self.view.current_animation().as_deref() {
             self.view.current_animation = Some(new_name.as_ref().to_owned());
         }
@@ -282,7 +282,7 @@ impl Document {
     fn advance_timeline(&mut self, delta: Duration) {
         if self.persistent.is_timeline_playing() {
             self.view.timeline_clock += delta;
-            if let Ok(animation) = self.get_workbench_animation() {
+            if let Ok((_, animation)) = self.get_workbench_animation() {
                 if let Ok(sequence) = self.get_workbench_sequence() {
                     match sequence.duration_millis() {
                         Some(d) if d > 0 => {
@@ -340,13 +340,13 @@ impl Document {
     }
 
     fn set_animation_looping(&mut self, is_looping: bool) -> Result<(), DocumentError> {
-        let animation = self.get_workbench_animation_mut()?;
+        let (_, animation) = self.get_workbench_animation_mut()?;
         animation.set_looping(is_looping);
         Ok(())
     }
 
     fn apply_direction_preset(&mut self, preset: DirectionPreset) -> Result<(), DocumentError> {
-        let animation = self.get_workbench_animation_mut()?;
+        let (_, animation) = self.get_workbench_animation_mut()?;
         animation.apply_direction_preset(preset);
         Ok(())
     }
@@ -356,10 +356,15 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> Result<(), DocumentError> {
-        if !self.view.selection().is_keyframe_selected(direction, index) {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        if !self
+            .view
+            .selection()
+            .is_keyframe_selected(animation_name, direction, index)
+        {
             self.view
                 .selection
-                .select(SingleSelection::Keyframe(direction, index));
+                .select_keyframe(animation_name.clone(), direction, index);
         }
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
             frame_being_dragged: (direction, index),
@@ -408,7 +413,7 @@ impl Document {
     }
 
     pub fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
-        let animation = self.get_workbench_animation()?;
+        let (_, animation) = self.get_workbench_animation()?;
         let direction = self
             .view
             .current_sequence()
@@ -418,36 +423,39 @@ impl Document {
             .ok_or(DocumentError::SequenceNotInAnimation(direction))
     }
 
-    pub fn get_workbench_animation(&self) -> Result<&Animation, DocumentError> {
+    pub fn get_workbench_animation(&self) -> Result<(&String, &Animation), DocumentError> {
         let animation_name = self
             .view
             .current_animation()
-            .clone()
+            .as_ref()
             .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
-        self.sheet
-            .animation(&animation_name)
-            .ok_or(DocumentError::AnimationNotInDocument(
-                animation_name.to_owned(),
-            ))
+        let animation =
+            self.sheet
+                .animation(&animation_name)
+                .ok_or(DocumentError::AnimationNotInDocument(
+                    animation_name.to_owned(),
+                ))?;
+        Ok((animation_name, animation))
     }
 
-    pub fn get_workbench_animation_mut(&mut self) -> Result<&mut Animation, DocumentError> {
+    pub fn get_workbench_animation_mut(
+        &mut self,
+    ) -> Result<(String, &mut Animation), DocumentError> {
         let animation_name = self
             .view
             .current_animation()
             .clone()
             .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
-        self.sheet
-            .animation_mut(&animation_name)
-            .ok_or(DocumentError::AnimationNotInDocument(
-                animation_name.to_owned(),
-            ))
+        let animation = self.sheet.animation_mut(&animation_name).ok_or(
+            DocumentError::AnimationNotInDocument(animation_name.to_owned()),
+        )?;
+        Ok((animation_name, animation))
     }
 
     pub fn get_selected_keyframes(
         &self,
     ) -> Result<Vec<(Direction, usize, &Keyframe)>, DocumentError> {
-        let animation = self.get_workbench_animation()?;
+        let (animation_name, animation) = self.get_workbench_animation()?;
         Ok(animation
             .sequences_iter()
             .flat_map(|(direction, sequence)| {
@@ -455,11 +463,11 @@ impl Document {
                     .keyframes_iter()
                     .enumerate()
                     .filter_map(|(index, keyframe)| {
-                        if self
-                            .view
-                            .selection()
-                            .is_keyframe_selected(*direction, index)
-                        {
+                        if self.view.selection().is_keyframe_selected(
+                            animation_name,
+                            *direction,
+                            index,
+                        ) {
                             Some((*direction, index, keyframe))
                         } else {
                             None
@@ -473,7 +481,7 @@ impl Document {
         &mut self,
     ) -> Result<Vec<(Direction, usize, &mut Keyframe)>, DocumentError> {
         let selection = self.view().selection().clone();
-        let animation = self.get_workbench_animation_mut()?;
+        let (animation_name, animation) = self.get_workbench_animation_mut()?;
         Ok(animation
             .sequences_iter_mut()
             .flat_map(|(direction, sequence)| {
@@ -481,7 +489,7 @@ impl Document {
                     .keyframes_iter_mut()
                     .enumerate()
                     .filter_map(|(index, keyframe)| {
-                        if selection.is_keyframe_selected(*direction, index) {
+                        if selection.is_keyframe_selected(&animation_name, *direction, index) {
                             Some((*direction, index, keyframe))
                         } else {
                             None
