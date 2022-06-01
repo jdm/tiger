@@ -193,6 +193,7 @@ impl Document {
         self.view.timeline_clock = self.view.timeline_clock.min(timeline_cap);
 
         // TODO update selection if it contains anything no longer in the sheet
+        // Also cleanup selection if it contains anything inside a keyframe not currently visible
     }
 
     fn alter_selection(
@@ -272,9 +273,6 @@ impl Document {
 
     fn delete_animation<T: AsRef<str>>(&mut self, name: T) {
         self.sheet.delete_animation(&name);
-        self.view
-            .selection
-            .remove(SingleSelection::Animation(name.as_ref().to_owned()));
     }
 
     fn tick(&mut self, delta: Duration) {
@@ -322,13 +320,7 @@ impl Document {
                 self.view.skip_to_timeline_start();
             }
         }
-
         self.persistent.timeline_is_playing = true;
-
-        if self.view.selection().has_hitboxes() {
-            self.view.selection.clear();
-        }
-
         Ok(())
     }
 
