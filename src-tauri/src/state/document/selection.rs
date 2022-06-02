@@ -1,5 +1,6 @@
 use std::borrow::Borrow;
 use std::collections::HashSet;
+use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
 use crate::sheet::Direction;
@@ -149,10 +150,8 @@ impl MultiSelection {
         direction: Direction,
         index: usize,
     ) -> bool {
-        // TODO Unwanted copy here! (and this gets called a lot)
-        // Potential solution (not on stable atm)
         self.keyframes
-            .contains(&(animation_name.as_ref().to_owned(), direction, index))
+            .contains((animation_name.as_ref(), direction, index).borrow() as &dyn KeyframeID)
     }
 }
 
@@ -199,16 +198,16 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         self.selected_items.retain(f);
     }
 
-    pub fn select(&mut self, item: T) {
-        *self = Self::new(vec![item]);
-    }
-
     pub fn clear(&mut self) {
         *self = Default::default();
     }
 
+    fn select(&mut self, item: T) {
+        *self = Self::new(vec![item]);
+    }
+
     // Desired behavior: https://stackoverflow.com/a/16530782
-    pub fn alter(&mut self, interacted_item: T, all_items: &Vec<T>, shift: bool, ctrl: bool) {
+    fn alter(&mut self, interacted_item: T, all_items: &Vec<T>, shift: bool, ctrl: bool) {
         let interacted_item_index = match all_items.iter().position(|item| *item == interacted_item)
         {
             Some(i) => i,
@@ -278,6 +277,48 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> From
         MultiSelectionData::new(vec![selected_item])
     }
 }
+
+trait KeyframeID {
+    fn to_key(&self) -> (&str, Direction, usize);
+}
+
+impl Hash for dyn KeyframeID + '_ {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.to_key().hash(state)
+    }
+}
+
+impl PartialEq for dyn KeyframeID + '_ {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_key() == other.to_key()
+    }
+}
+
+impl KeyframeID for (String, Direction, usize) {
+    fn to_key(&self) -> (&str, Direction, usize) {
+        (&self.0, self.1, self.2)
+    }
+}
+
+impl<'a> KeyframeID for (&'a str, Direction, usize) {
+    fn to_key(&self) -> (&str, Direction, usize) {
+        (self.0, self.1, self.2)
+    }
+}
+
+impl<'a> Borrow<dyn KeyframeID + 'a> for (String, Direction, usize) {
+    fn borrow(&self) -> &(dyn KeyframeID + 'a) {
+        self
+    }
+}
+
+impl<'a> Borrow<dyn KeyframeID + 'a> for (&'a str, Direction, usize) {
+    fn borrow(&self) -> &(dyn KeyframeID + 'a) {
+        self
+    }
+}
+
+impl Eq for dyn KeyframeID + '_ {}
 
 #[test]
 fn can_replace_selection() {
