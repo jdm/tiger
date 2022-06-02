@@ -2,7 +2,7 @@ use euclid::default::*;
 use std::time::Duration;
 
 use crate::sheet::Direction;
-use crate::state::MultiSelection;
+use crate::state::*;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ContentTab {

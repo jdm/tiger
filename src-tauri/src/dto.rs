@@ -34,6 +34,7 @@ pub struct Document {
     timeline_is_playing: bool,
     timeline_zoom: f32,
     is_dragging_keyframe_duration: bool,
+    frames_being_dragged: Option<Vec<PathBuf>>,
 }
 
 #[derive(Clone, Serialize)]
@@ -172,6 +173,7 @@ impl From<&state::Document> for Document {
             timeline_is_playing: document.persistent().is_timeline_playing(),
             timeline_zoom: document.view().timeline_zoom(),
             is_dragging_keyframe_duration: document.transient().is_dragging_keyframe_duration(),
+            frames_being_dragged: document.transient().frames_being_dragged(),
         }
     }
 }

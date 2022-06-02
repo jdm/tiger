@@ -4,7 +4,7 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 
 use crate::sheet::Direction;
-use crate::state::{Document, DocumentError};
+use crate::state::*;
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct MultiSelection {

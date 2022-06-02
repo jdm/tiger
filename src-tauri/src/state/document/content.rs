@@ -1,4 +1,4 @@
-use crate::state::{Document, DocumentError};
+use crate::state::*;
 
 impl Document {
     pub(super) fn create_animation(&mut self) -> Result<(), DocumentError> {

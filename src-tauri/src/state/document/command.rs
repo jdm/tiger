@@ -2,7 +2,7 @@ use euclid::default::Vector2D;
 use std::{path::PathBuf, time::Duration};
 
 use crate::sheet::{Direction, DirectionPreset, Sheet};
-use crate::state::{ContentTab, Document, DocumentError, SelectionInput, View};
+use crate::state::*;
 
 #[derive(Clone, Debug)]
 pub enum Command {
@@ -33,6 +33,8 @@ pub enum Command {
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
     EndDragKeyframeDuration(),
+    BeginDragAndDropFrames(Vec<PathBuf>),
+    DropFramesOnTimeline(Direction, usize),
 }
 
 #[derive(Debug, Default)]
@@ -77,6 +79,8 @@ impl Document {
             Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
             Command::EndDragKeyframeDuration() => (),
+            Command::BeginDragAndDropFrames(ref f) => self.begin_drag_and_drop_frames(f.clone()),
+            Command::DropFramesOnTimeline(d, i) => self.drop_frames_on_timeline(d, i),
         }
 
         if !matches!(
@@ -84,6 +88,7 @@ impl Document {
             Command::Tick(_)
                 | Command::BeginDragKeyframeDuration(_, _)
                 | Command::UpdateDragKeyframeDuration(_)
+                | Command::BeginDragAndDropFrames(_)
         ) {
             self.transient = Default::default();
         }

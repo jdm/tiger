@@ -5,8 +5,8 @@
 				<div class="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">{{ keyframe.name }}</div>
 			</div>
 		</div>
-		<DragArea @drag-start="beginDurationDrag" @drag-update="updateDurationDrag" @drag-end="endDurationDrag"
-			inactive-cursor="cursor-ew-resize" active-cursor="cursor-ew-resize"
+		<DragArea v-if="!isPreview" @drag-start="beginDurationDrag" @drag-update="updateDurationDrag"
+			@drag-end="endDurationDrag" inactive-cursor="cursor-ew-resize" active-cursor="cursor-ew-resize"
 			class="absolute top-0 right-[-4px] h-full w-[16px]" />
 	</div>
 </template>
@@ -23,13 +23,17 @@ const app = useAppStore();
 const props = defineProps<{
 	keyframe: KeyframeDTO,
 	direction: Direction,
-	index: number
+	index: number,
+	isPreview: boolean,
 }>();
 
 const dynamicClasses = computed(() => {
+	if (props.isPreview) {
+		return ["border-dotted", "text-orange-200", "bg-orange-900", "border-orange-600", "animate-pulse"];
+	}
 	return [
 		...props.keyframe.selected ?
-			["text-blue-100", "bg-slate-900", "border-blue-600"]
+			["text-blue-100", "bg-zinc-900", "border-blue-600"]
 			: ["text-orange-200", "bg-plastic-900", "border-orange-600"],
 	];
 });

@@ -16,8 +16,8 @@ pub use command::*;
 pub use content::*;
 use persistent::*;
 pub use selection::*;
-use timeline::*;
-use transient::*;
+pub use timeline::*;
+pub use transient::*;
 pub use view::*;
 
 #[derive(Debug)]

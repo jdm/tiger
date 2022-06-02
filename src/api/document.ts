@@ -212,3 +212,23 @@ export async function endDragKeyframeDuration(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("end_drag_keyframe_duration"));
 }
+
+export async function beginDragAndDropFrames(frames: string[]): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("begin_drag_and_drop_frames", { frames: frames })
+  );
+}
+
+export async function dropFramesOnTimeline(
+  direction: Direction,
+  index: number
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("drop_frames_on_timeline", {
+      direction: direction,
+      index: index,
+    })
+  );
+}
