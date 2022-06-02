@@ -1,6 +1,6 @@
 use std::{collections::HashMap, path::PathBuf};
 
-use crate::sheet::Direction;
+use crate::sheet::{Direction, Keyframe};
 use crate::state::*;
 
 #[derive(Clone, Debug, PartialEq)]
@@ -9,25 +9,10 @@ pub(super) struct KeyframeDurationDrag {
     pub(super) original_durations: HashMap<(Direction, usize), u64>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-pub(super) struct FramesDragAndDrop {
-    pub(super) frames: Vec<PathBuf>,
-}
-
 #[derive(Debug, Default)]
 pub struct Transient {
-    pub(super) frames_drag_and_drop: Option<FramesDragAndDrop>,
+    pub(super) frame_drag_and_drop: Option<PathBuf>,
     pub(super) keyframe_duration_drag: Option<KeyframeDurationDrag>,
-}
-
-impl Transient {
-    pub fn is_dragging_keyframe_duration(&self) -> bool {
-        self.keyframe_duration_drag.is_some()
-    }
-
-    pub fn frames_being_dragged(&self) -> Option<Vec<PathBuf>> {
-        self.frames_drag_and_drop.as_ref().map(|f| f.frames.clone())
-    }
 }
 
 impl Document {
@@ -96,11 +81,38 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn begin_drag_and_drop_frames(&mut self, frames: Vec<PathBuf>) {
-        self.transient.frames_drag_and_drop = Some(FramesDragAndDrop { frames });
+    pub fn is_dragging_keyframe_duration(&self) -> bool {
+        self.transient.keyframe_duration_drag.is_some()
     }
 
-    pub(super) fn drop_frames_on_timeline(&mut self, direction: Direction, index: usize) {
-        // TODO
+    pub(super) fn begin_drag_and_drop_frame(&mut self, frame: PathBuf) {
+        if !self.view.selection.is_frame_selected(&frame) {
+            self.view.selection.select_frame(frame.clone());
+        }
+        self.transient.frame_drag_and_drop = Some(frame);
+    }
+
+    pub(super) fn drop_frame_on_timeline(
+        &mut self,
+        direction: Direction,
+        index: usize,
+    ) -> Result<(), DocumentError> {
+        let selected_frames: Vec<PathBuf> = self.view.selection.frames().cloned().collect(); // TODO sort
+        let (_, animation) = self.get_workbench_animation_mut()?;
+        let sequence = animation
+            .sequence_mut(direction)
+            .ok_or_else(|| DocumentError::SequenceNotInAnimation(direction))?;
+        for frame in selected_frames {
+            let keyframe = Keyframe::new(frame);
+            sequence.insert_keyframe(keyframe, index)?;
+        }
+        Ok(())
+    }
+
+    pub fn frames_being_dragged(&self) -> Vec<PathBuf> {
+        match self.transient.frame_drag_and_drop.is_some() {
+            true => self.view.selection.frames().cloned().collect(),
+            false => Vec::new(),
+        }
     }
 }

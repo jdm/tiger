@@ -1,5 +1,6 @@
 <template>
 	<div @click="(event) => onFrameClicked(event)" @mouseover="onMouseOver" @mouseout="onMouseOut"
+		@dragstart="onDragStart" draggable="true"
 		class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
 		:class="props.frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
 		<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
@@ -10,7 +11,7 @@
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { ref } from '@vue/reactivity';
 import { Frame as FrameDTO } from '@/api/dto'
-import { selectFrame } from '@/api/document'
+import { beginDragAndDropFrame, selectFrame } from '@/api/document'
 
 const props = defineProps<{
 	frame: FrameDTO
@@ -24,6 +25,10 @@ function onMouseOver() {
 
 function onMouseOut() {
 	hovered.value = false;
+}
+
+function onDragStart() {
+	beginDragAndDropFrame(props.frame.path);
 }
 
 function onFrameClicked(event: MouseEvent) {

@@ -2,7 +2,7 @@
 	<div class="border-r-4 border-plastic-800">
 		<div ref="el" class="h-full min-w-0 relative rounded-md border-2 cursor-pointer" :class="dynamicClasses">
 			<div @click="onKeyframeClicked" class="h-full px-2 flex items-center font-semibold text-xs">
-				<div class="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">{{ keyframe.name }}</div>
+				<div class="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">{{ name }}</div>
 			</div>
 		</div>
 		<DragArea v-if="!isPreview" @drag-start="beginDurationDrag" @drag-update="updateDurationDrag"
@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from 'vue';
-import { Direction, Keyframe as KeyframeDTO } from '@/api/dto'
+import { Direction } from '@/api/dto'
 import { useAppStore } from '@/stores/app';
 import { updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration } from '@/api/document';
 import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
@@ -21,7 +21,10 @@ import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
 const app = useAppStore();
 
 const props = defineProps<{
-	keyframe: KeyframeDTO,
+	name: string,
+	selected: boolean,
+	startTimeMillis: number,
+	durationMillis: number,
 	direction: Direction,
 	index: number,
 	isPreview: boolean,
@@ -32,7 +35,7 @@ const dynamicClasses = computed(() => {
 		return ["border-dotted", "text-orange-200", "bg-orange-900", "border-orange-600", "animate-pulse"];
 	}
 	return [
-		...props.keyframe.selected ?
+		...props.selected ?
 			["text-blue-100", "bg-zinc-900", "border-blue-600"]
 			: ["text-orange-200", "bg-plastic-900", "border-orange-600"],
 	];
@@ -47,7 +50,7 @@ function mouseEventToTime(event: MouseEvent) {
 	}
 	const pixelDelta = event.clientX - el.value.getBoundingClientRect().left;
 	const durationDelta = pixelDelta / (app.currentDocument?.timelineZoom || 1);
-	return props.keyframe.startTimeMillis + durationDelta;
+	return props.startTimeMillis + durationDelta;
 }
 
 function onKeyframeClicked(event: MouseEvent) {

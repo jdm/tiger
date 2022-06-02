@@ -24,7 +24,7 @@ export type Document = {
   timelineIsPlaying: boolean;
   timelineZoom: number;
   isDraggingKeyframeDuration: boolean;
-  framesBeingDragged: string[] | null;
+  framesBeingDragged: string[];
 };
 
 export type Sheet = {

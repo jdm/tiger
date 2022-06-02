@@ -213,20 +213,18 @@ export async function endDragKeyframeDuration(): Promise<void> {
   appStore.patch(await invoke("end_drag_keyframe_duration"));
 }
 
-export async function beginDragAndDropFrames(frames: string[]): Promise<void> {
+export async function beginDragAndDropFrame(frame: string): Promise<void> {
   const appStore = useAppStore();
-  appStore.patch(
-    await invoke("begin_drag_and_drop_frames", { frames: frames })
-  );
+  appStore.patch(await invoke("begin_drag_and_drop_frame", { frame: frame }));
 }
 
-export async function dropFramesOnTimeline(
+export async function dropFrameOnTimeline(
   direction: Direction,
   index: number
 ): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(
-    await invoke("drop_frames_on_timeline", {
+    await invoke("drop_frame_on_timeline", {
       direction: direction,
       index: index,
     })

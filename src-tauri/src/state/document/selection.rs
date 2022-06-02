@@ -153,6 +153,10 @@ impl MultiSelection {
         self.keyframes
             .contains((animation_name.as_ref(), direction, index).borrow() as &dyn KeyframeID)
     }
+
+    pub fn frames(&self) -> impl Iterator<Item = &PathBuf> {
+        self.frames.iter()
+    }
 }
 
 impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Default
@@ -267,6 +271,10 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         for item in items {
             self.selected_items.remove(item);
         }
+    }
+
+    fn iter(&self) -> impl Iterator<Item = &T> {
+        self.selected_items.iter()
     }
 }
 

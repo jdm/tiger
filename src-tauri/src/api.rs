@@ -550,21 +550,21 @@ pub fn end_drag_keyframe_duration(app_state: tauri::State<'_, AppState>) -> Resu
 }
 
 #[tauri::command]
-pub fn begin_drag_and_drop_frames(
+pub fn begin_drag_and_drop_frame(
     app_state: tauri::State<'_, AppState>,
-    frames: Vec<PathBuf>,
+    frame: PathBuf,
 ) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::BeginDragAndDropFrames(frames))
+                .process_command(Command::BeginDragAndDropFrame(frame))
                 .ok();
         }
     }))
 }
 
 #[tauri::command]
-pub fn drop_frames_on_timeline(
+pub fn drop_frame_on_timeline(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,
     index: usize,
@@ -572,7 +572,7 @@ pub fn drop_frames_on_timeline(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::DropFramesOnTimeline(direction.into(), index))
+                .process_command(Command::DropFrameOnTimeline(direction.into(), index))
                 .ok();
         }
     }))

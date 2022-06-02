@@ -58,8 +58,8 @@ fn main() {
             api::begin_drag_keyframe_duration,
             api::update_drag_keyframe_duration,
             api::end_drag_keyframe_duration,
-            api::begin_drag_and_drop_frames,
-            api::drop_frames_on_timeline,
+            api::begin_drag_and_drop_frame,
+            api::drop_frame_on_timeline,
         ])
         .on_window_event(move |event| match event.event() {
             WindowEvent::CloseRequested { api, .. } => {
