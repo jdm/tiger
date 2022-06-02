@@ -1,7 +1,9 @@
-use crate::sheet::Direction;
 use std::borrow::Borrow;
 use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+
+use crate::sheet::Direction;
+use crate::state::{Document, DocumentError};
 
 #[derive(Clone, Debug, Default, PartialEq)]
 pub struct MultiSelection {
@@ -33,6 +35,51 @@ where
 {
     pivot: Option<T>,
     selected_items: HashSet<T>,
+}
+
+impl Document {
+    pub(super) fn alter_selection(
+        &mut self,
+        selection: &SelectionInput,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<(), DocumentError> {
+        let edit = match selection {
+            SelectionInput::Frame(f) => MultiSelectionEdit::Frames(
+                f.clone(),
+                self.sheet
+                    .frames_iter()
+                    .map(|f| f.source().to_owned())
+                    .collect(),
+            ),
+            SelectionInput::Animation(a) => MultiSelectionEdit::Animations(
+                a.clone(),
+                self.sheet
+                    .animations_iter()
+                    .map(|(n, _)| n.clone())
+                    .collect(),
+            ),
+            SelectionInput::Hitbox(_) => todo!(),
+            SelectionInput::Keyframe(d, i) => {
+                let (animation_name, _) = self.get_workbench_animation()?;
+                let all_keyframes: Vec<(String, Direction, usize)> = self
+                    .sheet
+                    .animations_iter()
+                    .flat_map(|(name, animation)| {
+                        animation
+                            .sequences_iter()
+                            .flat_map(|(direction, sequence)| {
+                                (0..sequence.num_keyframes())
+                                    .map(|index| (name.clone(), *direction, index))
+                            })
+                    })
+                    .collect();
+                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), all_keyframes)
+            }
+        };
+        self.view.selection.alter(edit, shift, ctrl);
+        Ok(())
+    }
 }
 
 impl MultiSelection {
