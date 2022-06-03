@@ -90,17 +90,24 @@ impl MultiSelection {
 
     pub fn select_frame(&mut self, frame: PathBuf) {
         self.clear();
-        self.frames.select(frame);
+        self.frames.only(frame);
     }
 
     pub fn select_animation(&mut self, animation: String) {
         self.clear();
-        self.animations.select(animation);
+        self.animations.only(animation);
     }
 
     pub fn select_keyframe(&mut self, animation: String, direction: Direction, index: usize) {
+        self.select_keyframes(vec![(animation, direction, index)]);
+    }
+
+    pub fn select_keyframes<T>(&mut self, keyframes: T)
+    where
+        T: IntoIterator<Item = (String, Direction, usize)>,
+    {
         self.clear();
-        self.keyframes.select((animation, direction, index));
+        self.keyframes.insert_items(keyframes);
     }
 
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
@@ -206,7 +213,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         *self = Default::default();
     }
 
-    fn select(&mut self, item: T) {
+    fn only(&mut self, item: T) {
         *self = Self::new(vec![item]);
     }
 
@@ -233,7 +240,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
                     .map(|p| self.contains(p))
                     .unwrap_or_default();
                 if contains_pivot {
-                    self.insert_items(all_items[range_start..=range_end].iter().cloned().collect());
+                    self.insert_items(all_items[range_start..=range_end].iter().cloned());
                 } else {
                     self.remove_items(&all_items[range_start..=range_end].iter().collect());
                 }
@@ -263,7 +270,10 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         self.selected_items.insert(item);
     }
 
-    fn insert_items(&mut self, items: Vec<T>) {
+    fn insert_items<U>(&mut self, items: U)
+    where
+        U: IntoIterator<Item = T>,
+    {
         self.selected_items.extend(items);
     }
 

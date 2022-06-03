@@ -1,3 +1,4 @@
+use std::time::Duration;
 use std::{collections::HashMap, path::PathBuf};
 
 use crate::sheet::{Direction, Keyframe};
@@ -98,14 +99,20 @@ impl Document {
         index: usize,
     ) -> Result<(), DocumentError> {
         let selected_frames: Vec<PathBuf> = self.view.selection.frames().cloned().collect(); // TODO sort
-        let (_, animation) = self.get_workbench_animation_mut()?;
+        let (animation_name, animation) = self.get_workbench_animation_mut()?;
         let sequence = animation
             .sequence_mut(direction)
             .ok_or_else(|| DocumentError::SequenceNotInAnimation(direction))?;
-        for frame in selected_frames {
+        for frame in &selected_frames {
             let keyframe = Keyframe::new(frame);
             sequence.insert_keyframe(keyframe, index)?;
         }
+        self.view.timeline_clock = Duration::from_millis(sequence.keyframe_times()[index]);
+        self.view.current_sequence = Some(direction);
+        self.view.selection.select_keyframes(
+            (index..(index + selected_frames.len()))
+                .map(|i| (animation_name.clone(), direction, i)),
+        );
         Ok(())
     }
 
