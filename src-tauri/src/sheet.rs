@@ -13,6 +13,7 @@ use std::io::BufWriter;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
+use uuid::Uuid;
 
 pub(in crate::sheet) mod version1;
 pub(in crate::sheet) mod version2;
@@ -440,6 +441,7 @@ impl Keyframe {
             duration_millis: 100,
             offset: (0, 0),
             hitboxes: BTreeMap::new(),
+            key: Uuid::new_v4(),
         }
     }
 
@@ -453,6 +455,10 @@ impl Keyframe {
 
     pub fn offset(&self) -> Vector2D<i32> {
         self.offset.into()
+    }
+
+    pub fn key(&self) -> Uuid {
+        self.key
     }
 
     pub fn set_frame<T: AsRef<Path>>(&mut self, new_frame: T) {

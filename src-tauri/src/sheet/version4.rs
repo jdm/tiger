@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::io::Read;
 use std::path::PathBuf;
+use uuid::Uuid;
 
 use crate::sheet::version3 as previous_version;
 use crate::sheet::{SheetError, Version};
@@ -64,6 +65,8 @@ pub struct Keyframe {
     pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),
+    #[serde(skip, default = "Uuid::new_v4")]
+    pub(in crate::sheet) key: Uuid,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -155,6 +158,7 @@ impl From<previous_version::Keyframe> for Keyframe {
                 .into_iter()
                 .map(|o| (o.name.to_owned(), o.into()))
                 .collect(),
+            key: Uuid::new_v4(),
         }
     }
 }

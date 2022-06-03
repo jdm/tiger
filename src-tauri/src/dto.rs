@@ -2,6 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::Path;
 use std::path::PathBuf;
+use uuid::Uuid;
 
 use crate::sheet;
 use crate::state;
@@ -100,6 +101,7 @@ pub struct Keyframe {
     start_time_millis: u64,
     duration_millis: u64,
     offset: (i32, i32),
+    key: Uuid,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -296,6 +298,7 @@ impl From<&sheet::Keyframe> for Keyframe {
             start_time_millis: 0,
             duration_millis: keyframe.duration_millis(),
             offset: keyframe.offset().to_tuple(),
+            key: keyframe.key(),
         }
     }
 }

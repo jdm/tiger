@@ -86,7 +86,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 			durationMillis: keyframe.durationMillis,
 			isPreview: false,
 			index: index,
-			key: index + "_" + keyframe.name, // TODO needs a key that doesnt change when new frames are inserted
+			key: keyframe.key,
 		});
 		currentTime += keyframe.durationMillis;
 	}
