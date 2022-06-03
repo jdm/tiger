@@ -34,11 +34,13 @@ const dynamicClasses = computed(() => {
 	if (props.isPreview) {
 		return ["bg-orange-600", "border-orange-600", "animate-pulse"];
 	}
-	return [
-		...props.selected ?
-			["text-blue-100", "bg-zinc-900", "border-blue-600"]
-			: ["text-orange-200", "bg-plastic-900", "border-orange-600"],
-	];
+	if (props.selected) {
+		return ["text-blue-100", "bg-zinc-900", "border-blue-600"];
+	}
+	if (props.direction == app.currentDocument?.currentSequenceDirection) {
+		return ["text-orange-200", "bg-plastic-900", "border-orange-600"];
+	}
+	return ["text-plastic-300", "bg-plastic-900", "border-plastic-500"];
 });
 
 let el: Ref<HTMLElement | null> = ref(null);

@@ -18,9 +18,10 @@
 				<div class="flex flex-col">
 					<div class="h-6 bg-plastic-600" />
 					<div
-						class="w-36 flex flex-col py-2 space-y-1 text-plastic-300 text-xs uppercase font-semibold text-right">
+						class="w-36 flex flex-col py-2 space-y-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="sequence, direction in app.currentAnimation?.sequences"
-							class="h-9 px-4 mx-2 inline-flex items-center justify-end">
+							class="h-9 px-4 ml-2 inline-flex items-center justify-end"
+							:class="sequence == app.currentSequence ? 'text-orange-600 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
 							{{ direction }}
 						</div>
 					</div>
