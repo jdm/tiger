@@ -52,7 +52,6 @@ const isDraggingContent = computed(() => {
 });
 
 const sequenceEntries = computed((): SequenceEntry[] => {
-	const previewFrameDuration = 100;
 	let currentTime = 0;
 	let previewTime = null;
 	let entries: SequenceEntry[] = [];
@@ -61,6 +60,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 		return entries;
 	}
 
+	const previewFrameDuration = 40 / app.currentDocument.timelineZoom;
 	for (let [index, keyframe] of props.sequence.keyframes.entries()) {
 		if (receivingDragAndDrop.value && previewTime == null && index == insertionIndex.value) {
 			previewTime = currentTime;
