@@ -1,3 +1,4 @@
+use derivative::Derivative;
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 use std::io::Read;
@@ -59,12 +60,15 @@ pub struct Sequence {
     pub(in crate::sheet) keyframes: Vec<Keyframe>,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Derivative)]
+#[derivative(PartialEq)]
+#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Keyframe {
     pub(in crate::sheet) frame: PathBuf,
     pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),
+    #[derivative(PartialEq="ignore")]
     #[serde(skip, default = "Uuid::new_v4")]
     pub(in crate::sheet) key: Uuid,
 }
