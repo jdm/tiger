@@ -86,11 +86,13 @@ impl Document {
     pub(super) fn select_direction(&mut self, direction: Direction) -> Result<(), DocumentError> {
         self.view.current_sequence = Some(direction);
         let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
         let sequence = self.get_workbench_sequence()?;
-        let keyframes = (0..(sequence.num_keyframes()))
-            .map(|i| (animation_name.clone(), direction, i))
-            .collect::<Vec<_>>();
-        self.view.selection.select_keyframes(keyframes);
+        if let Some(keyframe) = sequence.keyframe_index_at(self.view.timeline_clock) {
+            self.view
+                .selection
+                .select_keyframe(animation_name, direction, keyframe);
+        }
         Ok(())
     }
 }

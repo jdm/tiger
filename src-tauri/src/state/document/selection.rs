@@ -2,6 +2,7 @@ use std::borrow::Borrow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
+use std::time::Duration;
 
 use crate::sheet::Direction;
 use crate::state::*;
@@ -63,6 +64,13 @@ impl Document {
             SelectionInput::Hitbox(_) => todo!(),
             SelectionInput::Keyframe(d, i) => {
                 self.view.current_sequence = Some(*d);
+                self.view.timeline_clock = Duration::from_millis(
+                    self.get_workbench_sequence()?
+                        .keyframe_times()
+                        .get(*i)
+                        .copied()
+                        .unwrap_or_default(),
+                );
                 let (animation_name, _) = self.get_workbench_animation()?;
                 let all_keyframes: Vec<(String, Direction, usize)> = self
                     .sheet
