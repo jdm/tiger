@@ -100,6 +100,7 @@ impl Document {
         index: usize,
     ) -> Result<(), DocumentError> {
         let selected_frames: Vec<PathBuf> = self.view.selection.frames().cloned().collect(); // TODO sort
+        let timeline_is_playing = self.persistent.timeline_is_playing;
         let (animation_name, animation) = self.get_workbench_animation_mut()?;
         let sequence = animation
             .sequence_mut(direction)
@@ -108,8 +109,10 @@ impl Document {
             let keyframe = Keyframe::new(frame);
             sequence.insert_keyframe(keyframe, index)?;
         }
-        self.view.timeline_clock = Duration::from_millis(sequence.keyframe_times()[index]);
-        self.view.current_sequence = Some(direction);
+        if !timeline_is_playing {
+            self.view.timeline_clock = Duration::from_millis(sequence.keyframe_times()[index]);
+            self.view.current_sequence = Some(direction);
+        }
         self.view.selection.select_keyframes(
             (index..(index + selected_frames.len()))
                 .map(|i| (animation_name.clone(), direction, i)),
