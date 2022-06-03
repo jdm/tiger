@@ -62,6 +62,7 @@ impl Document {
             ),
             SelectionInput::Hitbox(_) => todo!(),
             SelectionInput::Keyframe(d, i) => {
+                self.view.current_sequence = Some(*d);
                 let (animation_name, _) = self.get_workbench_animation()?;
                 let all_keyframes: Vec<(String, Direction, usize)> = self
                     .sheet
