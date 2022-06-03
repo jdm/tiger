@@ -54,30 +54,17 @@ const isDraggingContent = computed(() => {
 const sequenceEntries = computed((): SequenceEntry[] => {
 	const previewFrameDuration = 100;
 	let currentTime = 0;
-	let hasInsertedPreview = false;
+	let previewTime = null;
 	let entries: SequenceEntry[] = [];
 
-	const insertPreviewEntries = () => {
-		hasInsertedPreview = true;
-		if (app.currentDocument) {
-			for (let [index, frame] of app.currentDocument.framesBeingDragged.entries()) {
-				entries.push({
-					name: frame,
-					selected: false,
-					startTimeMillis: currentTime,
-					durationMillis: previewFrameDuration,
-					isPreview: true,
-					index: 0,
-					key: "preview_" + index,
-				});
-				currentTime += previewFrameDuration;
-			}
-		}
-	};
+	if (!app.currentDocument) {
+		return entries;
+	}
 
 	for (let [index, keyframe] of props.sequence.keyframes.entries()) {
-		if (receivingDragAndDrop.value && !hasInsertedPreview && index == insertionIndex.value) {
-			insertPreviewEntries();
+		if (receivingDragAndDrop.value && !previewTime && index == insertionIndex.value) {
+			previewTime = currentTime;
+			currentTime += previewFrameDuration * app.currentDocument.framesBeingDragged.length;
 		}
 		entries.push({
 			name: keyframe.name,
@@ -91,8 +78,22 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 		currentTime += keyframe.durationMillis;
 	}
 
-	if (receivingDragAndDrop.value && !hasInsertedPreview) {
-		insertPreviewEntries();
+	if (receivingDragAndDrop.value) {
+		if (previewTime) {
+			currentTime = previewTime;
+		}
+		for (let [index, frame] of app.currentDocument.framesBeingDragged.entries()) {
+			entries.push({
+				name: frame,
+				selected: false,
+				startTimeMillis: currentTime,
+				durationMillis: previewFrameDuration,
+				isPreview: true,
+				index: 0,
+				key: "preview_" + index,
+			});
+			currentTime += previewFrameDuration;
+		}
 	}
 
 	return entries;
@@ -101,7 +102,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 function entryStyle(entry: SequenceEntry) {
 	const zoom = app.currentDocument?.timelineZoom || 1;
 	return {
-		"transitionProperty": app.currentDocument?.isDraggingKeyframeDuration ? "none" : "width, left",
+		"transitionProperty": (entry.isPreview || app.currentDocument?.isDraggingKeyframeDuration) ? "none" : "width, left",
 		"left": (zoom * entry.startTimeMillis) + "px",
 		"width": (zoom * entry.durationMillis) + "px"
 	};
