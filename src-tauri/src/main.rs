@@ -55,6 +55,7 @@ fn main() {
             api::reset_timeline_zoom,
             api::set_animation_looping,
             api::apply_direction_preset,
+            api::select_direction,
             api::begin_drag_keyframe_duration,
             api::update_drag_keyframe_duration,
             api::end_drag_keyframe_duration,

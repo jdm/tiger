@@ -1,6 +1,6 @@
 use std::time::Duration;
 
-use crate::sheet::DirectionPreset;
+use crate::sheet::{Direction, DirectionPreset};
 use crate::state::*;
 
 impl Document {
@@ -80,6 +80,11 @@ impl Document {
     ) -> Result<(), DocumentError> {
         let (_, animation) = self.get_workbench_animation_mut()?;
         animation.apply_direction_preset(preset);
+        Ok(())
+    }
+
+    pub(super) fn select_direction(&mut self, direction: Direction) -> Result<(), DocumentError> {
+        self.view.current_sequence = Some(direction);
         Ok(())
     }
 }

@@ -510,6 +510,20 @@ pub fn apply_direction_preset(
 }
 
 #[tauri::command]
+pub fn select_direction(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SelectDirection(direction.into()))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_drag_keyframe_duration(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,

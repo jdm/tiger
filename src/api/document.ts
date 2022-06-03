@@ -186,6 +186,11 @@ export async function applyDirectionPreset(
   appStore.patch(await invoke("apply_direction_preset", { preset: preset }));
 }
 
+export async function selectDirection(direction: Direction): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("select_direction", { direction: direction }));
+}
+
 export async function beginDragKeyframeDuration(
   direction: Direction,
   index: number

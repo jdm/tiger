@@ -20,8 +20,10 @@
 					<div
 						class="w-36 flex flex-col py-2 space-y-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="sequence, direction in app.currentAnimation?.sequences"
-							class="h-9 px-4 ml-2 inline-flex items-center justify-end"
-							:class="sequence == app.currentSequence ? 'text-orange-600 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
+							@click="selectDirection(direction)"
+							class="h-9 px-4 ml-2 inline-flex items-center justify-end" :class="sequence == app.currentSequence ?
+							'text-orange-600 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600'
+							: 'cursor-pointer'">
 							{{ direction }}
 						</div>
 					</div>
@@ -47,7 +49,7 @@
 <script setup lang="ts">
 import { watch } from 'vue'
 import { computed, Ref, ref } from '@vue/reactivity'
-import { play, pause, zoomInTimeline, zoomOutTimeline, setAnimationLooping } from '@/api/document'
+import { play, pause, zoomInTimeline, zoomOutTimeline, selectDirection, setAnimationLooping } from '@/api/document'
 import { useAppStore } from '@/stores/app'
 import Button from '@/components/basic/Button.vue'
 import Pane from '@/components/basic/Pane.vue'
