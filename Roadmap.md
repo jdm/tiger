@@ -91,20 +91,21 @@
 
 ## Tiger 0.4
 
+- [ ] Prettier UI
 - [ ] Support multiple directions/angles for the same animation
 - [ ] Workbench tabs
+- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
 - [ ] Replace powershell release script with Github action
-- [ ] Automatically add extensions to exported files
-- [ ] Default paths for NFD dialogs
-- [ ] Add menu entry to open recent files
+- [ ] Unit test sheet module
 
 ## Tiger 0.5
 
-- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
+- [ ] Automatically add extensions to exported files
+- [ ] Default paths for NFD dialogs
+- [ ] Add menu entry to open recent files
 - [ ] Export perf improvements
 - [ ] Duplicate animation / keyframe (within same sheet)
 - [ ] Copy/paste hitboxes
-- [ ] Unit test sheet module
 
 ## Tiger 0.6
 
@@ -136,7 +137,6 @@
 - [ ] Review TODO.dpi
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
-- [ ] Prettier UI and review TODO.style
 - [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
 - [ ] Unit test UI
 
