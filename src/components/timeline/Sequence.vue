@@ -1,6 +1,7 @@
 <template>
 	<div @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver" @drop="onDrop"
-		class="h-9 p-1 rounded-sm bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600">
+		class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
+		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
 		<div ref="el" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
 			<Keyframe v-for="entry in sequenceEntries" :name="entry.name" :selected="entry.selected"
 				:start-time-millis="entry.startTimeMillis" :duration-millis="entry.durationMillis"

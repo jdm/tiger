@@ -21,9 +21,8 @@
 						class="w-36 flex flex-col py-2 space-y-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="sequence, direction in app.currentAnimation?.sequences"
 							@click="selectDirection(direction)"
-							class="h-9 px-4 ml-2 inline-flex items-center justify-end" :class="sequence == app.currentSequence ?
-							'text-orange-600 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600'
-							: 'cursor-pointer'">
+							class="h-10 px-4 ml-4 inline-flex items-center justify-end cursor-pointer" :class="sequence == app.currentSequence ?
+							'text-orange-600 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
 							{{ direction }}
 						</div>
 					</div>
@@ -36,9 +35,9 @@
 							<Sequence v-for="sequence, direction in app.currentAnimation?.sequences"
 								:sequence="sequence" :direction="direction" />
 							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
-								class="h-9" />
+								class="h-10" />
 						</div>
-						<div class="absolute top-0 mx-1 h-full w-px bg-white transition" :style="playheadStyle" />
+						<div class="absolute top-0 mx-2 h-full w-px bg-white transition" :style="playheadStyle" />
 					</div>
 				</div>
 			</div>

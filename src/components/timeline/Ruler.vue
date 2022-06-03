@@ -1,5 +1,5 @@
 <template>
-	<div class="h-6 px-1 bg-plastic-600">
+	<div class="h-6 px-2 bg-plastic-600">
 		<DragArea button="left" inactive-cursor="cursor-pointer" active-cursor="cursor-pointer"
 			class="h-full ruler transition-[background-size]" :style="rulerStyle" @drag-start="startScrub"
 			@drag-end="endScrub" @drag-update="updateScrub" />
