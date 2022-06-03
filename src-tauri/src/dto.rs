@@ -117,7 +117,7 @@ trait ToFileName {
 impl<T: AsRef<Path>> ToFileName for T {
     fn to_file_name(&self) -> String {
         self.as_ref()
-            .file_name()
+            .file_stem()
             .map(|s| s.to_string_lossy().into_owned())
             .unwrap_or("??".to_owned())
     }
