@@ -84,7 +84,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 		}
 		for (let [index, frame] of app.currentDocument.framesBeingDragged.entries()) {
 			entries.push({
-				name: frame,
+				name: "",
 				selected: false,
 				startTimeMillis: currentTime,
 				durationMillis: previewFrameDuration,
