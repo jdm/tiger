@@ -117,8 +117,9 @@ function mouseEventToTime(event: MouseEvent) {
 	return time;
 }
 
-function onDragEnter() {
+function onDragEnter(event: DragEvent) {
 	receivingDragAndDrop.value = true;
+	timeHovered.value = mouseEventToTime(event);
 }
 
 function onDragLeave() {
