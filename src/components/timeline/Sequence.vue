@@ -62,7 +62,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 	}
 
 	for (let [index, keyframe] of props.sequence.keyframes.entries()) {
-		if (receivingDragAndDrop.value && !previewTime && index == insertionIndex.value) {
+		if (receivingDragAndDrop.value && previewTime == null && index == insertionIndex.value) {
 			previewTime = currentTime;
 			currentTime += previewFrameDuration * app.currentDocument.framesBeingDragged.length;
 		}
@@ -79,7 +79,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 	}
 
 	if (receivingDragAndDrop.value) {
-		if (previewTime) {
+		if (previewTime != null) {
 			currentTime = previewTime;
 		}
 		for (let [index, frame] of app.currentDocument.framesBeingDragged.entries()) {
