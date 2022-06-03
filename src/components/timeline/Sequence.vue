@@ -102,7 +102,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 function entryStyle(entry: SequenceEntry) {
 	const zoom = app.currentDocument?.timelineZoom || 1;
 	return {
-		"transitionProperty": (entry.isPreview || app.currentDocument?.isDraggingKeyframeDuration) ? "none" : "width, left",
+		"transitionProperty": app.currentDocument?.isDraggingKeyframeDuration ? "none" : "width, left",
 		"left": (zoom * entry.startTimeMillis) + "px",
 		"width": (zoom * entry.durationMillis) + "px"
 	};
