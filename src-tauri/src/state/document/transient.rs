@@ -32,6 +32,7 @@ impl Document {
             self.view
                 .selection
                 .select_keyframe(animation_name, direction, index);
+            self.view.current_sequence = Some(direction);
         }
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
             frame_being_dragged: (direction, index),
