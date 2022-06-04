@@ -108,7 +108,8 @@ impl MultiSelection {
     }
 
     pub fn select_keyframe(&mut self, animation: String, direction: Direction, index: usize) {
-        self.select_keyframes(vec![(animation, direction, index)]);
+        self.clear();
+        self.keyframes.only((animation, direction, index));
     }
 
     pub fn select_keyframes<T>(&mut self, keyframes: T)
@@ -116,6 +117,7 @@ impl MultiSelection {
         T: IntoIterator<Item = (String, Direction, usize)>,
     {
         self.clear();
+        // TODO this doesnt set pivot!!
         self.keyframes.insert_items(keyframes);
     }
 
