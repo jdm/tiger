@@ -102,17 +102,17 @@ impl MultiSelection {
 
     pub fn select_frame(&mut self, frame: PathBuf) {
         self.clear();
-        self.frames.only(frame);
+        self.frames.only(vec![frame]);
     }
 
     pub fn select_animation(&mut self, animation: String) {
         self.clear();
-        self.animations.only(animation);
+        self.animations.only(vec![animation]);
     }
 
     pub fn select_keyframe(&mut self, animation: String, direction: Direction, index: usize) {
         self.clear();
-        self.keyframes.only((animation, direction, index));
+        self.keyframes.only(vec![(animation, direction, index)]);
     }
 
     pub fn select_keyframes<T>(&mut self, keyframes: T)
@@ -120,8 +120,7 @@ impl MultiSelection {
         T: IntoIterator<Item = (String, Direction, usize)>,
     {
         self.clear();
-        // TODO this doesnt set pivot!!
-        self.keyframes.insert_items(keyframes);
+        self.keyframes.only(keyframes);
     }
 
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
@@ -227,8 +226,11 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         *self = Default::default();
     }
 
-    fn only(&mut self, item: T) {
-        *self = Self::new(vec![item]);
+    fn only<U>(&mut self, items: U)
+    where
+        U: IntoIterator<Item = T>,
+    {
+        *self = Self::new(items.into_iter().collect());
     }
 
     // Desired behavior: https://stackoverflow.com/a/16530782
