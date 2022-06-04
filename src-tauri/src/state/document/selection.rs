@@ -64,13 +64,15 @@ impl Document {
             SelectionInput::Hitbox(_) => todo!(),
             SelectionInput::Keyframe(d, i) => {
                 self.view.current_sequence = Some(*d);
-                self.view.timeline_clock = Duration::from_millis(
-                    self.get_workbench_sequence()?
-                        .keyframe_times()
-                        .get(*i)
-                        .copied()
-                        .unwrap_or_default(),
-                );
+                if !self.persistent.timeline_is_playing {
+                    self.view.timeline_clock = Duration::from_millis(
+                        self.get_workbench_sequence()?
+                            .keyframe_times()
+                            .get(*i)
+                            .copied()
+                            .unwrap_or_default(),
+                    );
+                }
                 let (animation_name, _) = self.get_workbench_animation()?;
                 let all_keyframes: Vec<(String, Direction, usize)> = self
                     .sheet
