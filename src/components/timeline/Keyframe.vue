@@ -39,7 +39,7 @@ const dynamicClasses = computed(() => {
 	if (props.selected) {
 		return [
 			"text-blue-100", "bg-zinc-900", "border-blue-600",
-			...(props.dragged ? ["border-dotted", "opacity-50"] : [])
+			...(props.dragged ? ["border-dotted", "animate-pulse"] : [])
 		];
 	}
 	if (props.direction == app.currentDocument?.currentSequenceDirection) {

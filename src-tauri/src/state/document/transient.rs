@@ -84,7 +84,74 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> Result<(), DocumentError> {
-        // TODO
+        let timeline_is_playing = self.persistent.timeline_is_playing;
+
+        // Sort affected keyframes
+        let selection = {
+            let (_, animation) = self.get_workbench_animation()?;
+            let mut selection: Vec<(Direction, usize)> = self
+                .view
+                .selection
+                .keyframes()
+                .map(|(_, d, i)| (*d, *i))
+                .collect();
+            let keyframe_times: HashMap<(Direction, usize), u64> = selection
+                .iter()
+                .filter_map(|(d, i)| {
+                    animation
+                        .sequence(*d)
+                        .and_then(|sequence| sequence.keyframe_times().get(*i).copied())
+                        .map(|t| ((*d, *i), t))
+                })
+                .collect();
+            selection.sort_by_key(|(d, i)| {
+                (
+                    keyframe_times.get(&(*d, *i)).copied().unwrap_or_default(),
+                    *d,
+                )
+            });
+            selection
+        };
+
+        let (animation_name, animation) = self.get_workbench_animation_mut()?;
+
+        // Remove keyframes from their current sequence
+        let mut keyframes = Vec::with_capacity(selection.len());
+        for (d, i) in selection.iter().rev() {
+            let sequence = animation
+                .sequence_mut(*d)
+                .ok_or(DocumentError::SequenceNotInAnimation(*d))?;
+            keyframes.push(sequence.delete_keyframe(*i)?);
+        }
+
+        // Insert keyframes at target location
+        let num_affected_frames_before_insert_point = selection
+            .iter()
+            .filter(|(d, i)| *d == direction && *i < index)
+            .count();
+        let insert_index = index - num_affected_frames_before_insert_point;
+
+        let sequence = animation
+            .sequence_mut(direction)
+            .ok_or(DocumentError::SequenceNotInAnimation(direction))?;
+        for keyframe in keyframes {
+            sequence.insert_keyframe(keyframe, insert_index)?;
+        }
+
+        // Update timeline position
+        if !timeline_is_playing {
+            let keyframe_times = sequence.keyframe_times().clone();
+            let timeline_pos = *keyframe_times
+                .get(insert_index)
+                .ok_or(DocumentError::NoKeyframeAtIndex(insert_index))?;
+            self.view.timeline_clock = Duration::from_millis(u64::from(timeline_pos));
+        }
+
+        // Update selection
+        let new_selection = (insert_index..(insert_index + selection.len()))
+            .map(|i| (animation_name.clone(), direction, i));
+        self.view.selection.select_keyframes(new_selection);
+
         Ok(())
     }
 

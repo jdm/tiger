@@ -147,7 +147,6 @@ function onDragOver(event: DragEvent) {
 }
 
 function onDrop() {
-	console.log("drop");
 	if ((app.currentDocument?.framesBeingDragged.length || 0) > 0) {
 		dropFrameOnTimeline(props.direction, insertionIndex.value);
 	} else if ((app.currentDocument?.keyframesBeingDragged.length || 0) > 0) {
