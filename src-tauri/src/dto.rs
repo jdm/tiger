@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
 use std::path::PathBuf;
 use uuid::Uuid;
@@ -36,7 +36,7 @@ pub struct Document {
     timeline_zoom: f32,
     is_dragging_keyframe_duration: bool,
     frames_being_dragged: Vec<PathBuf>,
-    keyframes_being_dragged: Vec<(Direction, usize)>,
+    keyframes_being_dragged: HashSet<(Direction, usize)>,
 }
 
 #[derive(Clone, Serialize)]

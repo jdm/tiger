@@ -1,5 +1,6 @@
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::time::Duration;
-use std::{collections::HashMap, path::PathBuf};
 
 use crate::sheet::{Direction, Keyframe};
 use crate::state::*;
@@ -87,15 +88,15 @@ impl Document {
         Ok(())
     }
 
-    pub fn keyframes_being_dragged(&self) -> Vec<(Direction, usize)> {
+    pub fn keyframes_being_dragged(&self) -> HashSet<(Direction, usize)> {
         match self.transient.keyframe_drag_and_drop.is_some() {
             true => self
                 .view
                 .selection
                 .keyframes()
-                .map(|(a, d, i)| (*d, *i))
+                .map(|(_, d, i)| (*d, *i))
                 .collect(),
-            false => Vec::new(),
+            false => HashSet::new(),
         }
     }
 

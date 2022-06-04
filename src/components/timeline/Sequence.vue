@@ -73,7 +73,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 			previewTime = currentTime;
 			currentTime += previewFrameDuration * numPreviewFrames;
 		}
-		const isBeingDragged = app.currentDocument.keyframesBeingDragged.some(([d, i]) => d == props.direction && i == index);
+		const isBeingDragged = keyframe.selected && app.currentDocument.keyframesBeingDragged.length > 0;
 		entries.push({
 			name: keyframe.name,
 			selected: keyframe.selected,
@@ -150,7 +150,7 @@ function onDrop() {
 	console.log("drop");
 	if ((app.currentDocument?.framesBeingDragged.length || 0) > 0) {
 		dropFrameOnTimeline(props.direction, insertionIndex.value);
-	} else if ((app.currentDocument?.keyframesBeingDragged.length || 0) != 0) {
+	} else if ((app.currentDocument?.keyframesBeingDragged.length || 0) > 0) {
 		dropKeyframeOnTimeline(props.direction, insertionIndex.value);
 	}
 	receivingDragAndDrop.value = false;
