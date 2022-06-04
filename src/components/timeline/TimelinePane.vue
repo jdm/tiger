@@ -37,7 +37,8 @@
 							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
 								class="h-10" />
 						</div>
-						<div class="absolute top-0 mx-2 h-full w-px bg-white transition" :style="playheadStyle" />
+						<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
+							:style="playheadStyle" />
 					</div>
 				</div>
 			</div>
