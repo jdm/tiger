@@ -524,6 +524,65 @@ pub fn select_direction(
 }
 
 #[tauri::command]
+pub fn begin_drag_and_drop_frame(
+    app_state: tauri::State<'_, AppState>,
+    frame: PathBuf,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginDragAndDropFrame(frame))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn drop_frame_on_timeline(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+    index: usize,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::DropFrameOnTimeline(direction.into(), index))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn begin_drag_and_drop_keyframe(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+    index: usize,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn drop_keyframe_on_timeline(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+    index: usize,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_drag_keyframe_duration(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,
@@ -558,35 +617,6 @@ pub fn end_drag_keyframe_duration(app_state: tauri::State<'_, AppState>) -> Resu
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::EndDragKeyframeDuration())
-                .ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn begin_drag_and_drop_frame(
-    app_state: tauri::State<'_, AppState>,
-    frame: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
-        if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::BeginDragAndDropFrame(frame))
-                .ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn drop_frame_on_timeline(
-    app_state: tauri::State<'_, AppState>,
-    direction: dto::Direction,
-    index: usize,
-) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
-        if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::DropFrameOnTimeline(direction.into(), index))
                 .ok();
         }
     }))

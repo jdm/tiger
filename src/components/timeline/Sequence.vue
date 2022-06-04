@@ -1,12 +1,13 @@
 <template>
-	<div @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver" @drop="onDrop"
-		class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
+	<div ref="el" @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver"
+		@drop="onDrop" class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
 		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
-		<div ref="el" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
+		<div ref="keyframesElement" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
 			<Keyframe v-for="entry in sequenceEntries" :name="entry.name" :selected="entry.selected"
-				:start-time-millis="entry.startTimeMillis" :duration-millis="entry.durationMillis"
-				:is-preview="entry.isPreview" :direction="direction" :index="entry.index" :key="entry.key"
-				class="absolute h-full transition top-1/2 -translate-y-1/2" :style="entryStyle(entry)" />
+				:dragged="entry.dragged" :start-time-millis="entry.startTimeMillis"
+				:duration-millis="entry.durationMillis" :is-preview="entry.isPreview" :direction="direction"
+				:index="entry.index" :key="entry.key" class="absolute h-full transition top-1/2 -translate-y-1/2"
+				:style="entryStyle(entry)" />
 		</div>
 	</div>
 </template>
@@ -16,7 +17,7 @@ import { computed, Ref, ref } from 'vue';
 import { useAppStore } from '@/stores/app';
 import { Direction, Sequence as SequenceDTO } from '@/api/dto';
 import Keyframe from '@/components/timeline/Keyframe.vue';
-import { dropFrameOnTimeline } from '@/api/document';
+import { dropFrameOnTimeline, dropKeyframeOnTimeline } from '@/api/document';
 
 const app = useAppStore();
 
@@ -28,6 +29,7 @@ const props = defineProps<{
 type SequenceEntry = {
 	name: string,
 	selected: boolean,
+	dragged: boolean,
 	startTimeMillis: number,
 	durationMillis: number,
 	isPreview: boolean,
@@ -36,6 +38,7 @@ type SequenceEntry = {
 };
 
 const el: Ref<HTMLElement | null> = ref(null);
+const keyframesElement: Ref<HTMLElement | null> = ref(null);
 const receivingDragAndDrop = ref(false);
 const timeHovered = ref(0);
 
@@ -49,7 +52,8 @@ const insertionIndex = computed(() => {
 });
 
 const isDraggingContent = computed(() => {
-	return (app.currentDocument?.framesBeingDragged.length || 0) > 0;
+	return (app.currentDocument?.framesBeingDragged.length || 0) != 0
+		|| (app.currentDocument?.keyframesBeingDragged.length || 0) != 0;
 });
 
 const sequenceEntries = computed((): SequenceEntry[] => {
@@ -62,14 +66,18 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 	}
 
 	const previewFrameDuration = 40 / app.currentDocument.timelineZoom;
+	const numPreviewFrames = Math.max(app.currentDocument.framesBeingDragged.length, app.currentDocument.keyframesBeingDragged.length);
+
 	for (let [index, keyframe] of props.sequence.keyframes.entries()) {
 		if (receivingDragAndDrop.value && previewTime == null && index == insertionIndex.value) {
 			previewTime = currentTime;
-			currentTime += previewFrameDuration * app.currentDocument.framesBeingDragged.length;
+			currentTime += previewFrameDuration * numPreviewFrames;
 		}
+		const isBeingDragged = app.currentDocument.keyframesBeingDragged.some(([d, i]) => d == props.direction && i == index);
 		entries.push({
 			name: keyframe.name,
 			selected: keyframe.selected,
+			dragged: isBeingDragged,
 			startTimeMillis: currentTime,
 			durationMillis: keyframe.durationMillis,
 			isPreview: false,
@@ -83,10 +91,11 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 		if (previewTime != null) {
 			currentTime = previewTime;
 		}
-		for (let [index, frame] of app.currentDocument.framesBeingDragged.entries()) {
+		for (let index = 0; index < numPreviewFrames; index++) {
 			entries.push({
 				name: "",
 				selected: false,
+				dragged: false,
 				startTimeMillis: currentTime,
 				durationMillis: previewFrameDuration,
 				isPreview: true,
@@ -110,20 +119,26 @@ function entryStyle(entry: SequenceEntry) {
 }
 
 function mouseEventToTime(event: MouseEvent) {
-	if (!el.value) {
+	if (!keyframesElement.value) {
 		return 0;
 	}
-	const pixelDelta = event.clientX - el.value.getBoundingClientRect().left;
+	const pixelDelta = event.clientX - keyframesElement.value.getBoundingClientRect().left;
 	const time = pixelDelta / (app.currentDocument?.timelineZoom || 1);
 	return time;
 }
 
 function onDragEnter(event: DragEvent) {
+	if (event.target != el.value) {
+		return;
+	}
 	receivingDragAndDrop.value = true;
 	timeHovered.value = mouseEventToTime(event);
 }
 
-function onDragLeave() {
+function onDragLeave(event: DragEvent) {
+	if (event.target != el.value) {
+		return;
+	}
 	receivingDragAndDrop.value = false;
 }
 
@@ -132,7 +147,12 @@ function onDragOver(event: DragEvent) {
 }
 
 function onDrop() {
-	dropFrameOnTimeline(props.direction, insertionIndex.value);
+	console.log("drop");
+	if ((app.currentDocument?.framesBeingDragged.length || 0) > 0) {
+		dropFrameOnTimeline(props.direction, insertionIndex.value);
+	} else if ((app.currentDocument?.keyframesBeingDragged.length || 0) != 0) {
+		dropKeyframeOnTimeline(props.direction, insertionIndex.value);
+	}
 	receivingDragAndDrop.value = false;
 }
 </script>

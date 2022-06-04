@@ -36,6 +36,7 @@ pub struct Document {
     timeline_zoom: f32,
     is_dragging_keyframe_duration: bool,
     frames_being_dragged: Vec<PathBuf>,
+    keyframes_being_dragged: Vec<(Direction, usize)>,
 }
 
 #[derive(Clone, Serialize)]
@@ -176,6 +177,11 @@ impl From<&state::Document> for Document {
             timeline_zoom: document.view().timeline_zoom(),
             is_dragging_keyframe_duration: document.is_dragging_keyframe_duration(),
             frames_being_dragged: document.frames_being_dragged(),
+            keyframes_being_dragged: document
+                .keyframes_being_dragged()
+                .into_iter()
+                .map(|(d, i)| (d.into(), i))
+                .collect(),
         }
     }
 }

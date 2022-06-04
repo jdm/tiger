@@ -1,6 +1,7 @@
 <template>
 	<div class="pr-1">
-		<div ref="el" class="h-full min-w-0 relative rounded-md border-2 cursor-pointer" :class="dynamicClasses">
+		<div ref="el" @dragstart="onDragStart" @dragend="onDragEnd" draggable="true"
+			class="h-full min-w-0 relative rounded-md border-2 cursor-pointer" :class="dynamicClasses">
 			<div @click="onKeyframeClicked" class="h-full px-2 flex items-center font-semibold text-[11px]">
 				<div class="min-w-0 overflow-hidden whitespace-nowrap text-ellipsis">{{ name }}</div>
 			</div>
@@ -15,7 +16,7 @@
 import { computed, Ref, ref } from 'vue';
 import { Direction } from '@/api/dto'
 import { useAppStore } from '@/stores/app';
-import { updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration } from '@/api/document';
+import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration } from '@/api/document';
 import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
 
 const app = useAppStore();
@@ -23,6 +24,7 @@ const app = useAppStore();
 const props = defineProps<{
 	name: string,
 	selected: boolean,
+	dragged: boolean,
 	startTimeMillis: number,
 	durationMillis: number,
 	direction: Direction,
@@ -35,7 +37,10 @@ const dynamicClasses = computed(() => {
 		return ["bg-orange-600", "border-orange-600", "animate-pulse"];
 	}
 	if (props.selected) {
-		return ["text-blue-100", "bg-zinc-900", "border-blue-600"];
+		return [
+			"text-blue-100", "bg-zinc-900", "border-blue-600",
+			...(props.dragged ? ["border-dotted", "opacity-50"] : [])
+		];
 	}
 	if (props.direction == app.currentDocument?.currentSequenceDirection) {
 		return ["text-orange-200", "bg-plastic-900", "border-orange-600"];
@@ -43,8 +48,9 @@ const dynamicClasses = computed(() => {
 	return ["text-plastic-500", "bg-plastic-900", "border-plastic-500"];
 });
 
-let el: Ref<HTMLElement | null> = ref(null);
-let dragReferenceTime = 0;
+const el: Ref<HTMLElement | null> = ref(null);
+const dragCursorElement: Ref<HTMLElement | null> = ref(null);
+let durationDragReferenceTime = 0;
 
 function mouseEventToTime(event: MouseEvent) {
 	if (!el.value) {
@@ -59,13 +65,34 @@ function onKeyframeClicked(event: MouseEvent) {
 	selectKeyframe(props.direction, props.index, event.shiftKey, event.ctrlKey);
 }
 
+function onDragStart(event: DragEvent) {
+	if (event.dataTransfer) {
+		const previewElement = document.createElement("div");
+		document.body.appendChild(previewElement);
+		previewElement.style.position = "absolute";
+		previewElement.style.top = "-1000px";
+		previewElement.classList.add("opacity-0");
+		previewElement.innerText = "N/A";
+		dragCursorElement.value = previewElement;
+		event.dataTransfer.setDragImage(previewElement, 0, 0);
+	}
+	beginDragAndDropKeyframe(props.direction, props.index);
+}
+
+function onDragEnd() {
+	if (dragCursorElement.value) {
+		document.body.removeChild(dragCursorElement.value);
+		dragCursorElement.value = null;
+	}
+}
+
 function beginDurationDrag(e: DragAreaEvent) {
 	beginDragKeyframeDuration(props.direction, props.index);
-	dragReferenceTime = mouseEventToTime(e.mouseEvent);
+	durationDragReferenceTime = mouseEventToTime(e.mouseEvent);
 }
 
 function updateDurationDrag(e: DragAreaEvent) {
-	const deltaMillis = mouseEventToTime(e.mouseEvent) - dragReferenceTime;
+	const deltaMillis = mouseEventToTime(e.mouseEvent) - durationDragReferenceTime;
 	updateDragKeyframeDuration(Math.round(deltaMillis));
 }
 

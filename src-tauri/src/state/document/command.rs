@@ -31,11 +31,13 @@ pub enum Command {
     SetAnimationLooping(bool),
     ApplyDirectionPreset(DirectionPreset),
     SelectDirection(Direction),
+    BeginDragAndDropFrame(PathBuf),
+    DropFrameOnTimeline(Direction, usize),
+    BeginDragAndDropKeyframe(Direction, usize),
+    DropKeyframeOnTimeline(Direction, usize),
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
     EndDragKeyframeDuration(),
-    BeginDragAndDropFrame(PathBuf),
-    DropFrameOnTimeline(Direction, usize),
 }
 
 #[derive(Debug, Default)]
@@ -83,14 +85,17 @@ impl Document {
             Command::EndDragKeyframeDuration() => (),
             Command::BeginDragAndDropFrame(ref f) => self.begin_drag_and_drop_frame(f.clone()),
             Command::DropFrameOnTimeline(d, i) => self.drop_frame_on_timeline(d, i)?,
+            Command::BeginDragAndDropKeyframe(d, i) => self.begin_drag_and_drop_keyframe(d, i)?,
+            Command::DropKeyframeOnTimeline(d, i) => self.drop_keyframe_on_timeline(d, i)?,
         }
 
         if !matches!(
             command,
             Command::Tick(_)
+                | Command::BeginDragAndDropFrame(_)
+                | Command::BeginDragAndDropKeyframe(_, _)
                 | Command::BeginDragKeyframeDuration(_, _)
                 | Command::UpdateDragKeyframeDuration(_)
-                | Command::BeginDragAndDropFrame(_)
         ) {
             self.transient = Default::default();
         }

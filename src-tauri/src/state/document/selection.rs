@@ -177,6 +177,10 @@ impl MultiSelection {
     pub fn frames(&self) -> impl Iterator<Item = &PathBuf> {
         self.frames.iter()
     }
+
+    pub fn keyframes(&self) -> impl Iterator<Item = &(String, Direction, usize)> {
+        self.keyframes.iter()
+    }
 }
 
 impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Default
