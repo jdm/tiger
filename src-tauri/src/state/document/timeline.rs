@@ -12,7 +12,7 @@ impl Document {
         if self.persistent.is_timeline_playing() {
             self.view.timeline_clock += delta;
             if let Ok((_, animation)) = self.get_workbench_animation() {
-                if let Ok(sequence) = self.get_workbench_sequence() {
+                if let Ok((_, sequence)) = self.get_workbench_sequence() {
                     match sequence.duration_millis() {
                         Some(d) if d > 0 => {
                             let clock_ms = self.view.timeline_clock().as_millis() as u64;
@@ -43,7 +43,7 @@ impl Document {
             return Ok(());
         }
 
-        let sequence = self.get_workbench_sequence()?;
+        let (_, sequence) = self.get_workbench_sequence()?;
         if let Some(d) = sequence.duration_millis() {
             if d > 0 && self.view.timeline_clock().as_millis() >= u128::from(d) {
                 self.view.skip_to_timeline_start();
@@ -58,13 +58,19 @@ impl Document {
     }
 
     pub(super) fn scrub_timeline(&mut self, time: Duration) -> Result<(), DocumentError> {
-        let sequence = self.get_workbench_sequence()?;
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let (direction, sequence) = self.get_workbench_sequence()?;
         let new_time = match sequence.duration() {
             Some(d) if d < time => d,
             Some(_) => time,
             None => Duration::ZERO,
         };
+        let keyframe_index = sequence.keyframe_index_at(new_time).unwrap_or_default();
         self.view.timeline_clock = new_time;
+        self.view
+            .selection
+            .select_keyframe(animation_name, direction, keyframe_index);
         Ok(())
     }
 
@@ -87,7 +93,7 @@ impl Document {
         self.view.current_sequence = Some(direction);
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
-        let sequence = self.get_workbench_sequence()?;
+        let (direction, sequence) = self.get_workbench_sequence()?;
         if let Some(keyframe) = sequence.keyframe_index_at(self.view.timeline_clock) {
             self.view
                 .selection

@@ -64,9 +64,10 @@ impl Document {
             SelectionInput::Hitbox(_) => todo!(),
             SelectionInput::Keyframe(d, i) => {
                 self.view.current_sequence = Some(*d);
+                let (_, sequence) = self.get_workbench_sequence()?;
                 if !self.persistent.timeline_is_playing {
                     self.view.timeline_clock = Duration::from_millis(
-                        self.get_workbench_sequence()?
+                        sequence
                             .keyframe_times()
                             .get(*i)
                             .copied()

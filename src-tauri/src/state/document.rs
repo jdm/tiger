@@ -131,7 +131,7 @@ impl Document {
         let timeline_cap = self
             .get_workbench_sequence()
             .ok()
-            .and_then(|s| s.duration())
+            .and_then(|(_, s)| s.duration())
             .unwrap_or_default();
         self.view.timeline_clock = self.view.timeline_clock.min(timeline_cap);
 
@@ -161,15 +161,18 @@ impl Document {
         // TODO hitbox selection cleanup
     }
 
-    pub fn get_workbench_sequence(&self) -> Result<&Sequence, DocumentError> {
+    pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
         let (_, animation) = self.get_workbench_animation()?;
         let direction = self
             .view
             .current_sequence()
             .ok_or_else(|| DocumentError::NotEditingAnySequence)?;
-        animation
-            .sequence(direction)
-            .ok_or(DocumentError::SequenceNotInAnimation(direction))
+        Ok((
+            direction,
+            animation
+                .sequence(direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?,
+        ))
     }
 
     pub fn get_workbench_animation(&self) -> Result<(&String, &Animation), DocumentError> {

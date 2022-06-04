@@ -170,7 +170,7 @@ impl From<&state::Document> for Document {
             current_keyframe_index: document
                 .get_workbench_sequence()
                 .ok()
-                .and_then(|s| s.keyframe_index_at(document.view().timeline_clock())),
+                .and_then(|(_, s)| s.keyframe_index_at(document.view().timeline_clock())),
             timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
             timeline_is_playing: document.persistent().is_timeline_playing(),
             timeline_zoom: document.view().timeline_zoom(),
