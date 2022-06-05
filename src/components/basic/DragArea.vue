@@ -5,9 +5,7 @@
 <script setup lang="ts">
 import { computed, onUnmounted, Ref, ref } from 'vue';
 
-
 export type DragButton = "left" | "middle" | "right";
-
 export type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
 
 export type DragAreaEvent = {
@@ -15,11 +13,13 @@ export type DragAreaEvent = {
   mouseEvent: MouseEvent,
   htmlElement: HTMLElement,
   button: DragButton,
+  didMove: boolean,
 }
 
 const el: Ref<HTMLElement | null> = ref(null)
 const activeDrag: Ref<DragButton | null> = ref(null);
 let initialMouseEvent: MouseEvent | null = null;
+let didMove: boolean = false;
 
 const props = defineProps<{
   buttons?: DragButton[],
@@ -71,11 +71,13 @@ function onMouseDown(e: MouseEvent) {
   window.addEventListener("mousemove", onMouseMove);
   activeDrag.value = indexToButton(e.button);
   initialMouseEvent = e;
+  didMove = false;
   emit("dragStart", {
     mouseEvent: e,
     htmlElement: el.value,
     button: activeDrag.value,
     initialMouseEvent: initialMouseEvent,
+    didMove: didMove,
   });
 }
 
@@ -91,6 +93,7 @@ function onMouseUp(e: MouseEvent) {
     htmlElement: el.value,
     button: button,
     initialMouseEvent: initialMouseEvent,
+    didMove: didMove,
   });
 }
 
@@ -98,11 +101,13 @@ function onMouseMove(e: MouseEvent) {
   if (!activeDrag.value || !el.value || !initialMouseEvent) {
     return;
   }
+  didMove = true;
   emit("dragUpdate", {
     mouseEvent: e,
     htmlElement: el.value,
     button: activeDrag.value,
     initialMouseEvent: initialMouseEvent,
+    didMove: didMove,
   });
 }
 </script>

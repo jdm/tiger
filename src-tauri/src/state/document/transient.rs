@@ -246,32 +246,21 @@ impl Document {
         self.transient.keyframe_duration_drag.is_some()
     }
 
-    pub(super) fn begin_nudge_keyframe(&mut self) -> Result<(), DocumentError> {
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let animation_name = animation_name.clone();
-        let (direction, sequence) = self.get_workbench_sequence()?;
-        let visible_keyframe_index = sequence
-            .keyframe_index_at(self.view.timeline_clock)
-            .ok_or(DocumentError::NoKeyframeAtTime(self.view.timeline_clock))?;
-
-        // Ensure dragged frame is selected
-        if !self.view.selection.is_keyframe_selected(
-            &animation_name,
-            direction,
-            visible_keyframe_index,
-        ) {
-            self.view
-                .selection
-                .select_keyframe(animation_name, direction, visible_keyframe_index);
-        }
-
-        let (_, animation) = self.get_workbench_animation()?;
+    pub(super) fn begin_nudge_keyframe(
+        &mut self,
+        direction: Direction,
+        index: usize,
+    ) -> Result<(), DocumentError> {
+        let (animation_name, animation) = self.get_workbench_animation()?;
         self.transient.keyframe_nudge = Some(KeyframeNudge {
-            keyframe_being_dragged: (direction, visible_keyframe_index),
+            keyframe_being_dragged: (direction, index),
             original_positions: self
                 .view
                 .selection
                 .keyframes()
+                // If the clicked keyframe isn't selected, it will replace the current selection
+                // when we move the mouse. Because of this, we must store its position info too.
+                .chain(vec![(animation_name.clone(), direction, index)].iter())
                 .filter_map(|(_, direction, index)| {
                     animation
                         .sequence(*direction)
@@ -300,6 +289,22 @@ impl Document {
             .keyframe_nudge
             .clone()
             .ok_or(DocumentError::NotNudgingKeyframe)?;
+
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+
+        // Select dragged frame
+        if !self.view.selection.is_keyframe_selected(
+            &animation_name,
+            nudge.keyframe_being_dragged.0,
+            nudge.keyframe_being_dragged.1,
+        ) {
+            self.view.selection.select_keyframe(
+                animation_name,
+                nudge.keyframe_being_dragged.0,
+                nudge.keyframe_being_dragged.1,
+            );
+        }
 
         if !both_axis {
             if displacement.x.abs() > displacement.y.abs() {

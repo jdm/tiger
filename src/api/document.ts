@@ -272,9 +272,17 @@ export async function endDragKeyframeDuration(): Promise<void> {
   appStore.patch(await invoke("end_drag_keyframe_duration"));
 }
 
-export async function beginNudgeKeyframe(): Promise<void> {
+export async function beginNudgeKeyframe(
+  direction: Direction,
+  index: number
+): Promise<void> {
   const appStore = useAppStore();
-  appStore.patch(await invoke("begin_nudge_keyframe"));
+  appStore.patch(
+    await invoke("begin_nudge_keyframe", {
+      direction: direction,
+      index: index,
+    })
+  );
 }
 
 export async function updateNudgeKeyframe(

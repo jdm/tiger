@@ -40,7 +40,7 @@ pub enum Command {
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
     EndDragKeyframeDuration(),
-    BeginNudgeKeyframe(),
+    BeginNudgeKeyframe(Direction, usize),
     UpdateNudgeKeyframe(Vector2D<i32>, bool),
     EndNudgeKeyframe(),
 }
@@ -94,7 +94,7 @@ impl Document {
             Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
             Command::EndDragKeyframeDuration() => (),
-            Command::BeginNudgeKeyframe() => self.begin_nudge_keyframe()?,
+            Command::BeginNudgeKeyframe(d, i) => self.begin_nudge_keyframe(d, i)?,
             Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
             Command::EndNudgeKeyframe() => (),
         }
@@ -106,7 +106,7 @@ impl Document {
                 | Command::BeginDragAndDropKeyframe(_, _)
                 | Command::BeginDragKeyframeDuration(_, _)
                 | Command::UpdateDragKeyframeDuration(_)
-                | Command::BeginNudgeKeyframe()
+                | Command::BeginNudgeKeyframe(_, _)
                 | Command::UpdateNudgeKeyframe(_, _)
         ) {
             self.transient = Default::default();

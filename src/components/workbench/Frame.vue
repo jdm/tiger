@@ -16,25 +16,27 @@
 			<rect :x="1" :y="1" :width="frameSize[0]" :height="frameSize[1]" shape-rendering="crispEdges"
 				:stroke-width="1 / zoom" class="stroke-blue-600 fill-blue-600/10" />
 		</svg>
-		<DragArea v-if="isActiveFrame" :buttons="['left', 'right']" active-cursor="cursor-move"
-			inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
-			@click="onClick" class="absolute pointer-events-auto z-30" :style="frameStyle" />
+		<DragArea v-if="frameSize && (isActiveFrame || props.keyframe.selected)" :buttons="['left', 'right']"
+			active-cursor="cursor-move" inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag"
+			@drag-update="updateDrag" class="absolute pointer-events-auto z-30" :style="frameStyle" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { Keyframe } from '@/api/dto'
+import { Direction, Keyframe } from '@/api/dto'
 import { useAppStore } from '@/stores/app'
 import { computed, ref, Ref } from 'vue';
 import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
-import { beginNudgeKeyframe, endNudgeKeyframe, pan, updateNudgeKeyframe } from '@/api/document';
+import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from '@/api/document';
 
 const app = useAppStore();
 
 const props = defineProps<{
 	keyframe: Keyframe,
-	origin: [number, number]
+	origin: [number, number],
+	direction: Direction,
+	index: number,
 }>();
 
 const el: Ref<HTMLImageElement | null> = ref(null);
@@ -81,13 +83,17 @@ function onFrameLoaded() {
 
 function startDrag(event: DragAreaEvent) {
 	if (event.button == "left") {
-		beginNudgeKeyframe();
+		beginNudgeKeyframe(props.direction, props.index);
 	}
 }
 
 function endDrag(event: DragAreaEvent) {
 	if (event.button == "left") {
-		endNudgeKeyframe();
+		if (event.didMove) {
+			endNudgeKeyframe();
+		} else {
+			selectKeyframe(props.direction, props.index, event.mouseEvent.shiftKey, event.mouseEvent.ctrlKey);
+		}
 	}
 }
 
@@ -103,7 +109,4 @@ function updateDrag(event: DragAreaEvent) {
 	}
 }
 
-function onClick(event: MouseEvent) {
-	console.log("click");
-}
 </script>

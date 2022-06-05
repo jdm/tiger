@@ -645,10 +645,16 @@ pub fn end_drag_keyframe_duration(app_state: tauri::State<'_, AppState>) -> Resu
 }
 
 #[tauri::command]
-pub fn begin_nudge_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub fn begin_nudge_keyframe(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::Direction,
+    index: usize,
+) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::BeginNudgeKeyframe()).ok();
+            document
+                .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
+                .ok();
         }
     }))
 }

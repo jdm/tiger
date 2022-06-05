@@ -13,8 +13,8 @@
 		<div class="relative flex-1 overflow-hidden" ref="drawingArea">
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
 				class="flex-1 graph-paper h-full" :style="graphPaperStyle" />
-			<Frame v-for="keyframe in app.currentSequence?.keyframes" :key="keyframe.key" :keyframe="keyframe"
-				:origin="origin" />
+			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
+				:direction="k.direction" :index="k.index" :origin="origin" />
 			<Origin :origin="origin" class="pointer-events-none" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600 pointer-events-none">
 				{{ app.currentAnimation?.name }}
@@ -26,6 +26,7 @@
 <script setup lang="ts">
 import { onUnmounted, watch } from 'vue';
 import { computed, Ref, ref } from '@vue/reactivity';
+import { Direction, Keyframe } from '@/api/dto'
 import { closeDocument, focusDocument } from '@/api/app'
 import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from '@/api/document'
 import { useAppStore } from '@/stores/app'
@@ -78,6 +79,20 @@ const origin = computed((): [number, number] => {
 		Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1],
 	];
 })
+
+const allAnimationKeyframes = computed((): { direction: Direction, index: number, keyframe: Keyframe }[] => {
+	let keyframes = [];
+	for (const direction in app.currentAnimation?.sequences) {
+		for (const [index, keyframe] of (app.currentAnimation?.sequences[direction as Direction].keyframes.entries()) || []) {
+			keyframes.push({
+				direction: direction as Direction,
+				index: index,
+				keyframe: keyframe
+			});
+		}
+	}
+	return keyframes;
+});
 
 function onClick() {
 	clearSelection();
