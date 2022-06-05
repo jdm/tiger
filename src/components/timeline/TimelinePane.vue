@@ -22,7 +22,7 @@
 						<div v-for="sequence, direction in app.currentAnimation?.sequences"
 							@click="selectDirection(direction)"
 							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="sequence == app.currentSequence ?
-							'text-plastic-100 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
+							'text-plastic-200 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
 							{{ direction }}
 						</div>
 					</div>
