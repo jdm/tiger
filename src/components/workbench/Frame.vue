@@ -54,6 +54,8 @@ const frameStyle = computed(() => {
 	return {
 		left: `${left.value}px`,
 		top: `${top.value}px`,
+		width: `${size[0]}px`,
+		height: `${size[1]}px`,
 		transform: `scale(${zoom.value}, ${zoom.value})`,
 		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
