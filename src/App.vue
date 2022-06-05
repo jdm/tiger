@@ -12,7 +12,7 @@
         </div>
       </div>
     </div>
-    <ModalLayer class="absolute inset-0" />
+    <ModalLayer class="absolute inset-0 z-[9999]" />
   </div>
 </template>
 
