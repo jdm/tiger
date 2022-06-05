@@ -102,7 +102,18 @@ pub struct Keyframe {
     start_time_millis: u64,
     duration_millis: u64,
     offset: (i32, i32),
+    hitboxes: HashMap<String, Hitbox>,
     key: Uuid,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct Hitbox {
+    selected: bool,
+    top_left: (i32, i32),
+    size: (u32, u32),
+    linked: bool,
+    locked: bool,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -304,7 +315,23 @@ impl From<&sheet::Keyframe> for Keyframe {
             start_time_millis: 0,
             duration_millis: keyframe.duration_millis(),
             offset: keyframe.offset().to_tuple(),
+            hitboxes: keyframe
+                .hitboxes_iter()
+                .map(|(n, h)| (n.clone(), h.into()))
+                .collect(),
             key: keyframe.key(),
+        }
+    }
+}
+
+impl From<&sheet::Hitbox> for Hitbox {
+    fn from(hitbox: &sheet::Hitbox) -> Self {
+        Self {
+            selected: true, // TODO
+            top_left: hitbox.position().to_tuple(),
+            size: hitbox.size().to_tuple(),
+            linked: hitbox.linked(),
+            locked: hitbox.locked(),
         }
     }
 }

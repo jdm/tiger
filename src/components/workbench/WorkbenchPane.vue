@@ -15,6 +15,7 @@
 				class="flex-1 graph-paper h-full" :style="graphPaperStyle" />
 			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
 				:direction="k.direction" :index="k.index" :origin="origin" />
+			<Hitbox v-for="hitbox in app.currentKeyframe?.hitboxes" :hitbox="hitbox" :origin="origin" />
 			<Origin :origin="origin" class="pointer-events-none" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600 pointer-events-none">
 				{{ app.currentAnimation?.name }}
@@ -36,6 +37,7 @@ import Pane from "@/components/basic/Pane.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
 import PaneTabList from "@/components/basic/PaneTabList.vue"
 import Frame from "@/components/workbench/Frame.vue"
+import Hitbox from "@/components/workbench/Hitbox.vue"
 import Origin from "@/components/workbench/Origin.vue"
 
 const app = useAppStore();

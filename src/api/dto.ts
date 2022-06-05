@@ -79,7 +79,16 @@ export type Keyframe = {
   startTimeMillis: number;
   durationMillis: number;
   offset: [number, number];
+  hitboxes: Record<string, Hitbox>;
   key: string;
+};
+
+export type Hitbox = {
+  selected: boolean;
+  topLeft: [number, number];
+  size: [number, number];
+  linked: boolean;
+  locked: boolean;
 };
 
 export enum ContentTab {
