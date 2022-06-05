@@ -1,25 +1,28 @@
 <template>
-  <div ref="el" @mousedown="onMouseDown" :class="dragActive ? activeCursor : inactiveCursor" />
+  <div ref="el" @mousedown="onMouseDown" :class="activeDrag != null ? activeCursor : inactiveCursor" />
 </template>
 
 <script setup lang="ts">
 import { computed, onUnmounted, Ref, ref } from 'vue';
 
+
+export type DragButton = "left" | "middle" | "right";
+
+export type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
+
 export type DragAreaEvent = {
+  initialMouseEvent: MouseEvent,
   mouseEvent: MouseEvent,
   htmlElement: HTMLElement,
+  button: DragButton,
 }
 
-type DragButton = "left" | "middle" | "right";
-
-type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
-
 const el: Ref<HTMLElement | null> = ref(null)
-const dragActive = ref(false);
-defineExpose({ dragActive });
+const activeDrag: Ref<DragButton | null> = ref(null);
+let initialMouseEvent: MouseEvent | null = null;
 
 const props = defineProps<{
-  button?: DragButton,
+  buttons?: DragButton[],
   inactiveCursor?: Cursor,
   activeCursor?: Cursor,
 }>();
@@ -31,16 +34,26 @@ const emit =
     (e: 'dragUpdate', event: DragAreaEvent): void
   }>();
 
-const buttonIndex = computed(() => {
-  switch (props.button) {
-    case "middle": return 1;
-    case "right": return 2;
-    default: return 0;
-  }
+const buttonIndexes = computed((): number[] => {
+  return (props.buttons || ["left"]).map(button => {
+    switch (button) {
+      case "middle": return 1;
+      case "right": return 2;
+      default: return 0;
+    }
+  });
 });
 
+function indexToButton(index: number): DragButton {
+  switch (index) {
+    case 1: return "middle";
+    case 2: return "right";
+    default: return "left";
+  }
+}
+
 onUnmounted(() => {
-  if (dragActive.value) {
+  if (activeDrag != null) {
     cleanup();
   }
 });
@@ -51,37 +64,45 @@ function cleanup() {
 }
 
 function onMouseDown(e: MouseEvent) {
-  if (dragActive.value || !el.value || e.button != buttonIndex.value) {
+  if (activeDrag.value || !el.value || !buttonIndexes.value.includes(e.button)) {
     return;
   }
   window.addEventListener("mouseup", onMouseUp);
   window.addEventListener("mousemove", onMouseMove);
-  dragActive.value = true;
+  activeDrag.value = indexToButton(e.button);
+  initialMouseEvent = e;
   emit("dragStart", {
     mouseEvent: e,
-    htmlElement: el.value
+    htmlElement: el.value,
+    button: activeDrag.value,
+    initialMouseEvent: initialMouseEvent,
   });
 }
 
 function onMouseUp(e: MouseEvent) {
-  if (!dragActive.value || !el.value || e.button != buttonIndex.value) {
+  const button = indexToButton(e.button);
+  if (activeDrag.value != button || !el.value || !initialMouseEvent) {
     return;
   }
   cleanup();
-  dragActive.value = false;
+  activeDrag.value = null;
   emit("dragEnd", {
     mouseEvent: e,
-    htmlElement: el.value
+    htmlElement: el.value,
+    button: button,
+    initialMouseEvent: initialMouseEvent,
   });
 }
 
 function onMouseMove(e: MouseEvent) {
-  if (!dragActive.value || !el.value) {
+  if (!activeDrag.value || !el.value || !initialMouseEvent) {
     return;
   }
   emit("dragUpdate", {
     mouseEvent: e,
-    htmlElement: el.value
+    htmlElement: el.value,
+    button: activeDrag.value,
+    initialMouseEvent: initialMouseEvent,
   });
 }
 </script>

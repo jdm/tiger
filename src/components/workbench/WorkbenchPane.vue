@@ -11,15 +11,13 @@
 			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
 		</div>
 		<div class="relative flex-1 overflow-hidden" ref="drawingArea">
-			<DragArea button="right" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
+			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
 				class="flex-1 graph-paper h-full" :style="graphPaperStyle" />
-			<div class="pointer-events-none">
-				<Frame v-for="keyframe in app.currentSequence?.keyframes" :key="keyframe.key" :keyframe="keyframe"
-					:origin="origin" />
-				<Origin :origin="origin" />
-				<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
-					{{ app.currentAnimation?.name }}
-				</div>
+			<Frame v-for="keyframe in app.currentSequence?.keyframes" :key="keyframe.key" :keyframe="keyframe"
+				:origin="origin" />
+			<Origin :origin="origin" class="pointer-events-none" />
+			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600 pointer-events-none">
+				{{ app.currentAnimation?.name }}
 			</div>
 		</div>
 	</Pane>
@@ -63,7 +61,6 @@ watch(drawingArea, (newArea, oldArea) => {
 onUnmounted(() => {
 	resizeObserver.disconnect();
 });
-
 
 const graphPaperStyle = computed(() => {
 	const workbenchOffset = app.currentDocument?.workbenchOffset || [0, 0];

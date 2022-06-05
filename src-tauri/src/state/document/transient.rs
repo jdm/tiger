@@ -1,3 +1,4 @@
+use euclid::default::Vector2D;
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
@@ -11,11 +12,19 @@ pub(super) struct KeyframeDurationDrag {
     pub(super) original_durations: HashMap<(Direction, usize), u64>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct KeyframeNudge {
+    pub(super) keyframe_being_dragged: (Direction, usize),
+    pub(super) original_positions:
+        HashMap<(Direction, usize), (Vector2D<i32>, HashMap<String, Vector2D<i32>>)>,
+}
+
 #[derive(Debug, Default)]
 pub struct Transient {
     pub(super) frame_drag_and_drop: Option<PathBuf>,
     pub(super) keyframe_duration_drag: Option<KeyframeDurationDrag>,
     pub(super) keyframe_drag_and_drop: Option<(Direction, usize)>,
+    pub(super) keyframe_nudge: Option<KeyframeNudge>,
 }
 
 impl Document {
@@ -235,5 +244,99 @@ impl Document {
 
     pub fn is_dragging_keyframe_duration(&self) -> bool {
         self.transient.keyframe_duration_drag.is_some()
+    }
+
+    pub(super) fn begin_nudge_keyframe(&mut self) -> Result<(), DocumentError> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let (direction, sequence) = self.get_workbench_sequence()?;
+        let visible_keyframe_index = sequence
+            .keyframe_index_at(self.view.timeline_clock)
+            .ok_or(DocumentError::NoKeyframeAtTime(self.view.timeline_clock))?;
+
+        // Ensure dragged frame is selected
+        if !self.view.selection.is_keyframe_selected(
+            &animation_name,
+            direction,
+            visible_keyframe_index,
+        ) {
+            self.view
+                .selection
+                .select_keyframe(animation_name, direction, visible_keyframe_index);
+        }
+
+        let (_, animation) = self.get_workbench_animation()?;
+        self.transient.keyframe_nudge = Some(KeyframeNudge {
+            keyframe_being_dragged: (direction, visible_keyframe_index),
+            original_positions: self
+                .view
+                .selection
+                .keyframes()
+                .filter_map(|(_, direction, index)| {
+                    animation
+                        .sequence(*direction)
+                        .and_then(|sequence| sequence.keyframe(*index))
+                        .and_then(|keyframe| {
+                            Some((
+                                (*direction, *index),
+                                (keyframe.offset(), HashMap::new()), // TODO store hitboxes locations
+                            ))
+                        })
+                })
+                .collect(),
+        });
+
+        Ok(())
+    }
+
+    pub(super) fn update_nudge_keyframe(
+        &mut self,
+        mut displacement: Vector2D<i32>,
+        both_axis: bool,
+    ) -> Result<(), DocumentError> {
+        let zoom = self.view.workbench_zoom();
+        let nudge = self
+            .transient
+            .keyframe_nudge
+            .clone()
+            .ok_or(DocumentError::NotNudgingKeyframe)?;
+
+        if !both_axis {
+            if displacement.x.abs() > displacement.y.abs() {
+                displacement.y = 0;
+            } else {
+                displacement.x = 0;
+            }
+        }
+
+        let affected_keyframes = self
+            .view
+            .selection
+            .keyframes()
+            .map(|(_, direction, index)| (*direction, *index))
+            .collect::<Vec<_>>();
+
+        for (direction, index) in affected_keyframes {
+            let old_offset = nudge
+                .original_positions
+                .get(&(direction, index))
+                .ok_or(DocumentError::MissingKeyframePositionData)?;
+
+            let (_, animation) = self.get_workbench_animation_mut()?;
+            let keyframe = animation
+                .sequence_mut(direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?
+                .keyframe_mut(index)
+                .ok_or(DocumentError::NoKeyframeAtIndex(index))?;
+
+            let new_offset = (old_offset.0.to_f32() + displacement.to_f32() / zoom)
+                .floor()
+                .to_i32();
+            keyframe.set_offset(new_offset);
+
+            // TODO move hitboxes
+        }
+
+        Ok(())
     }
 }

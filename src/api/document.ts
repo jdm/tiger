@@ -271,3 +271,26 @@ export async function endDragKeyframeDuration(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("end_drag_keyframe_duration"));
 }
+
+export async function beginNudgeKeyframe(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("begin_nudge_keyframe"));
+}
+
+export async function updateNudgeKeyframe(
+  displacement: [number, number],
+  bothAxis: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("update_nudge_keyframe", {
+      displacement: displacement,
+      bothAxis: bothAxis,
+    })
+  );
+}
+
+export async function endNudgeKeyframe(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_nudge_keyframe"));
+}

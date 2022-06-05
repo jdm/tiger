@@ -52,6 +52,10 @@ pub enum DocumentError {
     NotDraggingKeyframeDuration,
     #[error("Could not find duration of keyframe when drag started")]
     MissingKeyframeDragData,
+    #[error("Not currently nudging a keyframe")]
+    NotNudgingKeyframe,
+    #[error("Could not find position of keyframe when drag started")]
+    MissingKeyframePositionData,
 }
 
 impl Document {

@@ -3,7 +3,7 @@
 		<!-- Sprite -->
 		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded"
 			class="absolute pixelated transition-transform z-10"
-			:class="(frameSize && isActiveFrame) ? 'opacity-100' : 'opacity-0'" :style="frameStyle" />
+			:class="(frameSize && isActiveFrame) ? 'opacity-100' : 'opacity-0'" draggable="false" :style="frameStyle" />
 		<!-- Selection indicator -->
 		<!-- This intentionally uses SVG and not a plain div. We must use transform:scale() to size
 			elements (for perf reasons and also because width/height animates one frame behind).
@@ -16,6 +16,9 @@
 			<rect :x="1" :y="1" :width="frameSize[0]" :height="frameSize[1]" shape-rendering="crispEdges"
 				:stroke-width="1 / zoom" class="stroke-blue-600 fill-blue-600/10" />
 		</svg>
+		<DragArea v-if="isActiveFrame" :buttons="['left', 'right']" active-cursor="cursor-move"
+			inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
+			@click="onClick" class="absolute pointer-events-auto z-30" :style="frameStyle" />
 	</div>
 </template>
 
@@ -23,7 +26,9 @@
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { Keyframe } from '@/api/dto'
 import { useAppStore } from '@/stores/app'
-import { computed, CSSProperties, ref, Ref } from 'vue';
+import { computed, ref, Ref } from 'vue';
+import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
+import { beginNudgeKeyframe, endNudgeKeyframe, pan, updateNudgeKeyframe } from '@/api/document';
 
 const app = useAppStore();
 
@@ -72,5 +77,33 @@ function onFrameLoaded() {
 		return;
 	}
 	frameSize.value = [el.value.naturalWidth, el.value.naturalHeight];
+}
+
+function startDrag(event: DragAreaEvent) {
+	if (event.button == "left") {
+		beginNudgeKeyframe();
+	}
+}
+
+function endDrag(event: DragAreaEvent) {
+	if (event.button == "left") {
+		endNudgeKeyframe();
+	}
+}
+
+function updateDrag(event: DragAreaEvent) {
+	if (event.button == "left") {
+		const displacement: [number, number] = [
+			event.mouseEvent.clientX - event.initialMouseEvent.clientX,
+			event.mouseEvent.clientY - event.initialMouseEvent.clientY,
+		];
+		updateNudgeKeyframe(displacement, !event.mouseEvent.shiftKey);
+	} else if (event.button == "right") {
+		pan([event.mouseEvent.movementX, event.mouseEvent.movementY]);
+	}
+}
+
+function onClick(event: MouseEvent) {
+	console.log("click");
 }
 </script>

@@ -65,6 +65,9 @@ fn main() {
             api::begin_drag_keyframe_duration,
             api::update_drag_keyframe_duration,
             api::end_drag_keyframe_duration,
+            api::begin_nudge_keyframe,
+            api::update_nudge_keyframe,
+            api::end_nudge_keyframe,
         ])
         .on_window_event(move |event| match event.event() {
             WindowEvent::CloseRequested { api, .. } => {

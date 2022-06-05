@@ -643,3 +643,36 @@ pub fn end_drag_keyframe_duration(app_state: tauri::State<'_, AppState>) -> Resu
         }
     }))
 }
+
+#[tauri::command]
+pub fn begin_nudge_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::BeginNudgeKeyframe()).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn update_nudge_keyframe(
+    app_state: tauri::State<'_, AppState>,
+    displacement: (i32, i32),
+    both_axis: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_nudge_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::EndNudgeKeyframe()).ok();
+        }
+    }))
+}
