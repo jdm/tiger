@@ -34,7 +34,7 @@ const props = defineProps<{
 
 const dynamicClasses = computed(() => {
 	if (props.isPreview) {
-		return ["bg-orange-600", "border-orange-600", "animate-pulse"];
+		return ["bg-blue-600", "border-blue-600", "animate-pulse"];
 	}
 	if (props.selected) {
 		return [

@@ -99,6 +99,8 @@ impl Document {
             self.view
                 .selection
                 .select_keyframe(animation_name, direction, keyframe);
+        } else {
+            self.view.selection.keyframes.clear();
         }
         Ok(())
     }
