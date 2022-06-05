@@ -44,7 +44,7 @@ const knobStyle = computed(() => {
 	}
 	const left = activeItemElement.value?.offsetLeft;
 	return {
-		left: left + "px",
+		left: `${left}px`,
 	};
 });
 

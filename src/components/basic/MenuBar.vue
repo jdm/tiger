@@ -71,7 +71,7 @@ watch(currentEntry, (newEntry, oldEntry) => {
 
 const menuPosition = computed(() => {
 	return {
-		left: (currentItem.value?.offsetLeft || 0) + "px"
+		left: `${currentItem.value?.offsetLeft || 0}px`
 	};
 });
 </script>

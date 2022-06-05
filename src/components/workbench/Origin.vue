@@ -14,9 +14,9 @@ const props = defineProps<{
 
 function originStyle() {
 	return {
-		transform: "translate(-50%,-50%)",
-		left: props.origin[0] + "px",
-		top: props.origin[1] + "px",
+		transform: "translate(-50%, -50%)",
+		left: `${props.origin[0]}px`,
+		top: `${props.origin[1]}px`,
 	};
 }
 </script>

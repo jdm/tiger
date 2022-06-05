@@ -84,7 +84,7 @@ const timelineSize = computed(() => {
 
 const timelineStyle = computed(() => {
 	return {
-		width: timelineSize.value + "px"
+		width: `${timelineSize.value}px`
 	}
 });
 
@@ -109,7 +109,7 @@ const playheadStyle = computed(() => {
 	const time = app.currentDocument?.timelineClockMillis || 0;
 	return {
 		transitionProperty: transitionProperty.value,
-		left: Math.floor(zoom * time) + "px",
+		left: `${Math.floor(zoom * time)}px`,
 	};
 });
 

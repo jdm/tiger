@@ -68,7 +68,7 @@ const graphPaperStyle = computed(() => {
 	const left = Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0];
 	const top = Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1];
 	return {
-		"background-position": left + "px " + top + "px",
+		"background-position": `${left}px ${top}px`,
 	}
 });
 

@@ -22,9 +22,9 @@ const app = useAppStore();
 
 const rulerStyle = computed(() => {
 	const zoom = app.currentDocument?.timelineZoom || 1;
-	const secondTicks = (1000 * zoom) + "px 100%";
-	const hundredMsTicks = (100 * zoom) + "px 10px";
-	const msTicks = (10 * zoom) + "px 4px";
+	const secondTicks = `${1000 * zoom}px 100%`;
+	const hundredMsTicks = `${100 * zoom}px 10px`;
+	const msTicks = `${10 * zoom}px 4px`;
 	return {
 		backgroundSize: [secondTicks, hundredMsTicks, msTicks].join()
 	};

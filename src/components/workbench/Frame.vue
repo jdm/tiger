@@ -12,7 +12,7 @@
 		 -->
 		<svg v-if="frameSize && props.keyframe.selected && !app.currentDocument?.timelineIsPlaying"
 			class="absolute transition-transform z-20" :style="selectionStyle"
-			:viewBox="'0 0 ' + (frameSize[0] + 1) + ' ' + (frameSize[1] + 1)">
+			:viewBox="`0 0 ${frameSize[0] + 1} ${frameSize[1] + 1}`">
 			<rect :x="1" :y="1" :width="frameSize[0]" :height="frameSize[1]" shape-rendering="crispEdges"
 				:stroke-width="1 / zoom" class="stroke-blue-600 fill-blue-600/10" />
 		</svg>
@@ -52,12 +52,10 @@ const frameStyle = computed(() => {
 	const size: [number, number] = frameSize.value || [0, 0];
 	const transformOrigin = [props.origin[0] - left.value, props.origin[1] - top.value];
 	return {
-		left: left.value + "px",
-		top: top.value + "px",
-		width: size[0] + "px",
-		height: size[1] + "px",
-		transform: "scale(" + zoom.value + "," + zoom.value + ")",
-		transformOrigin: transformOrigin[0] + "px " + transformOrigin[1] + "px",
+		left: `${left.value}px`,
+		top: `${top.value}px`,
+		transform: `scale(${zoom.value}, ${zoom.value})`,
+		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
 });
 
@@ -65,12 +63,12 @@ const selectionStyle = computed(() => {
 	const size: [number, number] = frameSize.value || [0, 0];
 	const transformOrigin = [props.origin[0] - left.value + 1, props.origin[1] - top.value + 1];
 	return {
-		left: (left.value - 1) + "px",
-		top: (top.value - 1) + "px",
-		width: (size[0] + 1) + "px",
-		height: (size[1] + 1) + "px",
-		transform: "scale(" + zoom.value + "," + zoom.value + ")",
-		transformOrigin: transformOrigin[0] + "px " + transformOrigin[1] + "px",
+		left: `${left.value - 1}px`,
+		top: `${top.value - 1}px`,
+		width: `${size[0] + 1}px`,
+		height: `${size[1] + 1}px`,
+		transform: `scale(${zoom.value}, ${zoom.value})`,
+		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
 });
 
