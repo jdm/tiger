@@ -39,22 +39,23 @@ impl Document {
     }
 
     pub(super) fn play(&mut self) -> Result<(), DocumentError> {
-        if self.persistent.is_timeline_playing() {
-            return Ok(());
-        }
-
-        let (_, sequence) = self.get_workbench_sequence()?;
-        if let Some(d) = sequence.duration_millis() {
-            if d > 0 && self.view.timeline_clock().as_millis() >= u128::from(d) {
-                self.view.skip_to_timeline_start();
-            }
-        }
         self.persistent.timeline_is_playing = true;
+        self.view.selection.keyframes.clear();
         Ok(())
     }
 
-    pub(super) fn pause(&mut self) {
+    pub(super) fn pause(&mut self) -> Result<(), DocumentError> {
         self.persistent.timeline_is_playing = false;
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let (direction, sequence) = self.get_workbench_sequence()?;
+        let keyframe_index = sequence
+            .keyframe_index_at(self.view.timeline_clock)
+            .unwrap_or_default();
+        self.view
+            .selection
+            .select_keyframe(animation_name, direction, keyframe_index);
+        Ok(())
     }
 
     pub(super) fn scrub_timeline(&mut self, time: Duration) -> Result<(), DocumentError> {

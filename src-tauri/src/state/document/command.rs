@@ -74,7 +74,7 @@ impl Document {
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
             Command::Tick(dt) => self.tick(dt),
             Command::Play => self.play()?,
-            Command::Pause => self.pause(),
+            Command::Pause => self.pause()?,
             Command::ScrubTimeline(t) => self.scrub_timeline(t)?,
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
