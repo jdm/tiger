@@ -13,11 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from 'vue';
-import { useAppStore } from '@/stores/app';
-import { Direction, Sequence as SequenceDTO } from '@/api/dto';
-import Keyframe from '@/components/timeline/Keyframe.vue';
-import { dropFrameOnTimeline, dropKeyframeOnTimeline } from '@/api/document';
+import { computed, Ref, ref } from 'vue'
+import { useAppStore } from '@/stores/app'
+import { Direction, Sequence as SequenceDTO } from '@/api/dto'
+import Keyframe from '@/components/timeline/Keyframe.vue'
+import { dropFrameOnTimeline, dropKeyframeOnTimeline } from '@/api/document'
 
 const app = useAppStore();
 

@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
-import { computed } from '@vue/reactivity';
+import { computed } from '@vue/reactivity'
 import { focusContentTab } from '@/api/document'
 import { ContentTab } from '@/api/dto'
 import Pane from '@/components/basic/Pane.vue'

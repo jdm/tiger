@@ -19,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from '@vue/reactivity';
-import Icon from '@/components/basic/Icon.vue';
-import * as solid from '@heroicons/vue/solid';
+import { computed, ref } from '@vue/reactivity'
+import Icon from '@/components/basic/Icon.vue'
+import * as solid from '@heroicons/vue/solid'
 
 const props = defineProps<{
 	selected: boolean

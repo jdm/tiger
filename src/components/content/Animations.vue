@@ -25,8 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import { watch, nextTick } from 'vue';
-import { Ref, ref } from '@vue/reactivity';
+import { watch, nextTick } from 'vue'
+import { Ref, ref } from '@vue/reactivity'
 import { ContentTab } from '@/api/dto'
 import { createAnimation } from '@/api/document'
 import { useAppStore } from '@/stores/app'

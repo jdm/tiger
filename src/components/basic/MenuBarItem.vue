@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { MenuBarEntry } from '@/components/basic/MenuBar.vue';
-import { computed } from 'vue';
+import { MenuBarEntry } from '@/components/basic/MenuBar.vue'
+import { computed } from 'vue'
 
 const props = defineProps<{
 	entry: MenuBarEntry,

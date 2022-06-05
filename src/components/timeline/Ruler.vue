@@ -8,9 +8,9 @@
 
 <script setup lang="ts">
 import { useAppStore } from '@/stores/app'
-import { computed } from '@vue/reactivity';
+import { computed } from '@vue/reactivity'
 import { scrubTimeline } from '@/api/document'
-import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
+import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue'
 
 defineProps<{
 	scrubbing: boolean,

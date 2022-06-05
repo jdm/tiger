@@ -14,8 +14,8 @@
 <script setup lang="ts">
 import MenuBarItem from '@/components/basic/MenuBarItem.vue'
 import Menu from '@/components/basic/Menu.vue'
-import { ref, Ref } from '@vue/reactivity';
-import { computed, watch } from 'vue';
+import { ref, Ref } from '@vue/reactivity'
+import { computed, watch } from 'vue'
 
 export type MenuBarEntry = {
 	name: string,

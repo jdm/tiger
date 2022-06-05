@@ -9,7 +9,7 @@
 
 <script setup lang="ts">
 import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { Ref, ref } from 'vue';
+import { Ref, ref } from 'vue'
 import { Frame as FrameDTO } from '@/api/dto'
 import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame } from '@/api/document'
 

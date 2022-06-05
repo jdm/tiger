@@ -24,8 +24,8 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, watch } from 'vue';
-import { computed, Ref, ref } from '@vue/reactivity';
+import { onUnmounted, watch } from 'vue'
+import { computed, Ref, ref } from '@vue/reactivity'
 import { Direction, Keyframe } from '@/api/dto'
 import { closeDocument, focusDocument } from '@/api/app'
 import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from '@/api/document'

@@ -27,8 +27,8 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDownIcon } from '@heroicons/vue/solid';
-import { computed, Ref, ref, watch } from 'vue';
+import { ChevronDownIcon } from '@heroicons/vue/solid'
+import { computed, Ref, ref, watch } from 'vue'
 
 export type SelectOption = {
 	name: string,

@@ -10,9 +10,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import Icon from '@/components/basic/Icon.vue';
-import * as solid from '@heroicons/vue/solid';
+import { computed } from 'vue'
+import Icon from '@/components/basic/Icon.vue'
+import * as solid from '@heroicons/vue/solid'
 
 const props = defineProps<{
 	label?: string,

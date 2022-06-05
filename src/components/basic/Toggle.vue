@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
-import * as solid from '@heroicons/vue/solid';
+import * as solid from '@heroicons/vue/solid'
 import Icon from '@/components/basic/Icon.vue'
-import { computed } from 'vue';
+import { computed } from 'vue'
 
 const props = defineProps<{
 	icon: keyof typeof solid,

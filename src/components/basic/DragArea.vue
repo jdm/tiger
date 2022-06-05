@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue';
+import { computed, onUnmounted, Ref, ref } from 'vue'
 
 export type DragButton = "left" | "middle" | "right";
 export type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
