@@ -25,15 +25,15 @@
 </template>
 
 <script setup lang="ts">
-import { watch, nextTick } from 'vue'
-import { Ref, ref } from '@vue/reactivity'
-import { ContentTab } from '@/api/dto'
-import { createAnimation } from '@/api/document'
-import { useAppStore } from '@/stores/app'
-import Button from '@/components/basic/Button.vue'
-import PaneInset from '@/components/basic/PaneInset.vue'
-import Animation from '@/components/content/Animation.vue'
-import { ViewGridIcon, ViewListIcon } from '@heroicons/vue/solid'
+import { watch, nextTick } from "vue"
+import { Ref, ref } from "@vue/reactivity"
+import { ContentTab } from "@/api/dto"
+import { createAnimation } from "@/api/document"
+import { useAppStore } from "@/stores/app"
+import Button from "@/components/basic/Button.vue"
+import PaneInset from "@/components/basic/PaneInset.vue"
+import Animation from "@/components/content/Animation.vue"
+import { ViewGridIcon, ViewListIcon } from "@heroicons/vue/solid"
 
 const app = useAppStore();
 

@@ -17,16 +17,16 @@
 </template>
 
 <script setup lang="ts">
-import { appWindow } from '@tauri-apps/api/window'
-import { onMounted, ref, watch } from 'vue'
-import { tick } from '@/api/document'
-import AppBar from '@/components/AppBar.vue'
-import ContentPane from '@/components/content/ContentPane.vue'
-import TimelinePane from '@/components/timeline/TimelinePane.vue'
-import WorkbenchPane from '@/components/workbench/WorkbenchPane.vue'
-import { useAppStore } from '@/stores/app'
-import ModalLayer from '@/components/ModalLayer.vue'
-import { AppState } from '@/api/dto'
+import { appWindow } from "@tauri-apps/api/window"
+import { onMounted, ref, watch } from "vue"
+import { AppState } from "@/api/dto"
+import { tick } from "@/api/document"
+import { useAppStore } from "@/stores/app"
+import AppBar from "@/components/AppBar.vue"
+import ContentPane from "@/components/content/ContentPane.vue"
+import TimelinePane from "@/components/timeline/TimelinePane.vue"
+import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
+import ModalLayer from "@/components/ModalLayer.vue"
 
 const app = useAppStore();
 const allowContextMenu = ref(false);

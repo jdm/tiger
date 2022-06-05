@@ -8,9 +8,9 @@
 </template>
 
 <script setup lang="ts">
-import { MenuEntry, Separator } from '@/components/basic/MenuBar.vue'
-import MenuItem from '@/components/basic/MenuItem.vue'
-import MenuSeparator from '@/components/basic/MenuSeparator.vue'
+import { MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
+import MenuItem from "@/components/basic/MenuItem.vue"
+import MenuSeparator from "@/components/basic/MenuSeparator.vue"
 
 defineProps<{
 	content: (MenuEntry | Separator)[],

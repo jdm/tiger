@@ -3,11 +3,11 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import Select, { SelectOption } from '@/components/basic/Select.vue'
-import { DirectionPreset } from '@/api/dto'
-import { applyDirectionPreset } from '@/api/document'
-import { useAppStore } from '@/stores/app'
+import { computed } from "vue"
+import Select, { SelectOption } from "@/components/basic/Select.vue"
+import { DirectionPreset } from "@/api/dto"
+import { applyDirectionPreset } from "@/api/document"
+import { useAppStore } from "@/stores/app"
 
 const app = useAppStore();
 const currentPreset = computed(() => app.currentAnimation?.directionPreset);

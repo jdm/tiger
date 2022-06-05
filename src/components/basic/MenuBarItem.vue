@@ -5,8 +5,8 @@
 </template>
 
 <script setup lang="ts">
-import { MenuBarEntry } from '@/components/basic/MenuBar.vue'
-import { computed } from 'vue'
+import { computed } from "vue"
+import { MenuBarEntry } from "@/components/basic/MenuBar.vue"
 
 const props = defineProps<{
 	entry: MenuBarEntry,
@@ -15,7 +15,7 @@ const props = defineProps<{
 
 
 const dynamicClasses = computed(() => {
-	return props.active ? ['bg-zinc-900'] : [];
+	return props.active ? ["bg-zinc-900"] : [];
 
 });
 </script>

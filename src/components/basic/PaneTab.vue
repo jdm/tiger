@@ -9,18 +9,19 @@
 
 
 <script setup lang="ts">
-import { XIcon } from '@heroicons/vue/solid'
-import { computed, ref } from '@vue/reactivity'
+import { XIcon } from "@heroicons/vue/solid"
+import { computed, ref } from "@vue/reactivity"
+
 const props = defineProps<{
 	closeable?: Boolean
 	selected?: Boolean
 }>();
 
-const emit = defineEmits(['select', 'close']);
+const emit = defineEmits(["select", "close"]);
 
 const classes = computed(() => ([
-	...(props.selected ? ['bg-plastic-700', 'text-plastic-200'] : ['bg-plastic-800', 'text-plastic-400', 'hover:text-plastic-300']),
-	...(props.closeable) ? ['pr-2', 'pt-2', 'h-11'] : [],
+	...(props.selected ? ["bg-plastic-700", "text-plastic-200"] : ["bg-plastic-800", "text-plastic-400", "hover:text-plastic-300"]),
+	...(props.closeable) ? ["pr-2", "pt-2", "h-11"] : [],
 ]));
 
 let hovered = ref(false);

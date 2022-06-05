@@ -14,9 +14,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useAppStore } from '@/stores/app'
-import UnsavedChangesDialog from '@/components/dialogs/UnsavedChangesDialog.vue'
+import { computed } from "vue"
+import { useAppStore } from "@/stores/app"
+import UnsavedChangesDialog from "@/components/dialogs/UnsavedChangesDialog.vue"
 
 const app = useAppStore();
 

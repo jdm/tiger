@@ -6,8 +6,8 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from '@vue/reactivity'
-import { onMounted } from 'vue'
+import { computed, Ref, ref } from "@vue/reactivity"
+import { onMounted } from "vue"
 
 const props = defineProps(["modelValue"])
 const emit = defineEmits(["update:modelValue", "completeRename", "cancelRename"])

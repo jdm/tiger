@@ -12,9 +12,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from 'vue'
-import * as solid from '@heroicons/vue/solid'
-import Icon from '@/components/basic/Icon.vue'
+import { computed, Ref, ref } from "vue"
+import * as solid from "@heroicons/vue/solid"
+import Icon from "@/components/basic/Icon.vue"
 
 export type MultiSwitchItem = {
 	icon: keyof typeof solid,

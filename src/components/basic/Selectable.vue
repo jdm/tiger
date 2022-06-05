@@ -19,9 +19,9 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from '@vue/reactivity'
-import Icon from '@/components/basic/Icon.vue'
-import * as solid from '@heroicons/vue/solid'
+import { computed, ref } from "@vue/reactivity"
+import * as solid from "@heroicons/vue/solid"
+import Icon from "@/components/basic/Icon.vue"
 
 const props = defineProps<{
 	selected: boolean
@@ -33,8 +33,8 @@ const props = defineProps<{
 const hovered = ref(false);
 
 const interactiveIconClasses = computed(() => ([
-	...(props.selected ? ['text-blue-200', 'hover:bg-blue-900'] : ['text-plastic-300', 'hover:bg-plastic-900']),
-	...(hovered.value ? ['visible'] : ['invisible'])
+	...(props.selected ? ["text-blue-200", "hover:bg-blue-900"] : ["text-plastic-300", "hover:bg-plastic-900"]),
+	...(hovered.value ? ["visible"] : ["invisible"])
 ]));
 
 function onMouseOver() {

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onUnmounted, Ref, ref } from 'vue'
+import { computed, onUnmounted, Ref, ref } from "vue"
 
 export type DragButton = "left" | "middle" | "right";
 export type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
@@ -29,9 +29,9 @@ const props = defineProps<{
 
 const emit =
   defineEmits<{
-    (e: 'dragStart', event: DragAreaEvent): void
-    (e: 'dragEnd', event: DragAreaEvent): void
-    (e: 'dragUpdate', event: DragAreaEvent): void
+    (e: "dragStart", event: DragAreaEvent): void
+    (e: "dragEnd", event: DragAreaEvent): void
+    (e: "dragUpdate", event: DragAreaEvent): void
   }>();
 
 const buttonIndexes = computed((): number[] => {

@@ -18,8 +18,8 @@
 </template>
 
 <script setup lang="ts">
-import * as solid from '@heroicons/vue/solid'
-import Icon from '@/components/basic/Icon.vue'
+import * as solid from "@heroicons/vue/solid"
+import Icon from "@/components/basic/Icon.vue"
 
 defineProps<{
 	title: string,

@@ -24,19 +24,19 @@
 </template>
 
 <script setup lang="ts">
-import { onUnmounted, watch } from 'vue'
-import { computed, Ref, ref } from '@vue/reactivity'
-import { Direction, Keyframe } from '@/api/dto'
-import { closeDocument, focusDocument } from '@/api/app'
-import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from '@/api/document'
-import { useAppStore } from '@/stores/app'
-import Button from '@/components/basic/Button.vue'
-import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue'
-import Pane from '@/components/basic/Pane.vue'
-import PaneTab from '@/components/basic/PaneTab.vue'
-import PaneTabList from '@/components/basic/PaneTabList.vue'
-import Frame from '@/components/workbench/Frame.vue'
-import Origin from '@/components/workbench/Origin.vue'
+import { onUnmounted, watch } from "vue"
+import { computed, Ref, ref } from "@vue/reactivity"
+import { Direction, Keyframe } from "@/api/dto"
+import { closeDocument, focusDocument } from "@/api/app"
+import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from "@/api/document"
+import { useAppStore } from "@/stores/app"
+import Button from "@/components/basic/Button.vue"
+import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
+import Pane from "@/components/basic/Pane.vue"
+import PaneTab from "@/components/basic/PaneTab.vue"
+import PaneTabList from "@/components/basic/PaneTabList.vue"
+import Frame from "@/components/workbench/Frame.vue"
+import Origin from "@/components/workbench/Origin.vue"
 
 const app = useAppStore();
 const drawingArea: Ref<HTMLElement | null> = ref(null);
@@ -68,7 +68,7 @@ const graphPaperStyle = computed(() => {
 	const left = Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0];
 	const top = Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1];
 	return {
-		'background-position': left + 'px ' + top + 'px',
+		"background-position": left + "px " + top + "px",
 	}
 });
 
@@ -106,11 +106,11 @@ function updatePanning(event: DragAreaEvent) {
 <style scoped>
 .graph-paper {
 	background:
-		linear-gradient(-90deg, theme('colors.neutral.700') 1px, transparent 1px),
-		linear-gradient(0deg, theme('colors.neutral.700') 1px, transparent 1px),
-		linear-gradient(-90deg, theme('colors.neutral.800') 1px, transparent 1px),
-		linear-gradient(0deg, theme('colors.neutral.800') 1px, transparent 1px),
-		theme('colors.neutral.900');
+		linear-gradient(-90deg, theme("colors.neutral.700") 1px, transparent 1px),
+		linear-gradient(0deg, theme("colors.neutral.700") 1px, transparent 1px),
+		linear-gradient(-90deg, theme("colors.neutral.800") 1px, transparent 1px),
+		linear-gradient(0deg, theme("colors.neutral.800") 1px, transparent 1px),
+		theme("colors.neutral.900");
 	background-size:
 		128px 128px,
 		128px 128px,

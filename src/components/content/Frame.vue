@@ -8,10 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { Ref, ref } from 'vue'
-import { Frame as FrameDTO } from '@/api/dto'
-import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame } from '@/api/document'
+import { convertFileSrc } from "@tauri-apps/api/tauri"
+import { Ref, ref } from "vue"
+import { Frame as FrameDTO } from "@/api/dto"
+import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame } from "@/api/document"
 
 const props = defineProps<{
 	frame: FrameDTO
@@ -60,8 +60,8 @@ function onFrameClicked(event: MouseEvent) {
 .checkerboard {
 	background-size: 16px 16px;
 	background-image:
-		linear-gradient(45deg, theme('colors.plastic.700') 25%, transparent 25%, transparent 75%, theme('colors.plastic.700') 75%, theme('colors.plastic.700') 100%),
-		linear-gradient(45deg, theme('colors.plastic.700') 25%, theme('colors.plastic.600') 25%, theme('colors.plastic.600') 75%, theme('colors.plastic.700') 75%, theme('colors.plastic.700') 100%);
+		linear-gradient(45deg, theme("colors.plastic.700") 25%, transparent 25%, transparent 75%, theme("colors.plastic.700") 75%, theme("colors.plastic.700") 100%),
+		linear-gradient(45deg, theme("colors.plastic.700") 25%, theme("colors.plastic.600") 25%, theme("colors.plastic.600") 75%, theme("colors.plastic.700") 75%, theme("colors.plastic.700") 100%);
 	background-position:
 		0px 0px,
 		8px 8px;

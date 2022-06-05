@@ -27,8 +27,8 @@
 </template>
 
 <script setup lang="ts">
-import { ChevronDownIcon } from '@heroicons/vue/solid'
-import { computed, Ref, ref, watch } from 'vue'
+import { computed, Ref, ref, watch } from "vue"
+import { ChevronDownIcon } from "@heroicons/vue/solid"
 
 export type SelectOption = {
 	name: string,
@@ -41,7 +41,7 @@ const props = defineProps<{
 }>();
 
 const emit = defineEmits<{
-	(e: 'selected', option: SelectOption): void
+	(e: "selected", option: SelectOption): void
 }>();
 
 const el: Ref<HTMLElement | null> = ref(null);

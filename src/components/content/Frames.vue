@@ -24,12 +24,12 @@
 </template>
 
 <script setup lang="ts">
-import { ViewGridIcon, ViewListIcon } from '@heroicons/vue/solid'
-import { useAppStore } from '@/stores/app'
-import { importFrames } from '@/api/local'
-import Button from '@/components/basic/Button.vue'
-import PaneInset from '@/components/basic/PaneInset.vue'
-import Frame from '@/components/content/Frame.vue'
+import { ViewGridIcon, ViewListIcon } from "@heroicons/vue/solid"
+import { useAppStore } from "@/stores/app"
+import { importFrames } from "@/api/local"
+import Button from "@/components/basic/Button.vue"
+import PaneInset from "@/components/basic/PaneInset.vue"
+import Frame from "@/components/content/Frame.vue"
 
 const app = useAppStore();
 </script>

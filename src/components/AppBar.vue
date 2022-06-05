@@ -18,12 +18,12 @@
 </template>
 
 <script setup lang="ts">
-import { closeAllDocuments, closeCurrentDocument } from '@/api/app'
-import { centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from '@/api/document'
-import { newDocument, openDocuments } from '@/api/local'
-import MenuBar from '@/components/basic/MenuBar.vue'
-import WindowTitleBar from '@/components/basic/WindowTitleBar.vue'
-import { useAppStore } from '@/stores/app'
+import { closeAllDocuments, closeCurrentDocument } from "@/api/app"
+import { centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from "@/api/document"
+import { newDocument, openDocuments } from "@/api/local"
+import MenuBar from "@/components/basic/MenuBar.vue"
+import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
+import { useAppStore } from "@/stores/app"
 
 const props = defineProps<{ debugMode: boolean, }>();
 const emit = defineEmits(["update:debugMode"]);

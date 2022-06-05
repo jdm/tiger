@@ -23,12 +23,12 @@
 </template>
 
 <script setup lang="ts">
-import { convertFileSrc } from '@tauri-apps/api/tauri'
-import { Direction, Keyframe } from '@/api/dto'
-import { useAppStore } from '@/stores/app'
-import { computed, ref, Ref } from 'vue'
-import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue'
-import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from '@/api/document'
+import { convertFileSrc } from "@tauri-apps/api/tauri"
+import { Direction, Keyframe } from "@/api/dto"
+import { useAppStore } from "@/stores/app"
+import { computed, ref, Ref } from "vue"
+import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
+import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from "@/api/document"
 
 const app = useAppStore();
 

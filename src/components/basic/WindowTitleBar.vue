@@ -19,14 +19,14 @@
 </template>
 
 <script setup lang="ts">
-import { appWindow } from '@tauri-apps/api/window'
-import { XIcon } from '@heroicons/vue/solid'
-import { onMounted, ref } from 'vue'
-import { requestExit } from '@/api/app'
+import { appWindow } from "@tauri-apps/api/window"
+import { onMounted, ref } from "vue"
+import { XIcon } from "@heroicons/vue/solid"
+import { requestExit } from "@/api/app"
 
 const isMaximized = ref(false);
 
-appWindow.listen('tauri://resize', updateIsMaximized);
+appWindow.listen("tauri://resize", updateIsMaximized);
 onMounted(updateIsMaximized);
 
 async function updateIsMaximized() {

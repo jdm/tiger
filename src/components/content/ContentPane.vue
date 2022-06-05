@@ -13,15 +13,15 @@
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from '@/stores/app'
-import { computed } from '@vue/reactivity'
-import { focusContentTab } from '@/api/document'
-import { ContentTab } from '@/api/dto'
-import Pane from '@/components/basic/Pane.vue'
-import PaneTab from '@/components/basic/PaneTab.vue'
-import PaneTabList from '@/components/basic/PaneTabList.vue'
-import Animations from '@/components/content/Animations.vue'
-import Frames from '@/components/content/Frames.vue'
+import { useAppStore } from "@/stores/app"
+import { computed } from "@vue/reactivity"
+import { focusContentTab } from "@/api/document"
+import { ContentTab } from "@/api/dto"
+import Pane from "@/components/basic/Pane.vue"
+import PaneTab from "@/components/basic/PaneTab.vue"
+import PaneTabList from "@/components/basic/PaneTabList.vue"
+import Animations from "@/components/content/Animations.vue"
+import Frames from "@/components/content/Frames.vue"
 
 // TODO Consider saving and restoring scroll positions between content tab or document changes
 

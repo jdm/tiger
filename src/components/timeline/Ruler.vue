@@ -7,16 +7,16 @@
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from '@/stores/app'
-import { computed } from '@vue/reactivity'
-import { scrubTimeline } from '@/api/document'
-import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue'
+import { useAppStore } from "@/stores/app"
+import { computed } from "@vue/reactivity"
+import { scrubTimeline } from "@/api/document"
+import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 
 defineProps<{
 	scrubbing: boolean,
 }>();
 
-const emit = defineEmits(['update:scrubbing']);
+const emit = defineEmits(["update:scrubbing"]);
 
 const app = useAppStore();
 
@@ -51,13 +51,13 @@ function updateScrub(event: DragAreaEvent) {
 .ruler {
 	background:
 		/* 1s ticks */
-		linear-gradient(90deg, theme('colors.plastic.400') 1px, transparent 1px) left bottom repeat-x,
+		linear-gradient(90deg, theme("colors.plastic.400") 1px, transparent 1px) left bottom repeat-x,
 		/* 100ms ticks */
-		linear-gradient(90deg, theme('colors.plastic.400') 1px, transparent 1px) left bottom repeat-x,
+		linear-gradient(90deg, theme("colors.plastic.400") 1px, transparent 1px) left bottom repeat-x,
 		/* 10ms tick */
-		linear-gradient(90deg, theme('colors.plastic.400') 1px, transparent 1px) left bottom repeat-x,
+		linear-gradient(90deg, theme("colors.plastic.400") 1px, transparent 1px) left bottom repeat-x,
 		/* Solig BG */
-		theme('colors.plastic.600') repeat-x;
+		theme("colors.plastic.600") repeat-x;
 	background-origin: content-box;
 }
 </style>

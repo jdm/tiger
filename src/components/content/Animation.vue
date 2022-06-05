@@ -1,7 +1,8 @@
 <template>
 	<div ref="el">
 		<Selectable @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked"
-			:selected="animation.selected" :text="animation.name" left-icon="DocumentIcon" :actions="renaming ? [] : [
+			:selected="animation.selected" :text="animation.name" left-icon="DocumentIcon" :actions="renaming ? [] :
+			[
 				{ icon: 'PencilAltIcon', callback: onRenameClicked },
 				{ icon: 'XIcon', callback: onDeleteClicked }
 			]">
@@ -14,11 +15,11 @@
 </template>
 
 <script setup lang="ts">
-import { Animation as AnimationDTO } from '@/api/dto'
-import { deleteAnimation, editAnimation, renameAnimation, selectAnimation } from '@/api/document'
-import { Ref, ref } from '@vue/reactivity'
-import Selectable from '@/components/basic/Selectable.vue'
-import InputRename from '@/components/basic/InputRename.vue'
+import { Animation as AnimationDTO } from "@/api/dto"
+import { deleteAnimation, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
+import { Ref, ref } from "@vue/reactivity"
+import Selectable from "@/components/basic/Selectable.vue"
+import InputRename from "@/components/basic/InputRename.vue"
 
 const props = defineProps<{
 	animation: AnimationDTO

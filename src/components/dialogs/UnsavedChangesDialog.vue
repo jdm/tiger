@@ -13,11 +13,11 @@
 </template>
 
 <script setup lang="ts">
-import Button from '@/components/basic/Button.vue'
-import ModalDialog from '@/components/basic/ModalDialog.vue'
-import { useAppStore } from '@/stores/app'
-import { cancelExit } from '@/api/app'
-import { closeWithoutSaving, save } from '@/api/document'
+import Button from "@/components/basic/Button.vue"
+import ModalDialog from "@/components/basic/ModalDialog.vue"
+import { useAppStore } from "@/stores/app"
+import { cancelExit } from "@/api/app"
+import { closeWithoutSaving, save } from "@/api/document"
 
 const app = useAppStore();
 </script>
