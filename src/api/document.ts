@@ -209,6 +209,11 @@ export async function dropFrameOnTimeline(
   );
 }
 
+export async function endDragAndDropFrame(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_drag_and_drop_frame"));
+}
+
 export async function beginDragAndDropKeyframe(
   direction: Direction,
   index: number
@@ -233,6 +238,11 @@ export async function dropKeyframeOnTimeline(
       index: index,
     })
   );
+}
+
+export async function endDragAndDropKeyframe(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_drag_and_drop_keyframe"));
 }
 
 export async function beginDragKeyframeDuration(

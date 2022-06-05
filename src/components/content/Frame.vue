@@ -11,7 +11,7 @@
 import { convertFileSrc } from '@tauri-apps/api/tauri'
 import { Ref, ref } from 'vue';
 import { Frame as FrameDTO } from '@/api/dto'
-import { beginDragAndDropFrame, selectFrame } from '@/api/document'
+import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame } from '@/api/document'
 
 const props = defineProps<{
 	frame: FrameDTO
@@ -43,6 +43,7 @@ function onDragStart(event: DragEvent) {
 }
 
 function onDragEnd() {
+	endDragAndDropFrame();
 	if (dragCursorElement.value) {
 		document.body.removeChild(dragCursorElement.value);
 		dragCursorElement.value = null;

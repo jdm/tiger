@@ -553,6 +553,17 @@ pub fn drop_frame_on_timeline(
 }
 
 #[tauri::command]
+pub fn end_drag_and_drop_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::EndDragAndDropFrame())
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_drag_and_drop_keyframe(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,
@@ -577,6 +588,17 @@ pub fn drop_keyframe_on_timeline(
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_drag_and_drop_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::EndDragAndDropKeyframe())
                 .ok();
         }
     }))

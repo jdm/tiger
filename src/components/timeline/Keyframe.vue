@@ -16,7 +16,7 @@
 import { computed, Ref, ref } from 'vue';
 import { Direction } from '@/api/dto'
 import { useAppStore } from '@/stores/app';
-import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration } from '@/api/document';
+import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration, endDragAndDropKeyframe } from '@/api/document';
 import DragArea, { DragAreaEvent } from '@/components/basic/DragArea.vue';
 
 const app = useAppStore();
@@ -80,6 +80,7 @@ function onDragStart(event: DragEvent) {
 }
 
 function onDragEnd() {
+	endDragAndDropKeyframe();
 	if (dragCursorElement.value) {
 		document.body.removeChild(dragCursorElement.value);
 		dragCursorElement.value = null;
