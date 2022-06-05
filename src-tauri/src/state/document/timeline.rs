@@ -41,6 +41,17 @@ impl Document {
     pub(super) fn play(&mut self) -> Result<(), DocumentError> {
         self.persistent.timeline_is_playing = true;
         self.view.selection.keyframes.clear();
+        // TODO clear hitbox selection
+        if self
+            .get_workbench_sequence()?
+            .1
+            .duration_millis()
+            .map(Duration::from_millis)
+            .map(|d| d <= self.view.timeline_clock)
+            .unwrap_or_default()
+        {
+            self.view.skip_to_timeline_start();
+        }
         Ok(())
     }
 
