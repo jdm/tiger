@@ -10,15 +10,15 @@
 			<Button @click="zoomInWorkbench" icon="ZoomInIcon" />
 			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
 		</div>
-		<div class="relative flex-1 overflow-hidden" ref="drawingArea">
+		<div class="relative flex-1 overflow-hidden pointer-events-none" ref="drawingArea">
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
-				class="flex-1 graph-paper h-full" :style="graphPaperStyle" />
+				class="flex-1 graph-paper h-full pointer-events-auto" :style="graphPaperStyle" />
 			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
 				:direction="k.direction" :index="k.index" :origin="origin" />
 			<Hitbox v-if="!app.currentDocument?.timelineIsPlaying" v-for="hitbox, name in app.currentKeyframe?.hitboxes"
 				:key="hitbox.key" :hitbox="hitbox" :name="name" :origin="origin" />
-			<Origin :origin="origin" class="pointer-events-none" />
-			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600 pointer-events-none">
+			<Origin :origin="origin" />
+			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
 		</div>
