@@ -89,6 +89,7 @@ export type Hitbox = {
   size: [number, number];
   linked: boolean;
   locked: boolean;
+  key: string;
 };
 
 export enum ContentTab {

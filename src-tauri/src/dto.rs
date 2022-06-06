@@ -114,6 +114,7 @@ pub struct Hitbox {
     size: (u32, u32),
     linked: bool,
     locked: bool,
+    key: Uuid,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -343,6 +344,7 @@ impl From<&sheet::Hitbox> for Hitbox {
             size: hitbox.size().to_tuple(),
             linked: hitbox.linked(),
             locked: hitbox.locked(),
+            key: hitbox.key(),
         }
     }
 }

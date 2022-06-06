@@ -539,6 +539,7 @@ impl Hitbox {
             }),
             linked: true,
             locked: false,
+            key: Uuid::new_v4(),
         }
     }
 
@@ -560,6 +561,10 @@ impl Hitbox {
         match &self.geometry {
             Shape::Rectangle(r) => r.size.into(),
         }
+    }
+
+    pub fn key(&self) -> Uuid {
+        self.key
     }
 
     pub fn set_position(&mut self, new_position: Vector2D<i32>) {

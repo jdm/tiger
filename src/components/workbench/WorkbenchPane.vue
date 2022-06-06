@@ -16,7 +16,7 @@
 			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
 				:direction="k.direction" :index="k.index" :origin="origin" />
 			<Hitbox v-if="!app.currentDocument?.timelineIsPlaying" v-for="hitbox, name in app.currentKeyframe?.hitboxes"
-				:hitbox="hitbox" :name="name" :origin="origin" />
+				:key="hitbox.key" :hitbox="hitbox" :name="name" :origin="origin" />
 			<Origin :origin="origin" class="pointer-events-none" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600 pointer-events-none">
 				{{ app.currentAnimation?.name }}

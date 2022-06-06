@@ -68,16 +68,21 @@ pub struct Keyframe {
     pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),
-    #[derivative(PartialEq="ignore")]
+    #[derivative(PartialEq = "ignore")]
     #[serde(skip, default = "Uuid::new_v4")]
     pub(in crate::sheet) key: Uuid,
 }
 
-#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Derivative)]
+#[derivative(PartialEq)]
+#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Hitbox {
     pub(in crate::sheet) geometry: Shape,
     pub(in crate::sheet) linked: bool,
     pub(in crate::sheet) locked: bool,
+    #[derivative(PartialEq = "ignore")]
+    #[serde(skip, default = "Uuid::new_v4")]
+    pub(in crate::sheet) key: Uuid,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -173,6 +178,7 @@ impl From<previous_version::Hitbox> for Hitbox {
             geometry: old.geometry.into(),
             linked: true,
             locked: false,
+            key: Uuid::new_v4(),
         }
     }
 }
