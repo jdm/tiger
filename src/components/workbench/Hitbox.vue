@@ -10,10 +10,14 @@
 			class="absolute transition-transform z-20" :style="selectionStyle"
 			:viewBox="`0 0 ${hitbox.size[0] + 1} ${hitbox.size[1] + 1}`">
 			<rect :x="1" :y="1" :width="hitbox.size[0]" :height="hitbox.size[1]" shape-rendering="crispEdges"
-				:stroke-width="1 / zoom" class="stroke-pink-600 fill-pink-600/10" />
+				:stroke-width="1 / zoom" class="stroke-pink-600 fill-pink-600/20 transition-all" />
+			<line :x1="1" :y1="1" :x2="1 + hitbox.size[0]" :y2="1 + hitbox.size[1]"
+				class="stroke-pink-600 transition-all" :stroke-width="1 / zoom" />
+			<line :x1="1 + hitbox.size[0]" :y1="1" :x2="1" :y2="1 + hitbox.size[1]"
+				class="stroke-pink-600 transition-all" :stroke-width="1 / zoom" />
 		</svg>
-		<DragArea v-if="props.hitbox.selected" :buttons="['left', 'right']" active-cursor="cursor-move"
-			inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
+		<DragArea :buttons="['left', 'right']" active-cursor="cursor-move" inactive-cursor="cursor-move"
+			@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
 			class="absolute pointer-events-auto z-30" :style="frameStyle" />
 	</div>
 </template>
@@ -46,6 +50,20 @@ const frameStyle = computed(() => {
 		height: `${props.hitbox.size[1]}px`,
 		transform: `scale(${zoom.value}, ${zoom.value})`,
 		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
+	};
+});
+
+
+const nameStyle = computed(() => {
+	return {
+		left: `${props.origin[0]}px`,
+		top: `${props.origin[1]}px`,
+		width: `${zoom.value * props.hitbox.size[0]}px`,
+		"max-height": `${zoom.value * props.hitbox.size[1]}px`,
+		transform: `translate(
+			${zoom.value * props.hitbox.topLeft[0]}px,
+			${zoom.value * props.hitbox.topLeft[1]}px
+		)`
 	};
 });
 
@@ -90,3 +108,15 @@ function updateDrag(event: DragAreaEvent) {
 }
 
 </script>
+
+<style scoped>
+.pattern {
+	background:
+		linear-gradient(-90deg, theme("colors.pink.600") 1px, transparent 1px),
+		linear-gradient(0deg, theme("colors.pink.600") 1px, transparent 1px);
+	/* theme("colors.neutral.900"); */
+	background-size:
+		4px 4px,
+		4px 4px;
+}
+</style>
