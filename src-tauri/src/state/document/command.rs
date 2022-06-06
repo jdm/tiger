@@ -105,6 +105,8 @@ impl Document {
             Command::EndNudgeHitbox() => (),
         }
 
+        self.sanitize_view();
+
         if !matches!(
             command,
             Command::Tick(_)
@@ -118,11 +120,9 @@ impl Document {
                 | Command::UpdateNudgeHitbox(_, _)
         ) {
             self.transient = Default::default();
+            self.record_command(command);
         }
 
-        self.sanitize_view();
-
-        self.record_command(command);
         Ok(())
     }
 
