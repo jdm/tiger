@@ -13,10 +13,15 @@ pub(super) struct KeyframeDurationDrag {
 }
 
 #[derive(Clone, Debug, PartialEq)]
+pub(super) struct KeyframeNudgeEntry {
+    keyframe_offset: Vector2D<i32>,
+    hitbox_positions: HashMap<String, Vector2D<i32>>,
+}
+
+#[derive(Clone, Debug, PartialEq)]
 pub(super) struct KeyframeNudge {
     pub(super) keyframe_being_dragged: (Direction, usize),
-    pub(super) original_positions:
-        HashMap<(Direction, usize), (Vector2D<i32>, HashMap<String, Vector2D<i32>>)>,
+    pub(super) original_positions: HashMap<(Direction, usize), KeyframeNudgeEntry>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -258,35 +263,31 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> Result<(), DocumentError> {
-        let (animation_name, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.get_workbench_animation()?;
         self.transient.keyframe_nudge = Some(KeyframeNudge {
             keyframe_being_dragged: (direction, index),
-            original_positions: self
-                .view
-                .selection
-                .keyframes()
-                // If the clicked keyframe isn't selected, it will replace the current selection
-                // when we move the mouse. Because of this, we must store its position info too.
-                .chain(vec![(animation_name.clone(), direction, index)].iter())
-                .filter_map(|(_, direction, index)| {
-                    animation
-                        .sequence(*direction)
-                        .and_then(|sequence| sequence.keyframe(*index))
-                        .and_then(|keyframe| {
-                            Some((
-                                (*direction, *index),
-                                (
-                                    keyframe.offset(),
-                                    keyframe
+            original_positions: animation
+                .sequences_iter()
+                .map(|(direction, sequence)| {
+                    sequence
+                        .keyframes_iter()
+                        .enumerate()
+                        .map(|(index, keyframe)| {
+                            (
+                                (*direction, index),
+                                KeyframeNudgeEntry {
+                                    keyframe_offset: keyframe.offset(),
+                                    hitbox_positions: keyframe
                                         .hitboxes_iter()
                                         .map(|(hitbox_name, hitbox)| {
                                             (hitbox_name.clone(), hitbox.position())
                                         })
                                         .collect(),
-                                ),
-                            ))
+                                },
+                            )
                         })
                 })
+                .flatten()
                 .collect(),
         });
 
@@ -349,7 +350,7 @@ impl Document {
                 .keyframe_mut(index)
                 .ok_or(DocumentError::NoKeyframeAtIndex(index))?;
 
-            let old_keyframe_offset = old_offsets.0;
+            let old_keyframe_offset = old_offsets.keyframe_offset;
             let new_key_frame_offset = (old_keyframe_offset.to_f32()
                 + displacement.to_f32() / zoom)
                 .floor()
@@ -361,7 +362,7 @@ impl Document {
                     continue;
                 }
                 let old_position = old_offsets
-                    .1
+                    .hitbox_positions
                     .get(hitbox_name)
                     .ok_or(DocumentError::MissingHitboxPositionData)?
                     .to_f32();
