@@ -1,6 +1,9 @@
 <template>
 	<div>
 		<!-- Sprite -->
+		<!-- TODO Add readability mode which does the following and helps hitboxes/selections stand out:
+			saturate-50 brightness-50 contrast-125
+		 -->
 		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded"
 			class="absolute pixelated transition-transform z-10"
 			:class="(frameSize && isActiveFrame) ? 'opacity-100' : 'opacity-0'" draggable="false" :style="frameStyle" />
