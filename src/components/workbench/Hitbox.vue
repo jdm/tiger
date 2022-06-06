@@ -11,11 +11,13 @@
 			<rect :x="1" :y="1" :width="hitbox.size[0]" :height="hitbox.size[1]" shape-rendering="crispEdges"
 				:stroke-width="1 / zoom"
 				:class="hitbox.selected ? 'stroke-blue-600 fill-blue-600/20' : 'stroke-pink-600 fill-pink-600/20'"
-				class="transition-all" />
+				class="transition" style="transitionProperty: stroke-width" />
 			<line :x1="1" :y1="1" :x2="1 + hitbox.size[0]" :y2="1 + hitbox.size[1]" :stroke-width="1 / zoom"
-				:class="hitbox.selected ? 'stroke-blue-600' : 'stroke-pink-600'" class="transition-all" />
+				:class="hitbox.selected ? 'stroke-blue-600' : 'stroke-pink-600'" class="transition"
+				style="transitionProperty: stroke-width" />
 			<line :x1="1 + hitbox.size[0]" :y1="1" :x2="1" :y2="1 + hitbox.size[1]" :stroke-width="1 / zoom"
-				:class="hitbox.selected ? 'stroke-blue-600' : 'stroke-pink-600'" class="transition-all" />
+				:class="hitbox.selected ? 'stroke-blue-600' : 'stroke-pink-600'" class="transition"
+				style="transitionProperty: stroke-width" />
 		</svg>
 		<DragArea :buttons="['left', 'right']" active-cursor="cursor-move" inactive-cursor="cursor-move"
 			@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
