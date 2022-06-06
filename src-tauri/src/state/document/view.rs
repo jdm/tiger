@@ -30,7 +30,7 @@ impl Default for View {
             current_animation: None,
             current_sequence: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
-            workbench_zoom_level: 4,
+            workbench_zoom_level: 8,
             timeline_zoom_level: 1,
             timeline_clock: Default::default(),
         }
@@ -63,25 +63,11 @@ impl View {
     }
 
     pub(super) fn zoom_in_workbench(&mut self) {
-        if self.workbench_zoom_level >= 1 {
-            self.workbench_zoom_level *= 2;
-        } else if self.workbench_zoom_level == -2 {
-            self.workbench_zoom_level = 1;
-        } else {
-            self.workbench_zoom_level /= 2;
-        }
-        self.workbench_zoom_level = std::cmp::min(self.workbench_zoom_level, 32);
+        self.workbench_zoom_level = 32.min(self.workbench_zoom_level * 2);
     }
 
     pub(super) fn zoom_out_workbench(&mut self) {
-        if self.workbench_zoom_level > 1 {
-            self.workbench_zoom_level /= 2;
-        } else if self.workbench_zoom_level == 1 {
-            self.workbench_zoom_level = -2;
-        } else {
-            self.workbench_zoom_level *= 2;
-        }
-        self.workbench_zoom_level = std::cmp::max(self.workbench_zoom_level, -4);
+        self.workbench_zoom_level = 1.max(self.workbench_zoom_level / 2);
     }
 
     pub(super) fn reset_workbench_zoom(&mut self) {
