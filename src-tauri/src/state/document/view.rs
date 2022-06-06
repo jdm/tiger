@@ -18,7 +18,7 @@ pub struct View {
     pub(super) current_sequence: Option<Direction>,
     pub(super) workbench_offset: Vector2D<f32>,
     pub(super) timeline_clock: Duration,
-    pub(super) workbench_zoom_level: i32,
+    pub(super) workbench_zoom_level: u32,
     pub(super) timeline_zoom_level: i32,
 }
 
@@ -55,11 +55,7 @@ impl View {
     }
 
     pub fn workbench_zoom(&self) -> f32 {
-        if self.workbench_zoom_level >= 0 {
-            self.workbench_zoom_level as f32
-        } else {
-            -1.0 / self.workbench_zoom_level as f32
-        }
+        self.workbench_zoom_level as f32
     }
 
     pub(super) fn zoom_in_workbench(&mut self) {
