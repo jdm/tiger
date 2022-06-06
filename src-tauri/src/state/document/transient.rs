@@ -268,7 +268,15 @@ impl Document {
                         .and_then(|keyframe| {
                             Some((
                                 (*direction, *index),
-                                (keyframe.offset(), HashMap::new()), // TODO store hitboxes locations
+                                (
+                                    keyframe.offset(),
+                                    keyframe
+                                        .hitboxes_iter()
+                                        .map(|(hitbox_name, hitbox)| {
+                                            (hitbox_name.clone(), hitbox.position())
+                                        })
+                                        .collect(),
+                                ),
                             ))
                         })
                 })
@@ -322,7 +330,7 @@ impl Document {
             .collect::<Vec<_>>();
 
         for (direction, index) in affected_keyframes {
-            let old_offset = nudge
+            let old_offsets = nudge
                 .original_positions
                 .get(&(direction, index))
                 .ok_or(DocumentError::MissingKeyframePositionData)?;
@@ -334,12 +342,27 @@ impl Document {
                 .keyframe_mut(index)
                 .ok_or(DocumentError::NoKeyframeAtIndex(index))?;
 
-            let new_offset = (old_offset.0.to_f32() + displacement.to_f32() / zoom)
+            let old_keyframe_offset = old_offsets.0;
+            let new_key_frame_offset = (old_keyframe_offset.to_f32()
+                + displacement.to_f32() / zoom)
                 .floor()
                 .to_i32();
-            keyframe.set_offset(new_offset);
+            keyframe.set_offset(new_key_frame_offset);
 
-            // TODO move hitboxes
+            for (hitbox_name, hitbox) in keyframe.hitboxes_iter_mut() {
+                if !hitbox.linked() {
+                    continue;
+                }
+                let old_position = old_offsets
+                    .1
+                    .get(hitbox_name)
+                    .ok_or(DocumentError::MissingHitboxPositionData)?
+                    .to_f32();
+                let new_position = (old_position + displacement.to_f32() / zoom)
+                    .floor()
+                    .to_i32();
+                hitbox.set_position(new_position);
+            }
         }
 
         Ok(())

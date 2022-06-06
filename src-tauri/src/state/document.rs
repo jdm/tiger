@@ -56,6 +56,8 @@ pub enum DocumentError {
     NotNudgingKeyframe,
     #[error("Could not find position of keyframe when drag started")]
     MissingKeyframePositionData,
+    #[error("Could not find position of hitbox when drag started")]
+    MissingHitboxPositionData,
 }
 
 impl Document {
