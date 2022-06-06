@@ -41,7 +41,7 @@ impl Document {
     pub(super) fn play(&mut self) -> Result<(), DocumentError> {
         self.persistent.timeline_is_playing = true;
         self.view.selection.keyframes.clear();
-        // TODO clear hitbox selection
+        self.view.selection.hitboxes.clear();
         if self
             .get_workbench_sequence()?
             .1
