@@ -317,3 +317,26 @@ export async function endNudgeKeyframe(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("end_nudge_keyframe"));
 }
+
+export async function beginNudgeHitbox(name: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("begin_nudge_hitbox", { name: name }));
+}
+
+export async function updateNudgeHitbox(
+  displacement: [number, number],
+  bothAxis: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("update_nudge_hitbox", {
+      displacement: displacement,
+      bothAxis: bothAxis,
+    })
+  );
+}
+
+export async function endNudgeHitbox(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_nudge_hitbox"));
+}

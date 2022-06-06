@@ -702,3 +702,41 @@ pub fn end_nudge_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch
         }
     }))
 }
+
+#[tauri::command]
+pub fn begin_nudge_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    name: String,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginNudgeHitbox(name))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn update_nudge_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    displacement: (i32, i32),
+    both_axis: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_nudge_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::EndNudgeHitbox()).ok();
+        }
+    }))
+}

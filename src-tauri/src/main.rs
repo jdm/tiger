@@ -69,6 +69,9 @@ fn main() {
             api::begin_nudge_keyframe,
             api::update_nudge_keyframe,
             api::end_nudge_keyframe,
+            api::begin_nudge_hitbox,
+            api::update_nudge_hitbox,
+            api::end_nudge_hitbox,
         ])
         .on_window_event(move |event| match event.event() {
             WindowEvent::CloseRequested { api, .. } => {

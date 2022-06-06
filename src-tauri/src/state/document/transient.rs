@@ -19,12 +19,19 @@ pub(super) struct KeyframeNudge {
         HashMap<(Direction, usize), (Vector2D<i32>, HashMap<String, Vector2D<i32>>)>,
 }
 
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct HitboxNudge {
+    pub(super) hitbox_being_dragged: String,
+    pub(super) original_positions: HashMap<String, Vector2D<i32>>,
+}
+
 #[derive(Debug, Default)]
 pub struct Transient {
     pub(super) frame_drag_and_drop: Option<PathBuf>,
     pub(super) keyframe_duration_drag: Option<KeyframeDurationDrag>,
     pub(super) keyframe_drag_and_drop: Option<(Direction, usize)>,
     pub(super) keyframe_nudge: Option<KeyframeNudge>,
+    pub(super) hitbox_nudge: Option<HitboxNudge>,
 }
 
 impl Document {
@@ -363,6 +370,85 @@ impl Document {
                     .to_i32();
                 hitbox.set_position(new_position);
             }
+        }
+
+        Ok(())
+    }
+
+    pub(super) fn begin_nudge_hitbox<T: AsRef<str>>(
+        &mut self,
+        hitbox_name: T,
+    ) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe()?;
+        self.transient.hitbox_nudge = Some(HitboxNudge {
+            hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
+            original_positions: keyframe
+                .hitboxes_iter()
+                .map(|(n, k)| (n.clone(), k.position()))
+                .collect(),
+        });
+        Ok(())
+    }
+
+    pub(super) fn update_nudge_hitbox(
+        &mut self,
+        mut displacement: Vector2D<i32>,
+        both_axis: bool,
+    ) -> Result<(), DocumentError> {
+        let zoom = self.view.workbench_zoom();
+        let nudge = self
+            .transient
+            .hitbox_nudge
+            .clone()
+            .ok_or(DocumentError::NotNudgingHitbox)?;
+
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let ((direction, index), _) = self.get_workbench_keyframe()?;
+
+        // Select dragged hitbox
+        if !self.view.selection.is_hitbox_selected(
+            &animation_name,
+            direction,
+            index,
+            &nudge.hitbox_being_dragged,
+        ) {
+            self.view.selection.select_hitbox(
+                animation_name.clone(),
+                direction,
+                index,
+                nudge.hitbox_being_dragged,
+            );
+        }
+
+        if !both_axis {
+            if displacement.x.abs() > displacement.y.abs() {
+                displacement.y = 0;
+            } else {
+                displacement.x = 0;
+            }
+        }
+
+        let selected_hitboxes = self
+            .view
+            .selection
+            .hitboxes()
+            .map(|(_, _, _, hitbox_name)| hitbox_name.clone())
+            .collect::<HashSet<_>>();
+
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        for (hitbox_name, hitbox) in keyframe
+            .hitboxes_iter_mut()
+            .filter(|(hitbox_name, _)| selected_hitboxes.contains(*hitbox_name))
+        {
+            let old_position = nudge
+                .original_positions
+                .get(hitbox_name)
+                .ok_or(DocumentError::MissingHitboxPositionData)?;
+            let new_position = (old_position.to_f32() + displacement.to_f32() / zoom)
+                .floor()
+                .to_i32();
+            hitbox.set_position(new_position);
         }
 
         Ok(())

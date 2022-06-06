@@ -43,6 +43,9 @@ pub enum Command {
     BeginNudgeKeyframe(Direction, usize),
     UpdateNudgeKeyframe(Vector2D<i32>, bool),
     EndNudgeKeyframe(),
+    BeginNudgeHitbox(String),
+    UpdateNudgeHitbox(Vector2D<i32>, bool),
+    EndNudgeHitbox(),
 }
 
 #[derive(Debug, Default)]
@@ -97,6 +100,9 @@ impl Document {
             Command::BeginNudgeKeyframe(d, i) => self.begin_nudge_keyframe(d, i)?,
             Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
             Command::EndNudgeKeyframe() => (),
+            Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
+            Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
+            Command::EndNudgeHitbox() => (),
         }
 
         if !matches!(
@@ -108,6 +114,8 @@ impl Document {
                 | Command::UpdateDragKeyframeDuration(_)
                 | Command::BeginNudgeKeyframe(_, _)
                 | Command::UpdateNudgeKeyframe(_, _)
+                | Command::BeginNudgeHitbox(_)
+                | Command::UpdateNudgeHitbox(_, _)
         ) {
             self.transient = Default::default();
         }

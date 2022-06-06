@@ -58,6 +58,8 @@ pub enum DocumentError {
     MissingKeyframePositionData,
     #[error("Could not find position of hitbox when drag started")]
     MissingHitboxPositionData,
+    #[error("Not currently nudging a hitbox")]
+    NotNudgingHitbox,
 }
 
 impl Document {
@@ -196,6 +198,55 @@ impl Document {
         Ok((animation_name, animation))
     }
 
+    pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
+        let (_, animation) = self.get_workbench_animation()?;
+        let direction = self
+            .view
+            .current_sequence()
+            .ok_or(DocumentError::NotEditingAnySequence)?;
+        Ok((
+            direction,
+            animation
+                .sequence(direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?,
+        ))
+    }
+
+    pub fn get_workbench_sequence_mut(
+        &mut self,
+    ) -> Result<(Direction, &mut Sequence), DocumentError> {
+        let direction = self
+            .view
+            .current_sequence()
+            .ok_or(DocumentError::NotEditingAnySequence)?;
+        let (_, animation) = self.get_workbench_animation_mut()?;
+        Ok((
+            direction,
+            animation
+                .sequence_mut(direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?,
+        ))
+    }
+
+    pub fn get_workbench_keyframe(&self) -> Result<((Direction, usize), &Keyframe), DocumentError> {
+        let (direction, sequence) = self.get_workbench_sequence()?;
+        let (index, keyframe) = sequence
+            .keyframe_at(self.view.timeline_clock)
+            .ok_or(DocumentError::NoKeyframeAtTime(self.view.timeline_clock))?;
+        Ok(((direction, index), keyframe))
+    }
+
+    pub fn get_workbench_keyframe_mut(
+        &mut self,
+    ) -> Result<((Direction, usize), &mut Keyframe), DocumentError> {
+        let timeline_clock = self.view.timeline_clock;
+        let (direction, sequence) = self.get_workbench_sequence_mut()?;
+        let (index, keyframe) = sequence
+            .keyframe_at_mut(timeline_clock)
+            .ok_or(DocumentError::NoKeyframeAtTime(timeline_clock))?;
+        Ok(((direction, index), keyframe))
+    }
+
     pub fn get_selected_keyframes(
         &self,
     ) -> Result<Vec<(Direction, usize, &Keyframe)>, DocumentError> {
@@ -219,28 +270,6 @@ impl Document {
                     })
             })
             .collect())
-    }
-
-    pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
-        let (_, animation) = self.get_workbench_animation()?;
-        let direction = self
-            .view
-            .current_sequence()
-            .ok_or_else(|| DocumentError::NotEditingAnySequence)?;
-        Ok((
-            direction,
-            animation
-                .sequence(direction)
-                .ok_or(DocumentError::SequenceNotInAnimation(direction))?,
-        ))
-    }
-
-    pub fn get_workbench_keyframe(&self) -> Result<((Direction, usize), &Keyframe), DocumentError> {
-        let (direction, sequence) = self.get_workbench_sequence()?;
-        let (index, keyframe) = sequence
-            .keyframe_at(self.view.timeline_clock)
-            .ok_or(DocumentError::NoKeyframeAtTime(self.view.timeline_clock))?;
-        Ok(((direction, index), keyframe))
     }
 
     pub fn get_selected_keyframes_mut(

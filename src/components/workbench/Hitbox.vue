@@ -30,7 +30,7 @@ import { computed } from "vue"
 import { Hitbox } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
-import { pan, selectHitbox } from "@/api/document"
+import { beginNudgeHitbox, endNudgeHitbox, pan, selectHitbox, updateNudgeHitbox } from "@/api/document"
 
 const app = useAppStore();
 
@@ -85,14 +85,14 @@ const selectionStyle = computed(() => {
 
 function startDrag(event: DragAreaEvent) {
 	if (event.button == "left") {
-		// beginNudgeKeyframe(props.direction, props.index);
+		beginNudgeHitbox(props.name);
 	}
 }
 
 function endDrag(event: DragAreaEvent) {
 	if (event.button == "left") {
 		if (event.didMove) {
-			// endNudgeKeyframe();
+			endNudgeHitbox();
 		} else {
 			selectHitbox(props.name, event.mouseEvent.shiftKey, event.mouseEvent.ctrlKey);
 		}
@@ -105,7 +105,7 @@ function updateDrag(event: DragAreaEvent) {
 			event.mouseEvent.clientX - event.initialMouseEvent.clientX,
 			event.mouseEvent.clientY - event.initialMouseEvent.clientY,
 		];
-		// updateNudgeKeyframe(displacement, !event.mouseEvent.shiftKey);
+		updateNudgeHitbox(displacement, !event.mouseEvent.shiftKey);
 	} else if (event.button == "right") {
 		pan([event.mouseEvent.movementX, event.mouseEvent.movementY]);
 	}

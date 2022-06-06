@@ -136,6 +136,18 @@ impl MultiSelection {
         self.keyframes.only(keyframes);
     }
 
+    pub fn select_hitbox(
+        &mut self,
+        animation: String,
+        direction: Direction,
+        index: usize,
+        hitbox: String,
+    ) {
+        self.clear();
+        self.hitboxes
+            .only(vec![(animation, direction, index, hitbox)]);
+    }
+
     pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
         if !matches!(edit, MultiSelectionEdit::Frames(_, _)) {
             self.frames.clear();
@@ -207,6 +219,10 @@ impl MultiSelection {
 
     pub fn keyframes(&self) -> impl Iterator<Item = &(String, Direction, usize)> {
         self.keyframes.iter()
+    }
+
+    pub fn hitboxes(&self) -> impl Iterator<Item = &(String, Direction, usize, String)> {
+        self.hitboxes.iter()
     }
 }
 
