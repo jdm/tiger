@@ -319,6 +319,26 @@ pub fn select_keyframe(
 }
 
 #[tauri::command]
+pub fn select_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    name: String,
+    shift: bool,
+    ctrl: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::AlterSelection(
+                    SelectionInput::Hitbox(name),
+                    shift,
+                    ctrl,
+                ))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

@@ -37,6 +37,7 @@ fn main() {
             api::select_frame,
             api::select_animation,
             api::select_keyframe,
+            api::select_hitbox,
             api::pan,
             api::center_workbench,
             api::zoom_in_workbench,

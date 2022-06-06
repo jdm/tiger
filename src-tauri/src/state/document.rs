@@ -165,20 +165,6 @@ impl Document {
         // TODO hitbox selection cleanup
     }
 
-    pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
-        let (_, animation) = self.get_workbench_animation()?;
-        let direction = self
-            .view
-            .current_sequence()
-            .ok_or_else(|| DocumentError::NotEditingAnySequence)?;
-        Ok((
-            direction,
-            animation
-                .sequence(direction)
-                .ok_or(DocumentError::SequenceNotInAnimation(direction))?,
-        ))
-    }
-
     pub fn get_workbench_animation(&self) -> Result<(&String, &Animation), DocumentError> {
         let animation_name = self
             .view
@@ -231,6 +217,28 @@ impl Document {
                     })
             })
             .collect())
+    }
+
+    pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
+        let (_, animation) = self.get_workbench_animation()?;
+        let direction = self
+            .view
+            .current_sequence()
+            .ok_or_else(|| DocumentError::NotEditingAnySequence)?;
+        Ok((
+            direction,
+            animation
+                .sequence(direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?,
+        ))
+    }
+
+    pub fn get_workbench_keyframe(&self) -> Result<((Direction, usize), &Keyframe), DocumentError> {
+        let (direction, sequence) = self.get_workbench_sequence()?;
+        let (index, keyframe) = sequence
+            .keyframe_at(self.view.timeline_clock)
+            .ok_or(DocumentError::NoKeyframeAtTime(self.view.timeline_clock))?;
+        Ok(((direction, index), keyframe))
     }
 
     pub fn get_selected_keyframes_mut(

@@ -6,15 +6,16 @@
 			However, transform:scale() also applies to borders, with no way of scaling back to 1px borders
 			when zoomed in.
 		 -->
-		<svg v-if="props.hitbox.selected && !app.currentDocument?.timelineIsPlaying"
-			class="absolute transition-transform z-20" :style="selectionStyle"
+		<svg class="absolute transition-transform z-20" :style="selectionStyle"
 			:viewBox="`0 0 ${hitbox.size[0] + 1} ${hitbox.size[1] + 1}`">
 			<rect :x="1" :y="1" :width="hitbox.size[0]" :height="hitbox.size[1]" shape-rendering="crispEdges"
-				:stroke-width="1 / zoom" class="stroke-pink-600 fill-pink-600/20 transition-all" />
-			<line :x1="1" :y1="1" :x2="1 + hitbox.size[0]" :y2="1 + hitbox.size[1]"
-				class="stroke-pink-600 transition-all" :stroke-width="1 / zoom" />
-			<line :x1="1 + hitbox.size[0]" :y1="1" :x2="1" :y2="1 + hitbox.size[1]"
-				class="stroke-pink-600 transition-all" :stroke-width="1 / zoom" />
+				:stroke-width="1 / zoom"
+				:class="hitbox.selected ? 'stroke-blue-600 fill-blue-600/20' : 'stroke-pink-600 fill-pink-600/20'"
+				class="transition-all" />
+			<line :x1="1" :y1="1" :x2="1 + hitbox.size[0]" :y2="1 + hitbox.size[1]" :stroke-width="1 / zoom"
+				:class="hitbox.selected ? 'stroke-blue-600' : 'stroke-pink-600'" class="transition-all" />
+			<line :x1="1 + hitbox.size[0]" :y1="1" :x2="1" :y2="1 + hitbox.size[1]" :stroke-width="1 / zoom"
+				:class="hitbox.selected ? 'stroke-blue-600' : 'stroke-pink-600'" class="transition-all" />
 		</svg>
 		<DragArea :buttons="['left', 'right']" active-cursor="cursor-move" inactive-cursor="cursor-move"
 			@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
@@ -24,15 +25,16 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { Direction, Hitbox, Keyframe } from "@/api/dto"
+import { Hitbox } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
-import { pan } from "@/api/document"
+import { pan, selectHitbox } from "@/api/document"
 
 const app = useAppStore();
 
 const props = defineProps<{
 	hitbox: Hitbox,
+	name: string,
 	origin: [number, number],
 }>();
 
@@ -90,7 +92,7 @@ function endDrag(event: DragAreaEvent) {
 		if (event.didMove) {
 			// endNudgeKeyframe();
 		} else {
-			// selectKeyframe(props.direction, props.index, event.mouseEvent.shiftKey, event.mouseEvent.ctrlKey);
+			selectHitbox(props.name, event.mouseEvent.shiftKey, event.mouseEvent.ctrlKey);
 		}
 	}
 }
@@ -108,15 +110,3 @@ function updateDrag(event: DragAreaEvent) {
 }
 
 </script>
-
-<style scoped>
-.pattern {
-	background:
-		linear-gradient(-90deg, theme("colors.pink.600") 1px, transparent 1px),
-		linear-gradient(0deg, theme("colors.pink.600") 1px, transparent 1px);
-	/* theme("colors.neutral.900"); */
-	background-size:
-		4px 4px,
-		4px 4px;
-}
-</style>

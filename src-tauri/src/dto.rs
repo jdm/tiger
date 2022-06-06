@@ -153,18 +153,29 @@ impl From<&state::Document> for Document {
         for frame in sheet.frames.iter_mut() {
             frame.selected = document.view().selection().is_frame_selected(&frame.path);
         }
-        for (name, animation) in sheet.animations.iter_mut() {
-            animation.selected = document.view().selection().is_animation_selected(name);
+        for (animation_name, animation) in sheet.animations.iter_mut() {
+            animation.selected = document
+                .view()
+                .selection()
+                .is_animation_selected(animation_name);
             for (direction, sequence) in animation.sequences.iter_mut() {
                 let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
                     keyframe.selected = document.view().selection().is_keyframe_selected(
-                        name,
+                        animation_name,
                         (*direction).into(),
                         index,
                     );
                     keyframe.start_time_millis = time_millis;
                     time_millis += keyframe.duration_millis;
+                    for (hitbox_name, hitbox) in keyframe.hitboxes.iter_mut() {
+                        hitbox.selected = document.view().selection().is_hitbox_selected(
+                            animation_name,
+                            (*direction).into(),
+                            index,
+                            hitbox_name,
+                        );
+                    }
                 }
             }
         }
@@ -327,7 +338,7 @@ impl From<&sheet::Keyframe> for Keyframe {
 impl From<&sheet::Hitbox> for Hitbox {
     fn from(hitbox: &sheet::Hitbox) -> Self {
         Self {
-            selected: true, // TODO
+            selected: false,
             top_left: hitbox.position().to_tuple(),
             size: hitbox.size().to_tuple(),
             linked: hitbox.linked(),

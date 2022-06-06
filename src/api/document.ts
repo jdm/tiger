@@ -84,6 +84,21 @@ export async function selectKeyframe(
   );
 }
 
+export async function selectHitbox(
+  name: string,
+  shift: boolean,
+  ctrl: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("select_hitbox", {
+      name: name,
+      shift: shift,
+      ctrl: ctrl,
+    })
+  );
+}
+
 export async function pan(delta: [number, number]): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("pan", { delta: delta }));

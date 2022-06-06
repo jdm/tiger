@@ -11,7 +11,7 @@ use crate::state::*;
 pub struct MultiSelection {
     pub(super) frames: MultiSelectionData<PathBuf>,
     pub(super) animations: MultiSelectionData<String>,
-    pub(super) hitboxes: MultiSelectionData<String>,
+    pub(super) hitboxes: MultiSelectionData<(String, Direction, usize, String)>,
     pub(super) keyframes: MultiSelectionData<(String, Direction, usize)>,
 }
 
@@ -26,7 +26,10 @@ pub enum SelectionInput {
 pub enum MultiSelectionEdit {
     Frames(PathBuf, Vec<PathBuf>),
     Animations(String, Vec<String>),
-    Hitboxes(String, Vec<String>),
+    Hitboxes(
+        (String, Direction, usize, String),
+        Vec<(String, Direction, usize, String)>,
+    ),
     Keyframes((String, Direction, usize), Vec<(String, Direction, usize)>),
 }
 
@@ -61,7 +64,17 @@ impl Document {
                     .map(|(n, _)| n.clone())
                     .collect(),
             ),
-            SelectionInput::Hitbox(_) => todo!(),
+            SelectionInput::Hitbox(h) => {
+                let (animation_name, _) = self.get_workbench_animation()?;
+                let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
+                MultiSelectionEdit::Hitboxes(
+                    (animation_name.clone(), direction, index, h.clone()),
+                    keyframe
+                        .hitboxes_iter()
+                        .map(|(n, _)| (animation_name.clone(), direction, index, n.clone()))
+                        .collect(),
+                )
+            }
             SelectionInput::Keyframe(d, i) => {
                 self.view.current_sequence = Some(*d);
                 let (_, sequence) = self.get_workbench_sequence()?;
@@ -160,8 +173,22 @@ impl MultiSelection {
         self.animations.contains(name.as_ref())
     }
 
-    pub fn is_hitbox_selected<T: AsRef<str>>(&self, name: T) -> bool {
-        self.hitboxes.contains(name.as_ref())
+    pub fn is_hitbox_selected<T: AsRef<str>, U: AsRef<str>>(
+        &self,
+        animation_name: T,
+        direction: Direction,
+        index: usize,
+        hitbox_name: U,
+    ) -> bool {
+        self.hitboxes.contains(
+            (
+                animation_name.as_ref(),
+                direction,
+                index,
+                hitbox_name.as_ref(),
+            )
+                .borrow() as &dyn HitboxID,
+        )
     }
 
     pub fn is_keyframe_selected<T: AsRef<str>>(
@@ -357,6 +384,48 @@ impl<'a> Borrow<dyn KeyframeID + 'a> for (&'a str, Direction, usize) {
 }
 
 impl Eq for dyn KeyframeID + '_ {}
+
+trait HitboxID {
+    fn to_key(&self) -> (&str, Direction, usize, &str);
+}
+
+impl Hash for dyn HitboxID + '_ {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.to_key().hash(state)
+    }
+}
+
+impl PartialEq for dyn HitboxID + '_ {
+    fn eq(&self, other: &Self) -> bool {
+        self.to_key() == other.to_key()
+    }
+}
+
+impl HitboxID for (String, Direction, usize, String) {
+    fn to_key(&self) -> (&str, Direction, usize, &str) {
+        (&self.0, self.1, self.2, &self.3)
+    }
+}
+
+impl<'a> HitboxID for (&'a str, Direction, usize, &'a str) {
+    fn to_key(&self) -> (&str, Direction, usize, &str) {
+        (self.0, self.1, self.2, self.3)
+    }
+}
+
+impl<'a> Borrow<dyn HitboxID + 'a> for (String, Direction, usize, String) {
+    fn borrow(&self) -> &(dyn HitboxID + 'a) {
+        self
+    }
+}
+
+impl<'a> Borrow<dyn HitboxID + 'a> for (&'a str, Direction, usize, &'a str) {
+    fn borrow(&self) -> &(dyn HitboxID + 'a) {
+        self
+    }
+}
+
+impl Eq for dyn HitboxID + '_ {}
 
 #[test]
 fn can_replace_selection() {
