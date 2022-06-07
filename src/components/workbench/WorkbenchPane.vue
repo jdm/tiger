@@ -33,6 +33,19 @@
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
+			<div class="z-50 absolute w-60 right-6 top-6 basis-[20rem] sm shadow-lg shadow-black/30
+			rounded-md bg-zinc-900 border-2 border-pink-800 outline outline-black/50">
+				<div class="h-full flex flex-col rounded-md">
+					<div class="text-pink-600 p-2 px-4 text-sm font-medium">Hitboxes</div>
+					<div class="flex-1 relative rounded-md overflow-hidden m-2">
+						<div class="relative overflow-hidden pt-0 p-2">
+							<Selectable text="hit" :selected="true" />
+							<Selectable text="weak" :selected="false" />
+							<Selectable text="strong" :selected="false" />
+						</div>
+					</div>
+				</div>
+			</div>
 		</div>
 	</Pane>
 </template>
@@ -47,15 +60,29 @@ import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Pane from "@/components/basic/Pane.vue"
+import PaneInset from "@/components/basic/PaneInset.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
 import PaneTabList from "@/components/basic/PaneTabList.vue"
 import Frame from "@/components/workbench/Frame.vue"
 import Hitbox from "@/components/workbench/Hitbox.vue"
 import Origin from "@/components/workbench/Origin.vue"
+import Selectable from "@/components/basic/Selectable.vue"
+import MultiSwitch, { MultiSwitchItem } from "@/components/basic/MultiSwitch.vue"
+import { CollectionIcon, LocationMarkerIcon } from "@heroicons/vue/outline"
 
 const app = useAppStore();
 const drawingArea: Ref<HTMLElement | null> = ref(null);
 const drawingAreaSize = ref([0, 0]);
+
+const items: MultiSwitchItem[] = [
+	{
+		icon: "ViewGridIcon"
+	},
+	{
+		icon: "ViewGridIcon",
+		active: true,
+	}
+];
 
 const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
