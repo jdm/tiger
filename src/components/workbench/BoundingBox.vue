@@ -6,8 +6,7 @@
 	-->
 	<svg class="absolute transition-transform" :style="style" :viewBox="`0 0 ${size[0] + 1} ${size[1] + 1}`">
 		<rect :x="1" :y="1" :width="size[0]" :height="size[1]" shape-rendering="crispEdges" :stroke-width="scale"
-			:class="colorClasses" class="absolute inset-0 ase-in-out duration-150 "
-			style="transitionProperty: stroke-width stroke-dasharray" />
+			:class="colorClasses" class="ease-in-out duration-150" style="transitionProperty: stroke-width" />
 	</svg>
 </template>
 
