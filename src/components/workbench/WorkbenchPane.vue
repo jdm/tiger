@@ -11,6 +11,18 @@
 			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
 		</div>
 		<div class="relative flex-1 overflow-hidden pointer-events-none" ref="drawingArea">
+
+			<!--
+				Z-Ordering
+				----------
+				0 sprite BG
+				10 sprite
+				20 sprite outline
+				30 hitbox BG & outline
+				40 sprite drag area
+				50 hitbox drag area
+			-->
+
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
 				class="flex-1 graph-paper h-full pointer-events-auto" :style="graphPaperStyle" />
 			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
