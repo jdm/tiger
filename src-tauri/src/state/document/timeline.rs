@@ -40,7 +40,6 @@ impl Document {
 
     pub(super) fn play(&mut self) -> Result<(), DocumentError> {
         self.persistent.timeline_is_playing = true;
-        self.view.selection.keyframes.clear();
         self.view.selection.hitboxes.clear();
         if self
             .get_workbench_sequence()?
@@ -63,9 +62,11 @@ impl Document {
         let keyframe_index = sequence
             .keyframe_index_at(self.view.timeline_clock)
             .unwrap_or_default();
-        self.view
-            .selection
-            .select_keyframe(animation_name, direction, keyframe_index);
+        if self.view.selection.keyframes().count() <= 1 {
+            self.view
+                .selection
+                .select_keyframe(animation_name, direction, keyframe_index);
+        }
         Ok(())
     }
 
