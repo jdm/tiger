@@ -15,7 +15,7 @@
 		</div>
 		<PaneInset class="flex-1 min-h-0">
 			<div class="p-4 overflow-y-auto h-full styled-scrollbars">
-				<div class="text-plastic-200 flex flex-col">
+				<div class="flex flex-col">
 					<Animation v-for="animation in app.sortedAnimations" :animation="animation" ref="animationRefs"
 						:key="animation.name" />
 				</div>
@@ -36,7 +36,6 @@ import Animation from "@/components/content/Animation.vue"
 import { ViewGridIcon, ViewListIcon } from "@heroicons/vue/solid"
 
 const app = useAppStore();
-
 
 // Auto-scroll to new animation
 const animationRefs: Ref<{ name: string, scrollIntoView: () => void }[]> = ref([]);
