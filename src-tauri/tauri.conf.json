@@ -74,11 +74,11 @@
         "title": "Tiger",
         "fullscreen": false,
         "maximized": true,
-        "width": 800,
-        "height": 800,
+        "width": 1920,
+        "height": 1080,
         "resizable": true,
-        "minWidth": 800,
-        "minHeight": 800,
+        "minWidth": 1000,
+        "minHeight": 1000,
         "decorations": false,
         "fileDropEnabled": false
       }
