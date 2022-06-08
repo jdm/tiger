@@ -1,12 +1,12 @@
 <template>
-	<Pane class="flex flex-col overflow-hidden">
+	<Pane class="overflow-hidden">
 		<PaneTabList>
 			<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
 				@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
 				{{ document.name + (document.hasUnsavedChanges ? "*" : "") }}
 			</PaneTab>
 		</PaneTabList>
-		<div class="w-full p-2 flex flex-row items-center space-x-2">
+		<div class="w-full px-2 my-4 flex flex-row items-center space-x-2">
 			<Button @click="zoomInWorkbench" icon="ZoomInIcon" />
 			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
 		</div>
@@ -30,18 +30,36 @@
 			<Hitbox v-for="hitbox, name in app.currentKeyframe?.hitboxes" :key="hitbox.key" :hitbox="hitbox"
 				:name="name" :origin="origin" />
 			<Origin :origin="origin" />
-			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
-				{{ app.currentAnimation?.name }}
-			</div>
-			<div class="z-50 absolute w-60 right-6 top-6 basis-[20rem] sm shadow-lg shadow-black/30
-			rounded-md bg-zinc-900 border-2 border-pink-800 outline outline-black/50">
-				<div class="h-full flex flex-col rounded-md">
-					<div class="text-pink-600 p-2 px-4 text-sm font-medium">Hitboxes</div>
-					<div class="flex-1 relative rounded-md overflow-hidden m-2">
-						<div class="relative overflow-hidden pt-0 p-2">
-							<Selectable text="hit" :selected="true" />
-							<Selectable text="weak" :selected="false" />
-							<Selectable text="strong" :selected="false" />
+
+			<div class="absolute right-0 top-0 p-6">
+				<div class="flex flex-col space-y-6">
+					<div class="flex flex-col space-y-2">
+						<div class="text-4xl p-1 px-2 font-bold bg-neutral-500 text-neutral-900">{{
+								app.currentAnimation?.name
+						}}</div>
+						<div class="text-medium p-1 px-2 text-xs font-bold bg-neutral-900 text-neutral-500">
+							Frame 2 / 4
+						</div>
+					</div>
+					<div
+						class="h-72 w-80 z-50 basis-72 bg-plastic-900 outline outline-plastic-600 rounded-md shadow-lg shadow-black/30 p-1">
+						<div class="h-full flex flex-col">
+							<div class="flex flex-row bg-plastic-900 font-medium text-xs ">
+								<div class="p-3 px-4 pb-2 bg-plastic-700 rounded-t-md text-plastic-200">Hitboxes
+								</div>
+								<div class="p-3 px-4 pb-2 rounded-t-md text-plastic-400">FooBar</div>
+							</div>
+							<div class="flex-1 flex flex-col rounded-md rounded-tl-none bg-plastic-700">
+								<PaneInset class="flex-1 m-4">
+									<div class="p-4 overflow-y-auto h-full styled-scrollbars">
+										<div class="text-plastic-200 flex flex-col">
+											<Selectable text="hit" :selected="true" left-icon="CollectionIcon" />
+											<Selectable text="weak" :selected="false" left-icon="CollectionIcon" />
+											<Selectable text="strong" :selected="false" left-icon="CollectionIcon" />
+										</div>
+									</div>
+								</PaneInset>
+							</div>
 						</div>
 					</div>
 				</div>
