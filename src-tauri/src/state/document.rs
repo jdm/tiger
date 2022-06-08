@@ -6,6 +6,7 @@ use crate::sheet::{Animation, Direction, Keyframe, Sequence, Sheet, SheetError};
 
 mod command;
 mod content;
+mod keyframe;
 mod persistent;
 mod selection;
 mod timeline;
@@ -14,6 +15,7 @@ mod view;
 
 pub use command::*;
 pub use content::*;
+pub use keyframe::*;
 use persistent::*;
 pub use selection::*;
 pub use timeline::*;

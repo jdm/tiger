@@ -16,7 +16,7 @@
 
 <script setup lang="ts">
 import { Hitbox as HitboxDTO } from "@/api/dto"
-import { selectHitbox } from "@/api/document"
+import { deleteHitbox, renameHitbox, selectHitbox } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
@@ -50,7 +50,7 @@ function onRenameClicked() {
 }
 
 function onRenameInputComplete() {
-	// renameHitbox(props.name, newName.value);
+	renameHitbox(props.name, newName.value);
 	renaming.value = false;
 }
 
@@ -59,6 +59,6 @@ function onRenameInputCancelled() {
 }
 
 function onDeleteClicked() {
-	// deleteHitbox(props.name);
+	deleteHitbox(props.name);
 }
 </script>

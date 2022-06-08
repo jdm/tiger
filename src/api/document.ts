@@ -318,6 +318,24 @@ export async function endNudgeKeyframe(): Promise<void> {
   appStore.patch(await invoke("end_nudge_keyframe"));
 }
 
+export async function renameHitbox(
+  oldName: string,
+  newName: string
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("rename_hitbox", {
+      oldName: oldName,
+      newName: newName,
+    })
+  );
+}
+
+export async function deleteHitbox(name: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_hitbox", { name: name }));
+}
+
 export async function beginNudgeHitbox(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("begin_nudge_hitbox", { name: name }));

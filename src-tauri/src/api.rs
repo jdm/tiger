@@ -704,6 +704,30 @@ pub fn end_nudge_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch
 }
 
 #[tauri::command]
+pub fn rename_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    old_name: String,
+    new_name: String,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::RenameHitbox(old_name, new_name))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn delete_hitbox(app_state: tauri::State<'_, AppState>, name: String) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::DeleteHitbox(name)).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_nudge_hitbox(
     app_state: tauri::State<'_, AppState>,
     name: String,

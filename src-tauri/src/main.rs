@@ -69,6 +69,8 @@ fn main() {
             api::begin_nudge_keyframe,
             api::update_nudge_keyframe,
             api::end_nudge_keyframe,
+            api::rename_hitbox,
+            api::delete_hitbox,
             api::begin_nudge_hitbox,
             api::update_nudge_hitbox,
             api::end_nudge_hitbox,

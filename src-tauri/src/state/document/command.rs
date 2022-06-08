@@ -43,6 +43,8 @@ pub enum Command {
     BeginNudgeKeyframe(Direction, usize),
     UpdateNudgeKeyframe(Vector2D<i32>, bool),
     EndNudgeKeyframe(),
+    RenameHitbox(String, String),
+    DeleteHitbox(String),
     BeginNudgeHitbox(String),
     UpdateNudgeHitbox(Vector2D<i32>, bool),
     EndNudgeHitbox(),
@@ -100,6 +102,10 @@ impl Document {
             Command::BeginNudgeKeyframe(d, i) => self.begin_nudge_keyframe(d, i)?,
             Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
             Command::EndNudgeKeyframe() => (),
+            Command::RenameHitbox(ref old_name, ref new_name) => {
+                self.rename_hitbox(old_name, new_name)?
+            }
+            Command::DeleteHitbox(ref name) => self.delete_hitbox(name)?,
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
             Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
             Command::EndNudgeHitbox() => (),
