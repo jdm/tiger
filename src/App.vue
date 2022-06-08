@@ -7,6 +7,10 @@
           <div class="flex-1 min-h-0 flex flex-row space-x-5 pb-5">
             <ContentPane class="basis-[28rem] min-w-0" />
             <WorkbenchPane class="flex-1" />
+            <div class="basis-80 flex flex-col space-y-5">
+              <KeyframePane class="flex-1" />
+              <DetailsPane class="basis-80" />
+            </div>
           </div>
           <TimelinePane />
         </div>
@@ -24,6 +28,8 @@ import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import AppBar from "@/components/AppBar.vue"
 import ContentPane from "@/components/content/ContentPane.vue"
+import DetailsPane from "@/components/details/DetailsPane.vue"
+import KeyframePane from "@/components/keyframe/KeyframePane.vue"
 import TimelinePane from "@/components/timeline/TimelinePane.vue"
 import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
 import ModalLayer from "@/components/ModalLayer.vue"
