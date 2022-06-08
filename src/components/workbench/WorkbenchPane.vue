@@ -6,10 +6,10 @@
 				{{ document.name + (document.hasUnsavedChanges ? "*" : "") }}
 			</PaneTab>
 		</PaneTabList>
-		<div class="w-full px-2 my-4 flex flex-row items-center space-x-2">
+		<!-- <div class="w-full px-2 my-4 flex flex-row items-center space-x-2">
 			<Button @click="zoomInWorkbench" icon="ZoomInIcon" />
 			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
-		</div>
+		</div> -->
 		<div class="relative flex-1 overflow-hidden pointer-events-none" ref="drawingArea">
 
 			<!--
@@ -31,34 +31,30 @@
 				:name="name" :origin="origin" />
 			<Origin :origin="origin" />
 
-			<div class="absolute right-0 top-0 p-6">
-				<div class="flex flex-col space-y-6">
-					<div class="flex flex-col space-y-2">
-						<div class="text-4xl p-1 px-2 font-bold bg-neutral-500 text-neutral-900">{{
-								app.currentAnimation?.name
-						}}</div>
-						<div class="text-medium p-1 px-2 text-xs font-bold bg-neutral-900 text-neutral-500">
-							Frame 2 / 4
-						</div>
+			<div class="absolute right-0 top-0 p-6 z-50">
+				<div class="flex flex-col space-y-2">
+					<div class="text-4xl p-1 px-2 font-bold bg-neutral-400 text-neutral-900">{{
+							app.currentAnimation?.name
+					}}</div>
+					<div class="text-medium p-1 px-2 text-xs font-bold bg-neutral-900 text-neutral-500">
+						Frame {{ 1 + (app.currentDocument?.currentKeyframeIndex || 0) }} /
+						{{ app.currentSequence?.keyframes.length || "??" }}
+						[{{ app.currentKeyframe?.durationMillis }}ms]
 					</div>
-					<div
-						class="h-72 w-80 z-50 basis-72 bg-plastic-900 outline outline-plastic-600 rounded-md shadow-lg shadow-black/30 p-1">
-						<div class="h-full flex flex-col">
-							<div class="flex flex-row bg-plastic-900 font-medium text-xs ">
-								<div class="p-3 px-4 pb-2 bg-plastic-700 rounded-t-md text-plastic-200">Hitboxes
-								</div>
-								<div class="p-3 px-4 pb-2 rounded-t-md text-plastic-400">FooBar</div>
+					<div class="w-80 basis-80 flex flex-col bg-neutral-900 p-1 border-2 rounded-md border-plastic-600">
+						<div class="flex flex-row bg-neutral-900 font-medium text-xs ">
+							<div class="p-3 px-4 pb-2 bg-plastic-800 text-neutral-200">Hitboxes
 							</div>
-							<div class="flex-1 flex flex-col rounded-md rounded-tl-none bg-plastic-700">
-								<PaneInset class="flex-1 m-4">
-									<div class="p-4 overflow-y-auto h-full styled-scrollbars">
-										<div class="text-plastic-200 flex flex-col">
-											<Selectable text="hit" :selected="true" left-icon="CollectionIcon" />
-											<Selectable text="weak" :selected="false" left-icon="CollectionIcon" />
-											<Selectable text="strong" :selected="false" left-icon="CollectionIcon" />
-										</div>
-									</div>
-								</PaneInset>
+							<div class="p-3 px-4 pb-2  text-neutral-400">Sockets</div>
+							<div class="p-3 px-4 pb-2  text-neutral-400">Events</div>
+						</div>
+						<div class="flex-1 flex flex-col  bg-plastic-800">
+							<div class="p-4 overflow-y-auto h-full styled-scrollbars">
+								<div class="text-neutral-200 flex flex-col">
+									<Selectable text="hit" :selected="true" left-icon="CollectionIcon" />
+									<Selectable text="weak" :selected="false" left-icon="CollectionIcon" />
+									<Selectable text="strong" :selected="false" left-icon="CollectionIcon" />
+								</div>
 							</div>
 						</div>
 					</div>
