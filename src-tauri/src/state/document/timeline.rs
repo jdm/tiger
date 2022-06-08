@@ -11,8 +11,10 @@ impl Document {
     fn advance_timeline(&mut self, delta: Duration) {
         if self.persistent.is_timeline_playing() {
             self.view.timeline_clock += delta;
-            if let Ok((_, animation)) = self.get_workbench_animation() {
-                if let Ok((_, sequence)) = self.get_workbench_sequence() {
+            if let Ok((animation_name, animation)) = self.get_workbench_animation() {
+                let animation_name = animation_name.clone();
+                if let Ok((direction, sequence)) = self.get_workbench_sequence() {
+                    let num_keyframes = sequence.num_keyframes();
                     match sequence.duration_millis() {
                         Some(d) if d > 0 => {
                             let clock_ms = self.view.timeline_clock().as_millis() as u64;
@@ -24,6 +26,13 @@ impl Document {
                             } else if clock_ms >= d {
                                 self.persistent.timeline_is_playing = false;
                                 self.view.timeline_clock = Duration::from_millis(u64::from(d));
+                                if self.view.selection.keyframes().count() <= 1 {
+                                    self.view.selection.select_keyframe(
+                                        animation_name,
+                                        direction,
+                                        num_keyframes - 1,
+                                    );
+                                }
                             }
                         }
 
