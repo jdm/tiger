@@ -2,10 +2,10 @@
   <div class="relative h-screen w-screen overflow-hidden select-none" @contextmenu="onContextMenu">
     <div class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
       <AppBar v-model:debugMode="allowContextMenu" />
-      <div class="flex-1 min-h-0 flex flex-col space-y-5">
-        <div class="flex-1 min-h-0 flex flex-col p-5">
+      <div class="flex-1 min-h-0 flex flex-row space-x-5 p-5">
+        <ContentPane class="basis-[28rem] min-w-0" />
+        <div class="flex-1 min-w-0 flex flex-col">
           <div class="flex-1 min-h-0 flex flex-row space-x-5 pb-5">
-            <ContentPane class="basis-[28rem] min-w-0" />
             <WorkbenchPane class="flex-1" />
             <div class="basis-80 flex flex-col space-y-5">
               <KeyframePane class="flex-1" />
