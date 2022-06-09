@@ -8,6 +8,7 @@
 		</PaneTabList>
 		<!-- TODO Floating toolbar? -->
 		<div class="w-full px-2 my-4 flex flex-row items-center space-x-2">
+			<Toggle :toggled="!app.currentDocument?.darkenSprites" @click="toggleSpriteDarkening" icon="SunIcon" />
 			<Button @click="zoomInWorkbench" icon="ZoomInIcon" />
 			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
 		</div>
@@ -43,12 +44,12 @@ import { onUnmounted, watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
 import { Direction, Keyframe } from "@/api/dto"
 import { closeDocument, focusDocument } from "@/api/app"
-import { clearSelection, pan, zoomInWorkbench, zoomOutWorkbench } from "@/api/document"
+import { clearSelection, disableSpriteDarkening, enableSpriteDarkening, pan, zoomInWorkbench, zoomOutWorkbench } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
+import Toggle from "@/components/basic/Toggle.vue"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Pane from "@/components/basic/Pane.vue"
-import PaneInset from "@/components/basic/PaneInset.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
 import PaneTabList from "@/components/basic/PaneTabList.vue"
 import Frame from "@/components/workbench/Frame.vue"
@@ -110,6 +111,14 @@ const allAnimationKeyframes = computed((): { direction: Direction, index: number
 	}
 	return keyframes;
 });
+
+function toggleSpriteDarkening() {
+	if (app.currentDocument?.darkenSprites) {
+		disableSpriteDarkening();
+	} else {
+		enableSpriteDarkening();
+	}
+}
 
 function onClick() {
 	clearSelection();

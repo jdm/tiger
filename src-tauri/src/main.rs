@@ -43,6 +43,8 @@ fn main() {
             api::zoom_in_workbench,
             api::zoom_out_workbench,
             api::reset_workbench_zoom,
+            api::enable_sprite_darkening,
+            api::disable_sprite_darkening,
             api::create_animation,
             api::edit_animation,
             api::rename_animation,

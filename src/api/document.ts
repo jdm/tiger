@@ -124,6 +124,16 @@ export async function resetWorkbenchZoom(): Promise<void> {
   appStore.patch(await invoke("reset_workbench_zoom"));
 }
 
+export async function enableSpriteDarkening(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("enable_sprite_darkening"));
+}
+
+export async function disableSpriteDarkening(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("disable_sprite_darkening"));
+}
+
 export async function createAnimation(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("create_animation"));

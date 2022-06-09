@@ -21,6 +21,7 @@ pub struct View {
     pub(super) workbench_zoom_level: u32,
     pub(super) timeline_zoom_level: i32,
     pub(super) hide_hitboxes: bool,
+    pub(super) darken_sprites: bool,
 }
 
 impl Default for View {
@@ -35,6 +36,7 @@ impl Default for View {
             timeline_zoom_level: 1,
             timeline_clock: Default::default(),
             hide_hitboxes: false,
+            darken_sprites: true,
         }
     }
 }
@@ -124,6 +126,10 @@ impl View {
 
     pub(super) fn skip_to_timeline_start(&mut self) {
         self.timeline_clock = Duration::ZERO;
+    }
+
+    pub fn should_darken_sprites(&self) -> bool {
+        self.darken_sprites
     }
 
     pub fn is_hiding_hitboxes(&self) -> bool {

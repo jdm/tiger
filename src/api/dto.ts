@@ -23,10 +23,11 @@ export type Document = {
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
   timelineZoom: number;
+  darkenSprites: boolean;
+  hideHitboxes: boolean;
   isDraggingKeyframeDuration: boolean;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];
-  hideHitboxes: boolean;
 };
 
 export type Sheet = {

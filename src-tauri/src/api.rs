@@ -386,6 +386,28 @@ pub fn reset_workbench_zoom(app_state: tauri::State<'_, AppState>) -> Result<Pat
 }
 
 #[tauri::command]
+pub fn enable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::EnableSpriteDarkening)
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn disable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::DisableSpriteDarkening)
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn create_animation(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
@@ -576,9 +598,7 @@ pub fn drop_frame_on_timeline(
 pub fn end_drag_and_drop_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::EndDragAndDropFrame())
-                .ok();
+            document.process_command(Command::EndDragAndDropFrame).ok();
         }
     }))
 }
@@ -618,7 +638,7 @@ pub fn end_drag_and_drop_keyframe(app_state: tauri::State<'_, AppState>) -> Resu
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::EndDragAndDropKeyframe())
+                .process_command(Command::EndDragAndDropKeyframe)
                 .ok();
         }
     }))
@@ -745,7 +765,7 @@ pub fn delete_hitbox(app_state: tauri::State<'_, AppState>, name: String) -> Res
 pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::HideHitboxes()).ok();
+            document.process_command(Command::HideHitboxes).ok();
         }
     }))
 }
@@ -754,7 +774,7 @@ pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()>
 pub fn show_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::ShowHitboxes()).ok();
+            document.process_command(Command::ShowHitboxes).ok();
         }
     }))
 }
@@ -792,7 +812,7 @@ pub fn update_nudge_hitbox(
 pub fn end_nudge_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::EndNudgeHitbox()).ok();
+            document.process_command(Command::EndNudgeHitbox).ok();
         }
     }))
 }

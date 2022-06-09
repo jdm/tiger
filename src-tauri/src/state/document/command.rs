@@ -17,6 +17,8 @@ pub enum Command {
     ZoomInWorkbench,
     ZoomOutWorkbench,
     ResetWorkbenchZoom,
+    EnableSpriteDarkening,
+    DisableSpriteDarkening,
     CreateAnimation,
     EditAnimation(String),
     RenameAnimation(String, String),
@@ -33,10 +35,10 @@ pub enum Command {
     SelectDirection(Direction),
     BeginDragAndDropFrame(PathBuf),
     DropFrameOnTimeline(Direction, usize),
-    EndDragAndDropFrame(),
+    EndDragAndDropFrame,
     BeginDragAndDropKeyframe(Direction, usize),
     DropKeyframeOnTimeline(Direction, usize),
-    EndDragAndDropKeyframe(),
+    EndDragAndDropKeyframe,
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
     EndDragKeyframeDuration(),
@@ -46,11 +48,11 @@ pub enum Command {
     CreateHitbox(Option<Vector2D<i32>>),
     RenameHitbox(String, String),
     DeleteHitbox(String),
-    HideHitboxes(),
-    ShowHitboxes(),
+    HideHitboxes,
+    ShowHitboxes,
     BeginNudgeHitbox(String),
     UpdateNudgeHitbox(Vector2D<i32>, bool),
-    EndNudgeHitbox(),
+    EndNudgeHitbox,
 }
 
 #[derive(Debug, Default)]
@@ -77,6 +79,8 @@ impl Document {
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
             Command::ZoomOutWorkbench => self.view.zoom_out_workbench(),
             Command::ResetWorkbenchZoom => self.view.reset_workbench_zoom(),
+            Command::EnableSpriteDarkening => self.view.darken_sprites = true,
+            Command::DisableSpriteDarkening => self.view.darken_sprites = false,
             Command::CreateAnimation => self.create_animation()?,
             Command::EditAnimation(ref name) => self.edit_animation(name)?,
             Command::RenameAnimation(ref old_name, ref new_name) => {
@@ -95,10 +99,10 @@ impl Document {
             Command::SelectDirection(d) => self.select_direction(d)?,
             Command::BeginDragAndDropFrame(ref f) => self.begin_drag_and_drop_frame(f.clone()),
             Command::DropFrameOnTimeline(d, i) => self.drop_frame_on_timeline(d, i)?,
-            Command::EndDragAndDropFrame() => (),
+            Command::EndDragAndDropFrame => (),
             Command::BeginDragAndDropKeyframe(d, i) => self.begin_drag_and_drop_keyframe(d, i)?,
             Command::DropKeyframeOnTimeline(d, i) => self.drop_keyframe_on_timeline(d, i)?,
-            Command::EndDragAndDropKeyframe() => (),
+            Command::EndDragAndDropKeyframe => (),
             Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
             Command::EndDragKeyframeDuration() => (),
@@ -110,11 +114,11 @@ impl Document {
                 self.rename_hitbox(old_name, new_name)?
             }
             Command::DeleteHitbox(ref name) => self.delete_hitbox(name)?,
-            Command::HideHitboxes() => self.view.hide_hitboxes = true,
-            Command::ShowHitboxes() => self.view.hide_hitboxes = false,
+            Command::HideHitboxes => self.view.hide_hitboxes = true,
+            Command::ShowHitboxes => self.view.hide_hitboxes = false,
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
             Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
-            Command::EndNudgeHitbox() => (),
+            Command::EndNudgeHitbox => (),
         }
 
         self.sanitize_view();

@@ -2,17 +2,11 @@
 	<div>
 		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
 			:colorClasses="keyframe.selected ? 'fill-blue-600/20' : 'fill-orange-600/0'" />
-
-		<!-- TODO Add readability mode which does the following and helps hitboxes/selections stand out:
-			saturate-50 brightness-50 contrast-125
-		 -->
 		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded"
-			class="absolute pixelated transition-transform z-10 saturate-50 brightness-50 contrast-125"
-			:class="(frameSize && isActiveFrame) ? 'opacity-100' : 'opacity-0'" draggable="false" :style="frameStyle" />
-
+			class="absolute pixelated transition-transform z-10" :class="frameClass" draggable="false"
+			:style="frameStyle" />
 		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
 			class="z-20 fill-transparent" :colorClasses="keyframe.selected ? 'stroke-blue-600' : 'stroke-orange-600'" />
-
 		<DragArea v-if="frameSize && (isActiveFrame || keyframe.selected)" :buttons="['left', 'right']"
 			active-cursor="cursor-move" inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag"
 			@drag-update="updateDrag" class="absolute pointer-events-auto z-40" :style="frameStyle" />
@@ -47,6 +41,13 @@ const position = computed(() => [
 	-Math.floor((frameSize.value?.[0] || 0) / 2) + props.keyframe.offset[0],
 	- Math.floor((frameSize.value?.[1] || 0) / 2) + props.keyframe.offset[1]
 ] as [number, number]);
+
+const frameClass = computed(() => {
+	return [
+		(frameSize && isActiveFrame) ? "opacity-100" : "opacity-0",
+		...(app.currentDocument?.darkenSprites ? ["saturate-50", "brightness-50", "contrast-125"] : []),
+	];
+});
 
 const frameStyle = computed(() => {
 	const zoom = app.currentDocument?.workbenchZoom || 1;

@@ -56,6 +56,9 @@ function itemClasses(item: MultiSwitchItem) {
 }
 
 function onItemClicked(item: MultiSwitchItem) {
+	if (item.active) {
+		return;
+	}
 	emit("activate", item);
 }
 </script>
