@@ -44,7 +44,7 @@ const position = computed(() => [
 
 const frameClass = computed(() => {
 	return [
-		(frameSize && isActiveFrame) ? "opacity-100" : "opacity-0",
+		(frameSize.value && isActiveFrame.value) ? "opacity-100" : "opacity-0",
 		...(app.currentDocument?.darkenSprites ? ["saturate-50", "brightness-50", "contrast-125"] : []),
 	];
 });
