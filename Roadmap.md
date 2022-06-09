@@ -91,12 +91,16 @@
 
 ## Tiger 0.4
 
-- [ ] Prettier UI
+- [ ] UI rewrite (prettier)
 - [ ] Support multiple directions/angles for the same animation
-- [ ] Workbench tabs
-- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
+  - [x] Sheet stores multiple sequences per animation
+  - [x] Can preview and edit multiple sequences
+  - [ ] Shift selecting keyframes on timeline selects the keyframes you would expect
+- [x] Add toggle to hide keyframes (replaces linking/locking)
+- [x] Add sprite darkening readility mode
+- [x] Workbench tabs
 - [ ] Replace powershell release script with Github action
-- [ ] Unit test sheet module
+- [x] Unit test sheet module
 
 ## Tiger 0.5
 
@@ -106,6 +110,7 @@
 - [ ] Export perf improvements
 - [ ] Duplicate animation / keyframe (within same sheet)
 - [ ] Copy/paste hitboxes
+- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
 
 ## Tiger 0.6
 
