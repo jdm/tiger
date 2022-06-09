@@ -318,6 +318,13 @@ export async function endNudgeKeyframe(): Promise<void> {
   appStore.patch(await invoke("end_nudge_keyframe"));
 }
 
+export async function createHitbox(
+  position: [number, number] | null
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("create_hitbox", { position: position }));
+}
+
 export async function renameHitbox(
   oldName: string,
   newName: string

@@ -1,6 +1,25 @@
+use euclid::default::Vector2D;
+
 use crate::state::*;
 
 impl Document {
+    pub(super) fn create_hitbox(
+        &mut self,
+        position: Option<Vector2D<i32>>,
+    ) -> Result<(), DocumentError> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
+        let (hitbox_name, hitbox) = keyframe.create_hitbox();
+        if let Some(position) = position {
+            hitbox.set_position(position);
+        }
+        self.view
+            .selection
+            .select_hitbox(animation_name, direction, index, hitbox_name.clone());
+        Ok(())
+    }
+
     pub(super) fn rename_hitbox<T: AsRef<str>, U: AsRef<str>>(
         &mut self,
         old_name: T,

@@ -9,7 +9,7 @@
 			<div class="w-full flex flex-row space-x-2 items-center">
 				<Toggle :toggled="true" icon="EyeIcon" />
 				<div class="flex-1 flex flex-row justify-end">
-					<Button :positive="true" icon="TagIcon" label="Add" />
+					<Button :positive="true" icon="TagIcon" label="Add" @click="onAddClicked" />
 				</div>
 			</div>
 			<PaneInset class="flex-1 min-h-0">
@@ -25,7 +25,8 @@
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from "@/stores/app"
+import { createHitbox } from "@/api/document";
+import { useAppStore } from "@/stores/app";
 import Button from "@/components/basic/Button.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
@@ -34,5 +35,9 @@ import Hitbox from "@/components/keyframe/Hitbox.vue";
 import Toggle from "@/components/basic/Toggle.vue"
 
 const app = useAppStore();
+
+function onAddClicked() {
+	createHitbox(null);
+}
 
 </script>
