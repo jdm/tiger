@@ -28,8 +28,8 @@
 				class="flex-1 graph-paper h-full pointer-events-auto" :style="graphPaperStyle" />
 			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
 				:direction="k.direction" :index="k.index" :origin="origin" />
-			<Hitbox v-for="hitbox, name in app.currentKeyframe?.hitboxes" :key="hitbox.key" :hitbox="hitbox"
-				:name="name" :origin="origin" />
+			<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="hitbox, name in app.currentKeyframe?.hitboxes"
+				:key="hitbox.key" :hitbox="hitbox" :name="name" :origin="origin" />
 			<Origin :origin="origin" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl px-2 font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}

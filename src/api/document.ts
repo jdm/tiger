@@ -325,6 +325,16 @@ export async function createHitbox(
   appStore.patch(await invoke("create_hitbox", { position: position }));
 }
 
+export async function hideHitboxes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("hide_hitboxes"));
+}
+
+export async function showHitboxes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("show_hitboxes"));
+}
+
 export async function renameHitbox(
   oldName: string,
   newName: string

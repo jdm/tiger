@@ -72,6 +72,8 @@ fn main() {
             api::create_hitbox,
             api::rename_hitbox,
             api::delete_hitbox,
+            api::hide_hitboxes,
+            api::show_hitboxes,
             api::begin_nudge_hitbox,
             api::update_nudge_hitbox,
             api::end_nudge_hitbox,

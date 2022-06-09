@@ -26,6 +26,7 @@ export type Document = {
   isDraggingKeyframeDuration: boolean;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];
+  hideHitboxes: boolean;
 };
 
 export type Sheet = {
