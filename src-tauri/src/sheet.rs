@@ -537,8 +537,6 @@ impl Hitbox {
                 top_left: (-10, -10),
                 size: (20, 20),
             }),
-            linked: true,
-            locked: false,
             key: Uuid::new_v4(),
         }
     }
@@ -581,22 +579,6 @@ impl Hitbox {
                 r.size = new_size.to_tuple();
             }
         }
-    }
-
-    pub fn linked(&self) -> bool {
-        self.linked
-    }
-
-    pub fn set_linked(&mut self, linked: bool) {
-        self.linked = linked
-    }
-
-    pub fn locked(&self) -> bool {
-        self.locked
-    }
-
-    pub fn set_locked(&mut self, locked: bool) {
-        self.locked = locked
     }
 }
 
@@ -830,24 +812,6 @@ fn can_read_write_hitbox_size() {
     let mut hitbox = Hitbox::new();
     hitbox.set_size(vec2(50, 50));
     assert_eq!(hitbox.size(), vec2(50, 50));
-}
-
-#[test]
-fn can_read_write_hitbox_linked() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_linked(true);
-    assert_eq!(hitbox.linked(), true);
-    hitbox.set_linked(false);
-    assert_eq!(hitbox.linked(), false);
-}
-
-#[test]
-fn can_read_write_hitbox_locked() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_locked(true);
-    assert_eq!(hitbox.locked(), true);
-    hitbox.set_locked(false);
-    assert_eq!(hitbox.locked(), false);
 }
 
 #[test]

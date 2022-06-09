@@ -78,8 +78,6 @@ pub struct Keyframe {
 #[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Hitbox {
     pub(in crate::sheet) geometry: Shape,
-    pub(in crate::sheet) linked: bool,
-    pub(in crate::sheet) locked: bool,
     #[derivative(PartialEq = "ignore")]
     #[serde(skip, default = "Uuid::new_v4")]
     pub(in crate::sheet) key: Uuid,
@@ -176,8 +174,6 @@ impl From<previous_version::Hitbox> for Hitbox {
     fn from(old: previous_version::Hitbox) -> Hitbox {
         Hitbox {
             geometry: old.geometry.into(),
-            linked: true,
-            locked: false,
             key: Uuid::new_v4(),
         }
     }

@@ -112,8 +112,6 @@ pub struct Hitbox {
     selected: bool,
     top_left: (i32, i32),
     size: (u32, u32),
-    linked: bool,
-    locked: bool,
     key: Uuid,
 }
 
@@ -342,8 +340,6 @@ impl From<&sheet::Hitbox> for Hitbox {
             selected: false,
             top_left: hitbox.position().to_tuple(),
             size: hitbox.size().to_tuple(),
-            linked: hitbox.linked(),
-            locked: hitbox.locked(),
             key: hitbox.key(),
         }
     }

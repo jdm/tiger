@@ -358,9 +358,6 @@ impl Document {
             keyframe.set_offset(new_key_frame_offset);
 
             for (hitbox_name, hitbox) in keyframe.hitboxes_iter_mut() {
-                if !hitbox.linked() {
-                    continue;
-                }
                 let old_position = old_offsets
                     .hitbox_positions
                     .get(hitbox_name)

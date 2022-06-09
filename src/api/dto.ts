@@ -87,8 +87,6 @@ export type Hitbox = {
   selected: boolean;
   topLeft: [number, number];
   size: [number, number];
-  linked: boolean;
-  locked: boolean;
   key: string;
 };
 
