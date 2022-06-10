@@ -123,6 +123,18 @@ pub enum ContentTab {
     Animations,
 }
 
+#[derive(Clone, Deserialize)]
+pub enum ResizeAxis {
+    N,
+    S,
+    W,
+    E,
+    NW,
+    NE,
+    SE,
+    SW,
+}
+
 trait ToFileName {
     fn to_file_name(&self) -> String;
 }
@@ -363,6 +375,21 @@ impl From<state::ContentTab> for ContentTab {
         match content_tab {
             state::ContentTab::Frames => ContentTab::Frames,
             state::ContentTab::Animations => ContentTab::Animations,
+        }
+    }
+}
+
+impl From<ResizeAxis> for state::ResizeAxis {
+    fn from(resize_axis: ResizeAxis) -> Self {
+        match resize_axis {
+            ResizeAxis::N => state::ResizeAxis::N,
+            ResizeAxis::S => state::ResizeAxis::S,
+            ResizeAxis::W => state::ResizeAxis::W,
+            ResizeAxis::E => state::ResizeAxis::E,
+            ResizeAxis::NW => state::ResizeAxis::NW,
+            ResizeAxis::NE => state::ResizeAxis::NE,
+            ResizeAxis::SE => state::ResizeAxis::SE,
+            ResizeAxis::SW => state::ResizeAxis::SW,
         }
     }
 }

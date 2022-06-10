@@ -1,4 +1,4 @@
-import { ContentTab, Direction, DirectionPreset } from "@/api/dto";
+import { ContentTab, Direction, DirectionPreset, ResizeAxis } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
@@ -384,4 +384,32 @@ export async function updateNudgeHitbox(
 export async function endNudgeHitbox(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("end_nudge_hitbox"));
+}
+
+export async function beginResizeHitbox(
+  name: string,
+  axis: ResizeAxis
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("begin_resize_hitbox", { name: name, axis: axis })
+  );
+}
+
+export async function updateResizeHitbox(
+  displacement: [number, number],
+  preserveAspectRatio: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("update_resize_hitbox", {
+      displacement: displacement,
+      preserveAspectRatio: preserveAspectRatio,
+    })
+  );
+}
+
+export async function endResizeHitbox(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_resize_hitbox"));
 }

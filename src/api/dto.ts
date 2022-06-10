@@ -96,3 +96,14 @@ export enum ContentTab {
   Frames = "Frames",
   Animations = "Animations",
 }
+
+export enum ResizeAxis {
+  N = "N",
+  S = "S",
+  W = "W",
+  E = "E",
+  NW = "NW",
+  NE = "NE",
+  SE = "SE",
+  SW = "SW",
+}

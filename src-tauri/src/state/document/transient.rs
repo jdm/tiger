@@ -1,4 +1,5 @@
-use euclid::default::Vector2D;
+use euclid::default::{Rect, Vector2D};
+use euclid::{point2, vec2};
 use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
@@ -30,6 +31,25 @@ pub(super) struct HitboxNudge {
     pub(super) original_positions: HashMap<String, Vector2D<i32>>,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum ResizeAxis {
+    N,
+    S,
+    W,
+    E,
+    NW,
+    NE,
+    SE,
+    SW,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub(super) struct HitboxResize {
+    pub(super) axis: ResizeAxis,
+    pub(super) hitbox_being_dragged: String,
+    pub(super) original_positions: HashMap<String, Rect<i32>>,
+}
+
 #[derive(Debug, Default)]
 pub struct Transient {
     pub(super) frame_drag_and_drop: Option<PathBuf>,
@@ -37,6 +57,7 @@ pub struct Transient {
     pub(super) keyframe_drag_and_drop: Option<(Direction, usize)>,
     pub(super) keyframe_nudge: Option<KeyframeNudge>,
     pub(super) hitbox_nudge: Option<HitboxNudge>,
+    pub(super) hitbox_resize: Option<HitboxResize>,
 }
 
 impl Document {
@@ -382,7 +403,7 @@ impl Document {
             hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
             original_positions: keyframe
                 .hitboxes_iter()
-                .map(|(n, k)| (n.clone(), k.position()))
+                .map(|(n, hitbox)| (n.clone(), hitbox.position()))
                 .collect(),
         });
         Ok(())
@@ -450,5 +471,119 @@ impl Document {
         }
 
         Ok(())
+    }
+
+    pub(super) fn begin_resize_hitbox<T: AsRef<str>>(
+        &mut self,
+        hitbox_name: T,
+        axis: ResizeAxis,
+    ) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe()?;
+        self.transient.hitbox_resize = Some(HitboxResize {
+            axis,
+            hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
+            original_positions: keyframe
+                .hitboxes_iter()
+                .map(|(n, hitbox)| (n.clone(), hitbox.rectangle()))
+                .collect(),
+        });
+        Ok(())
+    }
+
+    pub(super) fn update_resize_hitbox(
+        &mut self,
+        mouse_delta: Vector2D<i32>,
+        preserve_aspect_ratio: bool,
+    ) -> Result<(), DocumentError> {
+        use ResizeAxis::*;
+
+        let resize = self
+            .transient
+            .hitbox_resize
+            .clone()
+            .ok_or(DocumentError::NotResizingHitbox)?;
+
+        let selected_hitboxes = self
+            .view
+            .selection
+            .hitboxes()
+            .map(|(_, _, _, hitbox_name)| hitbox_name.clone())
+            .collect::<HashSet<_>>();
+
+        let zoom = self.view.workbench_zoom();
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+
+        for (hitbox_name, hitbox) in keyframe
+            .hitboxes_iter_mut()
+            .filter(|(hitbox_name, _)| selected_hitboxes.contains(*hitbox_name))
+        {
+            let old_rect = resize
+                .original_positions
+                .get(hitbox_name)
+                .ok_or(DocumentError::MissingHitboxPositionData)?;
+
+            let delta = if preserve_aspect_ratio && resize.axis.is_diagonal() {
+                let aspect_ratio =
+                    old_rect.size.width.max(1) as f32 / old_rect.size.height.max(1) as f32;
+                let odd_axis_factor = if resize.axis == NE || resize.axis == SW {
+                    -1.0
+                } else {
+                    1.0
+                };
+                if mouse_delta.x.abs() > mouse_delta.y.abs() {
+                    vec2(
+                        mouse_delta.x as f32,
+                        odd_axis_factor * (mouse_delta.x as f32 / aspect_ratio).round(),
+                    )
+                } else {
+                    vec2(
+                        odd_axis_factor * (mouse_delta.y as f32 * aspect_ratio).round(),
+                        mouse_delta.y as f32,
+                    )
+                }
+            } else {
+                mouse_delta.to_f32()
+            };
+
+            let delta = (delta / zoom).round().to_i32();
+
+            let bottom_left = point2(old_rect.min_x(), old_rect.max_y());
+            let top_right = point2(old_rect.max_x(), old_rect.min_y());
+
+            let new_rect = Rect::from_points(match resize.axis {
+                NW => vec![old_rect.max(), old_rect.origin + delta],
+                NE => vec![bottom_left, top_right + delta],
+                SW => vec![top_right, bottom_left + delta],
+                SE => vec![old_rect.origin, old_rect.max() + delta],
+                N => vec![
+                    bottom_left,
+                    point2(old_rect.max_x(), old_rect.min_y() + delta.y),
+                ],
+                W => vec![
+                    top_right,
+                    point2(old_rect.min_x() + delta.x, old_rect.max_y()),
+                ],
+                S => vec![
+                    old_rect.origin,
+                    point2(old_rect.max_x(), old_rect.max_y() + delta.y),
+                ],
+                E => vec![
+                    old_rect.origin,
+                    point2(old_rect.max_x() + delta.x, old_rect.max_y()),
+                ],
+            });
+
+            hitbox.set_position(new_rect.origin.to_vector());
+            hitbox.set_size(new_rect.size.to_u32().to_vector());
+        }
+
+        Ok(())
+    }
+}
+
+impl ResizeAxis {
+    pub fn is_diagonal(self) -> bool {
+        use ResizeAxis::*;
+        self == NW || self == NE || self == SW || self == SE
     }
 }

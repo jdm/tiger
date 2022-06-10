@@ -816,3 +816,45 @@ pub fn end_nudge_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
         }
     }))
 }
+
+#[tauri::command]
+pub fn begin_resize_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    name: String,
+    axis: dto::ResizeAxis,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginResizeHitbox(name, axis.into()))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn update_resize_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    displacement: (i32, i32),
+    preserve_aspect_ratio: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::UpdateResizeHitbox(
+                    displacement.into(),
+                    preserve_aspect_ratio,
+                ))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::EndResizeHitbox).ok();
+        }
+    }))
+}

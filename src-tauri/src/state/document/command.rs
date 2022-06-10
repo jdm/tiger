@@ -53,6 +53,9 @@ pub enum Command {
     BeginNudgeHitbox(String),
     UpdateNudgeHitbox(Vector2D<i32>, bool),
     EndNudgeHitbox,
+    BeginResizeHitbox(String, ResizeAxis),
+    UpdateResizeHitbox(Vector2D<i32>, bool),
+    EndResizeHitbox,
 }
 
 #[derive(Debug, Default)]
@@ -119,6 +122,9 @@ impl Document {
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
             Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
             Command::EndNudgeHitbox => (),
+            Command::BeginResizeHitbox(ref n, a) => self.begin_resize_hitbox(n, a)?,
+            Command::UpdateResizeHitbox(d, a) => self.update_resize_hitbox(d, a)?,
+            Command::EndResizeHitbox => (),
         }
 
         self.sanitize_view();
@@ -134,6 +140,8 @@ impl Document {
                 | Command::UpdateNudgeKeyframe(_, _)
                 | Command::BeginNudgeHitbox(_)
                 | Command::UpdateNudgeHitbox(_, _)
+                | Command::BeginResizeHitbox(_, _)
+                | Command::UpdateResizeHitbox(_, _)
         ) {
             self.transient = Default::default();
             self.record_command(command);

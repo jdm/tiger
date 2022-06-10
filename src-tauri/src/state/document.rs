@@ -62,6 +62,8 @@ pub enum DocumentError {
     MissingHitboxPositionData,
     #[error("Not currently nudging a hitbox")]
     NotNudgingHitbox,
+    #[error("Not currently resizing a hitbox")]
+    NotResizingHitbox,
 }
 
 impl Document {
