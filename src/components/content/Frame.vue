@@ -1,6 +1,5 @@
 <template>
-	<div @click="(event) => onFrameClicked(event)" @mouseover="onMouseOver" @mouseout="onMouseOut"
-		@dragstart="onDragStart" @dragend="onDragEnd" draggable="true"
+	<div @click="(event) => onFrameClicked(event)" @dragstart="onDragStart" @dragend="onDragEnd" draggable="true"
 		class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
 		:class="props.frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
 		<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
@@ -17,16 +16,7 @@ const props = defineProps<{
 	frame: FrameDTO
 }>();
 
-const hovered = ref(false);
 const dragCursorElement: Ref<HTMLElement | null> = ref(null);
-
-function onMouseOver() {
-	hovered.value = true;
-}
-
-function onMouseOut() {
-	hovered.value = false;
-}
 
 function onDragStart(event: DragEvent) {
 	if (event.dataTransfer) {
