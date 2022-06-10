@@ -1,9 +1,10 @@
 <template>
 	<BoundingBox :origin="origin" :position="hitbox.topLeft" :size="hitbox.size" :darken="true"
 		:colorClasses="boundingBoxClass" class="z-30" />
-	<DragArea :buttons="['left', 'right']" active-cursor="cursor-move" inactive-cursor="cursor-move"
-		@mouseenter="onMouseEnter" @mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag"
-		@drag-update="updateDrag" class="absolute pointer-events-auto z-50" :style="dragAreaStyle" />
+	<DragArea v-if="!app.currentDocument?.timelineIsPlaying" :buttons="['left', 'right']" active-cursor="cursor-move"
+		inactive-cursor="cursor-move" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" @drag-start="startDrag"
+		@drag-end="endDrag" @drag-update="updateDrag" class="absolute pointer-events-auto z-50"
+		:style="dragAreaStyle" />
 </template>
 
 <script setup lang="ts">
@@ -38,7 +39,6 @@ const dragAreaStyle = computed(() => {
 		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
 });
-
 
 const boundingBoxClass = computed(() => {
 	return [

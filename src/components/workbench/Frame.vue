@@ -7,10 +7,9 @@
 			:style="frameStyle" />
 		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
 			class="z-20 fill-transparent" :colorClasses="outlineColor" />
-		<DragArea v-if="frameSize && (isActiveFrame || keyframe.selected)" :buttons="['left', 'right']"
-			@mouseenter="onMouseEnter" @mouseleave="onMouseLeave" active-cursor="cursor-move"
-			inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
-			class="absolute pointer-events-auto z-40" :style="frameStyle" />
+		<DragArea v-if="canInteract" :buttons="['left', 'right']" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave"
+			active-cursor="cursor-move" inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag"
+			@drag-update="updateDrag" class="absolute pointer-events-auto z-40" :style="frameStyle" />
 	</div>
 </template>
 
@@ -37,6 +36,7 @@ const hovered = ref(false);
 const frameSize: Ref<[number, number] | null> = ref(null);
 
 const isActiveFrame = computed(() => props.keyframe == app.currentKeyframe);
+const canInteract = computed(() => !app.currentDocument?.timelineIsPlaying && (isActiveFrame.value || props.keyframe.selected) && frameSize.value);
 const drawBoundingBox = computed(() => !app.currentDocument?.timelineIsPlaying && (isActiveFrame.value || props.keyframe.selected));
 
 const position = computed(() => [
