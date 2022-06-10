@@ -20,7 +20,7 @@ const props = defineProps<{
 	origin: [number, number],
 	position: [number, number],
 	size: [number, number],
-	colorClasses: string,
+	colorClasses: string | string[],
 }>();
 
 const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);

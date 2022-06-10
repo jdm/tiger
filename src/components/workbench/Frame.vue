@@ -1,15 +1,16 @@
 <template>
 	<div>
 		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
-			:colorClasses="keyframe.selected ? 'fill-blue-600/20' : 'fill-orange-600/0'" />
+			:colorClasses="backgroundColor" />
 		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded"
 			class="absolute pixelated transition-transform z-10" :class="frameClass" draggable="false"
 			:style="frameStyle" />
 		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
-			class="z-20 fill-transparent" :colorClasses="keyframe.selected ? 'stroke-blue-600' : 'stroke-orange-600'" />
+			class="z-20 fill-transparent" :colorClasses="outlineColor" />
 		<DragArea v-if="frameSize && (isActiveFrame || keyframe.selected)" :buttons="['left', 'right']"
-			active-cursor="cursor-move" inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag"
-			@drag-update="updateDrag" class="absolute pointer-events-auto z-40" :style="frameStyle" />
+			@mouseenter="onMouseEnter" @mouseleave="onMouseLeave" active-cursor="cursor-move"
+			inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
+			class="absolute pointer-events-auto z-40" :style="frameStyle" />
 	</div>
 </template>
 
@@ -32,6 +33,7 @@ const props = defineProps<{
 }>();
 
 const el: Ref<HTMLImageElement | null> = ref(null);
+const hovered = ref(false);
 const frameSize: Ref<[number, number] | null> = ref(null);
 
 const isActiveFrame = computed(() => props.keyframe == app.currentKeyframe);
@@ -64,6 +66,30 @@ const frameStyle = computed(() => {
 		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
 });
+
+const backgroundColor = computed(() => {
+	if (hovered.value) {
+		return props.keyframe.selected ? "fill-blue-600/20" : "fill-orange-400/0";
+	} else {
+		return props.keyframe.selected ? "fill-blue-600/20" : "fill-orange-600/0";
+	}
+});
+
+const outlineColor = computed(() => {
+	if (hovered.value) {
+		return props.keyframe.selected ? "stroke-blue-400" : "stroke-orange-400";
+	} else {
+		return props.keyframe.selected ? "stroke-blue-600" : "stroke-orange-600";
+	}
+});
+
+function onMouseEnter() {
+	hovered.value = true;
+}
+
+function onMouseLeave() {
+	hovered.value = false;
+}
 
 function onFrameLoaded() {
 	if (!el.value) {

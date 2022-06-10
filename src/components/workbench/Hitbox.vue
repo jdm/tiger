@@ -1,14 +1,13 @@
 <template>
 	<BoundingBox :origin="origin" :position="hitbox.topLeft" :size="hitbox.size" :darken="true"
-		:colorClasses="hitbox.selected ? 'stroke-blue-600 fill-blue-600/20' : 'stroke-pink-600 fill-pink-600/10'"
-		class="z-30" />
+		:colorClasses="boundingBoxClass" class="z-30" />
 	<DragArea :buttons="['left', 'right']" active-cursor="cursor-move" inactive-cursor="cursor-move"
-		@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag" class="absolute pointer-events-auto z-50"
-		:style="dragAreaStyle" />
+		@mouseenter="onMouseEnter" @mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag"
+		@drag-update="updateDrag" class="absolute pointer-events-auto z-50" :style="dragAreaStyle" />
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import { Hitbox } from "@/api/dto"
 import { beginNudgeHitbox, endNudgeHitbox, pan, selectHitbox, updateNudgeHitbox } from "@/api/document"
 import { useAppStore } from "@/stores/app"
@@ -22,6 +21,8 @@ const props = defineProps<{
 	name: string,
 	origin: [number, number],
 }>();
+
+const hovered = ref(false);
 
 const dragAreaStyle = computed(() => {
 	const zoom = app.currentDocument?.workbenchZoom;
@@ -37,6 +38,24 @@ const dragAreaStyle = computed(() => {
 		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
 });
+
+
+const boundingBoxClass = computed(() => {
+	return [
+		...(hovered.value && props.hitbox.selected ? ["stroke-blue-400", "fill-blue-400/20"] : []),
+		...(!hovered.value && props.hitbox.selected ? ["stroke-blue-600", "fill-blue-600/20"] : []),
+		...(hovered.value && !props.hitbox.selected ? ["stroke-pink-400", "fill-pink-400/10"] : []),
+		...(!hovered.value && !props.hitbox.selected ? ["stroke-pink-600", "fill-pink-600/10"] : []),
+	];
+});
+
+function onMouseEnter() {
+	hovered.value = true;
+}
+
+function onMouseLeave() {
+	hovered.value = false;
+}
 
 function startDrag(event: DragAreaEvent) {
 	if (event.button == "left") {
