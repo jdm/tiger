@@ -14,10 +14,13 @@ import { computed } from "vue"
 import Icon from "@/components/basic/Icon.vue"
 import * as solid from "@heroicons/vue/solid"
 
+type ButtonColor = "pink";
+
 const props = defineProps<{
 	label?: string,
 	positive?: boolean,
 	danger?: boolean,
+	customColor?: ButtonColor,
 	icon?: keyof typeof solid,
 }>();
 
@@ -28,7 +31,9 @@ const dynamicClasses = computed(() => {
 });
 
 const palette = computed(() => {
-	if (props.danger) {
+	if (props.customColor == "pink") {
+		return ["text-pink-100", "bg-gradient-to-b", "from-pink-800", "to-pink-600", "border-t-pink-600", "border-b-pink-900"];
+	} else if (props.danger) {
 		return ["text-red-100", "bg-gradient-to-b", "from-red-800", "to-red-600", "border-t-red-600", "border-b-red-900"];
 	} else if (props.positive) {
 		return ["text-green-100", "bg-gradient-to-b", "from-green-800", "to-green-600", "border-t-green-600", "border-b-green-900"];

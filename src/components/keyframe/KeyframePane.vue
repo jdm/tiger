@@ -9,7 +9,7 @@
 			<div class="w-full flex flex-row space-x-2 items-center">
 				<Toggle :toggled="!app.currentDocument?.hideHitboxes" icon="EyeIcon" @click="onToggleHideHitboxes" />
 				<div class="flex-1 flex flex-row justify-end">
-					<Button :positive="true" icon="TagIcon" label="Add" @click="onAddClicked" />
+					<Button :positive="true" icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
 				</div>
 			</div>
 			<PaneInset class="flex-1 min-h-0">
