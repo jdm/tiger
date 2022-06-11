@@ -4,16 +4,20 @@
 	<DragArea v-if="!app.currentDocument?.timelineIsPlaying" :buttons="['left', 'right']" active-cursor="cursor-move"
 		:inactive-cursor="hitbox.selected ? 'cursor-move' : 'cursor-pointer'" @mouseenter="onMouseEnter"
 		@mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
-		class="absolute pointer-events-auto z-50" :style="dragAreaStyle" />
+		class="absolute pointer-events-auto z-50" :style="positionStyle" />
+	<ResizeArea v-if="hitbox.selected" @resize-start="startResize" @resize-update="updateResize" @resize-end="endResize"
+		@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag" class="absolute z-[60]"
+		:style="positionStyle" />
 </template>
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { Hitbox } from "@/api/dto"
-import { beginNudgeHitbox, endNudgeHitbox, pan, selectHitbox, updateNudgeHitbox } from "@/api/document"
+import { beginNudgeHitbox, beginResizeHitbox, endNudgeHitbox, endResizeHitbox, pan, selectHitbox, updateNudgeHitbox, updateResizeHitbox } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"
+import ResizeArea, { ResizeEvent } from "@/components/workbench/ResizeArea.vue"
 
 const app = useAppStore();
 
@@ -24,7 +28,7 @@ const props = defineProps<{
 
 const hovered = ref(false);
 
-const dragAreaStyle = computed(() => {
+const positionStyle = computed(() => {
 	return {
 		transform: `translate(${props.hitbox.topLeft[0]}px, ${props.hitbox.topLeft[1]}px)`,
 		width: `${props.hitbox.size[0]}px`,
@@ -75,5 +79,21 @@ function updateDrag(event: DragAreaEvent) {
 	} else if (event.button == "right") {
 		pan([event.mouseEvent.movementX, event.mouseEvent.movementY]);
 	}
+}
+
+function startResize(event: ResizeEvent) {
+	beginResizeHitbox(props.name, event.axis);
+}
+
+function updateResize(event: ResizeEvent) {
+	const displacement: [number, number] = [
+		event.dragEvent.mouseEvent.clientX - event.dragEvent.initialMouseEvent.clientX,
+		event.dragEvent.mouseEvent.clientY - event.dragEvent.initialMouseEvent.clientY,
+	];
+	updateResizeHitbox(displacement, event.dragEvent.mouseEvent.shiftKey)
+}
+
+function endResize(event: ResizeEvent) {
+	endResizeHitbox();
 }
 </script>

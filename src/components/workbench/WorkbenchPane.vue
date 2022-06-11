@@ -23,6 +23,7 @@
 				30 hitbox BG & outline
 				40 sprite drag area
 				50 hitbox drag area
+				60 hitbox resize area
 			-->
 
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"

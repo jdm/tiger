@@ -6,7 +6,8 @@
 import { computed, onUnmounted, Ref, ref } from "vue"
 
 export type DragButton = "left" | "middle" | "right";
-export type Cursor = "cursor-move" | "cursor-pointer" | "cursor-ew-resize";
+export type Cursor = "cursor-move" | "cursor-pointer"
+  | "cursor-nwse-resize" | "cursor-nesw-resize" | "cursor-ew-resize" | "cursor-ns-resize";
 
 export type DragAreaEvent = {
   initialMouseEvent: MouseEvent,
