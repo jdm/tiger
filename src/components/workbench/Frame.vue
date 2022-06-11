@@ -8,8 +8,9 @@
 		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
 			class="z-20 fill-transparent" :colorClasses="outlineColor" />
 		<DragArea v-if="canInteract" :buttons="['left', 'right']" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave"
-			active-cursor="cursor-move" inactive-cursor="cursor-move" @drag-start="startDrag" @drag-end="endDrag"
-			@drag-update="updateDrag" class="absolute pointer-events-auto z-40" :style="frameStyle" />
+			active-cursor="cursor-move" :inactive-cursor="keyframe.selected ? 'cursor-move' : 'cursor-pointer'"
+			@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
+			class="absolute pointer-events-auto z-40" :style="frameStyle" />
 	</div>
 </template>
 
