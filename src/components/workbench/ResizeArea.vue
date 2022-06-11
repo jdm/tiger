@@ -1,15 +1,20 @@
 <template>
 	<div>
 		<div class="h-full relative">
-			<ResizeHandle v-for="handle in handles" class="absolute" :class="handle.class" :axis="handle.axis"
-				@resize-start="onResizeStart" @resize-update="onResizeUpdate" @resize-end="onResizeEnd"
-				@drag-start="onDragStart" @drag-update="onDragUpdate" @drag-end="onDragEnd" />
+			<div v-for="handle in handles" class="absolute" :class="handle.class">
+				<ResizeHandle :axis="handle.axis" @resize-start="onResizeStart" @resize-update="onResizeUpdate"
+					@resize-end="onResizeEnd" @drag-start="onDragStart" @drag-update="onDragUpdate"
+					@drag-end="onDragEnd" class="transition-transform"
+					:style="`transform: scale(${1 / zoom}, ${1 / zoom})`" />
+			</div>
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { ResizeAxis } from "@/api/dto";
+import { useAppStore } from "@/stores/app"
 import { DragAreaEvent } from "@/components/basic/DragArea.vue";
 import ResizeHandle from "@/components/workbench/ResizeHandle.vue"
 
@@ -17,6 +22,9 @@ export type ResizeEvent = {
 	axis: ResizeAxis,
 	dragEvent: DragAreaEvent,
 }
+
+const app = useAppStore();
+const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
 
 const handles = [
 	{ axis: ResizeAxis.NW, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2" },

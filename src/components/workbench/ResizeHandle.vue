@@ -1,21 +1,17 @@
 <template>
 	<div>
-		<div class="transition-transform" :style="`transform: scale(${1 / zoom}, ${1 / zoom})`">
-			<svg viewBox="0 0 100 100" width="30" height="30">
-				<circle cx="50" cy="50" r="24" class="fill-white stroke-blue-600" stroke-width="5" />
-				<circle cx="50" cy="50" r="16" class="fill-blue-600" />
-			</svg>
-			<DragArea :buttons="['left', 'right']" class="absolute pointer-events-auto inset-0"
-				@drag-start="onDragStart" @drag-update="onDragUpdate" @drag-end="onDragEnd" :active-cursor="cursor"
-				:inactive-cursor="cursor" />
-		</div>
+		<svg viewBox="0 0 100 100" width="30" height="30">
+			<circle cx="50" cy="50" r="24" class="fill-white stroke-blue-600" stroke-width="5" />
+			<circle cx="50" cy="50" r="16" class="fill-blue-600" />
+		</svg>
+		<DragArea :buttons="['left', 'right']" class="absolute pointer-events-auto inset-0" @drag-start="onDragStart"
+			@drag-update="onDragUpdate" @drag-end="onDragEnd" :active-cursor="cursor" :inactive-cursor="cursor" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue"
 import { ResizeAxis } from "@/api/dto";
-import { useAppStore } from "@/stores/app"
 import DragArea, { Cursor, DragAreaEvent } from "@/components/basic/DragArea.vue";
 import { ResizeEvent } from "@/components/workbench/ResizeArea.vue";
 
@@ -32,9 +28,6 @@ const emit =
 		(e: "dragEnd", event: DragAreaEvent): void
 		(e: "dragUpdate", event: DragAreaEvent): void
 	}>();
-
-const app = useAppStore();
-const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
 
 const cursor = computed((): Cursor => {
 	switch (props.axis) {
