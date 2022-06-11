@@ -579,6 +579,18 @@ impl Document {
 
         Ok(())
     }
+
+    pub fn hitboxes_being_resized(&self) -> HashSet<&String> {
+        match self.transient.hitbox_resize.is_some() {
+            true => self
+                .view
+                .selection
+                .hitboxes()
+                .map(|(_, _, _, hitbox_name)| hitbox_name)
+                .collect(),
+            false => HashSet::new(),
+        }
+    }
 }
 
 impl ResizeAxis {

@@ -62,8 +62,12 @@ const frameStyle = computed(() => {
 	} as CSSProperties;
 });
 
+const showHover = computed(() => {
+	return hovered.value && (app.currentDocument?.hitboxesBeingResized || []).length == 0;
+});
+
 const backgroundColor = computed(() => {
-	if (hovered.value) {
+	if (showHover.value) {
 		return props.keyframe.selected ? "fill-blue-600/20" : "fill-orange-400/0";
 	} else {
 		return props.keyframe.selected ? "fill-blue-600/20" : "fill-orange-600/0";
@@ -71,7 +75,7 @@ const backgroundColor = computed(() => {
 });
 
 const outlineColor = computed(() => {
-	if (hovered.value) {
+	if (showHover.value) {
 		return props.keyframe.selected ? "stroke-blue-400" : "stroke-orange-400";
 	} else {
 		return props.keyframe.selected ? "stroke-blue-600" : "stroke-orange-600";

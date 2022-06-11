@@ -37,11 +37,12 @@ const positionStyle = computed(() => {
 });
 
 const boundingBoxClass = computed(() => {
+	const showHover = hovered.value && (app.currentDocument?.hitboxesBeingResized || []).length == 0;
 	return [
-		...(hovered.value && props.hitbox.selected ? ["stroke-blue-400", "fill-blue-600/20"] : []),
-		...(!hovered.value && props.hitbox.selected ? ["stroke-blue-600", "fill-blue-600/20"] : []),
-		...(hovered.value && !props.hitbox.selected ? ["stroke-pink-400", "fill-pink-600/10"] : []),
-		...(!hovered.value && !props.hitbox.selected ? ["stroke-pink-600", "fill-pink-600/10"] : []),
+		...(showHover && props.hitbox.selected ? ["stroke-blue-400", "fill-blue-600/20"] : []),
+		...(!showHover && props.hitbox.selected ? ["stroke-blue-600", "fill-blue-600/20"] : []),
+		...(showHover && !props.hitbox.selected ? ["stroke-pink-400", "fill-pink-600/10"] : []),
+		...(!showHover && !props.hitbox.selected ? ["stroke-pink-600", "fill-pink-600/10"] : []),
 	];
 });
 

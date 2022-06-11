@@ -39,6 +39,7 @@ pub struct Document {
     is_dragging_keyframe_duration: bool,
     frames_being_dragged: Vec<PathBuf>,
     keyframes_being_dragged: HashSet<(Direction, usize)>,
+    hitboxes_being_resized: HashSet<String>,
 }
 
 #[derive(Clone, Serialize)]
@@ -218,6 +219,11 @@ impl From<&state::Document> for Document {
                 .keyframes_being_dragged()
                 .into_iter()
                 .map(|(d, i)| (d.into(), i))
+                .collect(),
+            hitboxes_being_resized: document
+                .hitboxes_being_resized()
+                .into_iter()
+                .cloned()
                 .collect(),
         }
     }
