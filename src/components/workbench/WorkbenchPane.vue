@@ -27,12 +27,17 @@
 
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
 				class="flex-1 graph-paper h-full pointer-events-auto" :style="graphPaperStyle" />
-			<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
-				:direction="k.direction" :index="k.index" :origin="origin" />
-			<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="hitbox, name in app.currentKeyframe?.hitboxes"
-				:key="hitbox.key" :hitbox="hitbox" :name="name" :origin="origin" />
-			<Origin :origin="origin" />
-			<div class="absolute right-0 bottom-0 p-6 text-4xl px-2 font-bold text-neutral-600">
+			<div class="absolute inset-0 transition-transform" :style="zoomTransform">
+				<div class="absolute inset-0" :style="panningTransform">
+					<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
+						:direction="k.direction" :index="k.index" />
+					<Hitbox v-if="!app.currentDocument?.hideHitboxes"
+						v-for="hitbox, name in app.currentKeyframe?.hitboxes" :key="hitbox.key" :hitbox="hitbox"
+						:name="name" />
+				</div>
+			</div>
+			<Origin class="absolute inset-0" :style="panningTransform" />
+			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
 		</div>
@@ -82,11 +87,8 @@ onUnmounted(() => {
 });
 
 const graphPaperStyle = computed(() => {
-	const workbenchOffset = app.currentDocument?.workbenchOffset || [0, 0];
-	const left = Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0];
-	const top = Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1];
 	return {
-		"background-position": `${left}px ${top}px`,
+		"background-position": `${origin.value[0]}px ${origin.value[1]}px`,
 	}
 });
 
@@ -96,7 +98,21 @@ const origin = computed((): [number, number] => {
 		Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0],
 		Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1],
 	];
-})
+});
+
+const zoomTransform = computed(() => {
+	const zoom = app.currentDocument?.workbenchZoom || 1;
+	return {
+		transform: `scale(${zoom}, ${zoom})`,
+		transformOrigin: `${origin.value[0]}px ${origin.value[1]}px`,
+	};
+});
+
+const panningTransform = computed(() => {
+	return {
+		transform: `translate(${origin.value[0]}px, ${origin.value[1]}px)`,
+	};
+});
 
 const allAnimationKeyframes = computed((): { direction: Direction, index: number, keyframe: Keyframe }[] => {
 	let keyframes = [];

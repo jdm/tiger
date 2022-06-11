@@ -1,6 +1,6 @@
 <template>
-	<BoundingBox :origin="origin" :position="hitbox.topLeft" :size="hitbox.size" :darken="true"
-		:colorClasses="boundingBoxClass" class="z-30" />
+	<BoundingBox :position="hitbox.topLeft" :size="hitbox.size" :darken="true" :colorClasses="boundingBoxClass"
+		class="z-30" />
 	<DragArea v-if="!app.currentDocument?.timelineIsPlaying" :buttons="['left', 'right']" active-cursor="cursor-move"
 		:inactive-cursor="hitbox.selected ? 'cursor-move' : 'cursor-pointer'" @mouseenter="onMouseEnter"
 		@mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
@@ -20,23 +20,15 @@ const app = useAppStore();
 const props = defineProps<{
 	hitbox: Hitbox,
 	name: string,
-	origin: [number, number],
 }>();
 
 const hovered = ref(false);
 
 const dragAreaStyle = computed(() => {
-	const zoom = app.currentDocument?.workbenchZoom;
-	const left = props.origin[0] + props.hitbox.topLeft[0];
-	const top = props.origin[1] + props.hitbox.topLeft[1];
-	const transformOrigin = [props.origin[0] - left, props.origin[1] - top];
 	return {
-		left: `${left}px`,
-		top: `${top}px`,
+		transform: `translate(${props.hitbox.topLeft[0]}px, ${props.hitbox.topLeft[1]}px)`,
 		width: `${props.hitbox.size[0]}px`,
 		height: `${props.hitbox.size[1]}px`,
-		transform: `scale(${zoom}, ${zoom})`,
-		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
 	};
 });
 

@@ -1,11 +1,10 @@
 <template>
 	<div>
-		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
+		<BoundingBox v-if="frameSize && drawBoundingBox" :position="position" :size="frameSize"
 			:colorClasses="backgroundColor" />
-		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded"
-			class="absolute pixelated transition-transform z-10" :class="frameClass" draggable="false"
-			:style="frameStyle" />
-		<BoundingBox v-if="frameSize && drawBoundingBox" :origin="origin" :position="position" :size="frameSize"
+		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded" class="absolute pixelated z-10"
+			:class="frameClass" draggable="false" :style="frameStyle" />
+		<BoundingBox v-if="frameSize && drawBoundingBox" :position="position" :size="frameSize"
 			class="z-20 fill-transparent" :colorClasses="outlineColor" />
 		<DragArea v-if="canInteract" :buttons="['left', 'right']" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave"
 			active-cursor="cursor-move" :inactive-cursor="keyframe.selected ? 'cursor-move' : 'cursor-pointer'"
@@ -16,7 +15,7 @@
 
 <script setup lang="ts">
 import { convertFileSrc } from "@tauri-apps/api/tauri"
-import { computed, ref, Ref } from "vue"
+import { computed, CSSProperties, ref, Ref } from "vue"
 import { Direction, Keyframe } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
 import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from "@/api/document"
@@ -27,7 +26,6 @@ const app = useAppStore();
 
 const props = defineProps<{
 	keyframe: Keyframe,
-	origin: [number, number],
 	direction: Direction,
 	index: number,
 }>();
@@ -53,19 +51,15 @@ const frameClass = computed(() => {
 });
 
 const frameStyle = computed(() => {
-	const zoom = app.currentDocument?.workbenchZoom || 1;
 	const size: [number, number] = frameSize.value || [0, 0];
-	const left = props.origin[0] - Math.floor((frameSize.value?.[0] || 0) / 2) + props.keyframe.offset[0];
-	const top = props.origin[1] - Math.floor((frameSize.value?.[1] || 0) / 2) + props.keyframe.offset[1];
-	const transformOrigin = [props.origin[0] - left, props.origin[1] - top];
+	const left = -Math.floor((frameSize.value?.[0] || 0) / 2) + props.keyframe.offset[0];
+	const top = -Math.floor((frameSize.value?.[1] || 0) / 2) + props.keyframe.offset[1];
 	return {
-		left: `${left}px`,
-		top: `${top}px`,
+		transform: `translate(${left}px, ${top}px)`,
 		width: `${size[0]}px`,
 		height: `${size[1]}px`,
-		transform: `scale(${zoom}, ${zoom})`,
-		transformOrigin: `${transformOrigin[0]}px ${transformOrigin[1]}px`,
-	};
+		"backface-visibility": "hidden", // Fixes blurriness during zoom animations
+	} as CSSProperties;
 });
 
 const backgroundColor = computed(() => {
