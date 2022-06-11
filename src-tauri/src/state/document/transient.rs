@@ -473,6 +473,18 @@ impl Document {
         Ok(())
     }
 
+    pub fn hitboxes_being_nudged(&self) -> HashSet<&String> {
+        match self.transient.hitbox_nudge.is_some() {
+            true => self
+                .view
+                .selection
+                .hitboxes()
+                .map(|(_, _, _, hitbox_name)| hitbox_name)
+                .collect(),
+            false => HashSet::new(),
+        }
+    }
+
     pub(super) fn begin_resize_hitbox<T: AsRef<str>>(
         &mut self,
         hitbox_name: T,

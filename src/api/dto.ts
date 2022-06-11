@@ -28,6 +28,7 @@ export type Document = {
   isDraggingKeyframeDuration: boolean;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];
+  hitboxesBeingNudged: string[];
   hitboxesBeingResized: string[];
 };
 

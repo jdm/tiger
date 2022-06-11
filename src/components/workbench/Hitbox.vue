@@ -37,7 +37,10 @@ const positionStyle = computed(() => {
 });
 
 const boundingBoxClass = computed(() => {
-	const showHover = hovered.value && (app.currentDocument?.hitboxesBeingResized || []).length == 0;
+	const showHover = hovered.value
+		&& (app.currentDocument?.hitboxesBeingNudged || []).length == 0
+		&& (app.currentDocument?.hitboxesBeingResized || []).length == 0
+		;
 	return [
 		...(showHover && props.hitbox.selected ? ["stroke-blue-400", "fill-blue-600/20"] : []),
 		...(!showHover && props.hitbox.selected ? ["stroke-blue-600", "fill-blue-600/20"] : []),

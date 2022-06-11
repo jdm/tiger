@@ -63,7 +63,10 @@ const frameStyle = computed(() => {
 });
 
 const showHover = computed(() => {
-	return hovered.value && (app.currentDocument?.hitboxesBeingResized || []).length == 0;
+	return hovered.value
+		&& (app.currentDocument?.hitboxesBeingNudged || []).length == 0
+		&& (app.currentDocument?.hitboxesBeingResized || []).length == 0
+		;
 });
 
 const backgroundColor = computed(() => {
