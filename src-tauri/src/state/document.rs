@@ -2,13 +2,12 @@ use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
 
-use crate::sheet::{Animation, Direction, Keyframe, Sequence, Sheet, SheetError};
+use crate::sheet::*;
 
 mod command;
 mod content;
 mod export;
 mod keyframe;
-mod persistent;
 mod selection;
 mod timeline;
 mod transient;
@@ -18,7 +17,6 @@ pub use command::*;
 pub use content::*;
 pub use export::*;
 pub use keyframe::*;
-use persistent::*;
 pub use selection::*;
 pub use timeline::*;
 pub use transient::*;
@@ -34,6 +32,14 @@ pub struct Document {
     next_version: i32,
     history: Vec<HistoryEntry>,
     history_index: usize,
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct Persistent {
+    pub(super) disk_version: i32,
+    pub(super) close_requested: bool,
+    pub(super) timeline_is_playing: bool,
+    pub(super) export_settings_edit: Option<ExportSettings>,
 }
 
 #[derive(Error, Debug)]
@@ -114,8 +120,16 @@ impl Document {
         self.persistent.close_requested = false;
     }
 
+    pub fn close_requested(&self) -> bool {
+        self.persistent.close_requested
+    }
+
     pub fn should_close(&self) -> bool {
         self.close_requested() && self.is_saved()
+    }
+
+    pub fn is_timeline_playing(&self) -> bool {
+        self.persistent.timeline_is_playing
     }
 
     fn sanitize_view(&mut self) {
