@@ -25,16 +25,6 @@ const props = defineProps<{
 	animation: AnimationDTO
 }>();
 
-const name = props.animation.name;
-defineExpose({
-	name,
-	scrollIntoView() {
-		if (el.value) {
-			el.value.scrollIntoView({ behavior: "smooth", block: "center" });
-		}
-	}
-});
-
 const renaming = ref(false);
 const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);

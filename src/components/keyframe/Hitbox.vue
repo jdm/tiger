@@ -26,16 +26,6 @@ const props = defineProps<{
 	hitbox: HitboxDTO
 }>();
 
-const name = props.name;
-defineExpose({
-	name,
-	scrollIntoView() {
-		if (el.value) {
-			el.value.scrollIntoView({ behavior: "smooth", block: "center" });
-		}
-	}
-});
-
 const renaming = ref(false);
 const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);
