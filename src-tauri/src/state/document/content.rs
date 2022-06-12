@@ -1,11 +1,10 @@
+use crate::sheet::DirectionPreset;
 use crate::state::*;
 
 impl Document {
     pub(super) fn create_animation(&mut self) -> Result<(), DocumentError> {
-        let animation_name = {
-            let (animation_name, _) = self.sheet.create_animation();
-            animation_name
-        };
+        let (animation_name, animation) = self.sheet.create_animation();
+        animation.apply_direction_preset(DirectionPreset::FourDirections);
         self.view.selection.select_animation(animation_name.clone());
         self.edit_animation(animation_name)
     }
