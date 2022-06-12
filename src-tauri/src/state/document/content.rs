@@ -2,6 +2,13 @@ use crate::sheet::DirectionPreset;
 use crate::state::*;
 
 impl Document {
+    pub(super) fn delete_selected_frames(&mut self) {
+        let selected_frames = self.view.selection.frames().cloned().collect::<Vec<_>>();
+        for frame in selected_frames {
+            self.sheet.delete_frame(frame);
+        }
+    }
+
     pub(super) fn create_animation(&mut self) -> Result<(), DocumentError> {
         let (animation_name, animation) = self.sheet.create_animation();
         animation.apply_direction_preset(DirectionPreset::FourDirections);

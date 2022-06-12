@@ -1,8 +1,10 @@
 <template>
-	<div @click="(event) => onFrameClicked(event)" @dragstart="onDragStart" @dragend="onDragEnd" draggable="true"
+	<div @click="(event) => onFrameClicked(event)" @contextmenu.prevent="onOpenContextMenu" @dragstart="onDragStart"
+		@dragend="onDragEnd" draggable="true"
 		class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
 		:class="props.frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
 		<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
+		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
 
@@ -10,13 +12,28 @@
 import { convertFileSrc } from "@tauri-apps/api/tauri"
 import { Ref, ref } from "vue"
 import { Frame as FrameDTO } from "@/api/dto"
-import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame } from "@/api/document"
+import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame, deleteSelectedFrames } from "@/api/document"
+import ContextMenu from "@/components/basic/ContextMenu.vue"
 
 const props = defineProps<{
 	frame: FrameDTO
 }>();
 
+const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 const dragCursorElement: Ref<HTMLElement | null> = ref(null);
+
+const contextMenuEntries = [
+	{ name: "Delete", action: deleteSelectedFrames },
+];
+
+function onOpenContextMenu(event: MouseEvent) {
+	if (contextMenu.value) {
+		if (!props.frame.selected) {
+			selectFrame(props.frame.path, event.shiftKey, event.ctrlKey);
+		}
+		contextMenu.value.open(event);
+	}
+}
 
 function onDragStart(event: DragEvent) {
 	if (event.dataTransfer) {

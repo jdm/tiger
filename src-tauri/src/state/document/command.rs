@@ -10,6 +10,7 @@ pub enum Command {
     Redo,
     FocusContentTab(ContentTab),
     ImportFrames(Vec<PathBuf>),
+    DeleteSelectedFrames,
     ClearSelection,
     AlterSelection(SelectionInput, bool, bool),
     Pan(Vector2D<f32>),
@@ -74,6 +75,7 @@ impl Document {
             Command::Redo => self.redo()?,
             Command::FocusContentTab(t) => self.view.content_tab = t,
             Command::ImportFrames(ref p) => self.sheet.add_frames(p),
+            Command::DeleteSelectedFrames => self.delete_selected_frames(),
             Command::ClearSelection => self.view.selection.clear(),
             Command::AlterSelection(ref selection, shift, ctrl) => {
                 self.alter_selection(selection, shift, ctrl)?

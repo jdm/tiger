@@ -32,6 +32,11 @@ export async function importFrames(paths: string[]): Promise<void> {
   appStore.patch(await invoke("import_frames", { paths: paths }));
 }
 
+export async function deleteSelectedFrames(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_selected_frames"));
+}
+
 export async function clearSelection(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("clear_selection"));
