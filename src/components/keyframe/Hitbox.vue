@@ -1,7 +1,7 @@
 <template>
 	<div ref="el">
-		<Selectable @click="(event) => onHitboxClicked(event)" :selected="hitbox.selected" :text="props.name"
-			left-icon="TagIcon" :actions="renaming ? [] :
+		<Selectable @click="(event) => onHitboxClicked(event)" @contextmenu.prevent="onOpenContextMenu"
+			:selected="hitbox.selected" :text="props.name" left-icon="TagIcon" :actions="renaming ? [] :
 			[
 				{ icon: 'PencilAltIcon', callback: onRenameClicked },
 				{ icon: 'XIcon', callback: onDeleteClicked }
@@ -11,13 +11,15 @@
 					@cancel-rename="onRenameInputCancelled" />
 			</template>
 		</Selectable>
+		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { Hitbox as HitboxDTO } from "@/api/dto"
-import { deleteHitbox, renameHitbox, selectHitbox } from "@/api/document"
+import { deleteHitbox, deleteSelectedHitboxes, renameHitbox, selectHitbox } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"
+import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
 
@@ -29,9 +31,23 @@ const props = defineProps<{
 const renaming = ref(false);
 const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);
+const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
+
+const contextMenuEntries = [
+	{ name: "Delete", action: deleteSelectedHitboxes },
+];
+
+function onOpenContextMenu(event: MouseEvent) {
+	if (contextMenu.value) {
+		if (!props.hitbox.selected) {
+			selectHitbox(props.name, event.shiftKey, event.ctrlKey);
+		}
+		contextMenu.value.open(event);
+	}
+}
 
 function onHitboxClicked(event: MouseEvent) {
-	selectHitbox(props.name, event.shiftKey, event.ctrlKey)
+	selectHitbox(props.name, event.shiftKey, event.ctrlKey);
 }
 
 function onRenameClicked() {

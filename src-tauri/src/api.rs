@@ -793,6 +793,17 @@ pub fn delete_hitbox(app_state: tauri::State<'_, AppState>, name: String) -> Res
 }
 
 #[tauri::command]
+pub fn delete_selected_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::DeleteSelectedHitboxes)
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

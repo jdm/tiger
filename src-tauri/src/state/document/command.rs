@@ -51,6 +51,7 @@ pub enum Command {
     CreateHitbox(Option<Vector2D<i32>>),
     RenameHitbox(String, String),
     DeleteHitbox(String),
+    DeleteSelectedHitboxes,
     HideHitboxes,
     ShowHitboxes,
     BeginNudgeHitbox(String),
@@ -123,6 +124,7 @@ impl Document {
                 self.rename_hitbox(old_name, new_name)?
             }
             Command::DeleteHitbox(ref name) => self.delete_hitbox(name)?,
+            Command::DeleteSelectedHitboxes => self.delete_selected_hitboxes()?,
             Command::HideHitboxes => self.view.hide_hitboxes = true,
             Command::ShowHitboxes => self.view.hide_hitboxes = false,
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,

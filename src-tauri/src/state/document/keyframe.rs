@@ -44,4 +44,18 @@ impl Document {
         keyframe.delete_hitbox(&name);
         Ok(())
     }
+
+    pub(super) fn delete_selected_hitboxes(&mut self) -> Result<(), DocumentError> {
+        let selected_hitboxes = self
+            .view
+            .selection
+            .hitboxes()
+            .map(|(_, _, _, h)| h.clone())
+            .collect::<Vec<_>>();
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        for hitbox_name in selected_hitboxes {
+            keyframe.delete_hitbox(hitbox_name);
+        }
+        Ok(())
+    }
 }
