@@ -125,4 +125,23 @@ impl Document {
         }
         Ok(())
     }
+
+    pub(super) fn delete_selected_keyframes(&mut self) -> Result<(), DocumentError> {
+        let mut selected_keyframes = self
+            .view
+            .selection
+            .keyframes()
+            .map(|(_, d, i)| (*d, *i))
+            .collect::<Vec<_>>();
+        selected_keyframes.sort();
+        selected_keyframes.reverse();
+        let (_, animation) = self.get_workbench_animation_mut()?;
+        for (direction, index) in selected_keyframes {
+            animation
+                .sequence_mut(direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?
+                .delete_keyframe(index)?;
+        }
+        Ok(())
+    }
 }

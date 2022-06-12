@@ -239,6 +239,11 @@ export async function endDragAndDropFrame(): Promise<void> {
   appStore.patch(await invoke("end_drag_and_drop_frame"));
 }
 
+export async function deleteSelectedKeyframes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_selected_keyframes"));
+}
+
 export async function beginDragAndDropKeyframe(
   direction: Direction,
   index: number

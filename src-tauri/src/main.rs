@@ -62,6 +62,7 @@ fn main() {
             api::begin_drag_and_drop_frame,
             api::drop_frame_on_timeline,
             api::end_drag_and_drop_frame,
+            api::delete_selected_keyframes,
             api::begin_drag_and_drop_keyframe,
             api::drop_keyframe_on_timeline,
             api::end_drag_and_drop_keyframe,

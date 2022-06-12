@@ -604,6 +604,17 @@ pub fn end_drag_and_drop_frame(app_state: tauri::State<'_, AppState>) -> Result<
 }
 
 #[tauri::command]
+pub fn delete_selected_keyframes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::DeleteSelectedKeyframes)
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_drag_and_drop_keyframe(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,
