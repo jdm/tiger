@@ -98,18 +98,6 @@ impl Document {
         &self.sheet
     }
 
-    pub fn view(&self) -> &View {
-        &self.view
-    }
-
-    pub fn persistent(&self) -> &Persistent {
-        &self.persistent
-    }
-
-    pub fn transient(&self) -> &Transient {
-        &self.transient
-    }
-
     pub fn path(&self) -> &Path {
         &self.path
     }
@@ -127,7 +115,7 @@ impl Document {
     }
 
     pub fn should_close(&self) -> bool {
-        self.persistent.close_requested() && self.is_saved()
+        self.close_requested() && self.is_saved()
     }
 
     fn sanitize_view(&mut self) {
@@ -198,7 +186,6 @@ impl Document {
 
     pub fn get_workbench_animation(&self) -> Result<(&String, &Animation), DocumentError> {
         let animation_name = self
-            .view
             .current_animation()
             .as_ref()
             .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
@@ -215,7 +202,6 @@ impl Document {
         &mut self,
     ) -> Result<(String, &mut Animation), DocumentError> {
         let animation_name = self
-            .view
             .current_animation()
             .clone()
             .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
@@ -228,7 +214,6 @@ impl Document {
     pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
         let (_, animation) = self.get_workbench_animation()?;
         let direction = self
-            .view
             .current_sequence()
             .ok_or(DocumentError::NotEditingAnySequence)?;
         Ok((
@@ -243,7 +228,6 @@ impl Document {
         &mut self,
     ) -> Result<(Direction, &mut Sequence), DocumentError> {
         let direction = self
-            .view
             .current_sequence()
             .ok_or(DocumentError::NotEditingAnySequence)?;
         let (_, animation) = self.get_workbench_animation_mut()?;
@@ -285,11 +269,10 @@ impl Document {
                     .keyframes_iter()
                     .enumerate()
                     .filter_map(|(index, keyframe)| {
-                        if self.view.selection().is_keyframe_selected(
-                            animation_name,
-                            *direction,
-                            index,
-                        ) {
+                        if self
+                            .selection()
+                            .is_keyframe_selected(animation_name, *direction, index)
+                        {
                             Some((*direction, index, keyframe))
                         } else {
                             None
@@ -302,7 +285,7 @@ impl Document {
     pub fn get_selected_keyframes_mut(
         &mut self,
     ) -> Result<Vec<(Direction, usize, &mut Keyframe)>, DocumentError> {
-        let selection = self.view().selection().clone();
+        let selection = self.view.selection.clone();
         let (animation_name, animation) = self.get_workbench_animation_mut()?;
         Ok(animation
             .sequences_iter_mut()

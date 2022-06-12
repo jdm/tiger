@@ -166,17 +166,14 @@ impl From<&state::Document> for Document {
     fn from(document: &state::Document) -> Self {
         let mut sheet: Sheet = document.sheet().into();
         for frame in sheet.frames.iter_mut() {
-            frame.selected = document.view().selection().is_frame_selected(&frame.path);
+            frame.selected = document.selection().is_frame_selected(&frame.path);
         }
         for (animation_name, animation) in sheet.animations.iter_mut() {
-            animation.selected = document
-                .view()
-                .selection()
-                .is_animation_selected(animation_name);
+            animation.selected = document.selection().is_animation_selected(animation_name);
             for (direction, sequence) in animation.sequences.iter_mut() {
                 let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
-                    keyframe.selected = document.view().selection().is_keyframe_selected(
+                    keyframe.selected = document.selection().is_keyframe_selected(
                         animation_name,
                         (*direction).into(),
                         index,
@@ -184,7 +181,7 @@ impl From<&state::Document> for Document {
                     keyframe.start_time_millis = time_millis;
                     time_millis += keyframe.duration_millis;
                     for (hitbox_name, hitbox) in keyframe.hitboxes.iter_mut() {
-                        hitbox.selected = document.view().selection().is_hitbox_selected(
+                        hitbox.selected = document.selection().is_hitbox_selected(
                             animation_name,
                             (*direction).into(),
                             index,
@@ -198,22 +195,22 @@ impl From<&state::Document> for Document {
             path: document.path().to_owned(),
             name: document.path().to_file_name(),
             has_unsaved_changes: !document.is_saved(),
-            was_close_requested: document.persistent().close_requested(),
+            was_close_requested: document.close_requested(),
             sheet,
-            content_tab: document.view().content_tab().into(),
-            workbench_offset: document.view().workbench_offset().to_i32().to_tuple(),
-            workbench_zoom: document.view().workbench_zoom(),
-            current_animation_name: document.view().current_animation().to_owned(),
-            current_sequence_direction: document.view().current_sequence().map(|d| d.into()),
+            content_tab: document.content_tab().into(),
+            workbench_offset: document.workbench_offset().to_i32().to_tuple(),
+            workbench_zoom: document.workbench_zoom(),
+            current_animation_name: document.current_animation().to_owned(),
+            current_sequence_direction: document.current_sequence().map(|d| d.into()),
             current_keyframe_index: document
                 .get_workbench_sequence()
                 .ok()
-                .and_then(|(_, s)| s.keyframe_index_at(document.view().timeline_clock())),
-            timeline_clock_millis: document.view().timeline_clock().as_millis() as u64,
-            timeline_is_playing: document.persistent().is_timeline_playing(),
-            timeline_zoom: document.view().timeline_zoom(),
-            darken_sprites: document.view().should_darken_sprites(),
-            hide_hitboxes: document.view().is_hiding_hitboxes(),
+                .and_then(|(_, s)| s.keyframe_index_at(document.timeline_clock())),
+            timeline_clock_millis: document.timeline_clock().as_millis() as u64,
+            timeline_is_playing: document.is_timeline_playing(),
+            timeline_zoom: document.timeline_zoom(),
+            darken_sprites: document.should_darken_sprites(),
+            hide_hitboxes: document.is_hiding_hitboxes(),
             is_dragging_keyframe_duration: document.is_dragging_keyframe_duration(),
             frames_being_dragged: document.frames_being_dragged(),
             keyframes_being_dragged: document

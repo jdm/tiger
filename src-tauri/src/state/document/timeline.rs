@@ -9,7 +9,7 @@ impl Document {
     }
 
     fn advance_timeline(&mut self, delta: Duration) {
-        if self.persistent.is_timeline_playing() {
+        if self.is_timeline_playing() {
             self.view.timeline_clock += delta;
             if let Ok((animation_name, animation)) = self.get_workbench_animation() {
                 let animation_name = animation_name.clone();
@@ -17,7 +17,7 @@ impl Document {
                     let num_keyframes = sequence.num_keyframes();
                     match sequence.duration_millis() {
                         Some(d) if d > 0 => {
-                            let clock_ms = self.view.timeline_clock().as_millis() as u64;
+                            let clock_ms = self.timeline_clock().as_millis() as u64;
                             // Loop animation
                             if animation.looping() {
                                 self.view.timeline_clock = Duration::from_millis(clock_ms % d);

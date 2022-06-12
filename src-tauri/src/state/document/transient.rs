@@ -321,7 +321,7 @@ impl Document {
         mut displacement: Vector2D<i32>,
         both_axis: bool,
     ) -> Result<(), DocumentError> {
-        let zoom = self.view.workbench_zoom();
+        let zoom = self.workbench_zoom();
         let nudge = self
             .transient
             .keyframe_nudge
@@ -415,7 +415,7 @@ impl Document {
         mut displacement: Vector2D<i32>,
         both_axis: bool,
     ) -> Result<(), DocumentError> {
-        let zoom = self.view.workbench_zoom();
+        let zoom = self.workbench_zoom();
         let nudge = self
             .transient
             .hitbox_nudge
@@ -523,7 +523,7 @@ impl Document {
             .map(|(_, _, _, hitbox_name)| hitbox_name.clone())
             .collect::<HashSet<_>>();
 
-        let zoom = self.view.workbench_zoom();
+        let zoom = self.workbench_zoom();
         let (_, keyframe) = self.get_workbench_keyframe_mut()?;
 
         for (hitbox_name, hitbox) in keyframe

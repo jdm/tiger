@@ -1,4 +1,5 @@
 use crate::sheet::*;
+use crate::state::*;
 
 #[derive(Clone, Debug, Default)]
 pub struct Persistent {
@@ -8,12 +9,12 @@ pub struct Persistent {
     pub(super) export_settings_edit: Option<ExportSettings>,
 }
 
-impl Persistent {
+impl Document {
     pub fn close_requested(&self) -> bool {
-        self.close_requested
+        self.persistent.close_requested
     }
 
     pub fn is_timeline_playing(&self) -> bool {
-        self.timeline_is_playing
+        self.persistent.timeline_is_playing
     }
 }

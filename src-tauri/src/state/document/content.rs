@@ -33,7 +33,7 @@ impl Document {
         self.view
             .selection
             .select_animation(new_name.as_ref().to_owned());
-        if Some(old_name.as_ref()) == self.view.current_animation().as_deref() {
+        if Some(old_name.as_ref()) == self.current_animation().as_deref() {
             self.view.current_animation = Some(new_name.as_ref().to_owned());
         }
         Ok(())
