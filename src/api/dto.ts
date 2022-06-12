@@ -30,6 +30,7 @@ export type Document = {
   keyframesBeingDragged: [Direction, number][];
   hitboxesBeingNudged: string[];
   hitboxesBeingResized: string[];
+  exportSettingBeingEdited: ExportSettings | null;
 };
 
 export type Sheet = {
@@ -109,3 +110,10 @@ export enum ResizeAxis {
   SE = "SE",
   SW = "SW",
 }
+
+export type ExportSettings = {
+  templateFile: string;
+  textureFile: string;
+  metadataFile: string;
+  metadataPathsRoot: string;
+};

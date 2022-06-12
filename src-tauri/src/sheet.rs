@@ -633,6 +633,22 @@ impl LiquidExportSettings {
         }
     }
 
+    pub fn template_file(&self) -> &Path {
+        self.template_file.as_path()
+    }
+
+    pub fn texture_file(&self) -> &Path {
+        self.texture_file.as_path()
+    }
+
+    pub fn metadata_file(&self) -> &Path {
+        self.metadata_file.as_path()
+    }
+
+    pub fn metadata_paths_root(&self) -> &Path {
+        self.metadata_paths_root.as_path()
+    }
+
     pub fn set_template_file<T: AsRef<Path>>(&mut self, path: T) {
         self.template_file = path.as_ref().to_owned();
     }

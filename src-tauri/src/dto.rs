@@ -41,6 +41,7 @@ pub struct Document {
     keyframes_being_dragged: HashSet<(Direction, usize)>,
     hitboxes_being_nudged: HashSet<String>,
     hitboxes_being_resized: HashSet<String>,
+    export_settings_being_edited: Option<ExportSettings>,
 }
 
 #[derive(Clone, Serialize)]
@@ -137,6 +138,15 @@ pub enum ResizeAxis {
     SW,
 }
 
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportSettings {
+    template_file: PathBuf,
+    texture_file: PathBuf,
+    metadata_file: PathBuf,
+    metadata_paths_root: PathBuf,
+}
+
 trait ToFileName {
     fn to_file_name(&self) -> String;
 }
@@ -228,6 +238,7 @@ impl From<&state::Document> for Document {
                 .into_iter()
                 .cloned()
                 .collect(),
+            export_settings_being_edited: document.export_settings_edit().map(|s| s.into()),
         }
     }
 }
@@ -399,6 +410,19 @@ impl From<ResizeAxis> for state::ResizeAxis {
             ResizeAxis::NE => state::ResizeAxis::NE,
             ResizeAxis::SE => state::ResizeAxis::SE,
             ResizeAxis::SW => state::ResizeAxis::SW,
+        }
+    }
+}
+
+impl From<&sheet::ExportSettings> for ExportSettings {
+    fn from(settings: &sheet::ExportSettings) -> Self {
+        match settings {
+            sheet::ExportSettings::Liquid(liquid_settings) => Self {
+                template_file: liquid_settings.template_file().to_owned(),
+                texture_file: liquid_settings.texture_file().to_owned(),
+                metadata_file: liquid_settings.metadata_file().to_owned(),
+                metadata_paths_root: liquid_settings.metadata_paths_root().to_owned(),
+            },
         }
     }
 }

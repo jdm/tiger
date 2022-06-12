@@ -4,6 +4,10 @@ use crate::sheet::*;
 use crate::state::*;
 
 impl Document {
+    pub fn export_settings_edit(&self) -> Option<&ExportSettings> {
+        self.persistent.export_settings_edit.as_ref()
+    }
+
     pub(super) fn export_settings_edit_mut(
         &mut self,
     ) -> Result<&mut ExportSettings, DocumentError> {
