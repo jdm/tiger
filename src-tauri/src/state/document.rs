@@ -170,7 +170,26 @@ impl Document {
                         .unwrap_or_default()
             });
 
-        // TODO hitbox selection cleanup
+        let current_keyframe_index = self
+            .get_workbench_sequence()
+            .ok()
+            .and_then(|(_, s)| s.keyframe_at(self.view.timeline_clock))
+            .map(|(i, _)| i);
+        self.view
+            .selection
+            .hitboxes
+            .retain(|(animation_name, direction, index, hitbox_name)| {
+                Some(animation_name) == self.view.current_animation.as_ref()
+                    && Some(direction) == self.view.current_sequence.as_ref()
+                    && Some(*index) == current_keyframe_index
+                    && self
+                        .sheet
+                        .animation(animation_name)
+                        .and_then(|a| a.sequence(*direction))
+                        .and_then(|s| s.keyframe(*index))
+                        .map(|k| k.has_hitbox(hitbox_name))
+                        .unwrap_or_default()
+            });
     }
 
     pub fn get_workbench_animation(&self) -> Result<(&String, &Animation), DocumentError> {
