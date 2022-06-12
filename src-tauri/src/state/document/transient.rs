@@ -85,12 +85,12 @@ impl Document {
         }
         if !timeline_is_playing {
             self.view.timeline_clock = Duration::from_millis(sequence.keyframe_times()[index]);
-            self.view.current_sequence = Some(direction);
         }
         self.view.selection.select_keyframes(
             (index..(index + selected_frames.len()))
                 .map(|i| (animation_name.clone(), direction, i)),
         );
+        self.view.current_sequence = Some(direction);
         Ok(())
     }
 
