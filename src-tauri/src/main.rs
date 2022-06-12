@@ -86,6 +86,13 @@ fn main() {
             api::begin_resize_hitbox,
             api::update_resize_hitbox,
             api::end_resize_hitbox,
+            api::begin_export_as,
+            api::set_export_template_file,
+            api::set_export_texture_file,
+            api::set_export_metadata_file,
+            api::set_export_metadata_paths_root,
+            api::cancel_export_as,
+            api::end_export_as,
         ])
         .on_window_event(move |event| match event.event() {
             WindowEvent::CloseRequested { api, .. } => {

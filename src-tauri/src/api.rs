@@ -900,3 +900,86 @@ pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch,
         }
     }))
 }
+
+#[tauri::command]
+pub fn begin_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::BeginExportAs).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_export_template_file(
+    app_state: tauri::State<'_, AppState>,
+    file: PathBuf,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetExportTemplateFile(file))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_export_texture_file(
+    app_state: tauri::State<'_, AppState>,
+    file: PathBuf,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetExportTextureFile(file))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_export_metadata_file(
+    app_state: tauri::State<'_, AppState>,
+    file: PathBuf,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetExportMetadataFile(file))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_export_metadata_paths_root(
+    app_state: tauri::State<'_, AppState>,
+    directory: PathBuf,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetExportMetadataPathsRoot(directory))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::CancelExportAs).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::EndExportAs).ok();
+        }
+    }))
+}
