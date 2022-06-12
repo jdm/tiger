@@ -583,21 +583,34 @@ impl Hitbox {
 }
 
 impl ExportSettings {
-    pub fn new() -> ExportSettings {
-        ExportSettings {
-            format: ExportFormat::Template(PathBuf::new()),
-            texture_destination: PathBuf::new(),
-            metadata_destination: PathBuf::new(),
-            metadata_paths_root: PathBuf::new(),
-        }
-    }
-
     pub fn with_relative_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
     ) -> Result<ExportSettings, SheetError> {
-        Ok(ExportSettings {
-            format: self.format.with_relative_paths(&relative_to)?,
+        Ok(match self {
+            ExportSettings::Liquid(settings) => {
+                ExportSettings::Liquid(settings.with_relative_paths(relative_to)?)
+            }
+        })
+    }
+
+    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportSettings {
+        match self {
+            ExportSettings::Liquid(settings) => {
+                ExportSettings::Liquid(settings.with_absolute_paths(relative_to))
+            }
+        }
+    }
+}
+
+impl LiquidExportSettings {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        &self,
+        relative_to: T,
+    ) -> Result<LiquidExportSettings, SheetError> {
+        Ok(LiquidExportSettings {
+            template_file: diff_paths(&self.template_file, relative_to.as_ref())
+                .ok_or(SheetError::AbsoluteToRelativePath)?,
             texture_destination: diff_paths(&self.texture_destination, relative_to.as_ref())
                 .ok_or(SheetError::AbsoluteToRelativePath)?,
             metadata_destination: diff_paths(&self.metadata_destination, relative_to.as_ref())
@@ -607,31 +620,12 @@ impl ExportSettings {
         })
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportSettings {
-        ExportSettings {
-            format: self.format.with_absolute_paths(&relative_to),
+    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> LiquidExportSettings {
+        LiquidExportSettings {
+            template_file: relative_to.as_ref().join(&self.template_file),
             texture_destination: relative_to.as_ref().join(&self.texture_destination),
             metadata_destination: relative_to.as_ref().join(&self.metadata_destination),
             metadata_paths_root: relative_to.as_ref().join(&self.metadata_paths_root),
-        }
-    }
-}
-
-impl ExportFormat {
-    pub fn with_relative_paths<T: AsRef<Path>>(
-        &self,
-        relative_to: T,
-    ) -> Result<ExportFormat, SheetError> {
-        match self {
-            ExportFormat::Template(p) => Ok(ExportFormat::Template(
-                diff_paths(&p, relative_to.as_ref()).ok_or(SheetError::AbsoluteToRelativePath)?,
-            )),
-        }
-    }
-
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportFormat {
-        match self {
-            ExportFormat::Template(p) => ExportFormat::Template(relative_to.as_ref().join(&p)),
         }
     }
 }
@@ -841,22 +835,19 @@ fn can_convert_hitbox_to_rectangle() {
 }
 
 #[test]
-fn export_settings_can_convert_relative_and_absolute_paths() {
-    let settings = ExportSettings {
+fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
+    let settings = LiquidExportSettings {
+        template_file: Path::new("a/b/format.liquid").to_owned(),
         texture_destination: Path::new("a/b/c/sheet.png").to_owned(),
         metadata_destination: Path::new("a/b/c/sheet.lua").to_owned(),
         metadata_paths_root: Path::new("a/b").to_owned(),
-        format: ExportFormat::Template(Path::new("a/b/format.liquid").to_owned()),
     };
 
     let relative = settings.with_relative_paths("a/b").unwrap();
     assert_eq!(&relative.texture_destination, Path::new("c/sheet.png"));
     assert_eq!(&relative.metadata_destination, Path::new("c/sheet.lua"));
     assert_eq!(&relative.metadata_paths_root, Path::new(""));
-    assert_eq!(
-        relative.format,
-        ExportFormat::Template(Path::new("format.liquid").to_owned())
-    );
+    assert_eq!(relative.template_file, Path::new("format.liquid"));
 
     let absolute = relative.with_absolute_paths("a/b");
     assert_eq!(settings, absolute);

@@ -89,16 +89,16 @@ pub enum Shape {
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub struct ExportSettings {
-    pub(in crate::sheet) format: ExportFormat,
-    pub(in crate::sheet) texture_destination: PathBuf,
-    pub(in crate::sheet) metadata_destination: PathBuf,
-    pub(in crate::sheet) metadata_paths_root: PathBuf,
+pub enum ExportSettings {
+    Liquid(LiquidExportSettings),
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
-pub enum ExportFormat {
-    Template(PathBuf),
+pub struct LiquidExportSettings {
+    pub(in crate::sheet) template_file: PathBuf,
+    pub(in crate::sheet) texture_destination: PathBuf,
+    pub(in crate::sheet) metadata_destination: PathBuf,
+    pub(in crate::sheet) metadata_paths_root: PathBuf,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -196,21 +196,15 @@ impl From<previous_version::Rectangle> for Rectangle {
     }
 }
 
-impl From<previous_version::ExportFormat> for ExportFormat {
-    fn from(old: previous_version::ExportFormat) -> ExportFormat {
-        match old {
-            previous_version::ExportFormat::Template(p) => ExportFormat::Template(p),
-        }
-    }
-}
-
 impl From<previous_version::ExportSettings> for ExportSettings {
     fn from(old: previous_version::ExportSettings) -> ExportSettings {
-        ExportSettings {
-            format: old.format.into(),
+        ExportSettings::Liquid(LiquidExportSettings {
+            template_file: match old.format {
+                previous_version::ExportFormat::Template(p) => p,
+            },
             texture_destination: old.texture_destination,
             metadata_destination: old.metadata_destination.clone(),
             metadata_paths_root: old.metadata_destination,
-        }
+        })
     }
 }
