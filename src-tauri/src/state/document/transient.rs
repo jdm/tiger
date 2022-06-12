@@ -193,6 +193,7 @@ impl Document {
         let new_selection = (insert_index..(insert_index + selection.len()))
             .map(|i| (animation_name.clone(), direction, i));
         self.view.selection.select_keyframes(new_selection);
+        self.view.current_sequence = Some(direction);
 
         Ok(())
     }
