@@ -93,11 +93,11 @@ pub enum ExportSettings {
     Liquid(LiquidExportSettings),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct LiquidExportSettings {
     pub(in crate::sheet) template_file: PathBuf,
-    pub(in crate::sheet) texture_destination: PathBuf,
-    pub(in crate::sheet) metadata_destination: PathBuf,
+    pub(in crate::sheet) texture_file: PathBuf,
+    pub(in crate::sheet) metadata_file: PathBuf,
     pub(in crate::sheet) metadata_paths_root: PathBuf,
 }
 
@@ -202,8 +202,8 @@ impl From<previous_version::ExportSettings> for ExportSettings {
             template_file: match old.format {
                 previous_version::ExportFormat::Template(p) => p,
             },
-            texture_destination: old.texture_destination,
-            metadata_destination: old.metadata_destination.clone(),
+            texture_file: old.texture_destination,
+            metadata_file: old.metadata_destination.clone(),
             metadata_paths_root: old.metadata_destination,
         })
     }

@@ -583,6 +583,10 @@ impl Hitbox {
 }
 
 impl ExportSettings {
+    pub fn new() -> Self {
+        Self::Liquid(LiquidExportSettings::default())
+    }
+
     pub fn with_relative_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
@@ -611,9 +615,9 @@ impl LiquidExportSettings {
         Ok(LiquidExportSettings {
             template_file: diff_paths(&self.template_file, relative_to.as_ref())
                 .ok_or(SheetError::AbsoluteToRelativePath)?,
-            texture_destination: diff_paths(&self.texture_destination, relative_to.as_ref())
+            texture_file: diff_paths(&self.texture_file, relative_to.as_ref())
                 .ok_or(SheetError::AbsoluteToRelativePath)?,
-            metadata_destination: diff_paths(&self.metadata_destination, relative_to.as_ref())
+            metadata_file: diff_paths(&self.metadata_file, relative_to.as_ref())
                 .ok_or(SheetError::AbsoluteToRelativePath)?,
             metadata_paths_root: diff_paths(&self.metadata_paths_root, relative_to.as_ref())
                 .ok_or(SheetError::AbsoluteToRelativePath)?,
@@ -623,10 +627,26 @@ impl LiquidExportSettings {
     pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> LiquidExportSettings {
         LiquidExportSettings {
             template_file: relative_to.as_ref().join(&self.template_file),
-            texture_destination: relative_to.as_ref().join(&self.texture_destination),
-            metadata_destination: relative_to.as_ref().join(&self.metadata_destination),
+            texture_file: relative_to.as_ref().join(&self.texture_file),
+            metadata_file: relative_to.as_ref().join(&self.metadata_file),
             metadata_paths_root: relative_to.as_ref().join(&self.metadata_paths_root),
         }
+    }
+
+    pub fn set_template_file<T: AsRef<Path>>(&mut self, path: T) {
+        self.template_file = path.as_ref().to_owned();
+    }
+
+    pub fn set_texture_file<T: AsRef<Path>>(&mut self, path: T) {
+        self.texture_file = path.as_ref().to_owned();
+    }
+
+    pub fn set_metadata_file<T: AsRef<Path>>(&mut self, path: T) {
+        self.metadata_file = path.as_ref().to_owned();
+    }
+
+    pub fn set_metadata_paths_root<T: AsRef<Path>>(&mut self, path: T) {
+        self.metadata_paths_root = path.as_ref().to_owned();
     }
 }
 
@@ -838,16 +858,16 @@ fn can_convert_hitbox_to_rectangle() {
 fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
     let settings = LiquidExportSettings {
         template_file: Path::new("a/b/format.liquid").to_owned(),
-        texture_destination: Path::new("a/b/c/sheet.png").to_owned(),
-        metadata_destination: Path::new("a/b/c/sheet.lua").to_owned(),
+        texture_file: Path::new("a/b/c/sheet.png").to_owned(),
+        metadata_file: Path::new("a/b/c/sheet.lua").to_owned(),
         metadata_paths_root: Path::new("a/b").to_owned(),
     };
 
     let relative = settings.with_relative_paths("a/b").unwrap();
-    assert_eq!(&relative.texture_destination, Path::new("c/sheet.png"));
-    assert_eq!(&relative.metadata_destination, Path::new("c/sheet.lua"));
-    assert_eq!(&relative.metadata_paths_root, Path::new(""));
     assert_eq!(relative.template_file, Path::new("format.liquid"));
+    assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
+    assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));
+    assert_eq!(&relative.metadata_paths_root, Path::new(""));
 
     let absolute = relative.with_absolute_paths("a/b");
     assert_eq!(settings, absolute);

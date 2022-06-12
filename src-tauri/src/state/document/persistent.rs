@@ -1,8 +1,11 @@
+use crate::sheet::*;
+
 #[derive(Clone, Debug, Default)]
 pub struct Persistent {
+    pub(super) disk_version: i32,
     pub(super) close_requested: bool,
     pub(super) timeline_is_playing: bool,
-    pub(super) disk_version: i32,
+    pub(super) export_settings_edit: Option<ExportSettings>,
 }
 
 impl Persistent {

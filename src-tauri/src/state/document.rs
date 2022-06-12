@@ -6,6 +6,7 @@ use crate::sheet::{Animation, Direction, Keyframe, Sequence, Sheet, SheetError};
 
 mod command;
 mod content;
+mod export;
 mod keyframe;
 mod persistent;
 mod selection;
@@ -15,6 +16,7 @@ mod view;
 
 pub use command::*;
 pub use content::*;
+pub use export::*;
 pub use keyframe::*;
 use persistent::*;
 pub use selection::*;
@@ -64,6 +66,8 @@ pub enum DocumentError {
     NotNudgingHitbox,
     #[error("Not currently resizing a hitbox")]
     NotResizingHitbox,
+    #[error("Not currently adjusting export settings")]
+    NotEditingExportSettings,
 }
 
 impl Document {
