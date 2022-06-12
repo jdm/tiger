@@ -16,7 +16,8 @@
         </div>
       </div>
     </div>
-    <ModalLayer class="absolute inset-0 z-[9999]" />
+    <ModalLayer class="absolute inset-0 z-[9998]" />
+    <ContextMenuLayer class="absolute inset-0 z-[9999]" />
   </div>
 </template>
 
@@ -27,6 +28,7 @@ import { AppState } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import AppBar from "@/components/AppBar.vue"
+import ContextMenuLayer from "@/components/basic/ContextMenuLayer.vue"
 import ContentPane from "@/components/content/ContentPane.vue"
 import DetailsPane from "@/components/details/DetailsPane.vue"
 import KeyframePane from "@/components/keyframe/KeyframePane.vue"

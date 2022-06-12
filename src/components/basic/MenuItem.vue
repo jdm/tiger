@@ -1,5 +1,5 @@
 <template>
-	<div @mouseover="onMouseOver" @mouseout="onMouseOut" @click="onClick"
+	<div @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" @click="onClick"
 		class="flex flex-row justify-between px-8 space-x-20 py-1.5 whitespace-nowrap hover:bg-blue-600">
 		<div :class="hovered ? 'text-blue-100' : 'text-zinc-400'">{{ entry.name }}</div>
 		<div :class="hovered ? 'text-blue-400' : 'text-zinc-600'">{{ entry.shortcut }}</div>
@@ -18,11 +18,11 @@ const emit = defineEmits(["executed"]);
 
 const hovered = ref(false);
 
-function onMouseOver() {
+function onMouseEnter() {
 	hovered.value = true;
 }
 
-function onMouseOut() {
+function onMouseLeave() {
 	hovered.value = false;
 }
 
