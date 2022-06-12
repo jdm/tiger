@@ -24,6 +24,7 @@ pub enum Command {
     EditAnimation(String),
     RenameAnimation(String, String),
     DeleteAnimation(String),
+    DeleteSelectedAnimations,
     Tick(Duration),
     Play,
     Pause,
@@ -93,6 +94,7 @@ impl Document {
                 self.rename_animation(old_name, new_name)?
             }
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
+            Command::DeleteSelectedAnimations => self.delete_selected_animations(),
             Command::Tick(dt) => self.tick(dt),
             Command::Play => self.play()?,
             Command::Pause => self.pause()?,

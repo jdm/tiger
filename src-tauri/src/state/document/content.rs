@@ -3,7 +3,7 @@ use crate::state::*;
 
 impl Document {
     pub(super) fn delete_selected_frames(&mut self) {
-        let selected_frames = self.view.selection.frames().cloned().collect::<Vec<_>>();
+        let selected_frames = self.view.selection.frames().collect::<Vec<_>>();
         for frame in selected_frames {
             self.sheet.delete_frame(frame);
         }
@@ -41,5 +41,12 @@ impl Document {
 
     pub(super) fn delete_animation<T: AsRef<str>>(&mut self, name: T) {
         self.sheet.delete_animation(&name);
+    }
+
+    pub(super) fn delete_selected_animations(&mut self) {
+        let selected_animations = self.view.selection.animations().collect::<Vec<_>>();
+        for animation in selected_animations {
+            self.sheet.delete_animation(animation);
+        }
     }
 }

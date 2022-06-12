@@ -167,6 +167,11 @@ export async function deleteAnimation(name: string): Promise<void> {
   appStore.patch(await invoke("delete_animation", { name: name }));
 }
 
+export async function deleteSelectedAnimations(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_selected_animations"));
+}
+
 export async function tick(deltaTimeMillis: number): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("tick", { deltaTimeMillis: deltaTimeMillis }));

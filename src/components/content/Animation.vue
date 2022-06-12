@@ -1,7 +1,8 @@
 <template>
 	<div ref="el">
 		<Selectable @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked"
-			:selected="animation.selected" :text="animation.name" left-icon="DocumentIcon" :actions="renaming ? [] :
+			@contextmenu.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
+			left-icon="DocumentIcon" :actions="renaming ? [] :
 			[
 				{ icon: 'PencilAltIcon', callback: onRenameClicked },
 				{ icon: 'XIcon', callback: onDeleteClicked }
@@ -11,13 +12,15 @@
 					@cancel-rename="onRenameInputCancelled" />
 			</template>
 		</Selectable>
+		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { Animation as AnimationDTO } from "@/api/dto"
-import { deleteAnimation, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
+import { deleteAnimation, deleteSelectedAnimations, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"
+import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
 
@@ -28,9 +31,23 @@ const props = defineProps<{
 const renaming = ref(false);
 const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);
+const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
+
+const contextMenuEntries = [
+	{ name: "Delete", action: deleteSelectedAnimations },
+];
+
+function onOpenContextMenu(event: MouseEvent) {
+	if (contextMenu.value) {
+		if (!props.animation.selected) {
+			selectAnimation(props.animation.name, event.shiftKey, event.ctrlKey);
+		}
+		contextMenu.value.open(event);
+	}
+}
 
 function onAnimationClicked(event: MouseEvent) {
-	selectAnimation(props.animation.name, event.shiftKey, event.ctrlKey)
+	selectAnimation(props.animation.name, event.shiftKey, event.ctrlKey);
 }
 
 function onAnimationDoubleClicked() {

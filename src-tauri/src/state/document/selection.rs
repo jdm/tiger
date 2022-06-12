@@ -217,6 +217,10 @@ impl MultiSelection {
         self.frames.iter()
     }
 
+    pub fn animations(&self) -> impl Iterator<Item = &String> {
+        self.animations.iter()
+    }
+
     pub fn keyframes(&self) -> impl Iterator<Item = &(String, Direction, usize)> {
         self.keyframes.iter()
     }

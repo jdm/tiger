@@ -50,6 +50,7 @@ fn main() {
             api::edit_animation,
             api::rename_animation,
             api::delete_animation,
+            api::delete_selected_animations,
             api::tick,
             api::play,
             api::pause,
