@@ -30,7 +30,7 @@ export type Document = {
   keyframesBeingDragged: [Direction, number][];
   hitboxesBeingNudged: string[];
   hitboxesBeingResized: string[];
-  exportSettingBeingEdited: ExportSettings | null;
+  exportSettingsBeingEdited: ExportSettings | null;
 };
 
 export type Sheet = {

@@ -19,7 +19,7 @@
 
 <script setup lang="ts">
 import { closeAllDocuments, closeCurrentDocument } from "@/api/app"
-import { centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from "@/api/document"
+import { beginExportAs, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from "@/api/document"
 import { newDocument, openDocuments } from "@/api/local"
 import MenuBar from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
@@ -44,7 +44,7 @@ const menuEntries = [
 			{ name: "Save As…", shortcut: "Ctrl+Shift+S" },
 			{ name: "Save All", shortcut: "Ctrl+Alt+S" },
 			{ name: "Export", shortcut: "Ctrl+E" },
-			{ name: "Export As…", shortcut: "Ctrl+Shift+E" },
+			{ name: "Export As…", shortcut: "Ctrl+Shift+E", action: beginExportAs },
 			{},
 			{ name: "Close", shortcut: "Ctrl+W", action: closeCurrentDocument },
 			{ name: "Close All", shortcut: "Ctrl+Shift+W", action: closeAllDocuments },

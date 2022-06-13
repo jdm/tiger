@@ -433,3 +433,13 @@ export async function endResizeHitbox(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("end_resize_hitbox"));
 }
+
+export async function beginExportAs(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("begin_export_as"));
+}
+
+export async function cancelExportAs(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("cancel_export_as"));
+}
