@@ -92,6 +92,23 @@
 ## Tiger 0.4
 
 - [ ] UI rewrite (prettier)
+  - [ ] Export dialog
+  - [ ] Save error dialog
+  - [ ] Export error dialog
+  - [ ] Keyboard controls
+  - [ ] Auto reload images on frame edit
+  - [ ] Floating toolbar in workbench
+  - [ ] Better looking playback controls
+  - [ ] Jump to next/previous frame
+  - [ ] Workbench interactive elements sort priority
+- [x] In-place rename UX
+- [x] Right click menu to delete item
+- [ ] Filter frames/animations in content panel by text search
+- [ ] Grid/list display modes in content tab
+- [ ] Make details panel not completely placeholder
+- [ ] Make export dialog doc link not placeholder
+- [x] Add option to hide hitboxes while looking at animations in workbench
+- [x] Add readability mode
 - [ ] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
   - [x] Can preview and edit multiple sequences
@@ -114,7 +131,6 @@
 
 ## Tiger 0.6
 
-- [ ] Add option to hide hitboxes while looking at animations in workbench
 - [ ] Add option or keyboard shortcut (held) to hide origin crosshair
 - [ ] Add buttons to align frame edges or center to origin
 - [x] Frame and hitboxes can be moved using arrow keys
@@ -124,11 +140,9 @@
 
 ## Tiger 0.7
 
-- [ ] Filter frames/animations in content panel by text search
-- [ ] In-place rename UX
-- [ ] Right click menu to rename/delete item
-- [ ] Edit keyframe duration and offset from selection panel
-- [ ] Edit hitbox offset and size from selection panel
+- [ ] Right click menu to rename item
+- [ ] Edit keyframe duration and offset from details panel
+- [ ] Edit hitbox offset and size from details panel
 - [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 
 ## Tiger 0.8
@@ -139,7 +153,6 @@
 
 ## Tiger 0.9
 
-- [ ] Review TODO.dpi
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
@@ -148,6 +161,7 @@
 ## Tiger 1.0
 
 - [ ] Review all TODO
+- [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Provide export templates for some common formats (TBD)
 - [x] Compile on Rust Stable
