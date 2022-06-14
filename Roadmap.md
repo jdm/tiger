@@ -121,6 +121,7 @@
 
 ## Tiger 0.5
 
+- [ ] Angle in liquid template sequence data
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files
@@ -137,6 +138,7 @@
 - [ ] Draw hitbox names in workbench
 - [ ] Playback speed controls
 - [ ] Time snapping of animation frames
+- [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes arent correctly centered
 
 ## Tiger 0.7
 
@@ -157,6 +159,7 @@
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
+- [ ] Fix jank spacing in exported metadata files
 - [ ] Unit test UI
 
 ## Tiger 1.0
