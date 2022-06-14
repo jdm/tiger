@@ -92,7 +92,7 @@
 ## Tiger 0.4
 
 - [ ] UI rewrite (prettier)
-  - [ ] Export dialog
+  - [x] Export dialog
   - [ ] Save error dialog
   - [ ] Export error dialog
   - [ ] Keyboard controls
@@ -108,6 +108,7 @@
 - [ ] Make details panel not completely placeholder
 - [x] Add option to hide hitboxes while looking at animations in workbench
 - [x] Add readability mode
+- [ ] Nicer looking paths in export settings (no concat)
 - [ ] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
   - [x] Can preview and edit multiple sequences

@@ -1,9 +1,12 @@
 use euclid::vec2;
 use json_patch::Patch;
+use std::borrow::Cow;
+use std::ffi::OsStr;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::dto;
+use crate::export::export_sheet;
 use crate::state::{App, AppState, Command, Document, DocumentError, SelectionInput};
 
 impl AppState {
@@ -976,10 +979,35 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 }
 
 #[tauri::command]
-pub fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
-        if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::EndExportAs).ok();
+pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    let (sheet, document_name) = {
+        let app = app_state.0.lock().unwrap();
+        match app.current_document() {
+            Some(d) => (
+                d.sheet().clone(),
+                d.path()
+                    .file_stem()
+                    .map(OsStr::to_string_lossy)
+                    .map(Cow::<str>::into_owned)
+                    .unwrap_or("??".to_owned()),
+            ),
+            _ => return Ok(Patch(Vec::new())),
         }
+    };
+
+    let result = tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet))
+        .await
+        .unwrap();
+
+    Ok(app_state.mutate(|app| match result {
+        Ok(_) => {
+            if let Some(document) = app.current_document_mut() {
+                document.process_command(Command::EndExportAs).ok();
+            }
+        }
+        Err(e) => app.show_error_message(format!(
+            "There was an error while exporting `{0}`: {e}",
+            document_name
+        )),
     }))
 }
