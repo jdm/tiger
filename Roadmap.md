@@ -160,6 +160,7 @@
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
 - [ ] Fix jank spacing in exported metadata files
+- [ ] Export complete notification
 - [ ] Unit test UI
 
 ## Tiger 1.0
@@ -184,8 +185,8 @@
 - [ ] Hitbox colors
 - [ ] Import frames from single sheet image
 - [ ] Import animation data from other software (Asesprite, TBD)
-- [ ] Anchor points (like hitbox but point)
-- [ ] Place arbitrary markers ("events") on timeline
+- [ ] Sockets (like hitbox but point)
+- [ ] Events (arbitrary markers on timeline)
 - [ ] Copy/paste animation or keyframe (between sheets)
 - [ ] Drag and drop frames from OS to content panel
 - [ ] Drag and drop frames from OS to timeline panel
