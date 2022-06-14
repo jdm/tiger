@@ -14,7 +14,7 @@
 
 <script setup lang="ts">
 import { open } from "@tauri-apps/api/dialog";
-import { computed } from "vue";
+import { computed, WritableComputedRef } from "vue";
 import { DotsHorizontalIcon, FolderIcon } from "@heroicons/vue/solid"
 import InputText from "@/components/basic/InputText.vue"
 
@@ -25,7 +25,7 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:modelValue"])
 
-const value = computed({
+const value: WritableComputedRef<string> = computed({
 	get() {
 		return props.modelValue;
 	},
