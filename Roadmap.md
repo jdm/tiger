@@ -108,7 +108,6 @@
 - [ ] Make details panel not completely placeholder
 - [x] Add option to hide hitboxes while looking at animations in workbench
 - [x] Add readability mode
-- [ ] Nicer looking paths in export settings (no concat)
 - [ ] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
   - [x] Can preview and edit multiple sequences
@@ -122,6 +121,7 @@
 ## Tiger 0.5
 
 - [ ] Angle in liquid template sequence data
+- [ ] Nicer looking paths in export settings (no concat)
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files
