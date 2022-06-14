@@ -20,8 +20,16 @@ pub struct AppState(pub Arc<Mutex<App>>);
 pub struct App {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
-    errors: Vec<String>,
+    errors: Vec<UserFacingError>,
     exit_requested: bool,
+}
+
+#[derive(Debug)]
+pub struct UserFacingError {
+    pub key: uuid::Uuid,
+    pub title: String,
+    pub summary: String,
+    pub details: String,
 }
 
 impl App {
@@ -103,8 +111,17 @@ impl App {
         }
     }
 
-    pub fn show_error_message<T: AsRef<str>>(&mut self, message: T) {
-        self.errors.push(message.as_ref().to_owned());
+    pub fn show_error_message(&mut self, title: String, summary: String, details: String) {
+        self.errors.push(UserFacingError {
+            key: uuid::Uuid::new_v4(),
+            title,
+            summary,
+            details,
+        });
+    }
+
+    pub fn error(&self) -> Option<&UserFacingError> {
+        self.errors.first()
     }
 
     pub fn request_exit(&mut self) {

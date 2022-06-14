@@ -93,19 +93,22 @@
 
 - [ ] UI rewrite (prettier)
   - [x] Export dialog
-  - [ ] Save error dialog
-  - [ ] Export error dialog
+  - [x] Export error dialog
+  - [x] Open error dialog
+  - [x] Save error dialog
+  - [ ] Save As
+  - [ ] Save All
   - [ ] Keyboard controls
   - [ ] Auto reload images on frame edit
   - [ ] Floating toolbar in workbench
   - [ ] Better looking playback controls
   - [ ] Jump to next/previous frame
   - [ ] Workbench interactive elements sort priority
+  - [ ] Make details panel not completely placeholder
 - [x] In-place rename UX
 - [x] Right click menu to delete item
 - [ ] Filter frames/animations in content panel by text search
 - [ ] Grid/list display modes in content tab
-- [ ] Make details panel not completely placeholder
 - [x] Add option to hide hitboxes while looking at animations in workbench
 - [x] Add readability mode
 - [ ] Support multiple directions/angles for the same animation

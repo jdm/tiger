@@ -28,6 +28,7 @@ fn main() {
             api::request_exit,
             api::cancel_exit,
             // Document
+            api::acknowledge_error,
             api::close_without_saving,
             api::save,
             api::undo,

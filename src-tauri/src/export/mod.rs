@@ -14,14 +14,14 @@ pub use texture::*;
 pub enum ExportError {
     #[error("Missing export settings")]
     NoExportSettings,
-    #[error("Filesystem error")]
+    #[error("{0}")]
     IoError(#[from] std::io::Error),
-    #[error("Metadata generation error")]
+    #[error("{0}")]
     MetadataError(#[from] MetadataError),
-    #[error("Texture packing error")]
-    TeturePackingError(#[from] PackError),
-    #[error("Texture packing error")]
-    TetureStorageError(#[from] ImageError),
+    #[error("{0}")]
+    TexturePackingError(#[from] PackError),
+    #[error("{0}")]
+    TextureStorageError(#[from] ImageError),
 }
 
 pub fn export_sheet(sheet: &Sheet) -> Result<(), ExportError> {

@@ -15,6 +15,16 @@ pub struct App {
     documents: Vec<Document>,
     current_document_path: Option<String>,
     is_release_build: bool,
+    error: Option<UserFacingError>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UserFacingError {
+    key: String,
+    title: String,
+    summary: String,
+    details: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -147,6 +157,19 @@ pub struct ExportSettings {
     metadata_paths_root: PathBuf,
 }
 
+pub trait ToFileStem {
+    fn to_file_stem(&self) -> String;
+}
+
+impl<T: AsRef<Path>> ToFileStem for T {
+    fn to_file_stem(&self) -> String {
+        self.as_ref()
+            .file_stem()
+            .map(|s| s.to_string_lossy().into_owned())
+            .unwrap_or("??".to_owned())
+    }
+}
+
 pub trait ToFileName {
     fn to_file_name(&self) -> String;
 }
@@ -154,7 +177,7 @@ pub trait ToFileName {
 impl<T: AsRef<Path>> ToFileName for T {
     fn to_file_name(&self) -> String {
         self.as_ref()
-            .file_stem()
+            .file_name()
             .map(|s| s.to_string_lossy().into_owned())
             .unwrap_or("??".to_owned())
     }
@@ -168,6 +191,18 @@ impl From<&state::App> for App {
                 .current_document()
                 .map(|d| d.path().to_string_lossy().into_owned()),
             is_release_build: !cfg!(debug_assertions),
+            error: app.error().map(|e| e.into()),
+        }
+    }
+}
+
+impl From<&state::UserFacingError> for UserFacingError {
+    fn from(error: &state::UserFacingError) -> Self {
+        Self {
+            key: error.key.to_string(),
+            title: error.title.clone(),
+            summary: error.summary.clone(),
+            details: error.details.clone(),
         }
     }
 }
@@ -259,7 +294,7 @@ impl From<&sheet::Frame> for Frame {
     fn from(frame: &sheet::Frame) -> Self {
         Self {
             path: frame.source().to_owned(),
-            name: frame.source().to_file_name(),
+            name: frame.source().to_file_stem(),
             selected: false,
         }
     }
@@ -356,7 +391,7 @@ impl From<&sheet::Keyframe> for Keyframe {
     fn from(keyframe: &sheet::Keyframe) -> Self {
         Self {
             frame: keyframe.frame().to_owned(),
-            name: keyframe.frame().to_file_name(),
+            name: keyframe.frame().to_file_stem(),
             selected: false,
             start_time_millis: 0,
             duration_millis: keyframe.duration_millis(),

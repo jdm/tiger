@@ -1,8 +1,9 @@
 <template>
-	<div class="max-w-lg rounded-md bg-plastic-900 border-4 border-plastic-700 shadow-lg shadow-blue-900/25">
+	<div class="rounded-md bg-plastic-900 border-4 border-plastic-700 shadow-lg shadow-blue-900/25">
 		<div class="flex p-6 pb-5 space-x-6 bg-plastic-900">
-			<div class="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full bg-amber-300">
-				<Icon :outline="true" :name="icon" class="h-6 w-6 text-amber-900" />
+			<div class="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full"
+				:class="error ? 'bg-red-400' : 'bg-amber-300'">
+				<Icon :outline="true" :name="icon" class="h-6 w-6" :class="error ? 'text-red-900' : 'text-amber-900'" />
 			</div>
 			<div>
 				<h3 class="text-lg leading-6 font-medium text-plastic-100">{{ title }}</h3>
@@ -24,5 +25,6 @@ import Icon from "@/components/basic/Icon.vue"
 defineProps<{
 	title: string,
 	icon: keyof typeof solid,
+	error?: boolean,
 }>();
 </script>

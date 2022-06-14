@@ -67,10 +67,14 @@ pub async fn open_documents(
                     app.open_document(d);
                 }
                 (path, Err(e)) => {
-                    app.show_error_message(format!(
-                        "Could not open `{}`: {e}",
-                        path.to_string_lossy()
-                    ));
+                    app.show_error_message(
+                        "Error".to_owned(),
+                        format!(
+                            "An error occured while trying to open `{}`",
+                            path.to_file_name()
+                        ),
+                        e.to_string(),
+                    );
                 }
             }
         }
@@ -154,6 +158,13 @@ pub fn cancel_exit(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
+pub fn acknowledge_error(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        app.acknowledge_error();
+    }))
+}
+
+#[tauri::command]
 pub fn close_without_saving(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,
@@ -198,10 +209,14 @@ pub async fn save(
                 window.close().ok();
             }
         }
-        Err(e) => app.show_error_message(format!(
-            "Could not save `{}`: {e}",
-            destination.to_string_lossy()
-        )),
+        Err(e) => app.show_error_message(
+            "Error".to_owned(),
+            format!(
+                "An error occured while trying to save `{}`",
+                destination.to_file_name()
+            ),
+            e.to_string(),
+        ),
     }))
 }
 
@@ -918,10 +933,14 @@ pub async fn export(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> 
     {
         Ok(_) => Ok(Patch(Vec::new())),
         Err(e) => Ok(app_state.mutate(|app| {
-            app.show_error_message(format!(
-                "There was an error while exporting `{0}`: {e}",
-                document_name
-            ))
+            app.show_error_message(
+                "Export Error".to_owned(),
+                format!(
+                    "An error occured while trying to export `{}`",
+                    document_name.to_file_name(),
+                ),
+                e.to_string(),
+            )
         })),
     }
 }
@@ -1020,9 +1039,13 @@ pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patc
                 document.process_command(Command::EndExportAs).ok();
             }
         }
-        Err(e) => app.show_error_message(format!(
-            "There was an error while exporting `{0}`: {e}",
-            document_name
-        )),
+        Err(e) => app.show_error_message(
+            "Export Error".to_owned(),
+            format!(
+                "An error occured while trying to export `{}`",
+                document_name.to_file_name(),
+            ),
+            e.to_string(),
+        ),
     }))
 }

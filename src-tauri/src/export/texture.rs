@@ -10,11 +10,11 @@ use crate::sheet::Sheet;
 
 #[derive(Error, Debug)]
 pub enum PackError {
-    #[error("Error reading a frame")]
+    #[error("Error while reading a frame")]
     FrameReadError,
     #[error("Error while packing textures")]
     PackingError,
-    #[error("Error exporting texture from packing data")]
+    #[error("Error while exporting texture from packing data")]
     PackerExportError,
 }
 

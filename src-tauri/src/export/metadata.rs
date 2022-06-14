@@ -12,9 +12,9 @@ type TextureLayout = HashMap<PathBuf, PackedFrame>;
 pub enum MetadataError {
     #[error("Template parser initialization error")]
     ParserInitError,
-    #[error("Template parsing error")]
+    #[error("Template parsing error\n\n{0}")]
     TemplateParsingError(liquid::Error),
-    #[error("Template rendering error")]
+    #[error("Template rendering error\n\n{0}")]
     TemplateRenderingError(liquid::Error),
     #[error("An animation references a frame which is not part of the sheet")]
     InvalidFrameReference,

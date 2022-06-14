@@ -1,7 +1,8 @@
 <template>
 	<ModalDialog title="Unsaved Changes" icon="ExclamationIcon">
 		<template #body>
-			<p><span class="italic font-semibold text-orange-500">{{ app.currentDocument?.name }}</span> has been
+			<p class="max-w-md"><span class="italic font-semibold text-orange-500">{{ app.currentDocument?.name
+			}}</span> has been
 				modified. Would you like to save changes before closing the spritesheet?</p>
 		</template>
 		<template #actions>

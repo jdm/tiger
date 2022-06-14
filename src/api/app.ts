@@ -6,6 +6,11 @@ export async function getState(): Promise<void> {
   appStore.$state = await invoke("get_state");
 }
 
+export async function acknowledgeError(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("acknowledge_error"));
+}
+
 export async function newDocument(path: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("new_document", { path: path }));

@@ -6,6 +6,14 @@ export type AppState = {
   documents: Document[];
   currentDocumentPath: string | null;
   isReleaseBuild: boolean;
+  error: UserFacingError | null;
+};
+
+export type UserFacingError = {
+  key: string;
+  title: string;
+  summary: string;
+  details: string;
 };
 
 export type Document = {

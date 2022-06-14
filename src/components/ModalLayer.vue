@@ -6,8 +6,8 @@
 		<Transition name="slide-fade">
 			<div v-if="activeModalID" :key="activeModalID"
 				class="absolute inset-0 pointer-events-auto flex items-center justify-center">
-				<UnsavedChangesDialog v-if="app.currentDocument?.wasCloseRequested" />
-				<!-- TODO Error dialogs go here -->
+				<ErrorDialog v-if="app.error" :error="app.error" />
+				<UnsavedChangesDialog v-else-if="app.currentDocument?.wasCloseRequested" />
 			</div>
 		</Transition>
 	</div>
@@ -16,12 +16,15 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { useAppStore } from "@/stores/app"
+import ErrorDialog from "@/components/dialogs/ErrorDialog.vue"
 import UnsavedChangesDialog from "@/components/dialogs/UnsavedChangesDialog.vue"
 
 const app = useAppStore();
 
 const activeModalID = computed(() => {
-	if (app.currentDocument?.wasCloseRequested) {
+	if (app.error != null) {
+		return app.error.key;
+	} else if (app.currentDocument?.wasCloseRequested) {
 		return "closing_" + app.currentDocument.path;
 	}
 	return null;
