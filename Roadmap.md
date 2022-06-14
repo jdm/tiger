@@ -106,7 +106,6 @@
 - [ ] Filter frames/animations in content panel by text search
 - [ ] Grid/list display modes in content tab
 - [ ] Make details panel not completely placeholder
-- [ ] Make export dialog doc link not placeholder
 - [x] Add option to hide hitboxes while looking at animations in workbench
 - [x] Add readability mode
 - [ ] Support multiple directions/angles for the same animation
@@ -143,6 +142,7 @@
 - [ ] Right click menu to rename item
 - [ ] Edit keyframe duration and offset from details panel
 - [ ] Edit hitbox offset and size from details panel
+- [ ] Export dialog links to documentation
 - [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 
 ## Tiger 0.8

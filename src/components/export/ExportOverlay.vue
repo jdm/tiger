@@ -13,12 +13,12 @@
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>
 							<div>
 								<InputLabel>Texture File</InputLabel>
-								<InputFile class="mt-1 rounded-md"
+								<InputPath class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Assets\Sprites\Hero.png" />
 							</div>
 							<div>
 								<InputLabel>Metadata File</InputLabel>
-								<InputFile class="mt-1 rounded-md"
+								<InputPath class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Assets\Sprites\Hero.json" />
 							</div>
 						</div>
@@ -27,12 +27,12 @@
 							<h1 class="text-plastic-200 text-xl">Metadata Format</h1>
 							<div>
 								<InputLabel>Metadata Template File</InputLabel>
-								<InputFile class="mt-1 rounded-md"
+								<InputPath class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
 							</div>
 							<div>
 								<InputLabel>Metadata Root Directory</InputLabel>
-								<InputFile class="mt-1 rounded-md" placeholder="C:\ExampleGame" />
+								<InputPath :isDirectory="true" class="mt-1 rounded-md" placeholder="C:\ExampleGame" />
 							</div>
 						</div>
 
@@ -41,7 +41,8 @@
 							<Button label="Cancel" @click="cancelExportAs" />
 						</div>
 
-						<div class="flex-1 flex flex-col justify-end">
+						<!-- TODO Link to documentation -->
+						<!-- <div class="flex-1 flex flex-col justify-end">
 							<div
 								class="flex items-center rounded-md text-sm p-5 text-amber-800 bg-amber-400 shadow-lg  shadow-amber-600/20">
 								<BookOpenIcon class="mr-6 w-8 h-8" />
@@ -51,7 +52,7 @@
 									mean.
 								</div>
 							</div>
-						</div>
+						</div> -->
 					</div>
 				</div>
 			</div>
@@ -65,8 +66,8 @@ import { BookOpenIcon } from "@heroicons/vue/outline"
 import { cancelExportAs } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
-import InputFile from "@/components/basic/InputFile.vue"
 import InputLabel from "@/components/basic/InputLabel.vue"
+import InputPath from "@/components/basic/InputPath.vue"
 
 const app = useAppStore();
 
