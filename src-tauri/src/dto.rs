@@ -147,7 +147,7 @@ pub struct ExportSettings {
     metadata_paths_root: PathBuf,
 }
 
-trait ToFileName {
+pub trait ToFileName {
     fn to_file_name(&self) -> String;
 }
 

@@ -87,6 +87,7 @@ fn main() {
             api::begin_resize_hitbox,
             api::update_resize_hitbox,
             api::end_resize_hitbox,
+            api::export,
             api::begin_export_as,
             api::set_export_template_file,
             api::set_export_texture_file,
