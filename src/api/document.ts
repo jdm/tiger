@@ -439,7 +439,36 @@ export async function beginExportAs(): Promise<void> {
   appStore.patch(await invoke("begin_export_as"));
 }
 
+export async function setExportTemplateFile(file: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_export_template_file", { file: file }));
+}
+
+export async function setExportTextureFile(file: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_export_texture_file", { file: file }));
+}
+
+export async function setExportMetadataFile(file: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_export_metadata_file", { file: file }));
+}
+
+export async function setExportMetadataPathsRoot(
+  directory: string
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_export_metadata_paths_root", { directory: directory })
+  );
+}
+
 export async function cancelExportAs(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("cancel_export_as"));
+}
+
+export async function endExportAs(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_export_as"));
 }

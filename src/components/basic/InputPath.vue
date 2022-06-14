@@ -1,5 +1,5 @@
 <template>
-	<InputText>
+	<InputText v-model="value">
 		<template #after>
 			<span class="inline-flex items-center px-3 rounded-md
 				bg-plastic-600
@@ -13,11 +13,24 @@
 
 
 <script setup lang="ts">
+import { computed } from "vue";
 import { DotsHorizontalIcon, FolderIcon } from "@heroicons/vue/solid"
 import InputText from "@/components/basic/InputText.vue"
 
-defineProps<{
+const props = defineProps<{
 	isDirectory?: boolean,
+	modelValue: string,
 }>();
+
+const emit = defineEmits(["update:modelValue"])
+
+const value = computed({
+	get() {
+		return props.modelValue;
+	},
+	set(value) {
+		emit("update:modelValue", value);
+	}
+});
 
 </script>

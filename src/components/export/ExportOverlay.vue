@@ -1,11 +1,10 @@
 <template>
 	<div class="pointer-events-none">
 		<Transition name="fade">
-			<div v-if="app.currentDocument?.exportSettingsBeingEdited"
-				class="absolute inset-0 pointer-events-auto bg-black/70" />
+			<div v-if="settings" class="absolute inset-0 pointer-events-auto bg-black/70" />
 		</Transition>
 		<Transition name="slide">
-			<div v-if="app.currentDocument?.exportSettingsBeingEdited" class="absolute inset-0 pointer-events-auto ">
+			<div v-if="settings" class="absolute inset-0 pointer-events-auto ">
 				<div class="w-full h-full flex flex-row justify-end">
 					<div class="h-full w-[40rem] p-10 flex flex-col space-y-16 bg-plastic-700">
 
@@ -13,12 +12,12 @@
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>
 							<div>
 								<InputLabel>Texture File</InputLabel>
-								<InputPath class="mt-1 rounded-md"
+								<InputPath v-model="textureFile" class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Assets\Sprites\Hero.png" />
 							</div>
 							<div>
 								<InputLabel>Metadata File</InputLabel>
-								<InputPath class="mt-1 rounded-md"
+								<InputPath v-model="metadataFile" class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Assets\Sprites\Hero.json" />
 							</div>
 						</div>
@@ -27,17 +26,18 @@
 							<h1 class="text-plastic-200 text-xl">Metadata Format</h1>
 							<div>
 								<InputLabel>Metadata Template File</InputLabel>
-								<InputPath class="mt-1 rounded-md"
+								<InputPath v-model="templateFile" class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
 							</div>
 							<div>
 								<InputLabel>Metadata Root Directory</InputLabel>
-								<InputPath :isDirectory="true" class="mt-1 rounded-md" placeholder="C:\ExampleGame" />
+								<InputPath v-model="metadataRoot" :isDirectory="true" class="mt-1 rounded-md"
+									placeholder="C:\ExampleGame" />
 							</div>
 						</div>
 
 						<div class="flex space-x-4 justify-end">
-							<Button label="Export" :positive="true" />
+							<Button label="Export" :positive="true" @click="endExportAs" />
 							<Button label="Cancel" @click="cancelExportAs" />
 						</div>
 
@@ -62,14 +62,35 @@
 
 
 <script setup lang="ts">
-import { BookOpenIcon } from "@heroicons/vue/outline"
-import { cancelExportAs } from "@/api/document"
+import { computed } from "vue"
+import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
 import InputLabel from "@/components/basic/InputLabel.vue"
 import InputPath from "@/components/basic/InputPath.vue"
 
 const app = useAppStore();
+const settings = computed(() => app.currentDocument?.exportSettingsBeingEdited);
+
+const textureFile = computed({
+	get: () => settings.value?.textureFile || "",
+	set: setExportTextureFile,
+});
+
+const metadataFile = computed({
+	get: () => settings.value?.metadataFile || "",
+	set: setExportMetadataFile,
+});
+
+const templateFile = computed({
+	get: () => settings.value?.templateFile || "",
+	set: setExportTemplateFile,
+});
+
+const metadataRoot = computed({
+	get: () => settings.value?.metadataPathsRoot || "",
+	set: setExportMetadataPathsRoot,
+});
 
 </script>
 
