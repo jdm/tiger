@@ -20,7 +20,7 @@
 <script setup lang="ts">
 import { closeAllDocuments, closeCurrentDocument } from "@/api/app"
 import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from "@/api/document"
-import { newDocument, openDocuments } from "@/api/local"
+import { newDocument, openDocuments, saveAs } from "@/api/local"
 import MenuBar from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
 import { useAppStore } from "@/stores/app"
@@ -41,7 +41,7 @@ const menuEntries = [
 			{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
 			{},
 			{ name: "Save", shortcut: "Ctrl+S", action: save },
-			{ name: "Save As…", shortcut: "Ctrl+Shift+S" },
+			{ name: "Save As…", shortcut: "Ctrl+Shift+S", action: saveAs },
 			{ name: "Save All", shortcut: "Ctrl+Alt+S" },
 			{ name: "Export", shortcut: "Ctrl+E", action: doExport },
 			{ name: "Export As…", shortcut: "Ctrl+Shift+E", action: beginExportAs },

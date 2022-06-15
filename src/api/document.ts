@@ -12,6 +12,11 @@ export async function save(): Promise<void> {
   appStore.patch(await invoke("save"));
 }
 
+export async function saveAs(newPath: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("save_as", { newPath: newPath }));
+}
+
 export async function undo(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("undo"));

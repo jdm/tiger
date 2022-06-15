@@ -6,7 +6,10 @@ import {
   newDocument as doNewDocument,
   openDocuments as doOpenDocuments,
 } from "@/api/app";
-import { importFrames as doImportFrames } from "@/api/document";
+import {
+  saveAs as doSaveAs,
+  importFrames as doImportFrames,
+} from "@/api/document";
 
 export async function newDocument() {
   const file = await saveFileDialog({
@@ -26,6 +29,15 @@ export async function openDocuments() {
     doOpenDocuments([files]);
   } else if (files) {
     doOpenDocuments(files);
+  }
+}
+
+export async function saveAs() {
+  const file = await saveFileDialog({
+    filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],
+  });
+  if (typeof file === "string") {
+    doSaveAs(file);
   }
 }
 

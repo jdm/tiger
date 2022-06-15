@@ -19,6 +19,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // App
             api::get_state,
+            api::acknowledge_error,
             api::new_document,
             api::open_documents,
             api::focus_document,
@@ -28,9 +29,9 @@ fn main() {
             api::request_exit,
             api::cancel_exit,
             // Document
-            api::acknowledge_error,
             api::close_without_saving,
             api::save,
+            api::save_as,
             api::undo,
             api::redo,
             api::focus_content_tab,

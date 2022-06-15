@@ -108,6 +108,10 @@ impl Document {
         &self.path
     }
 
+    pub fn set_path(&mut self, new_path: PathBuf) {
+        self.path = new_path
+    }
+
     pub fn clear_transient(&mut self) {
         self.transient = Default::default();
     }

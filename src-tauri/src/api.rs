@@ -221,6 +221,42 @@ pub async fn save(
 }
 
 #[tauri::command]
+pub async fn save_as(
+    app_state: tauri::State<'_, AppState>,
+    new_path: PathBuf,
+) -> Result<Patch, ()> {
+    let (sheet, old_path, version) = {
+        let app = app_state.0.lock().unwrap();
+        match app.current_document() {
+            Some(d) => (d.sheet().clone(), d.path().to_owned(), d.version()),
+            _ => return Ok(Patch(Vec::new())),
+        }
+    };
+
+    let write_destination = new_path.clone();
+    let result = tauri::async_runtime::spawn_blocking(move || sheet.write(&write_destination))
+        .await
+        .unwrap();
+
+    Ok(app_state.mutate(|app| match result {
+        Ok(_) => {
+            app.relocate_document(old_path, &new_path);
+            if let Some(document) = app.document_mut(&new_path) {
+                document.mark_as_saved(version);
+            }
+        }
+        Err(e) => app.show_error_message(
+            "Error".to_owned(),
+            format!(
+                "An error occured while trying to save `{}`",
+                new_path.to_file_name()
+            ),
+            e.to_string(),
+        ),
+    }))
+}
+
+#[tauri::command]
 pub fn undo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

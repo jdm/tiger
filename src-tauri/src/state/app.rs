@@ -92,6 +92,19 @@ impl App {
             .find(|d| d.path() == path.as_ref())
     }
 
+    pub fn relocate_document<T: AsRef<Path>, U: AsRef<Path>>(&mut self, from: T, to: U) {
+        if from.as_ref() == to.as_ref() {
+            return;
+        }
+        self.documents.retain(|d| d.path() != to.as_ref());
+        if let Some(moved_document) = self.document_mut(&from) {
+            moved_document.set_path(to.as_ref().to_owned());
+        }
+        if Some(from.as_ref()) == self.current_document.as_ref().map(PathBuf::as_path) {
+            self.current_document = Some(to.as_ref().to_owned());
+        }
+    }
+
     pub fn close_document<T: AsRef<Path>>(&mut self, path: T) {
         if let Some(index) = self
             .documents
