@@ -136,6 +136,7 @@
 
 ## Tiger 0.6
 
+- [ ] Tooltips everywhere
 - [ ] Add option or keyboard shortcut (held) to hide origin crosshair
 - [ ] Add buttons to align frame edges or center to origin
 - [x] Frame and hitboxes can be moved using arrow keys
