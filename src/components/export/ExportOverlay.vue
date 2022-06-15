@@ -26,7 +26,7 @@
 							<h1 class="text-plastic-200 text-xl">Metadata Format</h1>
 							<div>
 								<InputLabel>Metadata Template File</InputLabel>
-								<InputPath v-model="templateFile" class="mt-1 rounded-md"
+								<InputPath v-model="templateFile" :pick-existing="true" class="mt-1 rounded-md"
 									placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
 							</div>
 							<div>

@@ -13,13 +13,14 @@
 
 
 <script setup lang="ts">
-import { open } from "@tauri-apps/api/dialog";
+import { open, save } from "@tauri-apps/api/dialog";
 import { computed, WritableComputedRef } from "vue";
 import { DotsHorizontalIcon, FolderIcon } from "@heroicons/vue/solid"
 import InputText from "@/components/basic/InputText.vue"
 
 const props = defineProps<{
 	isDirectory?: boolean,
+	pickExisting?: boolean,
 	modelValue: string,
 }>();
 
@@ -35,7 +36,12 @@ const value: WritableComputedRef<string> = computed({
 });
 
 async function openFilePicker() {
-	const file = await open({ directory: props.isDirectory });
+	let file;
+	if (props.pickExisting || props.isDirectory) {
+		file = await open({ directory: props.isDirectory });
+	} else {
+		file = await save();
+	}
 	if (typeof file === "string") {
 		value.value = file;
 	}
