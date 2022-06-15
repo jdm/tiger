@@ -107,7 +107,7 @@
   - [ ] Make details panel not completely placeholder
 - [x] In-place rename UX
 - [x] Right click menu to delete item
-- [ ] Filter frames/animations in content panel by text search
+- [x] Filter frames/animations in content panel by text search
 - [ ] Grid/list display modes in content tab
 - [x] Add option to hide hitboxes while looking at animations in workbench
 - [x] Add readability mode

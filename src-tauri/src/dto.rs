@@ -36,6 +36,8 @@ pub struct Document {
     was_close_requested: bool,
     sheet: Sheet,
     content_tab: ContentTab,
+    frames_filter: String,
+    animations_filter: String,
     workbench_offset: (i32, i32),
     workbench_zoom: f32,
     current_animation_name: Option<String>,
@@ -67,6 +69,7 @@ pub struct Frame {
     path: PathBuf,
     name: String,
     selected: bool,
+    filtered_out: bool,
 }
 
 #[derive(Clone, Serialize)]
@@ -74,6 +77,7 @@ pub struct Frame {
 pub struct Animation {
     name: String,
     selected: bool,
+    filtered_out: bool,
     sequences: HashMap<Direction, Sequence>,
     direction_preset: Option<DirectionPreset>,
     is_looping: bool,
@@ -212,9 +216,11 @@ impl From<&state::Document> for Document {
         let mut sheet: Sheet = document.sheet().into();
         for frame in sheet.frames.iter_mut() {
             frame.selected = document.selection().is_frame_selected(&frame.path);
+            frame.filtered_out = document.is_frame_filtered_out(&frame.path);
         }
         for (animation_name, animation) in sheet.animations.iter_mut() {
             animation.selected = document.selection().is_animation_selected(animation_name);
+            animation.filtered_out = document.is_animation_filtered_out(animation_name);
             for (direction, sequence) in animation.sequences.iter_mut() {
                 let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
@@ -243,6 +249,8 @@ impl From<&state::Document> for Document {
             was_close_requested: document.close_requested(),
             sheet,
             content_tab: document.content_tab().into(),
+            frames_filter: document.frames_filter().to_owned(),
+            animations_filter: document.animations_filter().to_owned(),
             workbench_offset: document.workbench_offset().to_i32().to_tuple(),
             workbench_zoom: document.workbench_zoom(),
             current_animation_name: document.current_animation().to_owned(),
@@ -296,6 +304,7 @@ impl From<&sheet::Frame> for Frame {
             path: frame.source().to_owned(),
             name: frame.source().to_file_stem(),
             selected: false,
+            filtered_out: false,
         }
     }
 }
@@ -308,6 +317,7 @@ where
         Self {
             name: animation.0.as_ref().to_owned(),
             selected: false,
+            filtered_out: false,
             sequences: animation
                 .1
                 .sequences_iter()

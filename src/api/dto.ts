@@ -23,6 +23,8 @@ export type Document = {
   wasCloseRequested: boolean;
   sheet: Sheet;
   contentTab: ContentTab;
+  framesFilter: string;
+  animationsFilter: string;
   workbenchOffset: [number, number];
   workbenchZoom: number;
   currentAnimationName: string | null;
@@ -50,11 +52,13 @@ export type Frame = {
   path: string;
   name: string;
   selected: boolean;
+  filteredOut: boolean;
 };
 
 export type Animation = {
   name: string;
   selected: boolean;
+  filteredOut: boolean;
   sequences: Record<Direction, Sequence>;
   directionPreset: DirectionPreset | null;
   isLooping: boolean;

@@ -32,6 +32,18 @@ export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   appStore.patch(await invoke("focus_content_tab", { contentTab: contentTab }));
 }
 
+export async function filterFrames(searchQuery: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("filter_frames", { searchQuery: searchQuery }));
+}
+
+export async function filterAnimations(searchQuery: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("filter_animations", { searchQuery: searchQuery })
+  );
+}
+
 export async function importFrames(paths: string[]): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("import_frames", { paths: paths }));

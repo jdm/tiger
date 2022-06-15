@@ -36,6 +36,8 @@ fn main() {
             api::undo,
             api::redo,
             api::focus_content_tab,
+            api::filter_frames,
+            api::filter_animations,
             api::import_frames,
             api::delete_selected_frames,
             api::clear_selection,

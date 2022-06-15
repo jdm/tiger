@@ -1,4 +1,5 @@
 use euclid::default::*;
+use std::path::Path;
 use std::time::Duration;
 
 use crate::sheet::Direction;
@@ -14,6 +15,8 @@ pub enum ContentTab {
 pub struct View {
     pub(super) content_tab: ContentTab,
     pub(super) selection: MultiSelection,
+    pub(super) frames_filter: String,
+    pub(super) animations_filter: String,
     pub(super) current_animation: Option<String>,
     pub(super) current_sequence: Option<Direction>,
     pub(super) workbench_offset: Vector2D<f32>,
@@ -29,6 +32,8 @@ impl Default for View {
         View {
             content_tab: ContentTab::Frames,
             selection: Default::default(),
+            frames_filter: Default::default(),
+            animations_filter: Default::default(),
             current_animation: None,
             current_sequence: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
@@ -98,6 +103,14 @@ impl Document {
         self.view.content_tab
     }
 
+    pub fn frames_filter(&self) -> &String {
+        &self.view.frames_filter
+    }
+
+    pub fn animations_filter(&self) -> &String {
+        &self.view.animations_filter
+    }
+
     pub fn selection(&self) -> &MultiSelection {
         &self.view.selection
     }
@@ -136,5 +149,27 @@ impl Document {
 
     pub fn is_hiding_hitboxes(&self) -> bool {
         self.view.hide_hitboxes
+    }
+
+    pub fn is_frame_filtered_out<T: AsRef<Path>>(&self, frame: T) -> bool {
+        !self
+            .view
+            .frames_filter
+            .split_ascii_whitespace()
+            .all(|search_term| {
+                frame
+                    .as_ref()
+                    .as_os_str()
+                    .to_string_lossy()
+                    .contains(search_term)
+            })
+    }
+
+    pub fn is_animation_filtered_out<T: AsRef<str>>(&self, animation_name: T) -> bool {
+        !self
+            .view
+            .animations_filter
+            .split_ascii_whitespace()
+            .all(|search_term| animation_name.as_ref().contains(search_term))
     }
 }
