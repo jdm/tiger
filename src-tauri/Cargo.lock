@@ -3275,6 +3275,7 @@ dependencies = [
  "derivative",
  "enum-iterator",
  "euclid",
+ "futures",
  "image",
  "json-patch",
  "liquid",

@@ -96,8 +96,8 @@
   - [x] Export error dialog
   - [x] Open error dialog
   - [x] Save error dialog
-  - [ ] Save As
-  - [ ] Save All
+  - [x] Save As
+  - [x] Save All
   - [ ] Keyboard controls
   - [ ] Auto reload images on frame edit
   - [ ] Floating toolbar in workbench
@@ -125,6 +125,7 @@
 
 - [ ] Angle in liquid template sequence data
 - [ ] Nicer looking paths in export settings (no concat)
+- [ ] Consider merging some code between save, save_as and save_all
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files

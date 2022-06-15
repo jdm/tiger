@@ -21,6 +21,11 @@ export async function openDocuments(paths: string[]): Promise<void> {
   appStore.patch(await invoke("open_documents", { paths: paths }));
 }
 
+export async function saveAll(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("save_all"));
+}
+
 export async function focusDocument(path: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("focus_document", { path: path }));

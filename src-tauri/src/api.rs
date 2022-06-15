@@ -5,6 +5,7 @@ use std::time::Duration;
 
 use crate::dto::{self, ToFileName};
 use crate::export::export_sheet;
+use crate::sheet;
 use crate::state::{App, AppState, Command, Document, DocumentError, SelectionInput};
 
 impl AppState {
@@ -253,6 +254,59 @@ pub async fn save_as(
             ),
             e.to_string(),
         ),
+    }))
+}
+
+#[tauri::command]
+pub async fn save_all(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    struct DocumentToSave {
+        sheet: sheet::Sheet,
+        destination: PathBuf,
+        version: i32,
+    }
+
+    let documents_to_save: Vec<DocumentToSave> = {
+        let app = app_state.0.lock().unwrap();
+        app.documents_iter()
+            .map(|d| DocumentToSave {
+                sheet: d.sheet().clone(),
+                destination: d.path().to_owned(),
+                version: d.version(),
+            })
+            .collect()
+    };
+
+    let mut work = Vec::new();
+    for document in &documents_to_save {
+        let sheet_cloned = document.sheet.clone();
+        let destination_cloned = document.destination.clone();
+        work.push(tauri::async_runtime::spawn_blocking(move || {
+            sheet_cloned.write(&destination_cloned)
+        }));
+    }
+    let results = futures::future::join_all(work)
+        .await
+        .into_iter()
+        .map(|r| r.unwrap());
+
+    Ok(app_state.mutate(|app| {
+        for (document_to_save, result) in documents_to_save.iter().zip(results) {
+            match result {
+                Ok(_) => {
+                    if let Some(document) = app.document_mut(&document_to_save.destination) {
+                        document.mark_as_saved(document_to_save.version);
+                    }
+                }
+                Err(e) => app.show_error_message(
+                    "Error".to_owned(),
+                    format!(
+                        "An error occured while trying to save `{}`",
+                        document_to_save.destination.to_file_name()
+                    ),
+                    e.to_string(),
+                ),
+            }
+        }
     }))
 }
 

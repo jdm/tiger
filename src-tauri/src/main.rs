@@ -22,6 +22,7 @@ fn main() {
             api::acknowledge_error,
             api::new_document,
             api::open_documents,
+            api::save_all,
             api::focus_document,
             api::close_document,
             api::close_current_document,
