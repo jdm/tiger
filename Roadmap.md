@@ -100,7 +100,7 @@
   - [x] Save All
   - [ ] Keyboard controls
   - [ ] Undo command names
-  - [ ] Auto reload images on frame edit
+  - [x] Auto reload images on frame edit
   - [ ] Floating toolbar in workbench
   - [ ] Better looking playback controls
   - [x] Jump to next/previous frame

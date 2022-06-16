@@ -3,17 +3,19 @@
 		@dragend="onDragEnd" draggable="true"
 		class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
 		:class="props.frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
-		<img :src="convertFileSrc(frame.path)" class="pixelated object-none" />
+		<img :src="sprite.getURL(frame.path)" class="pixelated object-none" />
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
 
 <script setup lang="ts">
-import { convertFileSrc } from "@tauri-apps/api/tauri"
 import { Ref, ref } from "vue"
 import { Frame as FrameDTO } from "@/api/dto"
+import { useSpriteStore } from "@/stores/sprite"
 import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame, deleteSelectedFrames } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
+
+const sprite = useSpriteStore();
 
 const props = defineProps<{
 	frame: FrameDTO
@@ -42,7 +44,7 @@ function onDragStart(event: DragEvent) {
 		previewElement.style.position = "absolute";
 		previewElement.style.top = "-1000px";
 		previewElement.classList.add("opacity-0");
-		previewElement.src = convertFileSrc(props.frame.path);
+		previewElement.src = sprite.getURL(props.frame.path);
 		dragCursorElement.value = previewElement;
 		event.dataTransfer.setDragImage(previewElement, 0, 0);
 	}

@@ -25,11 +25,13 @@
 </template>
 
 <script setup lang="ts">
+import { listen } from "@tauri-apps/api/event"
 import { appWindow } from "@tauri-apps/api/window"
 import { onMounted, ref, watch } from "vue"
-import { AppState } from "@/api/dto"
+import { AppState, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
+import { useSpriteStore } from "@/stores/sprite"
 import AppBar from "@/components/AppBar.vue"
 import ContextMenuLayer from "@/components/basic/ContextMenuLayer.vue"
 import ContentPane from "@/components/content/ContentPane.vue"
@@ -41,12 +43,17 @@ import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
 import ModalLayer from "@/components/ModalLayer.vue"
 
 const app = useAppStore();
+const sprite = useSpriteStore();
 const allowContextMenu = ref(false);
 
 onMounted(() => {
   appWindow.listen("force-refresh-state", event => {
     app.$state = event.payload as AppState;
   });
+  listen('invalidate-texture', event => {
+    const invalidationEvent = event.payload as TextureInvalidationEvent;
+    sprite.invalidate(invalidationEvent.path);
+  })
 });
 
 let previousTimestamp: number | null = null;

@@ -3,17 +3,24 @@
     windows_subsystem = "windows"
 )]
 
+use file_watcher::FileWatcher;
+use notify::DebouncedEvent;
+use std::{path::PathBuf, time::Duration};
+use tauri::{Manager, WindowEvent};
+
 mod api;
 mod dto;
 mod export;
+mod file_watcher;
 mod sheet;
 mod state;
 
 use state::AppState;
-use tauri::WindowEvent;
 
 fn main() {
     let app_state = AppState(Default::default());
+    let (mut file_watcher, file_events_receiver) = FileWatcher::init();
+
     tauri::Builder::default()
         .manage(app_state.clone())
         .invoke_handler(tauri::generate_handler![
@@ -103,6 +110,38 @@ fn main() {
             api::cancel_export_as,
             api::end_export_as,
         ])
+        .setup(|tauri_app| {
+            // Every 1s, update the list of files we are watching for changes
+            let tauri_app_handle = tauri_app.handle();
+            std::thread::spawn(move || loop {
+                let app_state = tauri_app_handle.state::<AppState>();
+                file_watcher.update_watched_files(&app_state);
+                std::thread::sleep(Duration::from_millis(1_000));
+            });
+
+            // When a watched file is updated, tell the frontend
+            let tauri_app_handle = tauri_app.handle();
+            std::thread::spawn(move || loop {
+                #[derive(Clone, serde::Serialize)]
+                struct TextureInvalidationEvent {
+                    path: PathBuf,
+                }
+                if let Ok(event) = file_events_receiver.recv() {
+                    match event {
+                        DebouncedEvent::Write(path)
+                        | DebouncedEvent::Create(path)
+                        | DebouncedEvent::Remove(path) => {
+                            tauri_app_handle
+                                .emit_all("invalidate-texture", TextureInvalidationEvent { path })
+                                .ok();
+                        }
+                        _ => (),
+                    }
+                }
+            });
+
+            Ok(())
+        })
         .on_window_event(move |event| match event.event() {
             WindowEvent::CloseRequested { api, .. } => {
                 let mut app = app_state.0.lock().unwrap();

@@ -2,7 +2,7 @@
 	<div>
 		<BoundingBox v-if="frameSize && drawBoundingBox" :position="position" :size="frameSize"
 			:colorClasses="backgroundColor" />
-		<img ref="el" :src="convertFileSrc(keyframe.frame)" @load="onFrameLoaded" class="absolute pixelated z-10"
+		<img ref="el" :src="sprite.getURL(keyframe.frame)" @load="onFrameLoaded" class="absolute pixelated z-10"
 			:class="frameClass" draggable="false" :style="frameStyle" />
 		<BoundingBox v-if="frameSize && drawBoundingBox" :position="position" :size="frameSize"
 			class="z-20 fill-transparent" :colorClasses="outlineColor" />
@@ -14,15 +14,16 @@
 </template>
 
 <script setup lang="ts">
-import { convertFileSrc } from "@tauri-apps/api/tauri"
 import { computed, CSSProperties, ref, Ref } from "vue"
 import { Direction, Keyframe } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
 import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from "@/api/document"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"
+import { useSpriteStore } from "@/stores/sprite"
 
 const app = useAppStore();
+const sprite = useSpriteStore();
 
 const props = defineProps<{
 	keyframe: Keyframe,

@@ -129,3 +129,7 @@ export type ExportSettings = {
   metadataFile: string;
   metadataPathsRoot: string;
 };
+
+export type TextureInvalidationEvent = {
+  path: string;
+};
