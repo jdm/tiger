@@ -651,6 +651,24 @@ pub fn scrub_timeline(
 }
 
 #[tauri::command]
+pub fn jump_to_previous_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::JumpToPreviousFrame).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn jump_to_next_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::JumpToNextFrame).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

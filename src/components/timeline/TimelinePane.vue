@@ -5,10 +5,10 @@
 			<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="RefreshIcon"
 				@toggled="setAnimationLooping" />
 			<Separator :vertical="true" class="h-full px-2 py-1" />
-			<Button icon="ChevronLeftIcon" />
+			<Button @click="jumpToPreviousFrame" icon="ChevronLeftIcon" />
 			<Button v-if="app.currentDocument?.timelineIsPlaying" @click="pause" icon="PauseIcon" :danger="true" />
 			<Button v-if="!app.currentDocument?.timelineIsPlaying" @click="play" icon="PlayIcon" :positive="true" />
-			<Button icon="ChevronRightIcon" />
+			<Button @click="jumpToNextFrame" icon="ChevronRightIcon" />
 			<Separator :vertical="true" class="h-full px-2 py-1" />
 			<Button @click="zoomInTimeline" icon="ZoomInIcon" />
 			<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
@@ -49,7 +49,11 @@
 <script setup lang="ts">
 import { watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
-import { play, pause, zoomInTimeline, zoomOutTimeline, selectDirection, setAnimationLooping } from "@/api/document"
+import {
+	jumpToNextFrame, jumpToPreviousFrame, play, pause,
+	zoomInTimeline, zoomOutTimeline,
+	selectDirection, setAnimationLooping
+} from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
 import Pane from "@/components/basic/Pane.vue"

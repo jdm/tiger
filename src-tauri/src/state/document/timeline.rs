@@ -96,6 +96,30 @@ impl Document {
         Ok(())
     }
 
+    pub fn jump_to_previous_frame(&mut self) -> Result<(), DocumentError> {
+        let (_, sequence) = self.get_workbench_sequence()?;
+        let now = self.view.timeline_clock.as_millis() as u64;
+        let new_time = sequence
+            .keyframe_times()
+            .into_iter()
+            .rev()
+            .find(|time| *time < now)
+            .unwrap_or_default();
+        self.scrub_timeline(Duration::from_millis(new_time))
+    }
+
+    pub fn jump_to_next_frame(&mut self) -> Result<(), DocumentError> {
+        let (_, sequence) = self.get_workbench_sequence()?;
+        let now = self.view.timeline_clock.as_millis() as u64;
+        let new_time = sequence
+            .keyframe_times()
+            .into_iter()
+            .find(|time| *time > now)
+            .or(sequence.keyframe_times().last().copied())
+            .unwrap_or_default();
+        self.scrub_timeline(Duration::from_millis(new_time))
+    }
+
     pub(super) fn set_animation_looping(&mut self, is_looping: bool) -> Result<(), DocumentError> {
         let (_, animation) = self.get_workbench_animation_mut()?;
         animation.set_looping(is_looping);

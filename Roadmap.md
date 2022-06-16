@@ -103,7 +103,7 @@
   - [ ] Auto reload images on frame edit
   - [ ] Floating toolbar in workbench
   - [ ] Better looking playback controls
-  - [ ] Jump to next/previous frame
+  - [x] Jump to next/previous frame
   - [ ] Workbench interactive elements sort priority
   - [ ] Make details panel not completely placeholder
 - [x] In-place rename UX

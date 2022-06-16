@@ -209,6 +209,16 @@ export async function scrubTimeline(timeMillis: number): Promise<void> {
   appStore.patch(await invoke("scrub_timeline", { timeMillis: timeMillis }));
 }
 
+export async function jumpToPreviousFrame(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("jump_to_previous_frame"));
+}
+
+export async function jumpToNextFrame(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("jump_to_next_frame"));
+}
+
 export async function zoomInTimeline(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("zoom_in_timeline"));
