@@ -1,6 +1,6 @@
 <template>
 	<Pane>
-		<div class="w-full pl-4 p-2 pb-0 flex flex-row items-center">
+		<div class="w-full px-4 p-2 pb-0 flex flex-row items-center">
 			<div class="flex-1 flex flex-row space-x-2">
 				<PerspectivePicker />
 				<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="RefreshIcon"
@@ -9,9 +9,20 @@
 			<div class="flex-1 flex flex-row justify-center">
 				<PlaybackControls />
 			</div>
-			<div class="flex-1 flex flex-row justify-end space-x-2">
-				<Button @click="zoomInTimeline" icon="ZoomInIcon" />
-				<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
+			<div class="flex-1 flex flex-row justify-end items-center">
+				<div class="flex flex-row items-center space-x-3">
+					<Zoom class="h-6 w-5 text-plastic-400" />
+					<div class="h-2 w-28 bg-plastic-900 rounded-md relative">
+						<div class="h-full w-2/3 rounded-l-md
+						bg-gradient-to-b from-blue-700 to-blue-600
+						border-y border-t-blue-600 border-b-blue-900
+						" />
+						<div
+							class="absolute left-2/3 top-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-plastic-300" />
+					</div>
+					<Button @click="zoomInTimeline" icon="ZoomInIcon" />
+					<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
+				</div>
 			</div>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-2 ">
@@ -56,6 +67,7 @@ import {
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
+import Zoom from "@/components/basic/icons/Zoom.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import Toggle from "@/components/basic/Toggle.vue"
