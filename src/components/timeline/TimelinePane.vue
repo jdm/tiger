@@ -17,11 +17,12 @@
 						bg-gradient-to-b from-blue-700 to-blue-600
 						border-y border-t-blue-600 border-b-blue-900
 						" />
-						<div
-							class="absolute left-2/3 top-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-plastic-300" />
+						<div class="absolute left-2/3 top-1/2 w-2.5 h-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-200
+							box-content border-2 border-blue-600
+						" />
 					</div>
-					<Button @click="zoomInTimeline" icon="ZoomInIcon" />
-					<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
+					<!-- <Button @click="zoomOutTimeline" icon="ZoomOutIcon" /> -->
+					<!-- <Button @click="zoomInTimeline" icon="ZoomInIcon" /> -->
 				</div>
 			</div>
 		</div>
