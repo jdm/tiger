@@ -1,17 +1,18 @@
 <template>
 	<Pane>
-		<div class="w-full pl-4 p-2 pb-0 flex flex-row items-center space-x-2">
-			<PerspectivePicker />
-			<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="RefreshIcon"
-				@toggled="setAnimationLooping" />
-			<Separator :vertical="true" class="h-full px-2 py-1" />
-			<Button @click="jumpToPreviousFrame" icon="ChevronLeftIcon" />
-			<Button v-if="app.currentDocument?.timelineIsPlaying" @click="pause" icon="PauseIcon" :danger="true" />
-			<Button v-if="!app.currentDocument?.timelineIsPlaying" @click="play" icon="PlayIcon" :positive="true" />
-			<Button @click="jumpToNextFrame" icon="ChevronRightIcon" />
-			<Separator :vertical="true" class="h-full px-2 py-1" />
-			<Button @click="zoomInTimeline" icon="ZoomInIcon" />
-			<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
+		<div class="w-full pl-4 p-2 pb-0 flex flex-row items-center">
+			<div class="flex-1 flex flex-row space-x-2">
+				<PerspectivePicker />
+				<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="RefreshIcon"
+					@toggled="setAnimationLooping" />
+			</div>
+			<div class="flex-1 flex flex-row justify-center">
+				<PlaybackControls />
+			</div>
+			<div class="flex-1 flex flex-row justify-end space-x-2">
+				<Button @click="zoomInTimeline" icon="ZoomInIcon" />
+				<Button @click="zoomOutTimeline" icon="ZoomOutIcon" />
+			</div>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-2 ">
 			<div class="relative flex flex-row h-full bg-plastic-700">
@@ -50,7 +51,6 @@
 import { watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
 import {
-	jumpToNextFrame, jumpToPreviousFrame, play, pause,
 	zoomInTimeline, zoomOutTimeline,
 	selectDirection, setAnimationLooping
 } from "@/api/document"
@@ -58,9 +58,9 @@ import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
-import Separator from "@/components/basic/Separator.vue"
 import Toggle from "@/components/basic/Toggle.vue"
 import PerspectivePicker from "@/components/timeline/PerspectivePicker.vue"
+import PlaybackControls from "@/components/timeline/PlaybackControls.vue"
 import Ruler from "@/components/timeline/Ruler.vue"
 import Sequence from "@/components/timeline/Sequence.vue"
 

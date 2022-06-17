@@ -2,7 +2,7 @@
 	<div ref="el" class="relative">
 		<div @click="onOpen" class="rounded-md border-2 border-plastic-900">
 			<div class="flex flex-row items-center space-x-2 py-1.5 pl-4 pr-2 rounded-md
-				border-y border-t-zinc-300 border-b-zinc-800 bg-zinc-400">
+				border-y  border-t-zinc-300 border-b-zinc-700 bg-zinc-400">
 				<div class="flex-1 grid pr-8 mt-px ">
 					<div v-for="option in options"
 						class="col-start-1 row-start-1 whitespace-nowrap font-semibold text-plastic-800"
