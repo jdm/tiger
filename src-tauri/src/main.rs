@@ -68,6 +68,8 @@ fn main() {
             api::play,
             api::pause,
             api::scrub_timeline,
+            api::jump_to_animation_start,
+            api::jump_to_animation_end,
             api::jump_to_previous_frame,
             api::jump_to_next_frame,
             api::zoom_in_timeline,

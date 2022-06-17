@@ -651,6 +651,24 @@ pub fn scrub_timeline(
 }
 
 #[tauri::command]
+pub fn jump_to_animation_start(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::JumpToAnimationStart).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn jump_to_animation_end(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::JumpToAnimationEnd).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn jump_to_previous_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

@@ -96,6 +96,16 @@ impl Document {
         Ok(())
     }
 
+    pub fn jump_to_animation_start(&mut self) -> Result<(), DocumentError> {
+        self.scrub_timeline(Duration::ZERO)
+    }
+
+    pub fn jump_to_animation_end(&mut self) -> Result<(), DocumentError> {
+        let (_, sequence) = self.get_workbench_sequence()?;
+        let duration = sequence.duration().unwrap_or_default();
+        self.scrub_timeline(duration)
+    }
+
     pub fn jump_to_previous_frame(&mut self) -> Result<(), DocumentError> {
         let (_, sequence) = self.get_workbench_sequence()?;
         let now = self.view.timeline_clock.as_millis() as u64;

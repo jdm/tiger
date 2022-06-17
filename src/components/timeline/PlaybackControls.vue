@@ -4,7 +4,8 @@
 		bg-plastic-900
 		rounded-md
 	">
-		<Icon name="ChevronDoubleLeftIcon" class="h-9 p-1.5 px-5 text-plastic-300 hover:text-plastic-200" />
+		<Icon name="ChevronDoubleLeftIcon" @click="jumpToAnimationStart"
+			class="h-9 p-1.5 px-5 text-plastic-300 hover:text-plastic-200" />
 		<Icon name="ChevronLeftIcon" @click="jumpToPreviousFrame"
 			class="h-9 p-1 text-plastic-300 hover:text-plastic-200" />
 		<div v-if="!app.currentDocument?.timelineIsPlaying" @click="play" class="relative w-20">
@@ -23,13 +24,16 @@
 		</div>
 		<Icon name="ChevronRightIcon" @click="jumpToNextFrame"
 			class="h-9 p-1 text-plastic-300 hover:text-plastic-200" />
-		<Icon name="ChevronDoubleRightIcon" class="h-9 p-1.5 px-5 text-plastic-300 hover:text-plastic-200" />
+		<Icon name="ChevronDoubleRightIcon" @click="jumpToAnimationEnd"
+			class="h-9 p-1.5 px-5 text-plastic-300 hover:text-plastic-200" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import {
-	jumpToNextFrame, jumpToPreviousFrame, play, pause,
+	jumpToAnimationStart, jumpToAnimationEnd,
+	jumpToNextFrame, jumpToPreviousFrame,
+	play, pause,
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Icon from "@/components/basic/Icon.vue"
