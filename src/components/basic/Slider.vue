@@ -20,6 +20,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref, watch } from "vue";
+import { debounceAnimation } from "@/utils/animation";
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue";
 
 const props = defineProps<{
@@ -30,19 +31,10 @@ const props = defineProps<{
 const emit = defineEmits(["update:value", "update:dragging"]);
 
 const el: Ref<HTMLElement | null> = ref(null);
-const animate = ref(false);
-
-watch(() => props.dragging, (isDragging) => {
-	if (isDragging) {
-		animate.value = false;
-	} else {
-		setTimeout(() => {
-			if (!isDragging) {
-				animate.value = true;
-			}
-		}, 300);
-	}
-});
+const animate = debounceAnimation(
+	[() => props.dragging],
+	() => !props.dragging,
+);
 
 const barStyle = computed(() => {
 	return {

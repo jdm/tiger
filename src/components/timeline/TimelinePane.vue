@@ -50,12 +50,12 @@
 </template>
 
 <script setup lang="ts">
-import { watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
 import {
 	selectDirection, setAnimationLooping, setTimelineZoomAmount
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
+import { debounceAnimation } from "@/utils/animation"
 import Slider from "@/components/basic/Slider.vue"
 import Zoom from "@/components/basic/icons/Zoom.vue"
 import Pane from "@/components/basic/Pane.vue"
@@ -100,47 +100,20 @@ const timelineStyle = computed(() => {
 	}
 });
 
-const animateRuler = ref(true);
-watch(draggingScale, (isDraggingScale) => {
-	if (isDraggingScale) {
-		animateRuler.value = false;
-	} else {
-		setTimeout(() => {
-			if (!draggingScale.value) {
-				animateRuler.value = true;
-			}
-		}, 300);
-	}
-});
+const animateRuler = debounceAnimation(
+	[draggingScale],
+	() => !draggingScale.value
+);
 
-const animateSequences = ref(true);
-watch([() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale], ([isResizingKeyframe, isDraggingScale]) => {
-	if (isResizingKeyframe || isDraggingScale) {
-		animateSequences.value = false;
-	} else {
-		setTimeout(() => {
-			if (!app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value) {
-				animateSequences.value = true;
-			}
-		}, 300);
-	}
-});
+const animateSequences = debounceAnimation(
+	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale],
+	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value
+);
 
-const animatePlayhead = ref(true);
-
-watch([() => app.currentDocument?.timelineIsPlaying, scrubbing, draggingScale], ([isPlaying, isScrubbing, isDraggingScale]) => {
-	if (isPlaying || isScrubbing || draggingScale.value) {
-		animatePlayhead.value = false;
-	} else {
-		// Delay so the transition doesn't kick in as playback is ending
-		// and the playhead still has to reach its final location.
-		setTimeout(() => {
-			if (!app.currentDocument?.timelineIsPlaying && !scrubbing.value && !draggingScale.value) {
-				animatePlayhead.value = true;
-			}
-		}, 300);
-	}
-});
+const animatePlayhead = debounceAnimation(
+	[() => app.currentDocument?.timelineIsPlaying, scrubbing, draggingScale],
+	() => !app.currentDocument?.timelineIsPlaying && !scrubbing.value && !draggingScale.value
+);
 
 const playheadStyle = computed(() => {
 	const zoom = app.currentDocument?.timelineZoomFactor || 1;
