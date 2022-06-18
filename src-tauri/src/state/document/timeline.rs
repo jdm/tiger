@@ -25,7 +25,7 @@ impl Document {
                             // Stop playhead at the end of animation
                             } else if clock_ms >= d {
                                 self.persistent.timeline_is_playing = false;
-                                self.view.timeline_clock = Duration::from_millis(u64::from(d));
+                                self.view.timeline_clock = Duration::from_millis(d);
                                 if self.view.selection.keyframes().count() <= 1 {
                                     self.view.selection.select_keyframe(
                                         animation_name,
@@ -125,7 +125,7 @@ impl Document {
             .keyframe_times()
             .into_iter()
             .find(|time| *time > now)
-            .or(sequence.keyframe_times().last().copied())
+            .or_else(|| sequence.keyframe_times().last().copied())
             .unwrap_or_default();
         self.scrub_timeline(Duration::from_millis(new_time))
     }

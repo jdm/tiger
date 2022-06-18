@@ -11,11 +11,11 @@ use crate::sheet::Sheet;
 #[derive(Error, Debug)]
 pub enum PackError {
     #[error("Error while reading a frame")]
-    FrameReadError,
+    FrameRead,
     #[error("Error while packing textures")]
-    PackingError,
+    Packing,
     #[error("Error while exporting texture from packing data")]
-    PackerExportError,
+    PackerExport,
 }
 
 pub(super) struct PackedFrame {
@@ -54,16 +54,15 @@ pub(super) fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, PackError> {
 
     for frame in sheet.frames_iter() {
         let source = frame.source();
-        let texture =
-            ImageImporter::import_from_file(source).map_err(|_| PackError::FrameReadError)?;
+        let texture = ImageImporter::import_from_file(source).map_err(|_| PackError::FrameRead)?;
 
         let name = source.to_string_lossy();
         packer
             .pack_own(name.to_string(), texture)
-            .map_err(|_| PackError::PackingError)?;
+            .map_err(|_| PackError::Packing)?;
     }
 
-    let texture = ImageExporter::export(&packer).map_err(|_| PackError::PackerExportError)?;
+    let texture = ImageExporter::export(&packer).map_err(|_| PackError::PackerExport)?;
     let layout = packer
         .get_frames()
         .iter()

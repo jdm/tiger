@@ -67,7 +67,7 @@ fn liquid_data_from_frame(
 ) -> Result<LiquidFrame, MetadataError> {
     let index = sheet
         .frames_iter()
-        .position(|f| f as *const Frame == frame as *const Frame)
+        .position(|f| std::ptr::eq(f, frame))
         .ok_or(MetadataError::InvalidFrameReference)?;
 
     let frame_layout = texture_layout
@@ -147,7 +147,7 @@ fn liquid_data_from_sequence(
     }
 
     Ok(LiquidSequence {
-        direction: direction,
+        direction,
         keyframes,
     })
 }
@@ -213,8 +213,8 @@ fn liquid_data_from_sheet(
     };
 
     let sheet_image = {
-        let relative_to = settings.metadata_paths_root().clone();
-        let image_path = diff_paths(&settings.texture_file(), &relative_to)
+        let relative_to = settings.metadata_paths_root();
+        let image_path = diff_paths(&settings.texture_file(), relative_to)
             .ok_or(MetadataError::AbsoluteToRelativePath)?;
         image_path.to_string_lossy().into_owned()
     };
@@ -237,13 +237,13 @@ pub(super) fn generate_sheet_metadata(
                 .build()
                 .map_err(|_| MetadataError::ParserInitError)?
                 .parse_file(&liquid_settings.template_file())
-                .map_err(|e| MetadataError::TemplateParsingError(e))?;
+                .map_err(MetadataError::TemplateParsingError)?;
             let globals = liquid_data_from_sheet(sheet, liquid_settings, texture_layout)?;
-            let liquid_sheet = liquid::to_object(&globals)
-                .map_err(|e| MetadataError::TemplateRenderingError(e))?;
+            let liquid_sheet =
+                liquid::to_object(&globals).map_err(MetadataError::TemplateRenderingError)?;
             let output = template
                 .render(&liquid_sheet)
-                .map_err(|e| MetadataError::TemplateRenderingError(e))?;
+                .map_err(MetadataError::TemplateRenderingError)?;
             Ok(output)
         }
     }

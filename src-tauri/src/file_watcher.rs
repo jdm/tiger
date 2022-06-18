@@ -21,7 +21,7 @@ impl FileWatcher {
     fn new(event_sink: Sender<DebouncedEvent>) -> FileWatcher {
         let watcher = watcher(event_sink, Duration::from_millis(200)).unwrap();
         FileWatcher {
-            watcher: watcher,
+            watcher,
             watched_files: HashSet::new(),
         }
     }

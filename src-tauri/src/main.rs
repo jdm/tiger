@@ -145,8 +145,8 @@ fn main() {
 
             Ok(())
         })
-        .on_window_event(move |event| match event.event() {
-            WindowEvent::CloseRequested { api, .. } => {
+        .on_window_event(move |event| {
+            if let WindowEvent::CloseRequested { api, .. } = event.event() {
                 let mut app = app_state.0.lock().unwrap();
                 app.request_exit();
                 if !app.should_exit() {
@@ -158,7 +158,6 @@ fn main() {
                         .unwrap();
                 }
             }
-            _ => (),
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

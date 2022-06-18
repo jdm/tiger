@@ -78,7 +78,7 @@ impl Document {
         let (animation_name, animation) = self.get_workbench_animation_mut()?;
         let sequence = animation
             .sequence_mut(direction)
-            .ok_or_else(|| DocumentError::SequenceNotInAnimation(direction))?;
+            .ok_or(DocumentError::SequenceNotInAnimation(direction))?;
         for frame in &selected_frames {
             let keyframe = Keyframe::new(frame);
             sequence.insert_keyframe(keyframe, index)?;
@@ -182,11 +182,11 @@ impl Document {
 
         // Update timeline position
         if !timeline_is_playing {
-            let keyframe_times = sequence.keyframe_times().clone();
+            let keyframe_times = sequence.keyframe_times();
             let timeline_pos = *keyframe_times
                 .get(insert_index)
                 .ok_or(DocumentError::NoKeyframeAtIndex(insert_index))?;
-            self.view.timeline_clock = Duration::from_millis(u64::from(timeline_pos));
+            self.view.timeline_clock = Duration::from_millis(timeline_pos);
         }
 
         // Update selection
@@ -246,7 +246,7 @@ impl Document {
             .transient
             .keyframe_duration_drag
             .clone()
-            .ok_or_else(|| DocumentError::NotDraggingKeyframeDuration)?;
+            .ok_or(DocumentError::NotDraggingKeyframeDuration)?;
 
         let minimum_duration = 20.0 as u64;
         let duration_delta_per_frame = delta_millis
@@ -263,7 +263,7 @@ impl Document {
             let old_duration = drag_state
                 .original_durations
                 .get(&(d, i))
-                .ok_or_else(|| DocumentError::MissingKeyframeDragData)?;
+                .ok_or(DocumentError::MissingKeyframeDragData)?;
             let new_duration = if duration_delta_per_frame > 0 {
                 old_duration.saturating_add(duration_delta_per_frame as u64)
             } else {
@@ -290,7 +290,7 @@ impl Document {
             keyframe_being_dragged: (direction, index),
             original_positions: animation
                 .sequences_iter()
-                .map(|(direction, sequence)| {
+                .flat_map(|(direction, sequence)| {
                     sequence
                         .keyframes_iter()
                         .enumerate()
@@ -309,7 +309,6 @@ impl Document {
                             )
                         })
                 })
-                .flatten()
                 .collect(),
         });
 
@@ -434,7 +433,7 @@ impl Document {
             &nudge.hitbox_being_dragged,
         ) {
             self.view.selection.select_hitbox(
-                animation_name.clone(),
+                animation_name,
                 direction,
                 index,
                 nudge.hitbox_being_dragged,

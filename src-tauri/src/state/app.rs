@@ -41,7 +41,7 @@ impl App {
         self.documents.iter_mut()
     }
 
-    pub fn new_document<T: AsRef<Path>>(&mut self, path: T) -> () {
+    pub fn new_document<T: AsRef<Path>>(&mut self, path: T) {
         match self.document_mut(&path) {
             Some(d) => *d = Document::new(path.as_ref()),
             None => {
@@ -100,7 +100,7 @@ impl App {
         if let Some(moved_document) = self.document_mut(&from) {
             moved_document.set_path(to.as_ref().to_owned());
         }
-        if Some(from.as_ref()) == self.current_document.as_ref().map(PathBuf::as_path) {
+        if Some(from.as_ref()) == self.current_document.as_deref() {
             self.current_document = Some(to.as_ref().to_owned());
         }
     }
@@ -165,7 +165,7 @@ impl App {
     }
 
     pub fn should_exit(&self) -> bool {
-        self.exit_requested && self.documents.len() == 0
+        self.exit_requested && self.documents.is_empty()
     }
 
     pub fn acknowledge_error(&mut self) {

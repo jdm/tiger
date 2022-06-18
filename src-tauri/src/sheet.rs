@@ -223,7 +223,7 @@ impl Sheet {
         let animation = self
             .animations
             .remove(old_name.as_ref())
-            .ok_or(SheetError::AnimationNotFound(old_name.as_ref().to_owned()))?;
+            .ok_or_else(|| SheetError::AnimationNotFound(old_name.as_ref().to_owned()))?;
         self.animations
             .insert(new_name.as_ref().to_owned(), animation);
         Ok(())
@@ -370,7 +370,7 @@ impl Sequence {
         }
         let mut cursor = Duration::new(0, 0);
         for (index, frame) in self.keyframes.iter().enumerate() {
-            cursor += Duration::from_millis(u64::from(frame.duration_millis));
+            cursor += Duration::from_millis(frame.duration_millis);
             if time < cursor {
                 return Some(index);
             }
@@ -393,7 +393,7 @@ impl Sequence {
         self.keyframes_iter()
             .map(|f| {
                 let t = cursor;
-                cursor += u64::from(f.duration_millis());
+                cursor += f.duration_millis();
                 t
             })
             .collect()
@@ -520,7 +520,7 @@ impl Keyframe {
         let hitbox = self
             .hitboxes
             .remove(old_name.as_ref())
-            .ok_or(SheetError::HitboxNotFound(old_name.as_ref().to_owned()))?;
+            .ok_or_else(|| SheetError::HitboxNotFound(old_name.as_ref().to_owned()))?;
         self.hitboxes.insert(new_name.as_ref().to_owned(), hitbox);
         Ok(())
     }
@@ -712,9 +712,9 @@ fn can_rename_sheet_animation() {
 fn can_read_write_animation_looping() {
     let mut animation = Animation::default();
     animation.set_looping(true);
-    assert_eq!(animation.looping(), true);
+    assert!(animation.looping());
     animation.set_looping(false);
-    assert_eq!(animation.looping(), false);
+    assert!(!animation.looping());
 }
 
 #[test]

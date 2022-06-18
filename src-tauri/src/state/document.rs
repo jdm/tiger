@@ -87,7 +87,7 @@ impl Document {
             view: Default::default(),
             transient: Default::default(),
             persistent: Default::default(),
-            next_version: next_version,
+            next_version,
             history_index: 0,
         }
     }
@@ -206,13 +206,11 @@ impl Document {
         let animation_name = self
             .current_animation()
             .as_ref()
-            .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
-        let animation =
-            self.sheet
-                .animation(&animation_name)
-                .ok_or(DocumentError::AnimationNotInDocument(
-                    animation_name.to_owned(),
-                ))?;
+            .ok_or(DocumentError::NotEditingAnyAnimation)?;
+        let animation = self
+            .sheet
+            .animation(&animation_name)
+            .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.to_owned()))?;
         Ok((animation_name, animation))
     }
 
@@ -222,10 +220,11 @@ impl Document {
         let animation_name = self
             .current_animation()
             .clone()
-            .ok_or_else(|| DocumentError::NotEditingAnyAnimation)?;
-        let animation = self.sheet.animation_mut(&animation_name).ok_or(
-            DocumentError::AnimationNotInDocument(animation_name.to_owned()),
-        )?;
+            .ok_or(DocumentError::NotEditingAnyAnimation)?;
+        let animation = self
+            .sheet
+            .animation_mut(&animation_name)
+            .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.to_owned()))?;
         Ok((animation_name, animation))
     }
 

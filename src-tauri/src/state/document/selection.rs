@@ -285,7 +285,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
     }
 
     // Desired behavior: https://stackoverflow.com/a/16530782
-    fn alter(&mut self, interacted_item: T, all_items: &Vec<T>, shift: bool, ctrl: bool) {
+    fn alter(&mut self, interacted_item: T, all_items: &[T], shift: bool, ctrl: bool) {
         let interacted_item_index = match all_items.iter().position(|item| *item == interacted_item)
         {
             Some(i) => i,
@@ -452,10 +452,10 @@ fn can_replace_selection() {
     let mut selection: MultiSelectionData<i32> = 0.into();
     assert!(selection.contains(&0));
 
-    selection.alter(0, &vec![0, 1, 2, 3], false, false);
+    selection.alter(0, &[0, 1, 2, 3], false, false);
     assert!(selection.contains(&0));
 
-    selection.alter(2, &vec![0, 1, 2, 3], false, false);
+    selection.alter(2, &[0, 1, 2, 3], false, false);
     assert!(!selection.contains(&0));
     assert!(selection.contains(&2));
 }
@@ -465,11 +465,11 @@ fn can_toggle_individual_items() {
     let mut selection: MultiSelectionData<i32> = 0.into();
     assert!(selection.contains(&0));
 
-    selection.alter(2, &vec![0, 1, 2, 3], false, true);
+    selection.alter(2, &[0, 1, 2, 3], false, true);
     assert!(selection.contains(&0));
     assert!(selection.contains(&2));
 
-    selection.alter(0, &vec![0, 1, 2, 3], false, true);
+    selection.alter(0, &[0, 1, 2, 3], false, true);
     assert!(!selection.contains(&0));
     assert!(selection.contains(&2));
 }
@@ -477,7 +477,7 @@ fn can_toggle_individual_items() {
 #[test]
 fn can_select_a_range() {
     let mut selection: MultiSelectionData<i32> = 2.into();
-    selection.alter(5, &(0..=8).collect(), true, false);
+    selection.alter(5, &(0..=8).collect::<Vec<_>>(), true, false);
     assert!(!selection.contains(&1));
     assert!(selection.contains(&2));
     assert!(selection.contains(&3));
@@ -490,22 +490,22 @@ fn can_select_a_range() {
 fn can_adjust_a_range() {
     let mut selection: MultiSelectionData<i32> = 10.into();
 
-    selection.alter(15, &(0..=20).collect(), true, false);
-    selection.alter(18, &(0..=20).collect(), true, false);
+    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
+    selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, false);
     assert!(!selection.contains(&9));
     for i in 10..=18 {
         assert!(selection.contains(&i));
     }
     assert!(!selection.contains(&19));
 
-    selection.alter(15, &(0..=20).collect(), true, false);
+    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
     assert!(!selection.contains(&9));
     for i in 10..=15 {
         assert!(selection.contains(&i));
     }
     assert!(!selection.contains(&16));
 
-    selection.alter(5, &(0..=20).collect(), true, false);
+    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
     assert!(!selection.contains(&4));
     for i in 5..=10 {
         assert!(selection.contains(&i));
@@ -516,13 +516,13 @@ fn can_adjust_a_range() {
 #[test]
 fn can_select_multiple_ranges() {
     let mut selection: MultiSelectionData<i32> = 2.into();
-    selection.alter(5, &(0..=20).collect(), true, false);
-    selection.alter(10, &(0..=20).collect(), false, true);
-    selection.alter(15, &(0..=20).collect(), true, true);
+    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+    selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
+    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
     for i in 0..=20 {
         assert_eq!(
             selection.contains(&i),
-            (i >= 2 && i <= 5) || (i >= 10 && i <= 15)
+            (2..=5).contains(&i) || (10..=15).contains(&i)
         );
     }
 }
@@ -530,34 +530,34 @@ fn can_select_multiple_ranges() {
 #[test]
 fn can_revert_from_multiple_to_single_range() {
     let mut selection: MultiSelectionData<i32> = 2.into();
-    selection.alter(5, &(0..=20).collect(), true, false);
-    selection.alter(10, &(0..=20).collect(), false, true);
-    selection.alter(15, &(0..=20).collect(), true, true);
-    selection.alter(12, &(0..=20).collect(), true, false);
+    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+    selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
+    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
+    selection.alter(12, &(0..=20).collect::<Vec<_>>(), true, false);
     for i in 0..=20 {
-        assert_eq!(selection.contains(&i), i >= 12 && i <= 15);
+        assert_eq!(selection.contains(&i), (12..=15).contains(&i));
     }
 }
 
 #[test]
 fn can_adjust_multiple_ranges() {
     let mut selection: MultiSelectionData<i32> = 2.into();
-    selection.alter(5, &(0..=20).collect(), true, false);
-    selection.alter(10, &(0..=20).collect(), false, true);
-    selection.alter(15, &(0..=20).collect(), true, true);
-    selection.alter(18, &(0..=20).collect(), true, true);
+    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+    selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
+    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
+    selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, true);
     for i in 0..=20 {
         assert_eq!(
             selection.contains(&i),
-            (i >= 2 && i <= 5) || (i >= 10 && i <= 18)
+            (2..=5).contains(&i) || (10..=18).contains(&i)
         );
     }
-    selection.alter(16, &(0..=20).collect(), false, true);
-    selection.alter(12, &(0..=20).collect(), true, true);
+    selection.alter(16, &(0..=20).collect::<Vec<_>>(), false, true);
+    selection.alter(12, &(0..=20).collect::<Vec<_>>(), true, true);
     for i in 0..=20 {
         assert_eq!(
             selection.contains(&i),
-            (i >= 2 && i <= 5) || (i >= 10 && i <= 11) || (i >= 17 && i <= 18)
+            (2..=5).contains(&i) || (10..=11).contains(&i) || (17..=18).contains(&i)
         );
     }
 }

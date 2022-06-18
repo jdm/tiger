@@ -210,7 +210,7 @@ impl Document {
     }
 
     fn record_command(&mut self, command: Command) {
-        let has_sheet_changes = &self.history[self.history_index].sheet != &self.sheet;
+        let has_sheet_changes = self.history[self.history_index].sheet != self.sheet;
 
         if has_sheet_changes {
             self.next_version += 1;
@@ -225,7 +225,7 @@ impl Document {
 
         if has_sheet_changes {
             self.push_undo_state(new_undo_state);
-        } else if &self.history[self.history_index].view != &new_undo_state.view {
+        } else if self.history[self.history_index].view != new_undo_state.view {
             let merge = self.history_index > 0
                 && self.history[self.history_index - 1].sheet
                     == self.history[self.history_index].sheet;

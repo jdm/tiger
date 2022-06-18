@@ -171,7 +171,7 @@ impl<T: AsRef<Path>> ToFileStem for T {
         self.as_ref()
             .file_stem()
             .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or("??".to_owned())
+            .unwrap_or_else(|| "??".to_owned())
     }
 }
 
@@ -184,7 +184,7 @@ impl<T: AsRef<Path>> ToFileName for T {
         self.as_ref()
             .file_name()
             .map(|s| s.to_string_lossy().into_owned())
-            .unwrap_or("??".to_owned())
+            .unwrap_or_else(|| "??".to_owned())
     }
 }
 

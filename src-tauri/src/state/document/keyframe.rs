@@ -16,7 +16,7 @@ impl Document {
         }
         self.view
             .selection
-            .select_hitbox(animation_name, direction, index, hitbox_name.clone());
+            .select_hitbox(animation_name, direction, index, hitbox_name);
         Ok(())
     }
 
