@@ -122,8 +122,8 @@ impl Document {
     }
 
     pub fn timeline_zoom_factor(&self) -> f32 {
-        const MIN_TIMELINE_ZOOM: f32 = 0.2;
-        const MAX_TIMELINE_ZOOM: f32 = 4.0;
+        const MIN_TIMELINE_ZOOM: f32 = 0.5;
+        const MAX_TIMELINE_ZOOM: f32 = 3.0;
         let min_log = MIN_TIMELINE_ZOOM.log2();
         let max_log = MAX_TIMELINE_ZOOM.log2();
         let scale = max_log - min_log;
