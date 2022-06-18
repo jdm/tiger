@@ -239,6 +239,11 @@ export async function zoomOutTimeline(): Promise<void> {
   appStore.patch(await invoke("zoom_out_timeline"));
 }
 
+export async function setTimelineZoomAmount(amount: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_timeline_zoom_amount", { amount: amount }));
+}
+
 export async function resetTimelineZoom(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("reset_timeline_zoom"));

@@ -22,7 +22,7 @@ pub struct View {
     pub(super) workbench_offset: Vector2D<f32>,
     pub(super) timeline_clock: Duration,
     pub(super) workbench_zoom_level: u32,
-    pub(super) timeline_zoom_level: i32,
+    pub(super) timeline_zoom_amount: f32,
     pub(super) hide_hitboxes: bool,
     pub(super) darken_sprites: bool,
 }
@@ -38,7 +38,7 @@ impl Default for View {
             current_sequence: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
             workbench_zoom_level: 8,
-            timeline_zoom_level: 1,
+            timeline_zoom_amount: 0.5,
             timeline_clock: Default::default(),
             hide_hitboxes: false,
             darken_sprites: true,
@@ -64,29 +64,19 @@ impl View {
     }
 
     pub(super) fn zoom_in_timeline(&mut self) {
-        if self.timeline_zoom_level >= 1 {
-            self.timeline_zoom_level *= 2;
-        } else if self.timeline_zoom_level == -2 {
-            self.timeline_zoom_level = 1;
-        } else {
-            self.timeline_zoom_level /= 2;
-        }
-        self.timeline_zoom_level = std::cmp::min(self.timeline_zoom_level, 4);
+        self.timeline_zoom_amount = (self.timeline_zoom_amount + 0.2).min(1.0);
     }
 
     pub(super) fn zoom_out_timeline(&mut self) {
-        if self.timeline_zoom_level > 1 {
-            self.timeline_zoom_level /= 2;
-        } else if self.timeline_zoom_level == 1 {
-            self.timeline_zoom_level = -2;
-        } else {
-            self.timeline_zoom_level *= 2;
-        }
-        self.timeline_zoom_level = std::cmp::max(self.timeline_zoom_level, -4);
+        self.timeline_zoom_amount = (self.timeline_zoom_amount - 0.2).max(0.0);
+    }
+
+    pub(super) fn set_timeline_zoom_amount(&mut self, amount: f32) {
+        self.timeline_zoom_amount = amount.clamp(0.0, 1.0);
     }
 
     pub(super) fn reset_timeline_zoom(&mut self) {
-        self.timeline_zoom_level = 1;
+        self.timeline_zoom_amount = 0.5;
     }
 
     pub(super) fn pan(&mut self, delta: Vector2D<f32>) {
@@ -131,12 +121,17 @@ impl Document {
         self.view.workbench_zoom_level as f32
     }
 
-    pub fn timeline_zoom(&self) -> f32 {
-        if self.view.timeline_zoom_level >= 0 {
-            self.view.timeline_zoom_level as f32
-        } else {
-            -1.0 / self.view.timeline_zoom_level as f32
-        }
+    pub fn timeline_zoom_factor(&self) -> f32 {
+        const MIN_TIMELINE_ZOOM: f32 = 0.2;
+        const MAX_TIMELINE_ZOOM: f32 = 4.0;
+        let min_log = MIN_TIMELINE_ZOOM.log2();
+        let max_log = MAX_TIMELINE_ZOOM.log2();
+        let scale = max_log - min_log;
+        (min_log + scale * self.view.timeline_zoom_amount).exp2()
+    }
+
+    pub fn timeline_zoom_amount(&self) -> f32 {
+        self.view.timeline_zoom_amount
     }
 
     pub fn timeline_clock(&self) -> Duration {

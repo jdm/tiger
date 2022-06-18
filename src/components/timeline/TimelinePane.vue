@@ -12,17 +12,7 @@
 			<div class="flex-1 flex flex-row justify-end items-center">
 				<div class="flex flex-row items-center space-x-3">
 					<Zoom class="h-6 w-5 text-plastic-400" />
-					<div class="h-2 w-28 bg-plastic-900 rounded-md relative">
-						<div class="h-full w-2/3 rounded-l-md
-						bg-gradient-to-b from-blue-700 to-blue-600
-						border-y border-t-blue-600 border-b-blue-900
-						" />
-						<div class="absolute left-2/3 top-1/2 w-2.5 h-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-blue-200
-							box-content border-2 border-blue-600
-						" />
-					</div>
-					<!-- <Button @click="zoomOutTimeline" icon="ZoomOutIcon" /> -->
-					<!-- <Button @click="zoomInTimeline" icon="ZoomInIcon" /> -->
+					<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
 				</div>
 			</div>
 		</div>
@@ -43,10 +33,10 @@
 				<div ref="scrollableElement" @scroll="onScroll"
 					class="flex-1 relative overflow-x-scroll styled-scrollbars">
 					<div class="min-w-full flex flex-col" :style="timelineStyle">
-						<Ruler v-model:scrubbing="scrubbing" />
+						<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
 						<div class="flex flex-col py-2 space-y-1">
 							<Sequence v-for="sequence, direction in app.currentAnimation?.sequences"
-								:sequence="sequence" :direction="direction" />
+								:sequence="sequence" :direction="direction" :animate="animateSequences" />
 							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
 								class="h-10" />
 						</div>
@@ -63,11 +53,10 @@
 import { watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
 import {
-	zoomInTimeline, zoomOutTimeline,
-	selectDirection, setAnimationLooping
+	selectDirection, setAnimationLooping, setTimelineZoomAmount
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
-import Button from "@/components/basic/Button.vue"
+import Slider from "@/components/basic/Slider.vue"
 import Zoom from "@/components/basic/icons/Zoom.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
@@ -81,7 +70,13 @@ const app = useAppStore();
 
 const scrollableElement: Ref<HTMLElement | null> = ref(null);
 const scrubbing = ref(false);
+const draggingScale = ref(false);
 const scrollLeft = ref(0);
+
+const zoomAmount = computed({
+	get: () => app.currentDocument ? app.currentDocument?.timelineZoomAmount : 0.5,
+	set: setTimelineZoomAmount,
+});
 
 function onScroll() {
 	scrollLeft.value = scrollableElement.value?.scrollLeft || 0;
@@ -92,7 +87,7 @@ const animationDuration = computed(() => {
 });
 
 const timelineSize = computed(() => {
-	const zoom = app.currentDocument?.timelineZoom || 1;
+	const zoom = app.currentDocument?.timelineZoomFactor || 1;
 	const visibleSize = scrollLeft.value + (scrollableElement.value?.clientWidth || 0);
 	const visibleDuration = visibleSize / zoom;
 	const bonusDuration = 500 / zoom;
@@ -105,27 +100,53 @@ const timelineStyle = computed(() => {
 	}
 });
 
-const transitionProperty: Ref<string> = ref("none");
+const animateRuler = ref(true);
+watch(draggingScale, (isDraggingScale) => {
+	if (isDraggingScale) {
+		animateRuler.value = false;
+	} else {
+		setTimeout(() => {
+			if (!draggingScale.value) {
+				animateRuler.value = true;
+			}
+		}, 300);
+	}
+});
 
-watch([() => app.currentDocument?.timelineIsPlaying, scrubbing], ([isPlaying, isScrubbing]) => {
-	if (isPlaying || isScrubbing) {
-		transitionProperty.value = "none";
+const animateSequences = ref(true);
+watch([() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale], ([isResizingKeyframe, isDraggingScale]) => {
+	if (isResizingKeyframe || isDraggingScale) {
+		animateSequences.value = false;
+	} else {
+		setTimeout(() => {
+			if (!app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value) {
+				animateSequences.value = true;
+			}
+		}, 300);
+	}
+});
+
+const animatePlayhead = ref(true);
+
+watch([() => app.currentDocument?.timelineIsPlaying, scrubbing, draggingScale], ([isPlaying, isScrubbing, isDraggingScale]) => {
+	if (isPlaying || isScrubbing || draggingScale.value) {
+		animatePlayhead.value = false;
 	} else {
 		// Delay so the transition doesn't kick in as playback is ending
 		// and the playhead still has to reach its final location.
 		setTimeout(() => {
-			if (!app.currentDocument?.timelineIsPlaying && !scrubbing.value) {
-				transitionProperty.value = "left";
+			if (!app.currentDocument?.timelineIsPlaying && !scrubbing.value && !draggingScale.value) {
+				animatePlayhead.value = true;
 			}
 		}, 300);
 	}
 });
 
 const playheadStyle = computed(() => {
-	const zoom = app.currentDocument?.timelineZoom || 1;
+	const zoom = app.currentDocument?.timelineZoomFactor || 1;
 	const time = app.currentDocument?.timelineClockMillis || 0;
 	return {
-		transitionProperty: transitionProperty.value,
+		transitionProperty: animatePlayhead.value ? "left" : "none",
 		left: `${Math.floor(zoom * time)}px`,
 	};
 });

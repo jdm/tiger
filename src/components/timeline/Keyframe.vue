@@ -66,7 +66,7 @@ function mouseEventToTime(event: MouseEvent) {
 		return 0;
 	}
 	const pixelDelta = event.clientX - el.value.getBoundingClientRect().left;
-	const durationDelta = pixelDelta / (app.currentDocument?.timelineZoom || 1);
+	const durationDelta = pixelDelta / (app.currentDocument?.timelineZoomFactor || 1);
 	return props.startTimeMillis + durationDelta;
 }
 

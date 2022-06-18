@@ -23,7 +23,8 @@ const app = useAppStore();
 
 const props = defineProps<{
 	sequence: SequenceDTO,
-	direction: Direction
+	direction: Direction,
+	animate: boolean,
 }>();
 
 type SequenceEntry = {
@@ -65,7 +66,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 		return entries;
 	}
 
-	const previewFrameDuration = 40 / app.currentDocument.timelineZoom;
+	const previewFrameDuration = 40 / app.currentDocument.timelineZoomFactor;
 	const numPreviewFrames = Math.max(app.currentDocument.framesBeingDragged.length, app.currentDocument.keyframesBeingDragged.length);
 
 	for (let [index, keyframe] of props.sequence.keyframes.entries()) {
@@ -110,9 +111,9 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 });
 
 function entryStyle(entry: SequenceEntry) {
-	const zoom = app.currentDocument?.timelineZoom || 1;
+	const zoom = app.currentDocument?.timelineZoomFactor || 1;
 	return {
-		transitionProperty: app.currentDocument?.isDraggingKeyframeDuration ? "none" : "width, left",
+		transitionProperty: props.animate ? "width, left" : "none",
 		left: `${zoom * entry.startTimeMillis}px`,
 		width: `${zoom * entry.durationMillis}px`
 	};
@@ -123,7 +124,7 @@ function mouseEventToTime(event: MouseEvent) {
 		return 0;
 	}
 	const pixelDelta = event.clientX - keyframesElement.value.getBoundingClientRect().left;
-	const time = pixelDelta / (app.currentDocument?.timelineZoom || 1);
+	const time = pixelDelta / (app.currentDocument?.timelineZoomFactor || 1);
 	return time;
 }
 

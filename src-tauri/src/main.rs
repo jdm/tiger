@@ -74,6 +74,7 @@ fn main() {
             api::jump_to_next_frame,
             api::zoom_in_timeline,
             api::zoom_out_timeline,
+            api::set_timeline_zoom_amount,
             api::reset_timeline_zoom,
             api::set_animation_looping,
             api::apply_direction_preset,

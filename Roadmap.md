@@ -102,7 +102,8 @@
   - [ ] Undo command names
   - [x] Auto reload images on frame edit
   - [ ] Floating toolbar in workbench
-  - [ ] Better looking playback controls
+  - [x] Better looking playback controls
+  - [x] Better looking timeline zoom controls
   - [x] Jump to next/previous frame
   - [ ] Workbench interactive elements sort priority
   - [ ] Make details panel not completely placeholder
@@ -164,7 +165,9 @@
 
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
-- [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
+- [ ] Can scroll timeline with mousewheel
+- [ ] Backend keeps track of content pane scroll position in undo stack
+- [ ] Backend keeps track of timeline scroll position in undo stack
 - [ ] Fix jank spacing in exported metadata files
 - [ ] Export complete notification
 - [ ] Unit test UI

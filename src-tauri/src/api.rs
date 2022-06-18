@@ -705,6 +705,20 @@ pub fn zoom_out_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
+pub fn set_timeline_zoom_amount(
+    app_state: tauri::State<'_, AppState>,
+    amount: f32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetTimelineZoomAmount(amount))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn reset_timeline_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

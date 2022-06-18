@@ -1,5 +1,7 @@
 <template>
-  <div ref="el" @mousedown="onMouseDown" :class="activeDrag != null ? activeCursor : inactiveCursor" />
+  <div ref="el" @mousedown="onMouseDown" :class="activeDrag != null ? activeCursor : inactiveCursor">
+    <slot />
+  </div>
 </template>
 
 <script setup lang="ts">

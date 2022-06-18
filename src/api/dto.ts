@@ -32,7 +32,8 @@ export type Document = {
   currentKeyframeIndex: number | null;
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
-  timelineZoom: number;
+  timelineZoomFactor: number;
+  timelineZoomAmount: number;
   darkenSprites: boolean;
   hideHitboxes: boolean;
   isDraggingKeyframeDuration: boolean;
