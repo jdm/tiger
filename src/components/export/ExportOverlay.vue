@@ -44,7 +44,7 @@
 						<!-- TODO Link to documentation -->
 						<!-- <div class="flex-1 flex flex-col justify-end">
 							<div
-								class="flex items-center rounded-md text-sm p-5 text-amber-800 bg-amber-400 shadow-lg  shadow-amber-600/20">
+								class="flex items-center rounded-md text-md p-5 text-amber-800 bg-amber-400 shadow-lg  shadow-amber-600/20">
 								<BookOpenIcon class="mr-6 w-8 h-8" />
 								<div>
 									Confused about all these options? Check out the <span
