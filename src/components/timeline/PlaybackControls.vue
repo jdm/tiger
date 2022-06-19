@@ -4,7 +4,7 @@
 		bg-plastic-900 rounded-md
 		outline outline-offset-2 outline-plastic-900
 	">
-		<Icon name="ChevronDoubleLeftIcon" @click="jumpToAnimationStart"
+		<Icon name="RewindIcon" @click="jumpToAnimationStart"
 			class="h-9 p-1.5 px-5 text-plastic-300 hover:text-plastic-200" />
 		<Icon name="ChevronLeftIcon" @click="jumpToPreviousFrame"
 			class="h-9 p-1 text-plastic-300 hover:text-plastic-200" />
@@ -26,7 +26,7 @@
 		</div>
 		<Icon name="ChevronRightIcon" @click="jumpToNextFrame"
 			class="h-9 p-1 text-plastic-300 hover:text-plastic-200" />
-		<Icon name="ChevronDoubleRightIcon" @click="jumpToAnimationEnd"
+		<Icon name="FastForwardIcon" @click="jumpToAnimationEnd"
 			class="h-9 p-1.5 px-5 text-plastic-300 hover:text-plastic-200" />
 	</div>
 </template>
