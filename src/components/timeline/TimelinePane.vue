@@ -11,7 +11,7 @@
 			</div>
 			<div class="flex-1 flex flex-row justify-end items-center">
 				<div class="flex flex-row items-center space-x-3">
-					<Zoom class="h-6 w-5 text-plastic-400" />
+					<SearchIcon class="h-6 w-5 text-plastic-400" />
 					<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
 				</div>
 			</div>
@@ -51,13 +51,13 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "@vue/reactivity"
+import { SearchIcon } from "@heroicons/vue/solid"
 import {
 	selectDirection, setAnimationLooping, setTimelineZoomAmount
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { debounceAnimation } from "@/utils/animation"
 import Slider from "@/components/basic/Slider.vue"
-import Zoom from "@/components/basic/icons/Zoom.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import Toggle from "@/components/basic/Toggle.vue"
