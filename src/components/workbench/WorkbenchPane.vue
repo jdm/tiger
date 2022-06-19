@@ -23,7 +23,7 @@
 				30 hitbox BG & outline
 				40 sprite drag area
 				50 hitbox drag area
-				60 hitbox resize area
+				60 hitbox resize handle
 			-->
 
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
@@ -32,9 +32,8 @@
 				<div class="absolute inset-0" :style="panningTransform">
 					<Frame v-for="k in allAnimationKeyframes" :key="k.keyframe.key" :keyframe="k.keyframe"
 						:direction="k.direction" :index="k.index" />
-					<Hitbox v-if="!app.currentDocument?.hideHitboxes"
-						v-for="hitbox, name in app.currentKeyframe?.hitboxes" :key="hitbox.key" :hitbox="hitbox"
-						:name="name" />
+					<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="entry in sortedHitboxes"
+						:key="entry.hitbox.key" :hitbox="entry.hitbox" :name="entry.name" />
 				</div>
 			</div>
 			<Origin class="absolute inset-0" :style="panningTransform" />
@@ -48,7 +47,7 @@
 <script setup lang="ts">
 import { onUnmounted, watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
-import { Direction, Keyframe } from "@/api/dto"
+import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/api/dto"
 import { closeDocument, focusDocument } from "@/api/app"
 import { clearSelection, disableSpriteDarkening, enableSpriteDarkening, pan, zoomInWorkbench, zoomOutWorkbench } from "@/api/document"
 import { useAppStore } from "@/stores/app"
@@ -127,6 +126,32 @@ const allAnimationKeyframes = computed((): { direction: Direction, index: number
 		}
 	}
 	return keyframes;
+});
+
+type HitboxEntry = {
+	name: string,
+	hitbox: HitboxDTO,
+};
+
+const sortedHitboxes = computed((): HitboxEntry[] => {
+	if (!app.currentKeyframe) {
+		return [];
+	}
+	let hitboxEntries = Object.entries(app.currentKeyframe.hitboxes).map(([name, hitbox]) => {
+		return { name: name, hitbox: hitbox }
+	});
+	hitboxEntries.sort((a, b) => {
+		const areaA = a.hitbox.size[0] * a.hitbox.size[1];
+		const areaB = b.hitbox.size[0] * b.hitbox.size[1];
+		if (areaA < areaB) {
+			return 1;
+		}
+		if (areaA > areaB) {
+			return -1;
+		}
+		return 0;
+	});
+	return hitboxEntries;
 });
 
 function toggleSpriteDarkening() {

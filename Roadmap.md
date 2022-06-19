@@ -105,7 +105,7 @@
   - [x] Better looking playback controls
   - [x] Better looking timeline zoom controls
   - [x] Jump to next/previous frame
-  - [ ] Workbench interactive elements sort priority
+  - [x] Workbench interactive elements sort priority
   - [ ] Make details panel not completely placeholder
 - [x] In-place rename UX
 - [x] Right click menu to delete item
