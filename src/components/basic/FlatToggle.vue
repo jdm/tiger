@@ -28,13 +28,13 @@ const iconClass = computed(() => {
 		];
 	}
 	if (props.color == "orange") {
-		return ["text-orange-400", "bg-orange-900", "border-orange-700"];
+		return ["text-orange-600", "bg-plastic-900", "border-orange-800"];
 	} else if (props.color == "pink") {
-		return ["text-pink-400", "bg-pink-900", "border-pink-700"];
+		return ["text-pink-600", "bg-plastic-900", "border-pink-800"];
 	} else if (props.color == "sky") {
-		return ["text-sky-400", "bg-sky-900", "border-sky-600"];
+		return ["text-sky-600", "bg-plastic-900", "border-sky-800"];
 	}
-	return ["text-blue-400", "bg-blue-900", "border-blue-600"];
+	return ["text-blue-600", "bg-plastic-900", "border-blue-800"];
 });
 
 function onClicked() {
