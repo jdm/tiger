@@ -7,7 +7,7 @@
 		</div>
 		<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
 			<div class="w-full flex flex-row space-x-2 items-center">
-				<Toggle :toggled="!app.currentDocument?.hideHitboxes" icon="EyeIcon" @click="onToggleHideHitboxes" />
+				<Toggle :toggled="false" icon="LockClosedIcon" />
 				<div class="flex-1 flex flex-row justify-end">
 					<Button :positive="true" icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
 				</div>
@@ -35,14 +35,6 @@ import Hitbox from "@/components/keyframe/Hitbox.vue";
 import Toggle from "@/components/basic/Toggle.vue"
 
 const app = useAppStore();
-
-function onToggleHideHitboxes() {
-	if (app.currentDocument?.hideHitboxes) {
-		showHitboxes();
-	} else {
-		hideHitboxes();
-	}
-}
 
 function onAddClicked() {
 	createHitbox(null);

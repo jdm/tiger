@@ -111,7 +111,8 @@
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
 - [ ] Grid/list display modes in content tab
-- [x] Add option to hide hitboxes while looking at animations in workbench
+- [x] Add option to hide hitboxes
+- [ ] Add option to lock hitboxes
 - [x] Add readability mode
 - [ ] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation

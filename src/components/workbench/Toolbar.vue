@@ -25,9 +25,8 @@
 
 <script setup lang="ts">
 import { computed, ref, WritableComputedRef } from "vue";
-import { disableSpriteDarkening, enableSpriteDarkening } from "@/api/document";
+import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, showHitboxes } from "@/api/document";
 import { useAppStore } from "@/stores/app"
-import Icon from "@/components/basic/Icon.vue"
 import FlatToggle from "@/components/basic/FlatToggle.vue"
 
 const app = useAppStore();
@@ -44,6 +43,17 @@ const spriteDarkening: WritableComputedRef<boolean> = computed({
 });
 
 const drawFrames = ref(true);
-const drawHitboxes = ref(true);
+
+const drawHitboxes: WritableComputedRef<boolean> = computed({
+	get: () => !app.currentDocument?.hideHitboxes,
+	set: (toggled) => {
+		if (toggled) {
+			showHitboxes();
+		} else {
+			hideHitboxes();
+		}
+	},
+});
+
 const drawOrigin = ref(true);
 </script>
