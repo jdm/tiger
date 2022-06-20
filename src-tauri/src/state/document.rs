@@ -6,6 +6,7 @@ use crate::sheet::*;
 
 mod command;
 mod content;
+mod details;
 mod export;
 mod keyframe;
 mod selection;
@@ -15,6 +16,7 @@ mod view;
 
 pub use command::*;
 pub use content::*;
+pub use details::*;
 pub use export::*;
 pub use keyframe::*;
 pub use selection::*;
@@ -321,6 +323,29 @@ impl Document {
                             None
                         }
                     })
+            })
+            .collect())
+    }
+
+    pub fn get_selected_hitboxes_mut(
+        &mut self,
+    ) -> Result<Vec<(String, &mut Hitbox)>, DocumentError> {
+        let (animation_name, _) = self.get_workbench_animation_mut()?;
+        let selection = self.view.selection.clone();
+        let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
+        Ok(keyframe
+            .hitboxes_iter_mut()
+            .filter_map(|(hitbox_name, hitbox)| {
+                if selection.is_hitbox_selected(
+                    animation_name.clone(),
+                    direction,
+                    index,
+                    hitbox_name,
+                ) {
+                    Some((hitbox_name.clone(), hitbox))
+                } else {
+                    None
+                }
             })
             .collect())
     }

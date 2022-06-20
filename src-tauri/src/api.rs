@@ -1074,6 +1074,50 @@ pub fn unlock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, (
 }
 
 #[tauri::command]
+pub fn set_hitbox_position_x(app_state: tauri::State<'_, AppState>, x: i32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetHitboxPositionX(x))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_hitbox_position_y(app_state: tauri::State<'_, AppState>, y: i32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetHitboxPositionY(y))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_hitbox_width(app_state: tauri::State<'_, AppState>, width: u32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetHitboxWidth(width))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_hitbox_height(app_state: tauri::State<'_, AppState>, height: u32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetHitboxHeight(height))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_nudge_hitbox(
     app_state: tauri::State<'_, AppState>,
     name: String,

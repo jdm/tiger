@@ -464,6 +464,26 @@ export async function unlockHitboxes(): Promise<void> {
   appStore.patch(await invoke("unlock_hitboxes"));
 }
 
+export async function setHitboxPositionX(x: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_hitbox_position_x", { x: x }));
+}
+
+export async function setHitboxPositionY(y: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_hitbox_position_y", { y: y }));
+}
+
+export async function setHitboxWidth(width: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_hitbox_width", { width: width }));
+}
+
+export async function setHitboxHeight(height: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_hitbox_height", { height: height }));
+}
+
 export async function beginNudgeHitbox(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("begin_nudge_hitbox", { name: name }));
