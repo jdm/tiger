@@ -21,7 +21,7 @@ pub struct View {
     pub(super) current_sequence: Option<Direction>,
     pub(super) workbench_offset: Vector2D<f32>,
     pub(super) timeline_clock: Duration,
-    pub(super) workbench_zoom_level: u32,
+    pub(super) workbench_zoom_factor: u32,
     pub(super) timeline_zoom_amount: f32,
     pub(super) darken_sprites: bool,
     pub(super) hide_sprite: bool,
@@ -39,7 +39,7 @@ impl Default for View {
             current_animation: None,
             current_sequence: None,
             workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
-            workbench_zoom_level: 8,
+            workbench_zoom_factor: 8,
             timeline_zoom_amount: 0.5,
             timeline_clock: Default::default(),
             darken_sprites: true,
@@ -52,15 +52,20 @@ impl Default for View {
 
 impl View {
     pub(super) fn zoom_in_workbench(&mut self) {
-        self.workbench_zoom_level = 32.min(self.workbench_zoom_level * 2);
+        self.set_workbench_zoom_factor(self.workbench_zoom_factor * 2);
     }
 
     pub(super) fn zoom_out_workbench(&mut self) {
-        self.workbench_zoom_level = 1.max(self.workbench_zoom_level / 2);
+        self.set_workbench_zoom_factor(self.workbench_zoom_factor / 2);
+    }
+    pub(super) fn set_workbench_zoom_factor(&mut self, zoom_factor: u32) {
+        const MIN_WORKBENCH_ZOOM: u32 = 1;
+        const MAX_WORKBENCH_ZOOM: u32 = 32;
+        self.workbench_zoom_factor = zoom_factor.clamp(MIN_WORKBENCH_ZOOM, MAX_WORKBENCH_ZOOM);
     }
 
     pub(super) fn reset_workbench_zoom(&mut self) {
-        self.workbench_zoom_level = 1;
+        self.workbench_zoom_factor = 1;
     }
 
     pub(super) fn center_workbench(&mut self) {
@@ -122,7 +127,7 @@ impl Document {
     }
 
     pub fn workbench_zoom(&self) -> f32 {
-        self.view.workbench_zoom_level as f32
+        self.view.workbench_zoom_factor as f32
     }
 
     pub fn timeline_zoom_factor(&self) -> f32 {

@@ -520,6 +520,20 @@ pub fn zoom_out_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch
 }
 
 #[tauri::command]
+pub fn set_workbench_zoom_factor(
+    app_state: tauri::State<'_, AppState>,
+    zoom_factor: u32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn reset_workbench_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

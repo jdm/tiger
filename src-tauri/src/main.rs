@@ -56,6 +56,7 @@ fn main() {
             api::center_workbench,
             api::zoom_in_workbench,
             api::zoom_out_workbench,
+            api::set_workbench_zoom_factor,
             api::reset_workbench_zoom,
             api::enable_sprite_darkening,
             api::disable_sprite_darkening,

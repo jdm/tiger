@@ -141,6 +141,15 @@ export async function zoomOutWorkbench(): Promise<void> {
   appStore.patch(await invoke("zoom_out_workbench"));
 }
 
+export async function setWorkbenchZoomFactor(
+  zoomFactor: number
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_workbench_zoom_factor", { zoomFactor: zoomFactor })
+  );
+}
+
 export async function resetWorkbenchZoom(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("reset_workbench_zoom"));
