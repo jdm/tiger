@@ -1,5 +1,5 @@
 <template>
-	<div class="z-50 w-[16px] h-[16px]">
+	<div class="w-[16px] h-[16px]">
 		<div class="relative w-full h-full -translate-x-1/2 -translate-y-1/2">
 			<div class="absolute left-[7px] top-0 h-full w-[2px] bg-pink-400"></div>
 			<div class="absolute top-[7px] left-0 w-full h-[2px] bg-pink-400"></div>

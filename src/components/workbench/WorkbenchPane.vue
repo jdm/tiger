@@ -6,12 +6,6 @@
 				{{ document.name + (document.hasUnsavedChanges ? "*" : "") }}
 			</PaneTab>
 		</PaneTabList>
-		<!-- TODO Floating toolbar? -->
-		<div class="w-full px-2 my-4 flex flex-row items-center space-x-2">
-			<Toggle :toggled="!app.currentDocument?.darkenSprites" @click="toggleSpriteDarkening" icon="SunIcon" />
-			<Button @click="zoomInWorkbench" icon="ZoomInIcon" />
-			<Button @click="zoomOutWorkbench" icon="ZoomOutIcon" />
-		</div>
 		<div class="relative flex-1 overflow-hidden pointer-events-none" ref="drawingArea">
 
 			<!--
@@ -20,10 +14,12 @@
 				0 sprite BG
 				10 sprite
 				20 sprite outline
+				30 origin
 				30 hitbox BG & outline
 				40 sprite drag area
 				50 hitbox drag area
 				60 hitbox resize handle
+				70 floating toolbar
 			-->
 
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
@@ -36,10 +32,12 @@
 						:key="entry.hitbox.key" :hitbox="entry.hitbox" :name="entry.name" />
 				</div>
 			</div>
-			<Origin class="absolute inset-0" :style="panningTransform" />
+			<Origin class="absolute inset-0 z-30" :style="panningTransform" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
+
+			<Toolbar class="absolute top-6 right-6 z-[70] pointer-events-auto" />
 		</div>
 	</Pane>
 </template>
@@ -51,8 +49,6 @@ import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/api/dto"
 import { closeDocument, focusDocument } from "@/api/app"
 import { clearSelection, disableSpriteDarkening, enableSpriteDarkening, pan, zoomInWorkbench, zoomOutWorkbench } from "@/api/document"
 import { useAppStore } from "@/stores/app"
-import Button from "@/components/basic/Button.vue"
-import Toggle from "@/components/basic/Toggle.vue"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
@@ -60,6 +56,7 @@ import PaneTabList from "@/components/basic/PaneTabList.vue"
 import Frame from "@/components/workbench/Frame.vue"
 import Hitbox from "@/components/workbench/Hitbox.vue"
 import Origin from "@/components/workbench/Origin.vue"
+import Toolbar from "@/components/workbench/Toolbar.vue"
 
 const app = useAppStore();
 const drawingArea: Ref<HTMLElement | null> = ref(null);
@@ -153,14 +150,6 @@ const sortedHitboxes = computed((): HitboxEntry[] => {
 	});
 	return hitboxEntries;
 });
-
-function toggleSpriteDarkening() {
-	if (app.currentDocument?.darkenSprites) {
-		disableSpriteDarkening();
-	} else {
-		enableSpriteDarkening();
-	}
-}
 
 function onClick() {
 	clearSelection();
