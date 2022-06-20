@@ -23,8 +23,10 @@ pub struct View {
     pub(super) timeline_clock: Duration,
     pub(super) workbench_zoom_level: u32,
     pub(super) timeline_zoom_amount: f32,
-    pub(super) hide_hitboxes: bool,
     pub(super) darken_sprites: bool,
+    pub(super) hide_sprite: bool,
+    pub(super) hide_hitboxes: bool,
+    pub(super) hide_origin: bool,
 }
 
 impl Default for View {
@@ -40,8 +42,10 @@ impl Default for View {
             workbench_zoom_level: 8,
             timeline_zoom_amount: 0.5,
             timeline_clock: Default::default(),
-            hide_hitboxes: false,
             darken_sprites: true,
+            hide_sprite: false,
+            hide_hitboxes: false,
+            hide_origin: false,
         }
     }
 }
@@ -142,8 +146,16 @@ impl Document {
         self.view.darken_sprites
     }
 
+    pub fn is_hiding_sprite(&self) -> bool {
+        self.view.hide_sprite
+    }
+
     pub fn is_hiding_hitboxes(&self) -> bool {
         self.view.hide_hitboxes
+    }
+
+    pub fn is_hiding_origin(&self) -> bool {
+        self.view.hide_origin
     }
 
     pub fn is_frame_filtered_out<T: AsRef<Path>>(&self, frame: T) -> bool {

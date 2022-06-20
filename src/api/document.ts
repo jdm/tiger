@@ -156,6 +156,36 @@ export async function disableSpriteDarkening(): Promise<void> {
   appStore.patch(await invoke("disable_sprite_darkening"));
 }
 
+export async function hideSprite(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("hide_sprite"));
+}
+
+export async function showSprite(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("show_sprite"));
+}
+
+export async function hideHitboxes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("hide_hitboxes"));
+}
+
+export async function showHitboxes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("show_hitboxes"));
+}
+
+export async function hideOrigin(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("hide_origin"));
+}
+
+export async function showOrigin(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("show_origin"));
+}
+
 export async function createAnimation(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("create_animation"));
@@ -390,16 +420,6 @@ export async function createHitbox(
 ): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("create_hitbox", { position: position }));
-}
-
-export async function hideHitboxes(): Promise<void> {
-  const appStore = useAppStore();
-  appStore.patch(await invoke("hide_hitboxes"));
-}
-
-export async function showHitboxes(): Promise<void> {
-  const appStore = useAppStore();
-  appStore.patch(await invoke("show_hitboxes"));
 }
 
 export async function renameHitbox(

@@ -113,6 +113,7 @@
 - [ ] Grid/list display modes in content tab
 - [x] Add option to hide hitboxes
 - [ ] Add option to lock hitboxes
+- [x] Can hide origin
 - [x] Add readability mode
 - [ ] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
@@ -140,7 +141,6 @@
 ## Tiger 0.6
 
 - [ ] Tooltips everywhere
-- [ ] Add option or keyboard shortcut (held) to hide origin crosshair
 - [ ] Add buttons to align frame edges or center to origin
 - [x] Frame and hitboxes can be moved using arrow keys
 - [ ] Draw hitbox names in workbench

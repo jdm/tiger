@@ -551,6 +551,60 @@ pub fn disable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result
 }
 
 #[tauri::command]
+pub fn hide_sprite(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::HideSprite).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn show_sprite(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ShowSprite).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::HideHitboxes).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn show_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ShowHitboxes).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn hide_origin(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::HideOrigin).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn show_origin(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::ShowOrigin).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn create_animation(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
@@ -983,24 +1037,6 @@ pub fn delete_selected_hitboxes(app_state: tauri::State<'_, AppState>) -> Result
             document
                 .process_command(Command::DeleteSelectedHitboxes)
                 .ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
-        if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::HideHitboxes).ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn show_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
-        if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::ShowHitboxes).ok();
         }
     }))
 }

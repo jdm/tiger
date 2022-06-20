@@ -16,7 +16,7 @@
 			<div class="w-10 h-9 flex items-center justify-center text-plastic-400 "><span>16x</span></div>
 		</div>
 		<div class="flex flex-row items-center space-x-1.5">
-			<FlatToggle icon="PhotographIcon" v-model="drawFrames" color="orange" />
+			<FlatToggle icon="PhotographIcon" v-model="drawSprite" color="orange" />
 			<FlatToggle icon="TagIcon" v-model="drawHitboxes" color="pink" />
 			<FlatToggle icon="PlusIcon" v-model="drawOrigin" color="sky" />
 		</div>
@@ -25,7 +25,7 @@
 
 <script setup lang="ts">
 import { computed, ref, WritableComputedRef } from "vue";
-import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, showHitboxes } from "@/api/document";
+import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin, hideSprite, showHitboxes, showOrigin, showSprite } from "@/api/document";
 import { useAppStore } from "@/stores/app"
 import FlatToggle from "@/components/basic/FlatToggle.vue"
 
@@ -42,7 +42,16 @@ const spriteDarkening: WritableComputedRef<boolean> = computed({
 	},
 });
 
-const drawFrames = ref(true);
+const drawSprite: WritableComputedRef<boolean> = computed({
+	get: () => !app.currentDocument?.hideSprite,
+	set: (toggled) => {
+		if (toggled) {
+			showSprite();
+		} else {
+			hideSprite();
+		}
+	},
+});
 
 const drawHitboxes: WritableComputedRef<boolean> = computed({
 	get: () => !app.currentDocument?.hideHitboxes,
@@ -55,5 +64,15 @@ const drawHitboxes: WritableComputedRef<boolean> = computed({
 	},
 });
 
-const drawOrigin = ref(true);
+
+const drawOrigin: WritableComputedRef<boolean> = computed({
+	get: () => !app.currentDocument?.hideOrigin,
+	set: (toggled) => {
+		if (toggled) {
+			showOrigin();
+		} else {
+			hideOrigin();
+		}
+	},
+});
 </script>

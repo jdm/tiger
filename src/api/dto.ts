@@ -35,7 +35,9 @@ export type Document = {
   timelineZoomFactor: number;
   timelineZoomAmount: number;
   darkenSprites: boolean;
+  hideSprite: boolean;
   hideHitboxes: boolean;
+  hideOrigin: boolean;
   isDraggingKeyframeDuration: boolean;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];
