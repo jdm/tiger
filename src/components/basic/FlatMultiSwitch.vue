@@ -49,7 +49,7 @@ const knobStyle = computed(() => {
 
 function itemClass(item: FlatMultiSwitchItem) {
 	return [
-		...(item.active ? ["text-plastic-200"] : ["text-plastic-400", "cursor-pointer"]),
+		...(item.active ? ["text-blue-200"] : ["text-plastic-400", "cursor-pointer"]),
 	];
 }
 
