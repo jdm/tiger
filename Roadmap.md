@@ -107,6 +107,7 @@
   - [x] Jump to next/previous frame
   - [x] Workbench interactive elements sort priority
   - [ ] Make details panel not completely placeholder
+  - [ ] Typography
 - [x] In-place rename UX
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
