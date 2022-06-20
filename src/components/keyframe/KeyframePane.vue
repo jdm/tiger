@@ -2,8 +2,6 @@
 	<Pane>
 		<div class="flex flex-row bg-plastic-900">
 			<PaneTab :selected="true">Hitboxes</PaneTab>
-			<PaneTab :selected="false">Sockets</PaneTab>
-			<PaneTab :selected="false">Events</PaneTab>
 		</div>
 		<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
 			<div class="w-full flex flex-row space-x-2 items-center">
