@@ -1,6 +1,8 @@
 <template>
 	<Pane>
-		<PaneTab :selected="true">Details</PaneTab>
+		<div class="flex flex-row bg-plastic-900">
+			<PaneTab :selected="true">Details</PaneTab>
+		</div>
 		<PaneInset class="h-full m-4 p-4">
 			<div class="h-full px-4 grid grid-cols-10">
 				<DetailKey class="col-span-3">Name</DetailKey>
