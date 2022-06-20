@@ -1,6 +1,6 @@
 use enum_iterator::Sequence;
 use std::borrow::Borrow;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -31,10 +31,7 @@ pub enum MultiSelectionEdit<'a> {
         (String, Direction, usize, String),
         Vec<(String, Direction, usize, String)>,
     ),
-    Keyframes(
-        (String, Direction, usize),
-        HashMap<&'a String, &'a Animation>,
-    ),
+    Keyframes((String, Direction, usize), &'a Animation),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -92,10 +89,11 @@ impl Document {
                     );
                 }
                 let (animation_name, _) = self.get_workbench_animation()?;
-                let all_animations: HashMap<&String, &Animation> =
-                    self.sheet.animations_iter().collect();
-
-                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), all_animations)
+                let animation = self
+                    .sheet
+                    .animation(&animation_name)
+                    .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
+                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), animation)
             }
         };
         self.view.selection.alter(edit, shift, ctrl);
@@ -166,8 +164,8 @@ impl MultiSelection {
             MultiSelectionEdit::Hitboxes(item, set) => {
                 self.hitboxes.alter(item, &set, shift, ctrl);
             }
-            MultiSelectionEdit::Keyframes(item, animations) => {
-                self.keyframes.alter(item, &animations, shift, ctrl);
+            MultiSelectionEdit::Keyframes(item, animation) => {
+                self.keyframes.alter(item, animation, shift, ctrl);
             }
         }
     }
@@ -388,7 +386,7 @@ where
 }
 
 // Special case for keyframe selection, where shift+select needs to select keyframes based on their durations and directions
-impl ItemPool<(String, Direction, usize)> for &HashMap<&String, &Animation> {
+impl ItemPool<(String, Direction, usize)> for &Animation {
     fn get_range(
         &self,
         from: Option<&(String, Direction, usize)>,
@@ -400,10 +398,6 @@ impl ItemPool<(String, Direction, usize)> for &HashMap<&String, &Animation> {
             .cloned()
             .unwrap_or_else(|| (to.0.clone(), Direction::first().unwrap(), 0));
 
-        let animation = match self.get(&to.0) {
-            Some(animation) => *animation,
-            None => return vec![],
-        };
         let animation_name = &from.0;
 
         let from_direction = from.1;
@@ -414,14 +408,14 @@ impl ItemPool<(String, Direction, usize)> for &HashMap<&String, &Animation> {
 
         let affected_times = {
             let from_index = from.2;
-            let from_range = animation
+            let from_range = self
                 .sequence(from_direction)
                 .map(|s| s.keyframe_time_ranges())
                 .and_then(|times| times.get(from_index).cloned())
                 .unwrap_or(0..0);
 
             let to_index = to.2;
-            let to_range = animation
+            let to_range = self
                 .sequence(to_direction)
                 .map(|s| s.keyframe_time_ranges())
                 .and_then(|times| times.get(to_index).cloned())
@@ -432,8 +426,7 @@ impl ItemPool<(String, Direction, usize)> for &HashMap<&String, &Animation> {
             min_time..max_time
         };
 
-        animation
-            .sequences_iter()
+        self.sequences_iter()
             .flat_map(|(direction, sequence)| {
                 sequence
                     .keyframe_time_ranges()
