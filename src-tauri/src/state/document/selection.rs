@@ -1,10 +1,11 @@
+use enum_iterator::Sequence;
 use std::borrow::Borrow;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use crate::sheet::Direction;
+use crate::sheet::{Animation, Direction};
 use crate::state::*;
 
 #[derive(Clone, Debug, Default, PartialEq)]
@@ -23,14 +24,17 @@ pub enum SelectionInput {
     Keyframe(Direction, usize),
 }
 
-pub enum MultiSelectionEdit {
+pub enum MultiSelectionEdit<'a> {
     Frames(PathBuf, Vec<PathBuf>),
     Animations(String, Vec<String>),
     Hitboxes(
         (String, Direction, usize, String),
         Vec<(String, Direction, usize, String)>,
     ),
-    Keyframes((String, Direction, usize), Vec<(String, Direction, usize)>),
+    Keyframes(
+        (String, Direction, usize),
+        HashMap<&'a String, &'a Animation>,
+    ),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -88,19 +92,10 @@ impl Document {
                     );
                 }
                 let (animation_name, _) = self.get_workbench_animation()?;
-                let all_keyframes: Vec<(String, Direction, usize)> = self
-                    .sheet
-                    .animations_iter()
-                    .flat_map(|(name, animation)| {
-                        animation
-                            .sequences_iter()
-                            .flat_map(|(direction, sequence)| {
-                                (0..sequence.num_keyframes())
-                                    .map(|index| (name.clone(), *direction, index))
-                            })
-                    })
-                    .collect();
-                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), all_keyframes)
+                let all_animations: HashMap<&String, &Animation> =
+                    self.sheet.animations_iter().collect();
+
+                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), all_animations)
             }
         };
         self.view.selection.alter(edit, shift, ctrl);
@@ -171,8 +166,8 @@ impl MultiSelection {
             MultiSelectionEdit::Hitboxes(item, set) => {
                 self.hitboxes.alter(item, &set, shift, ctrl);
             }
-            MultiSelectionEdit::Keyframes(item, set) => {
-                self.keyframes.alter(item, &set, shift, ctrl);
+            MultiSelectionEdit::Keyframes(item, animations) => {
+                self.keyframes.alter(item, &animations, shift, ctrl);
             }
         }
     }
@@ -285,21 +280,12 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
     }
 
     // Desired behavior: https://stackoverflow.com/a/16530782
-    fn alter(&mut self, interacted_item: T, all_items: &[T], shift: bool, ctrl: bool) {
-        let interacted_item_index = match all_items.iter().position(|item| *item == interacted_item)
-        {
-            Some(i) => i,
-            None => return,
-        };
-
+    fn alter<U>(&mut self, interacted_item: T, all_items: U, shift: bool, ctrl: bool)
+    where
+        U: ItemPool<T>,
+    {
         if shift {
-            let pivot_index = self
-                .pivot
-                .as_ref()
-                .and_then(|p| all_items.iter().position(|item| item == p))
-                .unwrap_or_default();
-            let range_start = pivot_index.min(interacted_item_index);
-            let range_end = pivot_index.max(interacted_item_index);
+            let affected_items = all_items.get_range(self.pivot.as_ref(), &interacted_item);
             if ctrl {
                 let contains_pivot = self
                     .pivot
@@ -307,12 +293,12 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
                     .map(|p| self.contains(p))
                     .unwrap_or_default();
                 if contains_pivot {
-                    self.insert_items(all_items[range_start..=range_end].iter().cloned());
+                    self.insert_items(affected_items);
                 } else {
-                    self.remove_items(&all_items[range_start..=range_end].iter().collect());
+                    self.remove_items(&affected_items);
                 }
             } else {
-                self.selected_items = all_items[range_start..=range_end].iter().cloned().collect();
+                self.selected_items = HashSet::from_iter(affected_items.into_iter());
             }
         } else if ctrl {
             self.toggle(&interacted_item);
@@ -344,7 +330,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         self.selected_items.extend(items);
     }
 
-    fn remove_items(&mut self, items: &Vec<&T>) {
+    fn remove_items(&mut self, items: &[T]) {
         for item in items {
             self.selected_items.remove(item);
         }
@@ -360,6 +346,113 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> From
 {
     fn from(selected_item: T) -> Self {
         MultiSelectionData::new(vec![selected_item])
+    }
+}
+
+trait ItemPool<T> {
+    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T>;
+}
+
+// General case for 1D ordered list
+impl<T> ItemPool<T> for &[T]
+where
+    T: Eq + Clone,
+{
+    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
+        let from_index = from
+            .and_then(|f| self.iter().position(|item| item == f))
+            .unwrap_or_default();
+        let to_index = self.iter().position(|item| item == to).unwrap_or_default();
+        let min_index = from_index.min(to_index);
+        let max_index = from_index.max(to_index);
+        self[min_index..=max_index].to_vec()
+    }
+}
+
+impl<T> ItemPool<T> for &Vec<T>
+where
+    T: Eq + Clone,
+{
+    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
+        (&self[..]).get_range(from, to)
+    }
+}
+
+impl<T, const N: usize> ItemPool<T> for &[T; N]
+where
+    T: Eq + Clone,
+{
+    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
+        (&self[..]).get_range(from, to)
+    }
+}
+
+// Special case for keyframe selection, where shift+select needs to select keyframes based on their durations and directions
+impl ItemPool<(String, Direction, usize)> for &HashMap<&String, &Animation> {
+    fn get_range(
+        &self,
+        from: Option<&(String, Direction, usize)>,
+        to: &(String, Direction, usize),
+    ) -> Vec<(String, Direction, usize)> {
+        // TODO switch to unwrap or default once https://github.com/rust-lang/rust/pull/94457 is on stable
+        let from = from
+            .filter(|from| from.0 == to.0)
+            .cloned()
+            .unwrap_or_else(|| (to.0.clone(), Direction::first().unwrap(), 0));
+
+        let animation = match self.get(&to.0) {
+            Some(animation) => *animation,
+            None => return vec![],
+        };
+        let animation_name = &from.0;
+
+        let from_direction = from.1;
+        let to_direction = to.1;
+        let min_direction = from_direction.min(to_direction);
+        let max_direction = from_direction.max(to_direction);
+        let affected_directions = min_direction..=max_direction;
+
+        let affected_times = {
+            let from_index = from.2;
+            let from_range = animation
+                .sequence(from_direction)
+                .map(|s| s.keyframe_time_ranges())
+                .and_then(|times| times.get(from_index).cloned())
+                .unwrap_or(0..0);
+
+            let to_index = to.2;
+            let to_range = animation
+                .sequence(to_direction)
+                .map(|s| s.keyframe_time_ranges())
+                .and_then(|times| times.get(to_index).cloned())
+                .unwrap_or(0..0);
+
+            let min_time = from_range.start.min(to_range.start);
+            let max_time = from_range.end.max(to_range.end);
+            min_time..max_time
+        };
+
+        animation
+            .sequences_iter()
+            .flat_map(|(direction, sequence)| {
+                sequence
+                    .keyframe_time_ranges()
+                    .into_iter()
+                    .enumerate()
+                    .map(|(index, range)| (*direction, index, range))
+            })
+            .filter_map(|(direction, index, range)| {
+                let intersection =
+                    affected_times.start.max(range.start)..affected_times.end.min(range.end);
+                let in_time_range = intersection.end.saturating_sub(intersection.start)
+                    >= (range.end.saturating_sub(range.start) / 2);
+                if affected_directions.contains(&direction) && in_time_range {
+                    Some((animation_name.clone(), direction, index))
+                } else {
+                    None
+                }
+            })
+            .collect()
     }
 }
 

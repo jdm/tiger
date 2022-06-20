@@ -10,6 +10,7 @@ use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufWriter;
+use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
@@ -389,12 +390,19 @@ impl Sequence {
     }
 
     pub fn keyframe_times(&self) -> Vec<u64> {
+        self.keyframe_time_ranges()
+            .into_iter()
+            .map(|r| r.start)
+            .collect()
+    }
+
+    pub fn keyframe_time_ranges(&self) -> Vec<Range<u64>> {
         let mut cursor = 0;
         self.keyframes_iter()
             .map(|f| {
-                let t = cursor;
+                let start = cursor;
                 cursor += f.duration_millis();
-                t
+                start..cursor
             })
             .collect()
     }

@@ -33,7 +33,19 @@ pub struct Animation {
     pub(in crate::sheet) is_looping: bool,
 }
 
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, PartialOrd, Ord, Serialize, Deserialize)]
+#[derive(
+    Clone,
+    Copy,
+    Debug,
+    Eq,
+    Hash,
+    PartialEq,
+    PartialOrd,
+    Ord,
+    Serialize,
+    Deserialize,
+    enum_iterator::Sequence,
+)]
 pub enum Direction {
     East,
     NorthEast,

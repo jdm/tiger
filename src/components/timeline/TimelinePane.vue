@@ -22,11 +22,10 @@
 					<div class="h-6 bg-plastic-600" />
 					<div
 						class="w-36 flex flex-col py-2 space-y-1 text-plastic-400 text-xs uppercase font-semibold text-right">
-						<div v-for="sequence, direction in app.currentAnimation?.sequences"
-							@click="selectDirection(direction)"
-							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="sequence == app.currentSequence ?
+						<div v-for="entry in sequenceEntries" @click="selectDirection(entry.direction)"
+							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="entry.sequence == app.currentSequence ?
 							'text-plastic-200 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
-							{{ direction }}
+							{{ entry.direction }}
 						</div>
 					</div>
 				</div>
@@ -35,8 +34,8 @@
 					<div class="min-w-full flex flex-col" :style="timelineStyle">
 						<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
 						<div class="flex flex-col py-2 space-y-1">
-							<Sequence v-for="sequence, direction in app.currentAnimation?.sequences"
-								:sequence="sequence" :direction="direction" :animate="animateSequences" />
+							<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
+								:direction="entry.direction" :animate="animateSequences" />
 							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
 								class="h-10" />
 						</div>
@@ -52,6 +51,7 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from "@vue/reactivity"
 import { SearchIcon } from "@heroicons/vue/solid"
+import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
 	selectDirection, setAnimationLooping, setTimelineZoomAmount
 } from "@/api/document"
@@ -81,6 +81,25 @@ const zoomAmount = computed({
 function onScroll() {
 	scrollLeft.value = scrollableElement.value?.scrollLeft || 0;
 }
+
+type SequenceEntry = {
+	direction: Direction,
+	sequence: SequenceDTO,
+};
+
+const sequenceEntries = computed(() => {
+	if (!app.currentAnimation) {
+		return null;
+	}
+	const orderedDirections = Object.values(Direction);
+	const entries = Object.entries(app.currentAnimation?.sequences).map(([direction, sequence]): SequenceEntry => {
+		return { direction: direction as Direction, sequence: sequence }
+	});
+	entries.sort((entryA, entryB) =>
+		orderedDirections.indexOf(entryA.direction) - orderedDirections.indexOf(entryB.direction)
+	);
+	return entries;
+});
 
 const animationDuration = computed(() => {
 	return Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;

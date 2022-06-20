@@ -117,15 +117,15 @@
 - [x] Add option to hide hitboxes
 - [x] Add option to lock hitboxes
 - [x] Add readability mode
-- [ ] Support multiple directions/angles for the same animation
+- [x] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
   - [x] Can preview and edit multiple sequences
-  - [ ] Shift selecting keyframes on timeline selects the keyframes you would expect
+  - [x] Shift selecting keyframes on timeline selects the keyframes you would expect
 - [x] Add toggle to hide keyframes (replaces linking/locking)
 - [x] Add sprite darkening readility mode
 - [x] Workbench tabs
 - [ ] Replace powershell release script with Github action
-- [x] Unit test sheet module
+- [ ] Unit test sheet module
 
 ## Tiger 0.5
 
