@@ -7,7 +7,8 @@
 		</div>
 		<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
 			<div class="w-full flex flex-row space-x-2 items-center">
-				<Toggle :toggled="false" icon="LockClosedIcon" />
+				<Toggle :toggled="!!app.currentDocument?.lockHitboxes" icon="LockClosedIcon"
+					@toggled="onToggleLockHitboxes" />
 				<div class="flex-1 flex flex-row justify-end">
 					<Button :positive="true" icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
 				</div>
@@ -25,7 +26,7 @@
 </template>
 
 <script setup lang="ts">
-import { createHitbox, hideHitboxes, showHitboxes } from "@/api/document";
+import { createHitbox, lockHitboxes, unlockHitboxes } from "@/api/document";
 import { useAppStore } from "@/stores/app";
 import Button from "@/components/basic/Button.vue"
 import Pane from "@/components/basic/Pane.vue"
@@ -35,6 +36,14 @@ import Hitbox from "@/components/keyframe/Hitbox.vue";
 import Toggle from "@/components/basic/Toggle.vue"
 
 const app = useAppStore();
+
+function onToggleLockHitboxes(toggled: boolean) {
+	if (toggled) {
+		lockHitboxes();
+	} else {
+		unlockHitboxes();
+	}
+}
 
 function onAddClicked() {
 	createHitbox(null);

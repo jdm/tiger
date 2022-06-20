@@ -38,6 +38,7 @@ export type Document = {
   hideSprite: boolean;
   hideHitboxes: boolean;
   hideOrigin: boolean;
+  lockHitboxes: boolean;
   isDraggingKeyframeDuration: boolean;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];

@@ -454,6 +454,16 @@ export async function deleteSelectedHitboxes(): Promise<void> {
   appStore.patch(await invoke("delete_selected_hitboxes"));
 }
 
+export async function lockHitboxes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("lock_hitboxes"));
+}
+
+export async function unlockHitboxes(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("unlock_hitboxes"));
+}
+
 export async function beginNudgeHitbox(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("begin_nudge_hitbox", { name: name }));

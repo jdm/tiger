@@ -51,6 +51,7 @@ pub struct Document {
     hide_sprite: bool,
     hide_hitboxes: bool,
     hide_origin: bool,
+    lock_hitboxes: bool,
     is_dragging_keyframe_duration: bool,
     frames_being_dragged: Vec<PathBuf>,
     keyframes_being_dragged: HashSet<(Direction, usize)>,
@@ -270,6 +271,7 @@ impl From<&state::Document> for Document {
             hide_sprite: document.is_hiding_sprite(),
             hide_hitboxes: document.is_hiding_hitboxes(),
             hide_origin: document.is_hiding_origin(),
+            lock_hitboxes: document.are_hitboxes_locked(),
             is_dragging_keyframe_duration: document.is_dragging_keyframe_duration(),
             frames_being_dragged: document.frames_being_dragged(),
             keyframes_being_dragged: document

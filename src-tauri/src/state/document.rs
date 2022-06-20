@@ -180,6 +180,10 @@ impl Document {
                         .unwrap_or_default()
             });
 
+        if self.view.lock_hitboxes || self.persistent.timeline_is_playing {
+            self.view.selection.hitboxes.clear();
+        }
+
         let current_keyframe_index = self
             .get_workbench_sequence()
             .ok()

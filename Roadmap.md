@@ -101,7 +101,7 @@
   - [ ] Keyboard controls
   - [ ] Undo command names
   - [x] Auto reload images on frame edit
-  - [ ] Floating toolbar in workbench
+  - [x] Floating toolbar in workbench
   - [x] Better looking playback controls
   - [x] Better looking timeline zoom controls
   - [x] Jump to next/previous frame
@@ -111,9 +111,9 @@
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
 - [ ] Grid/list display modes in content tab
+- [x] Add option to hide origin
 - [x] Add option to hide hitboxes
-- [ ] Add option to lock hitboxes
-- [x] Can hide origin
+- [x] Add option to lock hitboxes
 - [x] Add readability mode
 - [ ] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation

@@ -103,6 +103,8 @@ fn main() {
             api::rename_hitbox,
             api::delete_hitbox,
             api::delete_selected_hitboxes,
+            api::lock_hitboxes,
+            api::unlock_hitboxes,
             api::begin_nudge_hitbox,
             api::update_nudge_hitbox,
             api::end_nudge_hitbox,

@@ -1,7 +1,8 @@
 <template>
 	<BoundingBox :position="hitbox.topLeft" :size="hitbox.size" :darken="true" :colorClasses="boundingBoxClass"
 		class="z-30" />
-	<DragArea v-if="!app.currentDocument?.timelineIsPlaying" :buttons="['left', 'right']" active-cursor="cursor-move"
+	<DragArea v-if="!app.currentDocument?.timelineIsPlaying && !app.currentDocument?.lockHitboxes"
+		:buttons="['left', 'right']" active-cursor="cursor-move"
 		:inactive-cursor="hitbox.selected ? 'cursor-move' : 'cursor-pointer'" @mouseenter="onMouseEnter"
 		@mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
 		class="absolute pointer-events-auto z-50" :style="positionStyle" />

@@ -27,6 +27,7 @@ pub struct View {
     pub(super) hide_sprite: bool,
     pub(super) hide_hitboxes: bool,
     pub(super) hide_origin: bool,
+    pub(super) lock_hitboxes: bool,
 }
 
 impl Default for View {
@@ -46,6 +47,7 @@ impl Default for View {
             hide_sprite: false,
             hide_hitboxes: false,
             hide_origin: false,
+            lock_hitboxes: false,
         }
     }
 }
@@ -161,6 +163,10 @@ impl Document {
 
     pub fn is_hiding_origin(&self) -> bool {
         self.view.hide_origin
+    }
+
+    pub fn are_hitboxes_locked(&self) -> bool {
+        self.view.lock_hitboxes
     }
 
     pub fn is_frame_filtered_out<T: AsRef<Path>>(&self, frame: T) -> bool {

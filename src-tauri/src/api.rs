@@ -1056,6 +1056,24 @@ pub fn delete_selected_hitboxes(app_state: tauri::State<'_, AppState>) -> Result
 }
 
 #[tauri::command]
+pub fn lock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::LockHitboxes).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn unlock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::UnlockHitboxes).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_nudge_hitbox(
     app_state: tauri::State<'_, AppState>,
     name: String,
