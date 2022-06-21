@@ -75,7 +75,11 @@
 - [x] Dependencies update
 - [x] Remove placeholder app icon
 - [x] Get rid of failure crate
+- [x] Compile on Rust Stable
+- [x] Remove commands threads (keep long commands thread)
 - [x] Move hitbox data from frames to animation frames
+- [x] Frame and hitboxes can be moved using arrow keys
+- [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 - [x] Editing hitboxes while animation is in workbench
   - [x] Hitboxes can be created and moved while an animation is in the workbench
   - [x] When multiple hitboxes and the animation frame are overlapping, mouse hovers and clicks should only interact with one of them
@@ -118,6 +122,7 @@
 - [x] Add option to hide hitboxes
 - [x] Add option to lock hitboxes
 - [x] Add readability mode
+- [x] Edit hitbox offset and size from details panel
 - [x] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
   - [x] Can preview and edit multiple sequences
@@ -145,7 +150,6 @@
 
 - [ ] Tooltips everywhere
 - [ ] Add buttons to align frame edges or center to origin
-- [x] Frame and hitboxes can be moved using arrow keys
 - [ ] Draw hitbox names in workbench
 - [ ] Playback speed controls
 - [ ] Time snapping of animation frames
@@ -155,9 +159,7 @@
 
 - [ ] Right click menu to rename item
 - [ ] Edit keyframe duration and offset from details panel
-- [ ] Edit hitbox offset and size from details panel
 - [ ] Export dialog links to documentation
-- [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 
 ## Tiger 0.8
 
@@ -182,8 +184,6 @@
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Provide export templates for some common formats (TBD)
-- [x] Compile on Rust Stable
-- [x] Remove commands threads (keep long commands thread)
 - [ ] Document template format
 - [ ] Readme Logo
 - [ ] About dialog
