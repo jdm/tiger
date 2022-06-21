@@ -1,8 +1,8 @@
 <template>
 	<div class="self-center flex flex-row bg-plastic-900 outline outline-1 outline-plastic-700 rounded-sm">
 		<input ref="inputElement" v-model.lazy="value" @keydown.escape="onInputCancelled"
-			class="w-full text-xs bg-transparent text-plastic-300 rounded-sm border-0 focus:ring-0" type="text"
-			spellcheck="false" />
+			class="w-full text-xs bg-transparent text-plastic-300 rounded-sm border-0 focus:ring-0"
+			:class="readOnly ? 'pointer-events-none' : ''" type="text" spellcheck="false" :readonly="readOnly" />
 		<div v-if="unit" class="text-xs self-center px-2 text-plastic-500">{{ unit }}</div>
 	</div>
 </template>
@@ -11,12 +11,13 @@
 import { computed, ref, Ref } from "vue";
 
 const props = defineProps<{
-	values: number[],
+	values: string[],
 	unit?: string,
+	readOnly?: boolean,
 }>();
 
 const emit = defineEmits<{
-	(e: "update", newValue: number): void
+	(e: "update", newValue: string): void
 }>();
 
 const inputElement: Ref<HTMLInputElement | null> = ref(null);
@@ -27,11 +28,8 @@ const multipleValues = computed(() => {
 
 const value = computed({
 	get: () => (multipleValues.value ? "<?>" : props.values[0] || 0).toString(),
-	set: (value) => {
-		const newValue = Number(value);
-		if (newValue != null) {
-			emit("update", newValue);
-		}
+	set: (newValue) => {
+		emit("update", newValue);
 	},
 });
 

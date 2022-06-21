@@ -2,13 +2,13 @@
 	<PaneInset class="m-4 p-4">
 		<div class="px-4 grid grid-cols-10 gap-y-2">
 			<DetailKey class="col-span-4">X</DetailKey>
-			<DetailValue :values="xValues" @update="setHitboxPositionX" class="col-span-6" unit="px" />
+			<DetailValueNumber :values="xValues" @update="setHitboxPositionX" class="col-span-6" unit="px" />
 
 			<DetailKey class="col-span-4">Y</DetailKey>
-			<DetailValue :values="yValues" @update="setHitboxPositionY" class="col-span-6" unit="px" />
+			<DetailValueNumber :values="yValues" @update="setHitboxPositionY" class="col-span-6" unit="px" />
 
 			<DetailKey class="col-span-4">Width</DetailKey>
-			<DetailValue :values="widthValues" @update="setHitboxWidth" class="col-span-4" unit="px" />
+			<DetailValueNumber :values="widthValues" @update="setHitboxWidth" class="col-span-4" unit="px" />
 
 			<div class="col-span-2 row-span-2 flex flex-col justify-center pl-2">
 				<div class="h-2.5 w-1/2 border-t border-r"
@@ -20,7 +20,7 @@
 			</div>
 
 			<DetailKey class="col-span-4">Height</DetailKey>
-			<DetailValue :values="heightValues" @update="setHitboxHeight" class="col-span-4" unit="px" />
+			<DetailValueNumber :values="heightValues" @update="setHitboxHeight" class="col-span-4" unit="px" />
 		</div>
 	</PaneInset>
 </template>
@@ -32,7 +32,7 @@ import { useAppStore } from "@/stores/app"
 import Icon from "@/components/basic/Icon.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import DetailKey from "@/components/details/DetailKey.vue"
-import DetailValue from "@/components/details/DetailValue.vue"
+import DetailValueNumber from "@/components/details/DetailValueNumber.vue"
 
 const app = useAppStore();
 
