@@ -5,6 +5,7 @@
 		</div>
 		<HitboxDetails v-if="app.selectedHitboxes?.length" />
 		<KeyframeDetails v-else-if="app.selectedKeyframes?.length" />
+		<BlankDetails v-else />
 	</Pane>
 </template>
 
@@ -12,6 +13,7 @@
 import { useAppStore } from "@/stores/app"
 import Pane from "@/components/basic/Pane.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
+import BlankDetails from "@/components/details/BlankDetails.vue"
 import HitboxDetails from "@/components/details/HitboxDetails.vue"
 import KeyframeDetails from "@/components/details/KeyframeDetails.vue"
 

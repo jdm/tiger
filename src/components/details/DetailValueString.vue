@@ -27,7 +27,7 @@ const multipleValues = computed(() => {
 });
 
 const value = computed({
-	get: () => (multipleValues.value ? "<?>" : props.values[0] || 0).toString(),
+	get: () => (multipleValues.value ? "<?>" : props.values[0] || "").toString(),
 	set: (newValue) => {
 		emit("update", newValue);
 	},

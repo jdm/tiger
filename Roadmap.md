@@ -110,7 +110,7 @@
   - [x] Better looking timeline zoom controls
   - [x] Jump to next/previous frame
   - [x] Workbench interactive elements sort priority
-  - [ ] Make details panel not completely placeholder
+  - [x] Make details panel not completely placeholder
   - [ ] Typography
   - [ ] Review tiger-imgui for anything forgotten
   - [ ] Minimize/Maximize/Restore icons
