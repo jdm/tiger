@@ -100,11 +100,12 @@ export type Keyframe = {
   startTimeMillis: number;
   durationMillis: number;
   offset: [number, number];
-  hitboxes: Record<string, Hitbox>;
+  hitboxes: Hitbox[];
   key: string;
 };
 
 export type Hitbox = {
+  name: string;
   selected: boolean;
   topLeft: [number, number];
   size: [number, number];

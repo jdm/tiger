@@ -24,7 +24,6 @@ const app = useAppStore();
 
 const props = defineProps<{
 	hitbox: Hitbox,
-	name: string,
 }>();
 
 const hovered = ref(false);
@@ -60,7 +59,7 @@ function onMouseLeave() {
 
 function startDrag(event: DragAreaEvent) {
 	if (event.button == "left") {
-		beginNudgeHitbox(props.name);
+		beginNudgeHitbox(props.hitbox.name);
 	}
 }
 
@@ -69,7 +68,7 @@ function endDrag(event: DragAreaEvent) {
 		if (event.didMove) {
 			endNudgeHitbox();
 		} else {
-			selectHitbox(props.name, event.mouseEvent.shiftKey, event.mouseEvent.ctrlKey);
+			selectHitbox(props.hitbox.name, event.mouseEvent.shiftKey, event.mouseEvent.ctrlKey);
 		}
 	}
 }
@@ -87,7 +86,7 @@ function updateDrag(event: DragAreaEvent) {
 }
 
 function startResize(event: ResizeEvent) {
-	beginResizeHitbox(props.name, event.axis);
+	beginResizeHitbox(props.hitbox.name, event.axis);
 }
 
 function updateResize(event: ResizeEvent) {

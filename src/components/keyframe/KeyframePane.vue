@@ -14,8 +14,7 @@
 			<PaneInset class="flex-1 min-h-0">
 				<div class="p-4 overflow-y-auto h-full styled-scrollbars">
 					<div class="flex flex-col">
-						<Hitbox v-for="hitbox, name in app.currentKeyframe?.hitboxes" :hitbox="hitbox" :name="name"
-							:key="hitbox.key" />
+						<Hitbox v-for="hitbox in app.currentKeyframe?.hitboxes" :hitbox="hitbox" :key="hitbox.key" />
 					</div>
 				</div>
 			</PaneInset>

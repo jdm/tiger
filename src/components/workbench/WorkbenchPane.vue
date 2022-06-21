@@ -28,8 +28,8 @@
 				<div class="absolute inset-0" :style="panningTransform">
 					<Frame v-if="!app.currentDocument?.hideSprite" v-for="k in allAnimationKeyframes"
 						:key="k.keyframe.key" :keyframe="k.keyframe" :direction="k.direction" :index="k.index" />
-					<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="entry in sortedHitboxes"
-						:key="entry.hitbox.key" :hitbox="entry.hitbox" :name="entry.name" />
+					<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="hitbox in sortedHitboxes" :key="hitbox.key"
+						:hitbox="hitbox" />
 				</div>
 			</div>
 			<Origin v-if="!app.currentDocument?.hideOrigin" class="absolute inset-0 z-30" :style="panningTransform" />
@@ -125,21 +125,15 @@ const allAnimationKeyframes = computed((): { direction: Direction, index: number
 	return keyframes;
 });
 
-type HitboxEntry = {
-	name: string,
-	hitbox: HitboxDTO,
-};
 
-const sortedHitboxes = computed((): HitboxEntry[] => {
+const sortedHitboxes = computed((): HitboxDTO[] => {
 	if (!app.currentKeyframe) {
 		return [];
 	}
-	let hitboxEntries = Object.entries(app.currentKeyframe.hitboxes).map(([name, hitbox]) => {
-		return { name: name, hitbox: hitbox }
-	});
-	hitboxEntries.sort((a, b) => {
-		const areaA = a.hitbox.size[0] * a.hitbox.size[1];
-		const areaB = b.hitbox.size[0] * b.hitbox.size[1];
+	let hitboxes = [...app.currentKeyframe.hitboxes];
+	hitboxes.sort((a, b) => {
+		const areaA = a.size[0] * a.size[1];
+		const areaB = b.size[0] * b.size[1];
 		if (areaA < areaB) {
 			return 1;
 		}
@@ -148,7 +142,7 @@ const sortedHitboxes = computed((): HitboxEntry[] => {
 		}
 		return 0;
 	});
-	return hitboxEntries;
+	return hitboxes;
 });
 
 function onClick() {

@@ -125,13 +125,14 @@ pub struct Keyframe {
     start_time_millis: u64,
     duration_millis: u64,
     offset: (i32, i32),
-    hitboxes: HashMap<String, Hitbox>,
+    hitboxes: Vec<Hitbox>,
     key: Uuid,
 }
 
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hitbox {
+    name: String,
     selected: bool,
     top_left: (i32, i32),
     size: (u32, u32),
@@ -235,12 +236,12 @@ impl From<&state::Document> for Document {
                     );
                     keyframe.start_time_millis = time_millis;
                     time_millis += keyframe.duration_millis;
-                    for (hitbox_name, hitbox) in keyframe.hitboxes.iter_mut() {
+                    for hitbox in keyframe.hitboxes.iter_mut() {
                         hitbox.selected = document.selection().is_hitbox_selected(
                             animation_name,
                             (*direction).into(),
                             index,
-                            hitbox_name,
+                            &hitbox.name,
                         );
                     }
                 }
@@ -416,16 +417,17 @@ impl From<&sheet::Keyframe> for Keyframe {
             offset: keyframe.offset().to_tuple(),
             hitboxes: keyframe
                 .hitboxes_iter()
-                .map(|(n, h)| (n.clone(), h.into()))
+                .map(|(n, h)| (n.clone(), h).into())
                 .collect(),
             key: keyframe.key(),
         }
     }
 }
 
-impl From<&sheet::Hitbox> for Hitbox {
-    fn from(hitbox: &sheet::Hitbox) -> Self {
+impl From<(String, &sheet::Hitbox)> for Hitbox {
+    fn from((name, hitbox): (String, &sheet::Hitbox)) -> Self {
         Self {
+            name,
             selected: false,
             top_left: hitbox.position().to_tuple(),
             size: hitbox.size().to_tuple(),
