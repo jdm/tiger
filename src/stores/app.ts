@@ -1,4 +1,11 @@
-import { Animation, AppState, Keyframe, Patch, Sequence } from "@/api/dto";
+import {
+  Animation,
+  AppState,
+  Hitbox,
+  Keyframe,
+  Patch,
+  Sequence,
+} from "@/api/dto";
 import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
 
@@ -71,6 +78,12 @@ export const useAppStore = defineStore("app", {
         ];
       }
       return null;
+    },
+    selectedHitboxes(): Hitbox[] | null {
+      if (!this.currentKeyframe) {
+        return null;
+      }
+      return this.currentKeyframe.hitboxes.filter((h) => h.selected);
     },
   },
 });
