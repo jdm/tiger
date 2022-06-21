@@ -335,6 +335,25 @@ export async function deleteSelectedKeyframes(): Promise<void> {
   appStore.patch(await invoke("delete_selected_keyframes"));
 }
 
+export async function setKeyframeDuration(
+  durationMillis: number
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_keyframe_duration", { durationMillis: durationMillis })
+  );
+}
+
+export async function setKeyframeOffsetX(x: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_keyframe_offset_x", { x: x }));
+}
+
+export async function setKeyframeOffsetY(y: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_keyframe_offset_y", { y: y }));
+}
+
 export async function beginDragAndDropKeyframe(
   direction: Direction,
   index: number

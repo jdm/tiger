@@ -887,6 +887,44 @@ pub fn delete_selected_keyframes(app_state: tauri::State<'_, AppState>) -> Resul
 }
 
 #[tauri::command]
+pub fn set_keyframe_duration(
+    app_state: tauri::State<'_, AppState>,
+    duration_millis: u64,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetKeyframeDuration(Duration::from_millis(
+                    duration_millis,
+                )))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_keyframe_offset_x(app_state: tauri::State<'_, AppState>, x: i32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetKeyframeOffsetX(x))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_keyframe_offset_y(app_state: tauri::State<'_, AppState>, y: i32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetKeyframeOffsetY(y))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_drag_and_drop_keyframe(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,

@@ -27,12 +27,12 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
+import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight, togglePreserveAspectRatio } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Icon from "@/components/basic/Icon.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import DetailKey from "@/components/details/DetailKey.vue"
 import DetailValue from "@/components/details/DetailValue.vue"
-import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight, togglePreserveAspectRatio } from "@/api/document"
 
 const app = useAppStore();
 

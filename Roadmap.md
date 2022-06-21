@@ -123,6 +123,7 @@
 - [x] Add option to lock hitboxes
 - [x] Add readability mode
 - [x] Edit hitbox offset and size from details panel
+- [x] Edit keyframe duration and offset from details panel
 - [x] Support multiple directions/angles for the same animation
   - [x] Sheet stores multiple sequences per animation
   - [x] Can preview and edit multiple sequences
@@ -158,7 +159,6 @@
 ## Tiger 0.7
 
 - [ ] Right click menu to rename item
-- [ ] Edit keyframe duration and offset from details panel
 - [ ] Export dialog links to documentation
 
 ## Tiger 0.8

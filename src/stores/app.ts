@@ -83,7 +83,15 @@ export const useAppStore = defineStore("app", {
       if (!this.currentKeyframe) {
         return null;
       }
-      return this.currentKeyframe.hitboxes.filter((h) => h.selected);
+      return this.currentKeyframe.hitboxes.filter((hitbox) => hitbox.selected);
+    },
+    selectedKeyframes(): Keyframe[] | null {
+      if (!this.currentAnimation) {
+        return null;
+      }
+      return Object.values(this.currentAnimation.sequences).flatMap(
+        (sequence) => sequence.keyframes.filter((keyframe) => keyframe.selected)
+      );
     },
   },
 });

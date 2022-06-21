@@ -14,15 +14,9 @@ pub(super) struct KeyframeDurationDrag {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub(super) struct KeyframeNudgeEntry {
-    keyframe_offset: Vector2D<i32>,
-    hitbox_positions: HashMap<String, Vector2D<i32>>,
-}
-
-#[derive(Clone, Debug, PartialEq)]
 pub(super) struct KeyframeNudge {
     pub(super) keyframe_being_dragged: (Direction, usize),
-    pub(super) original_positions: HashMap<(Direction, usize), KeyframeNudgeEntry>,
+    pub(super) original_positions: HashMap<(Direction, usize), Vector2D<i32>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -294,20 +288,7 @@ impl Document {
                     sequence
                         .keyframes_iter()
                         .enumerate()
-                        .map(|(index, keyframe)| {
-                            (
-                                (*direction, index),
-                                KeyframeNudgeEntry {
-                                    keyframe_offset: keyframe.offset(),
-                                    hitbox_positions: keyframe
-                                        .hitboxes_iter()
-                                        .map(|(hitbox_name, hitbox)| {
-                                            (hitbox_name.clone(), hitbox.position())
-                                        })
-                                        .collect(),
-                                },
-                            )
-                        })
+                        .map(|(index, keyframe)| ((*direction, index), keyframe.offset()))
                 })
                 .collect(),
         });
@@ -359,7 +340,7 @@ impl Document {
             .collect::<Vec<_>>();
 
         for (direction, index) in affected_keyframes {
-            let old_offsets = nudge
+            let old_keyframe_offset = nudge
                 .original_positions
                 .get(&(direction, index))
                 .ok_or(DocumentError::MissingKeyframePositionData)?;
@@ -371,27 +352,23 @@ impl Document {
                 .keyframe_mut(index)
                 .ok_or(DocumentError::NoKeyframeAtIndex(index))?;
 
-            let old_keyframe_offset = old_offsets.keyframe_offset;
             let new_key_frame_offset = (old_keyframe_offset.to_f32()
                 + displacement.to_f32() / zoom)
                 .floor()
                 .to_i32();
-            keyframe.set_offset(new_key_frame_offset);
-
-            for (hitbox_name, hitbox) in keyframe.hitboxes_iter_mut() {
-                let old_position = old_offsets
-                    .hitbox_positions
-                    .get(hitbox_name)
-                    .ok_or(DocumentError::MissingHitboxPositionData)?
-                    .to_f32();
-                let new_position = (old_position + displacement.to_f32() / zoom)
-                    .floor()
-                    .to_i32();
-                hitbox.set_position(new_position);
-            }
+            Document::nudge_keyframe(keyframe, new_key_frame_offset);
         }
 
         Ok(())
+    }
+
+    pub(super) fn nudge_keyframe(keyframe: &mut Keyframe, new_offset: Vector2D<i32>) {
+        let old_offset = keyframe.offset();
+        keyframe.set_offset(new_offset);
+        let displacement = new_offset - old_offset;
+        for (_, hitbox) in keyframe.hitboxes_iter_mut() {
+            hitbox.set_position(hitbox.position() + displacement);
+        }
     }
 
     pub(super) fn begin_nudge_hitbox<T: AsRef<str>>(

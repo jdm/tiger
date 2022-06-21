@@ -6,7 +6,6 @@ use crate::sheet::*;
 
 mod command;
 mod content;
-mod details;
 mod export;
 mod keyframe;
 mod selection;
@@ -16,7 +15,6 @@ mod view;
 
 pub use command::*;
 pub use content::*;
-pub use details::*;
 pub use export::*;
 pub use keyframe::*;
 pub use selection::*;
