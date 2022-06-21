@@ -109,6 +109,7 @@ fn main() {
             api::set_hitbox_position_y,
             api::set_hitbox_width,
             api::set_hitbox_height,
+            api::toggle_preserve_aspect_ratio,
             api::begin_nudge_hitbox,
             api::update_nudge_hitbox,
             api::end_nudge_hitbox,

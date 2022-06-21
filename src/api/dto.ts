@@ -39,6 +39,7 @@ export type Document = {
   hideHitboxes: boolean;
   hideOrigin: boolean;
   lockHitboxes: boolean;
+  preserveAspectRatio: boolean;
   isDraggingKeyframeDuration: boolean;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];

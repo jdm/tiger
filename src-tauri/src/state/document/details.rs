@@ -19,18 +19,28 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn set_hitbox_width(&mut self, width: u32) -> Result<(), DocumentError> {
+    pub(super) fn set_hitbox_width(&mut self, new_width: u32) -> Result<(), DocumentError> {
+        let preserve_ar = self.persistent.preserve_aspect_ratio;
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
-            let new_size = vec2(width, hitbox.size().y);
-            hitbox.set_size(new_size)
+            let new_height = match (preserve_ar, hitbox.size().x) {
+                (false, _) => hitbox.size().y,
+                (true, 0) => hitbox.size().y,
+                (true, old_width) => new_width * hitbox.size().y / old_width,
+            };
+            hitbox.set_size(vec2(new_width, new_height))
         }
         Ok(())
     }
 
-    pub(super) fn set_hitbox_height(&mut self, height: u32) -> Result<(), DocumentError> {
+    pub(super) fn set_hitbox_height(&mut self, new_height: u32) -> Result<(), DocumentError> {
+        let preserve_ar = self.persistent.preserve_aspect_ratio;
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
-            let new_size = vec2(hitbox.size().x, height);
-            hitbox.set_size(new_size)
+            let new_width = match (preserve_ar, hitbox.size().y) {
+                (false, _) => hitbox.size().x,
+                (true, 0) => hitbox.size().x,
+                (true, old_height) => new_height * hitbox.size().x / old_height,
+            };
+            hitbox.set_size(vec2(new_width, new_height))
         }
         Ok(())
     }

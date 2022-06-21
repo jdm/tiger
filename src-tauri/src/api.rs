@@ -1118,6 +1118,17 @@ pub fn set_hitbox_height(app_state: tauri::State<'_, AppState>, height: u32) -> 
 }
 
 #[tauri::command]
+pub fn toggle_preserve_aspect_ratio(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::TogglePreserveAspectRatio)
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn begin_nudge_hitbox(
     app_state: tauri::State<'_, AppState>,
     name: String,

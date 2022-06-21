@@ -16,7 +16,9 @@
 
 				<div class="col-span-2 row-span-2 flex flex-col justify-center pl-2">
 					<div class="h-2.5 w-1/2 border-t border-r border-plastic-500" />
-					<Icon name="LinkIcon" class="cursor-pointer self-center my-1 w-5 h-5 text-plastic-500" />
+					<Icon name="LinkIcon" @click="togglePreserveAspectRatio"
+						class="cursor-pointer self-center my-1 w-5 h-5"
+						:class="app.currentDocument?.preserveAspectRatio ? 'text-plastic-200' : 'text-plastic-500'" />
 					<div class="h-2.5 w-1/2 border-b border-r border-plastic-500" />
 				</div>
 
@@ -36,7 +38,7 @@ import PaneInset from "@/components/basic/PaneInset.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
 import DetailKey from "@/components/details/DetailKey.vue"
 import DetailValue from "@/components/details/DetailValue.vue"
-import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight } from "@/api/document"
+import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight, togglePreserveAspectRatio } from "@/api/document"
 
 const app = useAppStore();
 

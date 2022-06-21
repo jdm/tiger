@@ -42,6 +42,7 @@ pub struct Persistent {
     pub(super) close_requested: bool,
     pub(super) timeline_is_playing: bool,
     pub(super) export_settings_edit: Option<ExportSettings>,
+    pub(super) preserve_aspect_ratio: bool,
 }
 
 #[derive(Error, Debug)]
@@ -136,6 +137,10 @@ impl Document {
 
     pub fn is_timeline_playing(&self) -> bool {
         self.persistent.timeline_is_playing
+    }
+
+    pub fn preserves_aspect_ratio(&self) -> bool {
+        self.persistent.preserve_aspect_ratio
     }
 
     fn sanitize_view(&mut self) {

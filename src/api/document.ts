@@ -484,6 +484,11 @@ export async function setHitboxHeight(height: number): Promise<void> {
   appStore.patch(await invoke("set_hitbox_height", { height: height }));
 }
 
+export async function togglePreserveAspectRatio(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("toggle_preserve_aspect_ratio"));
+}
+
 export async function beginNudgeHitbox(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("begin_nudge_hitbox", { name: name }));

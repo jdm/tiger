@@ -72,6 +72,7 @@ pub enum Command {
     SetHitboxPositionY(i32),
     SetHitboxWidth(u32),
     SetHitboxHeight(u32),
+    TogglePreserveAspectRatio,
     BeginNudgeHitbox(String),
     UpdateNudgeHitbox(Vector2D<i32>, bool),
     EndNudgeHitbox,
@@ -170,6 +171,9 @@ impl Document {
             Command::SetHitboxPositionY(y) => self.set_hitbox_position_y(y)?,
             Command::SetHitboxWidth(width) => self.set_hitbox_width(width)?,
             Command::SetHitboxHeight(height) => self.set_hitbox_height(height)?,
+            Command::TogglePreserveAspectRatio => {
+                self.persistent.preserve_aspect_ratio = !self.persistent.preserve_aspect_ratio
+            }
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
             Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
             Command::EndNudgeHitbox => (),
