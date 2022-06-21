@@ -15,11 +15,13 @@
 				<DetailValue :values="widthValues" @update="setHitboxWidth" class="col-span-4" unit="px" />
 
 				<div class="col-span-2 row-span-2 flex flex-col justify-center pl-2">
-					<div class="h-2.5 w-1/2 border-t border-r border-plastic-500" />
+					<div class="h-2.5 w-1/2 border-t border-r"
+						:class="preserveAR ? 'border-plastic-300' : 'border-plastic-500'" />
 					<Icon name="LinkIcon" @click="togglePreserveAspectRatio"
 						class="cursor-pointer self-center my-1 w-5 h-5"
-						:class="app.currentDocument?.preserveAspectRatio ? 'text-plastic-200' : 'text-plastic-500'" />
-					<div class="h-2.5 w-1/2 border-b border-r border-plastic-500" />
+						:class="preserveAR ? 'text-plastic-300' : 'text-plastic-500'" />
+					<div class="h-2.5 w-1/2 border-b border-r"
+						:class="preserveAR ? 'border-plastic-300' : 'border-plastic-500'" />
 				</div>
 
 				<DetailKey class="col-span-4">Height</DetailKey>
@@ -42,6 +44,7 @@ import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight
 
 const app = useAppStore();
 
+const preserveAR = computed(() => !!app.currentDocument?.preserveAspectRatio);
 const xValues = computed(() => app.selectedHitboxes?.map(h => h.topLeft[0]) || []);
 const yValues = computed(() => app.selectedHitboxes?.map(h => h.topLeft[1]) || []);
 const widthValues = computed(() => app.selectedHitboxes?.map(h => h.size[0]) || []);
