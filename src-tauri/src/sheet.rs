@@ -693,9 +693,38 @@ fn can_add_and_remove_sheet_frame() {
     sheet.add_frame("frame.png");
     assert!(sheet.has_frame("frame.png"));
     assert!(sheet.frame("frame.png").is_some());
+    assert_eq!(
+        sheet.frame("frame.png").unwrap().source(),
+        Path::new("frame.png")
+    );
     sheet.delete_frame("frame.png");
     assert!(!sheet.has_frame("frame.png"));
     assert!(sheet.frame("frame.png").is_none());
+}
+
+#[test]
+fn deleting_frame_remove_its_usage() {
+    let mut sheet = Sheet::default();
+    sheet.add_frame("frame.png");
+
+    let (animation_name, animation) = sheet.create_animation();
+    animation.apply_direction_preset(DirectionPreset::EightDirections);
+    animation
+        .sequence_mut(Direction::East)
+        .unwrap()
+        .insert_keyframe(Keyframe::new(Path::new("frame.png")), 0)
+        .unwrap();
+    sheet.delete_frame("frame.png");
+
+    assert_eq!(
+        0,
+        sheet
+            .animation(animation_name)
+            .unwrap()
+            .sequence(Direction::East)
+            .unwrap()
+            .num_keyframes()
+    );
 }
 
 #[test]
@@ -752,6 +781,22 @@ fn can_rename_sheet_animation() {
     sheet.rename_animation(&old_name, "updated name").unwrap();
     assert!(sheet.animation("updated name").is_some());
     assert!(sheet.animation(&old_name).is_none());
+}
+
+#[test]
+fn can_rename_sheet_animation_to_same_name() {
+    let mut sheet = Sheet::default();
+    let (old_name, _animation) = sheet.create_animation();
+    sheet.rename_animation(&old_name, &old_name).unwrap();
+}
+
+#[test]
+fn cannot_rename_sheet_animation_to_existing_name() {
+    let mut sheet = Sheet::default();
+    let (old_name, _animation) = sheet.create_animation();
+    sheet.rename_animation(&old_name, "conflict").unwrap();
+    let (old_name, _animation) = sheet.create_animation();
+    assert!(sheet.rename_animation(&old_name, "conflict").is_err());
 }
 
 #[test]

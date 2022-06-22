@@ -132,7 +132,7 @@
 - [x] Add sprite darkening readility mode
 - [x] Workbench tabs
 - [ ] Replace powershell release script with Github action
-- [ ] Unit test sheet module
+- [x] Unit test sheet module
 
 ## Tiger 0.5
 
