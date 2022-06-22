@@ -699,6 +699,14 @@ fn can_add_and_remove_sheet_frame() {
 }
 
 #[test]
+fn cannot_add_duplicate_sheet_frame() {
+    let mut sheet = Sheet::default();
+    sheet.add_frame("frame.png");
+    sheet.add_frame("frame.png");
+    assert_eq!(sheet.frames_iter().count(), 1);
+}
+
+#[test]
 fn can_add_and_remove_sheet_frames() {
     let mut sheet = Sheet::default();
     assert_eq!(sheet.frames_iter().count(), 0);
@@ -709,12 +717,23 @@ fn can_add_and_remove_sheet_frames() {
 }
 
 #[test]
+fn can_sort_frames() {
+    let frame_a = Frame::new(&Path::new("a"));
+    let frame_b = Frame::new(&Path::new("b"));
+    let frame_c = Frame::new(&Path::new("c"));
+    assert!(frame_a < frame_b);
+    assert!(frame_a < frame_c);
+    assert!(frame_b < frame_c);
+}
+
+#[test]
 fn can_add_and_remove_sheet_animation() {
     let mut sheet = Sheet::default();
     let (name_1, _animation) = sheet.create_animation();
     assert!(sheet.has_animation(&name_1));
     assert!(sheet.animation(&name_1).is_some());
     assert!(sheet.animation_mut(&name_1).is_some());
+    assert_eq!(sheet.animations_iter().count(), 1);
 
     let (name_2, _animation) = sheet.create_animation();
     assert!(sheet.has_animation(&name_2));
@@ -742,6 +761,16 @@ fn can_read_write_animation_looping() {
     assert!(animation.looping());
     animation.set_looping(false);
     assert!(!animation.looping());
+}
+
+#[test]
+fn can_access_animation_sequences() {
+    let mut animation = Animation::default();
+    animation.apply_direction_preset(DirectionPreset::FourDirections);
+    assert!(animation.sequence(Direction::West).is_some());
+    assert!(animation.sequence_mut(Direction::West).is_some());
+    assert_eq!(animation.sequences_iter().count(), 4);
+    assert_eq!(animation.sequences_iter_mut().count(), 4);
 }
 
 #[test]
@@ -803,6 +832,21 @@ fn can_add_and_remove_sequence_keyframe() {
 }
 
 #[test]
+fn cannot_add_sequence_keyframe_at_illegal_index() {
+    let mut sequence = Sequence::default();
+    let frame_path = &Path::new("a.png");
+    sequence
+        .insert_keyframe(Keyframe::new(frame_path), 0)
+        .unwrap();
+    sequence
+        .insert_keyframe(Keyframe::new(frame_path), 0)
+        .unwrap();
+    assert!(sequence
+        .insert_keyframe(Keyframe::new(frame_path), 3)
+        .is_err());
+}
+
+#[test]
 fn can_measure_sequence_duration() {
     let mut sequence = Sequence::default();
     assert_eq!(sequence.duration_millis(), None);
@@ -814,12 +858,14 @@ fn can_measure_sequence_duration() {
     sequence.insert_keyframe(keyframe_a, 0).unwrap();
     sequence.insert_keyframe(keyframe_b, 1).unwrap();
 
-    assert_eq!(sequence.duration_millis(), Some(400));
+    assert_eq!(sequence.duration(), Some(Duration::from_millis(400)));
 }
 
 #[test]
 fn can_query_sequence_by_time_elapsed() {
     let mut sequence = Sequence::default();
+    assert!(sequence.keyframe_at(Duration::default()).is_none());
+
     let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
     keyframe_a.set_duration_millis(200);
     let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
@@ -874,9 +920,13 @@ fn can_add_and_remove_keyframe_hitbox() {
     let (name, _hitbox) = keyframe.create_hitbox();
     assert!(keyframe.hitbox(&name).is_some());
     assert!(keyframe.hitbox_mut(&name).is_some());
+    assert_eq!(keyframe.hitboxes_iter().count(), 1);
+    assert_eq!(keyframe.hitboxes_iter_mut().count(), 1);
     keyframe.delete_hitbox(&name);
     assert!(keyframe.hitbox(&name).is_none());
     assert!(keyframe.hitbox_mut(&name).is_none());
+    assert_eq!(keyframe.hitboxes_iter().count(), 0);
+    assert_eq!(keyframe.hitboxes_iter_mut().count(), 0);
 }
 
 #[test]
@@ -957,4 +1007,25 @@ fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
 
     let absolute = relative.with_absolute_paths("a/b");
     assert_eq!(settings, absolute);
+}
+
+#[test]
+fn liquid_export_settings_can_adjust_paths() {
+    let mut settings = LiquidExportSettings::default();
+
+    let path = Path::new("template_file");
+    settings.set_template_file(path);
+    assert_eq!(settings.template_file(), path);
+
+    let path = Path::new("texture_file");
+    settings.set_texture_file(path);
+    assert_eq!(settings.texture_file(), path);
+
+    let path = Path::new("metadata_file");
+    settings.set_metadata_file(path);
+    assert_eq!(settings.metadata_file(), path);
+
+    let path = Path::new("metadata_paths_root");
+    settings.set_metadata_paths_root(path);
+    assert_eq!(settings.metadata_paths_root(), path);
 }
