@@ -295,6 +295,10 @@ impl Animation {
         self.sequences.iter_mut()
     }
 
+    pub fn direction_preset(&self) -> Option<DirectionPreset> {
+        DirectionPreset::from_directions(self.sequences_iter().map(|(d, _s)| *d))
+    }
+
     pub fn apply_direction_preset(&mut self, preset: DirectionPreset) {
         let directions = preset.directions();
         self.sequences.retain(|d, _s| directions.contains(d));
@@ -695,16 +699,31 @@ fn can_add_and_remove_sheet_frame() {
 }
 
 #[test]
+fn can_add_and_remove_sheet_frames() {
+    let mut sheet = Sheet::default();
+    assert_eq!(sheet.frames_iter().count(), 0);
+    sheet.add_frames(&vec![&Path::new("foo.png"), &Path::new("bar.png")]);
+    assert_eq!(sheet.frames_iter().count(), 2);
+    sheet.delete_frame(&Path::new("foo.png"));
+    assert_eq!(sheet.frames_iter().count(), 1);
+}
+
+#[test]
 fn can_add_and_remove_sheet_animation() {
     let mut sheet = Sheet::default();
-    let (name, _animation) = sheet.create_animation();
-    assert!(sheet.has_animation(&name));
-    assert!(sheet.animation(&name).is_some());
-    assert!(sheet.animation_mut(&name).is_some());
-    sheet.delete_animation(&name);
-    assert!(!sheet.has_animation(&name));
-    assert!(sheet.animation(&name).is_none());
-    assert!(sheet.animation_mut(&name).is_none());
+    let (name_1, _animation) = sheet.create_animation();
+    assert!(sheet.has_animation(&name_1));
+    assert!(sheet.animation(&name_1).is_some());
+    assert!(sheet.animation_mut(&name_1).is_some());
+
+    let (name_2, _animation) = sheet.create_animation();
+    assert!(sheet.has_animation(&name_2));
+
+    sheet.delete_animation(&name_1);
+    assert!(!sheet.has_animation(&name_1));
+    assert!(sheet.animation(&name_1).is_none());
+    assert!(sheet.animation_mut(&name_1).is_none());
+    assert!(sheet.has_animation(&name_2));
 }
 
 #[test]
@@ -723,6 +742,38 @@ fn can_read_write_animation_looping() {
     assert!(animation.looping());
     animation.set_looping(false);
     assert!(!animation.looping());
+}
+
+#[test]
+fn can_animation_can_apply_direction_preset() {
+    let mut animation = Animation::default();
+    assert_eq!(animation.direction_preset(), None);
+    for preset in all::<DirectionPreset>() {
+        animation.apply_direction_preset(preset);
+        assert_eq!(animation.direction_preset(), Some(preset));
+    }
+}
+
+#[test]
+fn animation_can_recognize_direction_preset() {
+    let mut animation = Animation::default();
+    animation
+        .sequences
+        .insert(Direction::NorthEast, Sequence::default());
+    animation
+        .sequences
+        .insert(Direction::NorthWest, Sequence::default());
+    animation
+        .sequences
+        .insert(Direction::SouthEast, Sequence::default());
+    assert_eq!(animation.direction_preset(), None);
+    animation
+        .sequences
+        .insert(Direction::SouthWest, Sequence::default());
+    assert_eq!(
+        animation.direction_preset(),
+        Some(DirectionPreset::Isometric)
+    );
 }
 
 #[test]
@@ -836,6 +887,17 @@ fn can_rename_keyframe_hitbox() {
     keyframe.rename_hitbox(&old_name, "updated name").unwrap();
     assert!(keyframe.hitbox("updated name").is_some());
     assert!(keyframe.hitbox(&old_name).is_none());
+}
+
+#[test]
+fn can_rename_hitbox_to_existing_name() {
+    let frame = Path::new("./example/directory/texture.png");
+    let mut keyframe = Keyframe::new(frame);
+    let (old_name, _hitbox) = keyframe.create_hitbox();
+    keyframe.rename_hitbox(&old_name, "conflict").unwrap();
+
+    let (old_name, _hitbox) = keyframe.create_hitbox();
+    assert!(keyframe.rename_hitbox(&old_name, "conflict").is_err());
 }
 
 #[test]

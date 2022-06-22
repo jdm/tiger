@@ -334,10 +334,7 @@ where
                 .sequences_iter()
                 .map(|(d, s)| ((*d).into(), s.into()))
                 .collect(),
-            direction_preset: sheet::DirectionPreset::from_directions(
-                animation.1.sequences_iter().map(|(d, _s)| *d),
-            )
-            .map(|p| p.into()),
+            direction_preset: animation.1.direction_preset().map(|p| p.into()),
             is_looping: animation.1.looping(),
         }
     }
