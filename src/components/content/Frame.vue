@@ -1,9 +1,13 @@
 <template>
 	<div @click="(event) => onFrameClicked(event)" @contextmenu.prevent="onOpenContextMenu" @dragstart="onDragStart"
-		@dragend="onDragEnd" draggable="true"
-		class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
-		:class="props.frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
-		<img :src="sprite.getURL(frame.path)" class="pixelated object-none" />
+		@dragend="onDragEnd" draggable="true">
+		<Selectable v-if="compact" left-icon="PhotographIcon" :text="frame.name" :selected="frame.selected"
+			:actions="[{ icon: 'XIcon', callback: onDeleteClicked }]" />
+		<div v-else
+			class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
+			:class="frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
+			<img :src="sprite.getURL(frame.path)" class="pixelated object-none" />
+		</div>
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
@@ -12,13 +16,15 @@
 import { Ref, ref } from "vue"
 import { Frame as FrameDTO } from "@/api/dto"
 import { useSpriteStore } from "@/stores/sprite"
-import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame, deleteSelectedFrames } from "@/api/document"
+import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame, deleteSelectedFrames, deleteFrame } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
+import Selectable from "@/components/basic/Selectable.vue"
 
 const sprite = useSpriteStore();
 
 const props = defineProps<{
-	frame: FrameDTO
+	frame: FrameDTO,
+	compact: boolean,
 }>();
 
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
@@ -57,6 +63,10 @@ function onDragEnd() {
 		document.body.removeChild(dragCursorElement.value);
 		dragCursorElement.value = null;
 	}
+}
+
+function onDeleteClicked() {
+	deleteFrame(props.frame.path);
 }
 
 function onFrameClicked(event: MouseEvent) {

@@ -1,5 +1,5 @@
 <template>
-	<div ref="el">
+	<div>
 		<Selectable @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked"
 			@contextmenu.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
 			left-icon="DocumentIcon" :actions="renaming ? [] :
@@ -30,7 +30,6 @@ const props = defineProps<{
 
 const renaming = ref(false);
 const newName = ref("");
-const el: Ref<HTMLElement | null> = ref(null);
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
 const contextMenuEntries = [

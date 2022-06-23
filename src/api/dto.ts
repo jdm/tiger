@@ -23,6 +23,8 @@ export type Document = {
   wasCloseRequested: boolean;
   sheet: Sheet;
   contentTab: ContentTab;
+  framesListMode: ListMode;
+  animationsListMode: ListMode;
   framesFilter: string;
   animationsFilter: string;
   workbenchOffset: [number, number];
@@ -116,6 +118,11 @@ export type Hitbox = {
 export enum ContentTab {
   Frames = "Frames",
   Animations = "Animations",
+}
+
+export enum ListMode {
+  Linear = "Linear",
+  Grid4xN = "Grid4xN",
 }
 
 export enum ResizeAxis {

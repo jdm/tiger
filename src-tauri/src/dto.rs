@@ -36,6 +36,8 @@ pub struct Document {
     was_close_requested: bool,
     sheet: Sheet,
     content_tab: ContentTab,
+    frames_list_mode: ListMode,
+    animations_list_mode: ListMode,
     frames_filter: String,
     animations_filter: String,
     workbench_offset: (i32, i32),
@@ -144,6 +146,12 @@ pub struct Hitbox {
 pub enum ContentTab {
     Frames,
     Animations,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+pub enum ListMode {
+    Linear,
+    Grid4xN,
 }
 
 #[derive(Clone, Deserialize)]
@@ -255,6 +263,8 @@ impl From<&state::Document> for Document {
             was_close_requested: document.close_requested(),
             sheet,
             content_tab: document.content_tab().into(),
+            frames_list_mode: document.frames_list_mode().into(),
+            animations_list_mode: document.animations_list_mode().into(),
             frames_filter: document.frames_filter().to_owned(),
             animations_filter: document.animations_filter().to_owned(),
             workbench_offset: document.workbench_offset().to_i32().to_tuple(),
@@ -449,6 +459,24 @@ impl From<state::ContentTab> for ContentTab {
         match content_tab {
             state::ContentTab::Frames => ContentTab::Frames,
             state::ContentTab::Animations => ContentTab::Animations,
+        }
+    }
+}
+
+impl From<ListMode> for state::ListMode {
+    fn from(list_mode: ListMode) -> Self {
+        match list_mode {
+            ListMode::Linear => state::ListMode::Linear,
+            ListMode::Grid4xN => state::ListMode::Grid4xN,
+        }
+    }
+}
+
+impl From<state::ListMode> for ListMode {
+    fn from(list_mode: state::ListMode) -> Self {
+        match list_mode {
+            state::ListMode::Linear => ListMode::Linear,
+            state::ListMode::Grid4xN => ListMode::Grid4xN,
         }
     }
 }

@@ -18,6 +18,7 @@ import Icon from "@/components/basic/Icon.vue"
 
 export type MultiSwitchItem = {
 	icon: keyof typeof solid,
+	value?: any,
 	active?: boolean,
 	rotate?: boolean,
 };

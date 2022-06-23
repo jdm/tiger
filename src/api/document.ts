@@ -1,4 +1,10 @@
-import { ContentTab, Direction, DirectionPreset, ResizeAxis } from "@/api/dto";
+import {
+  ContentTab,
+  Direction,
+  DirectionPreset,
+  ListMode,
+  ResizeAxis,
+} from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import { invoke } from "@tauri-apps/api";
 
@@ -32,6 +38,18 @@ export async function focusContentTab(contentTab: ContentTab): Promise<void> {
   appStore.patch(await invoke("focus_content_tab", { contentTab: contentTab }));
 }
 
+export async function setFramesListMode(listMode: ListMode): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_frames_list_mode", { listMode: listMode }));
+}
+
+export async function setAnimationsListMode(listMode: ListMode): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_animations_list_mode", { listMode: listMode })
+  );
+}
+
 export async function filterFrames(searchQuery: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("filter_frames", { searchQuery: searchQuery }));
@@ -47,6 +65,11 @@ export async function filterAnimations(searchQuery: string): Promise<void> {
 export async function importFrames(paths: string[]): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("import_frames", { paths: paths }));
+}
+
+export async function deleteFrame(path: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_frame", { path: path }));
 }
 
 export async function deleteSelectedFrames(): Promise<void> {
