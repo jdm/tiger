@@ -117,7 +117,8 @@
 - [x] In-place rename UX
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
-- [ ] Grid/list display modes in content tab
+- [x] Can display frames in thumbnail or list mode
+- [ ] Can animations in thumbnail or list mode
 - [x] Add option to hide origin
 - [x] Add option to hide hitboxes
 - [x] Add option to lock hitboxes
