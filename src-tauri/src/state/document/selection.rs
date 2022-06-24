@@ -18,7 +18,7 @@ pub struct MultiSelection {
 }
 
 #[derive(Clone, Debug)]
-pub enum SelectionInput {
+pub enum SelectionItem {
     Frame(PathBuf),
     Animation(String),
     Hitbox(String),
@@ -77,28 +77,28 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn alter_selection(
+    pub(super) fn select_item(
         &mut self,
-        selection: &SelectionInput,
+        selection: &SelectionItem,
         shift: bool,
         ctrl: bool,
     ) -> Result<(), DocumentError> {
         let edit = match selection {
-            SelectionInput::Frame(f) => MultiSelectionEdit::Frames(
+            SelectionItem::Frame(f) => MultiSelectionEdit::Frames(
                 f.clone(),
                 self.sheet
                     .frames_iter()
                     .map(|f| f.source().to_owned())
                     .collect(),
             ),
-            SelectionInput::Animation(a) => MultiSelectionEdit::Animations(
+            SelectionItem::Animation(a) => MultiSelectionEdit::Animations(
                 a.clone(),
                 self.sheet
                     .animations_iter()
                     .map(|(n, _)| n.clone())
                     .collect(),
             ),
-            SelectionInput::Hitbox(h) => {
+            SelectionItem::Hitbox(h) => {
                 let (animation_name, _) = self.get_workbench_animation()?;
                 let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
                 MultiSelectionEdit::Hitboxes(
@@ -109,7 +109,7 @@ impl Document {
                         .collect(),
                 )
             }
-            SelectionInput::Keyframe(d, i) => {
+            SelectionItem::Keyframe(d, i) => {
                 self.view.current_sequence = Some(*d);
                 let (_, sequence) = self.get_workbench_sequence()?;
                 if !self.persistent.timeline_is_playing {

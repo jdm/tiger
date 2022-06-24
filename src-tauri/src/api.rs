@@ -6,7 +6,7 @@ use std::time::Duration;
 use crate::dto::{self, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet;
-use crate::state::{App, AppState, Command, Document, DocumentError, SelectionInput};
+use crate::state::{App, AppState, Command, Document, DocumentError, SelectionItem};
 
 impl AppState {
     pub fn mutate<F>(&self, operation: F) -> Patch
@@ -457,11 +457,7 @@ pub fn select_frame(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::AlterSelection(
-                    SelectionInput::Frame(path),
-                    shift,
-                    ctrl,
-                ))
+                .process_command(Command::SelectItem(SelectionItem::Frame(path), shift, ctrl))
                 .ok();
         }
     }))
@@ -477,8 +473,8 @@ pub fn select_animation(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::AlterSelection(
-                    SelectionInput::Animation(name),
+                .process_command(Command::SelectItem(
+                    SelectionItem::Animation(name),
                     shift,
                     ctrl,
                 ))
@@ -498,8 +494,8 @@ pub fn select_keyframe(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::AlterSelection(
-                    SelectionInput::Keyframe(direction.into(), index),
+                .process_command(Command::SelectItem(
+                    SelectionItem::Keyframe(direction.into(), index),
                     shift,
                     ctrl,
                 ))
@@ -518,8 +514,8 @@ pub fn select_hitbox(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::AlterSelection(
-                    SelectionInput::Hitbox(name),
+                .process_command(Command::SelectItem(
+                    SelectionItem::Hitbox(name),
                     shift,
                     ctrl,
                 ))
