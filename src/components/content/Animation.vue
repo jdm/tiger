@@ -4,7 +4,7 @@
 			@contextmenu.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
 			left-icon="DocumentIcon" :actions="renaming ? [] :
 			[
-				{ icon: 'PencilAltIcon', callback: onRenameClicked },
+				{ icon: 'PencilAltIcon', callback: beginRename },
 				{ icon: 'XIcon', callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
@@ -33,6 +33,7 @@ const newName = ref("");
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
 const contextMenuEntries = [
+	{ name: "Rename", action: beginRename },
 	{ name: "Delete", action: deleteSelectedAnimations },
 ];
 
@@ -53,7 +54,7 @@ function onAnimationDoubleClicked() {
 	editAnimation(props.animation.name);
 }
 
-function onRenameClicked() {
+function beginRename() {
 	newName.value = props.animation.name;
 	renaming.value = true;
 }
