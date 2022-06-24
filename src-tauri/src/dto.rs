@@ -173,6 +173,14 @@ pub enum NudgeDirection {
     Right,
 }
 
+#[derive(Clone, Deserialize)]
+pub enum AlterSelectionDirection {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
@@ -509,6 +517,17 @@ impl From<NudgeDirection> for state::NudgeDirection {
             NudgeDirection::Down => state::NudgeDirection::Down,
             NudgeDirection::Left => state::NudgeDirection::Left,
             NudgeDirection::Right => state::NudgeDirection::Right,
+        }
+    }
+}
+
+impl From<AlterSelectionDirection> for state::AlterSelectionDirection {
+    fn from(direction: AlterSelectionDirection) -> Self {
+        match direction {
+            AlterSelectionDirection::Up => state::AlterSelectionDirection::Up,
+            AlterSelectionDirection::Down => state::AlterSelectionDirection::Down,
+            AlterSelectionDirection::Left => state::AlterSelectionDirection::Left,
+            AlterSelectionDirection::Right => state::AlterSelectionDirection::Right,
         }
     }
 }

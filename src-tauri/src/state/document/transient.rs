@@ -37,14 +37,6 @@ pub enum ResizeAxis {
     SW,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
-pub enum NudgeDirection {
-    Up,
-    Down,
-    Left,
-    Right,
-}
-
 #[derive(Clone, Debug, PartialEq)]
 pub(super) struct HitboxResize {
     pub(super) axis: ResizeAxis,

@@ -1,5 +1,6 @@
 import { newDocument, openDocuments, saveAs } from "@/api/local";
 import {
+  alterSelection,
   beginExportAs,
   centerWorkbench,
   deleteSelection,
@@ -19,7 +20,7 @@ import {
 } from "@/api/document";
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
 import { useAppStore } from "@/stores/app";
-import { NudgeDirection } from "@/api/dto";
+import { AlterSelectionDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
   console.log(document.activeElement?.tagName);
@@ -92,6 +93,14 @@ function onKeyDown(event: KeyboardEvent) {
       }
     } else if (event.key == "Delete") {
       deleteSelection();
+    } else if (event.key == "ArrowUp") {
+      alterSelection(AlterSelectionDirection.Up, event.shiftKey);
+    } else if (event.key == "ArrowDown") {
+      alterSelection(AlterSelectionDirection.Down, event.shiftKey);
+    } else if (event.key == "ArrowLeft") {
+      alterSelection(AlterSelectionDirection.Left, event.shiftKey);
+    } else if (event.key == "ArrowRight") {
+      alterSelection(AlterSelectionDirection.Right, event.shiftKey);
     }
   }
 }

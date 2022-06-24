@@ -142,6 +142,13 @@ export enum NudgeDirection {
   Right = "Right",
 }
 
+export enum AlterSelectionDirection {
+  Up = "Up",
+  Down = "Down",
+  Left = "Left",
+  Right = "Right",
+}
+
 export type ExportSettings = {
   templateFile: string;
   textureFile: string;

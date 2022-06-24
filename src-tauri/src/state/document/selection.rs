@@ -1,4 +1,5 @@
 use enum_iterator::Sequence;
+use euclid::default::Vector2D;
 use euclid::vec2;
 use std::borrow::Borrow;
 use std::collections::HashSet;
@@ -25,6 +26,22 @@ pub enum SelectionItem {
     Keyframe(Direction, usize),
 }
 
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum NudgeDirection {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub enum AlterSelectionDirection {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 pub enum MultiSelectionEdit<'a> {
     Frames(PathBuf, Vec<PathBuf>),
     Animations(String, Vec<String>),
@@ -41,6 +58,7 @@ where
     T: std::cmp::Eq + std::hash::Hash + std::clone::Clone,
 {
     pivot: Option<T>,
+    last_interacted: Option<T>,
     selected_items: HashSet<T>,
 }
 
@@ -71,9 +89,11 @@ impl Document {
         for (_, _, keyframe) in self.get_selected_keyframes_mut()? {
             Document::nudge_keyframe(keyframe, keyframe.offset() + delta);
         }
+
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
             hitbox.set_position(hitbox.position() + delta);
         }
+
         Ok(())
     }
 
@@ -84,29 +104,18 @@ impl Document {
         ctrl: bool,
     ) -> Result<(), DocumentError> {
         let edit = match selection {
-            SelectionItem::Frame(f) => MultiSelectionEdit::Frames(
-                f.clone(),
-                self.sheet
-                    .frames_iter()
-                    .map(|f| f.source().to_owned())
-                    .collect(),
-            ),
-            SelectionItem::Animation(a) => MultiSelectionEdit::Animations(
-                a.clone(),
-                self.sheet
-                    .animations_iter()
-                    .map(|(n, _)| n.clone())
-                    .collect(),
-            ),
+            SelectionItem::Frame(f) => {
+                MultiSelectionEdit::Frames(f.clone(), self.selectable_frames())
+            }
+            SelectionItem::Animation(a) => {
+                MultiSelectionEdit::Animations(a.clone(), self.selectable_animations())
+            }
             SelectionItem::Hitbox(h) => {
                 let (animation_name, _) = self.get_workbench_animation()?;
-                let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
+                let ((direction, index), _) = self.get_workbench_keyframe()?;
                 MultiSelectionEdit::Hitboxes(
                     (animation_name.clone(), direction, index, h.clone()),
-                    keyframe
-                        .hitboxes_iter()
-                        .map(|(n, _)| (animation_name.clone(), direction, index, n.clone()))
-                        .collect(),
+                    self.selectable_hitboxes()?,
                 )
             }
             SelectionItem::Keyframe(d, i) => {
@@ -131,6 +140,66 @@ impl Document {
         };
         self.view.selection.alter(edit, shift, ctrl);
         Ok(())
+    }
+
+    pub(super) fn alter_selection(
+        &mut self,
+        direction: AlterSelectionDirection,
+        shift: bool,
+    ) -> Result<(), DocumentError> {
+        let ctrl = false;
+        if !self.view.selection.frames.is_empty() {
+            let item_pool = self.selectable_frames();
+            let delta = direction.as_list_offset(self.view.frames_list_mode);
+            if let Some(interacted_item) =
+                (&item_pool).offset_from(self.view.selection.frames.last_interacted.as_ref(), delta)
+            {
+                self.select_item(&SelectionItem::Frame(interacted_item), shift, ctrl)?;
+            }
+        } else if !self.view.selection.animations.is_empty() {
+            let item_pool = self.selectable_animations();
+            let delta = direction.as_list_offset(ListMode::Linear);
+            if let Some(interacted_item) = (&item_pool).offset_from(
+                self.view.selection.animations.last_interacted.as_ref(),
+                delta,
+            ) {
+                self.select_item(&SelectionItem::Animation(interacted_item), shift, ctrl)?;
+            }
+        } else if !self.view.selection.hitboxes.is_empty() {
+            let item_pool = self.selectable_hitboxes()?;
+            let delta = direction.as_list_offset(ListMode::Linear);
+            if let Some(interacted_item) = (&item_pool)
+                .offset_from(self.view.selection.hitboxes.last_interacted.as_ref(), delta)
+            {
+                self.select_item(&SelectionItem::Hitbox(interacted_item.3), shift, ctrl)?;
+            }
+        }
+        Ok(())
+    }
+
+    fn selectable_frames(&self) -> Vec<PathBuf> {
+        self.sheet
+            .frames_iter()
+            .map(|f| f.source().to_owned())
+            .collect()
+    }
+
+    fn selectable_animations(&self) -> Vec<String> {
+        self.sheet
+            .animations_iter()
+            .map(|(n, _)| n.clone())
+            .collect()
+    }
+
+    fn selectable_hitboxes(
+        &self,
+    ) -> Result<Vec<(String, Direction, usize, String)>, DocumentError> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
+        Ok(keyframe
+            .hitboxes_iter()
+            .map(|(n, _)| (animation_name.clone(), direction, index, n.clone()))
+            .collect())
     }
 }
 
@@ -262,6 +331,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Defa
     fn default() -> Self {
         Self {
             pivot: Default::default(),
+            last_interacted: Default::default(),
             selected_items: Default::default(),
         }
     }
@@ -271,8 +341,13 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
     pub fn new(items: Vec<T>) -> Self {
         Self {
             pivot: items.last().cloned(),
+            last_interacted: items.last().cloned(),
             selected_items: items.into_iter().collect(),
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.selected_items.is_empty()
     }
 
     pub fn contains<Q: ?Sized>(&self, item: &Q) -> bool
@@ -291,11 +366,10 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         self.selected_items.remove(item);
     }
 
-    pub fn retain<F>(&mut self, mut f: F)
+    pub fn retain<F>(&mut self, f: F)
     where
         F: FnMut(&T) -> bool,
     {
-        self.pivot = self.pivot.take().filter(&mut f);
         self.selected_items.retain(f);
     }
 
@@ -340,6 +414,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
         if ctrl {
             self.pivot = Some(interacted_item.clone());
         }
+        self.last_interacted = Some(interacted_item);
     }
 
     fn toggle(&mut self, item: &T) {
@@ -384,6 +459,10 @@ trait ItemPool<T> {
     fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T>;
 }
 
+trait ItemPool1D<T> {
+    fn offset_from(&self, from: Option<&T>, delta: i32) -> Option<T>;
+}
+
 // General case for 1D ordered list
 impl<T> ItemPool<T> for &[T]
 where
@@ -400,6 +479,23 @@ where
     }
 }
 
+impl<T> ItemPool1D<T> for &[T]
+where
+    T: Eq + Clone,
+{
+    fn offset_from(&self, from: Option<&T>, delta: i32) -> Option<T> {
+        let from_index = from
+            .and_then(|f| self.iter().position(|item| item == f))
+            .unwrap_or_default();
+        let to_index = from_index as i32 + delta;
+        if to_index >= 0 {
+            self.get(to_index as usize).cloned()
+        } else {
+            None
+        }
+    }
+}
+
 impl<T> ItemPool<T> for &Vec<T>
 where
     T: Eq + Clone,
@@ -409,12 +505,30 @@ where
     }
 }
 
+impl<T> ItemPool1D<T> for &Vec<T>
+where
+    T: Eq + Clone,
+{
+    fn offset_from(&self, from: Option<&T>, delta: i32) -> Option<T> {
+        (&self[..]).offset_from(from, delta)
+    }
+}
+
 impl<T, const N: usize> ItemPool<T> for &[T; N]
 where
     T: Eq + Clone,
 {
     fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
         (&self[..]).get_range(from, to)
+    }
+}
+
+impl<T, const N: usize> ItemPool1D<T> for &[T; N]
+where
+    T: Eq + Clone,
+{
+    fn offset_from(&self, from: Option<&T>, delta: i32) -> Option<T> {
+        (&self[..]).offset_from(from, delta)
     }
 }
 
@@ -479,6 +593,25 @@ impl ItemPool<(String, Direction, usize)> for &Animation {
                 }
             })
             .collect()
+    }
+}
+
+impl AlterSelectionDirection {
+    fn as_vec2(&self) -> Vector2D<i32> {
+        match self {
+            AlterSelectionDirection::Up => vec2(0, -1),
+            AlterSelectionDirection::Down => vec2(0, 1),
+            AlterSelectionDirection::Left => vec2(-1, 0),
+            AlterSelectionDirection::Right => vec2(1, 0),
+        }
+    }
+
+    fn as_list_offset(&self, list_mode: ListMode) -> i32 {
+        let delta_2d = self.as_vec2();
+        match list_mode {
+            ListMode::Linear => delta_2d.y,
+            ListMode::Grid4xN => delta_2d.x + 4 * delta_2d.y,
+        }
     }
 }
 
