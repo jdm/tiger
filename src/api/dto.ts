@@ -24,7 +24,6 @@ export type Document = {
   sheet: Sheet;
   contentTab: ContentTab;
   framesListMode: ListMode;
-  animationsListMode: ListMode;
   framesFilter: string;
   animationsFilter: string;
   workbenchOffset: [number, number];

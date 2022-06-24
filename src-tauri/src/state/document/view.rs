@@ -21,7 +21,6 @@ pub enum ListMode {
 pub struct View {
     pub(super) content_tab: ContentTab,
     pub(super) frames_list_mode: ListMode,
-    pub(super) animations_list_mode: ListMode,
     pub(super) selection: MultiSelection,
     pub(super) frames_filter: String,
     pub(super) animations_filter: String,
@@ -43,7 +42,6 @@ impl Default for View {
         View {
             content_tab: ContentTab::Frames,
             frames_list_mode: ListMode::Grid4xN,
-            animations_list_mode: ListMode::Linear,
             selection: Default::default(),
             frames_filter: Default::default(),
             animations_filter: Default::default(),
@@ -116,10 +114,6 @@ impl Document {
 
     pub fn frames_list_mode(&self) -> ListMode {
         self.view.frames_list_mode
-    }
-
-    pub fn animations_list_mode(&self) -> ListMode {
-        self.view.animations_list_mode
     }
 
     pub fn frames_filter(&self) -> &String {

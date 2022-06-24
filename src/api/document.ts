@@ -43,13 +43,6 @@ export async function setFramesListMode(listMode: ListMode): Promise<void> {
   appStore.patch(await invoke("set_frames_list_mode", { listMode: listMode }));
 }
 
-export async function setAnimationsListMode(listMode: ListMode): Promise<void> {
-  const appStore = useAppStore();
-  appStore.patch(
-    await invoke("set_animations_list_mode", { listMode: listMode })
-  );
-}
-
 export async function filterFrames(searchQuery: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("filter_frames", { searchQuery: searchQuery }));

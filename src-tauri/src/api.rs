@@ -357,20 +357,6 @@ pub fn set_frames_list_mode(
 }
 
 #[tauri::command]
-pub fn set_animations_list_mode(
-    app_state: tauri::State<'_, AppState>,
-    list_mode: dto::ListMode,
-) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
-        if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::SetAnimationsListMode(list_mode.into()))
-                .ok();
-        }
-    }))
-}
-
-#[tauri::command]
 pub fn filter_frames(
     app_state: tauri::State<'_, AppState>,
     search_query: String,
