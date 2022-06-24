@@ -4,8 +4,6 @@ import {
   centerWorkbench,
   deleteSelection,
   doExport,
-  jumpToNextFrame,
-  jumpToPreviousFrame,
   pause,
   play,
   redo,
@@ -84,10 +82,6 @@ function onKeyDown(event: KeyboardEvent) {
       }
     } else if (event.key == "Delete") {
       deleteSelection();
-    } else if (event.key == "ArrowLeft") {
-      jumpToPreviousFrame();
-    } else if (event.key == "ArrowRight") {
-      jumpToNextFrame();
     }
   }
 }
