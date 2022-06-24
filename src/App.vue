@@ -27,11 +27,12 @@
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
 import { appWindow } from "@tauri-apps/api/window"
-import { onMounted, ref, watch } from "vue"
+import { onMounted, onUnmounted, ref, watch } from "vue"
 import { AppState, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { useSpriteStore } from "@/stores/sprite"
+import { registerKeyboardShortcuts, unregisterKeyboardShortcuts } from "@/utils/keyboard"
 import AppBar from "@/components/AppBar.vue"
 import ContextMenuLayer from "@/components/basic/ContextMenuLayer.vue"
 import ContentPane from "@/components/content/ContentPane.vue"
@@ -53,7 +54,12 @@ onMounted(() => {
   listen('invalidate-texture', event => {
     const invalidationEvent = event.payload as TextureInvalidationEvent;
     sprite.invalidate(invalidationEvent.path);
-  })
+  });
+  registerKeyboardShortcuts();
+});
+
+onUnmounted(() => {
+  unregisterKeyboardShortcuts();
 });
 
 let previousTimestamp: number | null = null;

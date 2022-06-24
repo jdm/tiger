@@ -14,6 +14,7 @@ import {
 export async function newDocument() {
   const file = await saveFileDialog({
     filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],
+    title: "New Spreadsheet",
   });
   if (file) {
     doNewDocument(file);
