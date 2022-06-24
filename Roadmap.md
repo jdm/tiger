@@ -113,7 +113,7 @@
   - [x] Make details panel not completely placeholder
   - [ ] Typography
   - [ ] Review tiger-imgui for anything forgotten
-  - [ ] Minimize/Maximize/Restore icons
+  - [x] Minimize/Maximize/Restore icons
   - [ ] Refactor `selection.rs` (again)
 - [x] In-place rename UX
 - [x] Right click menu to delete item
