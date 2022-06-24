@@ -110,10 +110,11 @@ impl Document {
         let (_, sequence) = self.get_workbench_sequence()?;
         let now = self.view.timeline_clock.as_millis() as u64;
         let new_time = sequence
-            .keyframe_times()
+            .keyframe_time_ranges()
             .into_iter()
             .rev()
-            .find(|time| *time < now)
+            .find(|range| range.end <= now)
+            .map(|range| range.start)
             .unwrap_or_default();
         self.scrub_timeline(Duration::from_millis(new_time))
     }
