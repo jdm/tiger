@@ -70,6 +70,11 @@ export async function deleteSelectedFrames(): Promise<void> {
   appStore.patch(await invoke("delete_selected_frames"));
 }
 
+export async function deleteSelection(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("delete_selection"));
+}
+
 export async function clearSelection(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("clear_selection"));

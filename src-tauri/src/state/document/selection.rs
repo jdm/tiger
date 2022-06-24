@@ -44,6 +44,14 @@ where
 }
 
 impl Document {
+    pub(super) fn delete_selection(&mut self) -> Result<(), DocumentError> {
+        self.delete_selected_frames();
+        self.delete_selected_animations();
+        self.delete_selected_keyframes()?;
+        self.delete_selected_hitboxes()?;
+        Ok(())
+    }
+
     pub(super) fn alter_selection(
         &mut self,
         selection: &SelectionInput,

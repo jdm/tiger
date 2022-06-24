@@ -15,6 +15,7 @@ pub enum Command {
     ImportFrames(Vec<PathBuf>),
     DeleteFrame(PathBuf),
     DeleteSelectedFrames,
+    DeleteSelection,
     ClearSelection,
     AlterSelection(SelectionInput, bool, bool),
     Pan(Vector2D<f32>),
@@ -113,6 +114,7 @@ impl Document {
             Command::ImportFrames(ref p) => self.sheet.add_frames(p),
             Command::DeleteFrame(ref p) => self.sheet.delete_frame(p),
             Command::DeleteSelectedFrames => self.delete_selected_frames(),
+            Command::DeleteSelection => self.delete_selection()?,
             Command::ClearSelection => self.view.selection.clear(),
             Command::AlterSelection(ref selection, shift, ctrl) => {
                 self.alter_selection(selection, shift, ctrl)?

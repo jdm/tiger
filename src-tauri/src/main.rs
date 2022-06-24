@@ -49,6 +49,7 @@ fn main() {
             api::import_frames,
             api::delete_frame,
             api::delete_selected_frames,
+            api::delete_selection,
             api::clear_selection,
             api::select_frame,
             api::select_animation,

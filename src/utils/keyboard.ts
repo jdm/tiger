@@ -2,6 +2,7 @@ import { newDocument, openDocuments, saveAs } from "@/api/local";
 import {
   beginExportAs,
   centerWorkbench,
+  deleteSelection,
   doExport,
   pause,
   play,
@@ -79,6 +80,8 @@ function onKeyDown(event: KeyboardEvent) {
       } else {
         play();
       }
+    } else if (event.key == "Delete") {
+      deleteSelection();
     }
   }
 }
