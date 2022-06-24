@@ -484,9 +484,7 @@ where
     T: Eq + Clone,
 {
     fn offset_from(&self, from: Option<&T>, delta: i32) -> Option<T> {
-        let from_index = from
-            .and_then(|f| self.iter().position(|item| item == f))
-            .unwrap_or_default();
+        let from_index = from.and_then(|f| self.iter().position(|item| item == f))?;
         let to_index = from_index as i32 + delta;
         if to_index >= 0 {
             self.get(to_index as usize).cloned()
