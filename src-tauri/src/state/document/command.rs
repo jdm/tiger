@@ -16,6 +16,7 @@ pub enum Command {
     DeleteFrame(PathBuf),
     DeleteSelectedFrames,
     DeleteSelection,
+    NudgeSelection(NudgeDirection, bool),
     ClearSelection,
     AlterSelection(SelectionInput, bool, bool),
     Pan(Vector2D<f32>),
@@ -115,6 +116,7 @@ impl Document {
             Command::DeleteFrame(ref p) => self.sheet.delete_frame(p),
             Command::DeleteSelectedFrames => self.delete_selected_frames(),
             Command::DeleteSelection => self.delete_selection()?,
+            Command::NudgeSelection(d, l) => self.nudge_selection(d, l)?,
             Command::ClearSelection => self.view.selection.clear(),
             Command::AlterSelection(ref selection, shift, ctrl) => {
                 self.alter_selection(selection, shift, ctrl)?

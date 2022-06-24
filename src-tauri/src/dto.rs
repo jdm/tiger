@@ -165,6 +165,14 @@ pub enum ResizeAxis {
     SW,
 }
 
+#[derive(Clone, Deserialize)]
+pub enum NudgeDirection {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
@@ -490,6 +498,17 @@ impl From<ResizeAxis> for state::ResizeAxis {
             ResizeAxis::NE => state::ResizeAxis::NE,
             ResizeAxis::SE => state::ResizeAxis::SE,
             ResizeAxis::SW => state::ResizeAxis::SW,
+        }
+    }
+}
+
+impl From<NudgeDirection> for state::NudgeDirection {
+    fn from(nudge_direction: NudgeDirection) -> Self {
+        match nudge_direction {
+            NudgeDirection::Up => state::NudgeDirection::Up,
+            NudgeDirection::Down => state::NudgeDirection::Down,
+            NudgeDirection::Left => state::NudgeDirection::Left,
+            NudgeDirection::Right => state::NudgeDirection::Right,
         }
     }
 }

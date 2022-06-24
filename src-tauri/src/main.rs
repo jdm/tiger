@@ -50,6 +50,7 @@ fn main() {
             api::delete_frame,
             api::delete_selected_frames,
             api::delete_selection,
+            api::nudge_selection,
             api::clear_selection,
             api::select_frame,
             api::select_animation,

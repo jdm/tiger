@@ -4,6 +4,7 @@ import {
   centerWorkbench,
   deleteSelection,
   doExport,
+  nudgeSelection,
   pause,
   play,
   redo,
@@ -18,6 +19,7 @@ import {
 } from "@/api/document";
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
 import { useAppStore } from "@/stores/app";
+import { NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
   console.log(document.activeElement?.tagName);
@@ -72,6 +74,14 @@ function onKeyDown(event: KeyboardEvent) {
       } else {
         resetWorkbenchZoom();
       }
+    } else if (event.key == "ArrowUp") {
+      nudgeSelection(NudgeDirection.Up, event.shiftKey);
+    } else if (event.key == "ArrowDown") {
+      nudgeSelection(NudgeDirection.Down, event.shiftKey);
+    } else if (event.key == "ArrowLeft") {
+      nudgeSelection(NudgeDirection.Left, event.shiftKey);
+    } else if (event.key == "ArrowRight") {
+      nudgeSelection(NudgeDirection.Right, event.shiftKey);
     }
   } else {
     if (event.key == " ") {

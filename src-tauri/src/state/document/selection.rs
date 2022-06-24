@@ -1,4 +1,5 @@
 use enum_iterator::Sequence;
+use euclid::vec2;
 use std::borrow::Borrow;
 use std::collections::HashSet;
 use std::hash::{Hash, Hasher};
@@ -49,6 +50,30 @@ impl Document {
         self.delete_selected_animations();
         self.delete_selected_keyframes()?;
         self.delete_selected_hitboxes()?;
+        Ok(())
+    }
+
+    pub(super) fn nudge_selection(
+        &mut self,
+        direction: NudgeDirection,
+        large_nudge: bool,
+    ) -> Result<(), DocumentError> {
+        let mut delta = match direction {
+            NudgeDirection::Up => vec2(0, -1),
+            NudgeDirection::Down => vec2(0, 1),
+            NudgeDirection::Left => vec2(-1, 0),
+            NudgeDirection::Right => vec2(1, 0),
+        };
+        if large_nudge {
+            delta *= 10;
+        }
+
+        for (_, _, keyframe) in self.get_selected_keyframes_mut()? {
+            Document::nudge_keyframe(keyframe, keyframe.offset() + delta);
+        }
+        for (_, hitbox) in self.get_selected_hitboxes_mut()? {
+            hitbox.set_position(hitbox.position() + delta);
+        }
         Ok(())
     }
 

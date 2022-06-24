@@ -424,6 +424,21 @@ pub fn delete_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 }
 
 #[tauri::command]
+pub fn nudge_selection(
+    app_state: tauri::State<'_, AppState>,
+    direction: dto::NudgeDirection,
+    large_nudge: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::NudgeSelection(direction.into(), large_nudge))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn clear_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {

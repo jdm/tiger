@@ -3,6 +3,7 @@ import {
   Direction,
   DirectionPreset,
   ListMode,
+  NudgeDirection,
   ResizeAxis,
 } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
@@ -73,6 +74,19 @@ export async function deleteSelectedFrames(): Promise<void> {
 export async function deleteSelection(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("delete_selection"));
+}
+
+export async function nudgeSelection(
+  direction: NudgeDirection,
+  largeNudge: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("nudge_selection", {
+      direction: direction,
+      largeNudge: largeNudge,
+    })
+  );
 }
 
 export async function clearSelection(): Promise<void> {

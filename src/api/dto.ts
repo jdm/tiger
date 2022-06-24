@@ -135,6 +135,13 @@ export enum ResizeAxis {
   SW = "SW",
 }
 
+export enum NudgeDirection {
+  Up = "Up",
+  Down = "Down",
+  Left = "Left",
+  Right = "Right",
+}
+
 export type ExportSettings = {
   templateFile: string;
   textureFile: string;
