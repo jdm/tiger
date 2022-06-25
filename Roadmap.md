@@ -114,7 +114,7 @@
   - [ ] Typography
   - [ ] Review tiger-imgui for anything forgotten
   - [x] Minimize/Maximize/Restore icons
-  - [ ] Refactor `selection.rs` (again)
+  - [x] Refactor `selection.rs` (again)
 - [x] In-place rename UX
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
