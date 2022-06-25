@@ -102,7 +102,7 @@
   - [x] Save error dialog
   - [x] Save As
   - [x] Save All
-  - [ ] Keyboard controls
+  - [x] Keyboard controls
   - [ ] Undo command names
   - [x] Auto reload images on frame edit
   - [x] Floating toolbar in workbench
