@@ -20,7 +20,7 @@ import {
 } from "@/api/document";
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
 import { useAppStore } from "@/stores/app";
-import { BrowseSelectionDirection, NudgeDirection } from "@/api/dto";
+import { BrowseDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
   console.log(document.activeElement?.tagName);
@@ -94,13 +94,13 @@ function onKeyDown(event: KeyboardEvent) {
     } else if (event.key == "Delete") {
       deleteSelection();
     } else if (event.key == "ArrowUp") {
-      browseSelection(BrowseSelectionDirection.Up, event.shiftKey);
+      browseSelection(BrowseDirection.Up, event.shiftKey);
     } else if (event.key == "ArrowDown") {
-      browseSelection(BrowseSelectionDirection.Down, event.shiftKey);
+      browseSelection(BrowseDirection.Down, event.shiftKey);
     } else if (event.key == "ArrowLeft") {
-      browseSelection(BrowseSelectionDirection.Left, event.shiftKey);
+      browseSelection(BrowseDirection.Left, event.shiftKey);
     } else if (event.key == "ArrowRight") {
-      browseSelection(BrowseSelectionDirection.Right, event.shiftKey);
+      browseSelection(BrowseDirection.Right, event.shiftKey);
     }
   }
 }

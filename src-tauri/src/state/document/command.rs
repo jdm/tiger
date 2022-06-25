@@ -17,7 +17,7 @@ pub enum Command {
     DeleteSelectedFrames,
     DeleteSelection,
     NudgeSelection(NudgeDirection, bool),
-    BrowseSelection(BrowseSelectionDirection, bool),
+    BrowseSelection(BrowseDirection, bool),
     ClearSelection,
     SelectFrame(PathBuf, bool, bool),
     SelectAnimation(String, bool, bool),

@@ -27,7 +27,7 @@ pub enum NudgeDirection {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum BrowseSelectionDirection {
+pub enum BrowseDirection {
     Up,
     Down,
     Left,
@@ -209,58 +209,83 @@ impl Document {
 
     pub(super) fn browse_selection(
         &mut self,
-        browse_direction: BrowseSelectionDirection,
+        direction: BrowseDirection,
         shift: bool,
     ) -> Result<(), DocumentError> {
-        let ctrl = false;
-        let is_horizontal = browse_direction.is_horizontal();
+        let is_horizontal = direction.is_horizontal();
         if !self.view.selection.frames.is_empty()
             && (!is_horizontal || self.view.frames_list_mode != ListMode::Linear)
         {
-            let item_pool = self.selectable_frames();
-            let delta = browse_direction.as_list_offset(self.view.frames_list_mode);
-            if let Some(interacted_item) =
-                (&item_pool).offset_from(self.view.selection.frames.last_interacted.as_ref(), delta)
-            {
-                self.select_frame(interacted_item, shift, ctrl);
-            }
+            self.browse_frames(direction, shift);
         } else if !self.view.selection.animations.is_empty() && !is_horizontal {
-            let item_pool = self.selectable_animations();
-            let delta = browse_direction.as_list_offset(ListMode::Linear);
-            if let Some(interacted_item) = (&item_pool).offset_from(
-                self.view.selection.animations.last_interacted.as_ref(),
-                delta,
-            ) {
-                self.select_animation(interacted_item, shift, ctrl);
-            }
+            self.browse_animations(direction, shift);
         } else if !self.view.selection.hitboxes.is_empty() && !is_horizontal {
-            let item_pool = self.selectable_hitboxes()?;
-            let delta = browse_direction.as_list_offset(ListMode::Linear);
-            if let Some((_, _, _, hitbox_name)) = (&item_pool)
-                .offset_from(self.view.selection.hitboxes.last_interacted.as_ref(), delta)
-            {
-                self.select_hitbox(hitbox_name, shift, ctrl)?;
-            }
+            self.browse_hitboxes(direction, shift)?;
         } else {
-            let (animation_name, _) = self.get_workbench_animation()?;
-            let animation = self
-                .sheet
-                .animation(&animation_name)
-                .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
-            let ((direction, index), _) = self.get_workbench_keyframe()?;
-            let current_keyframe = (animation_name.clone(), direction, index);
-            let reference_item = self
-                .view
-                .selection
-                .keyframes
-                .last_interacted
-                .as_ref()
-                .or(Some(&current_keyframe));
-            if let Some((_, direction, index)) =
-                animation.offset_from(reference_item, browse_direction, self.view.timeline_clock)
-            {
-                self.select_keyframe(direction, index, shift, ctrl)?;
-            }
+            self.browse_keyframes(direction, shift)?;
+        }
+        Ok(())
+    }
+
+    fn browse_frames(&mut self, direction: BrowseDirection, shift: bool) {
+        let item_pool = self.selectable_frames();
+        let delta = direction.as_list_offset(self.view.frames_list_mode);
+        if let Some(interacted_item) =
+            (&item_pool).offset_from(self.view.selection.frames.last_interacted.as_ref(), delta)
+        {
+            self.select_frame(interacted_item, shift, false);
+        }
+    }
+
+    fn browse_animations(&mut self, direction: BrowseDirection, shift: bool) {
+        let item_pool = self.selectable_animations();
+        let delta = direction.as_list_offset(ListMode::Linear);
+        if let Some(interacted_item) = (&item_pool).offset_from(
+            self.view.selection.animations.last_interacted.as_ref(),
+            delta,
+        ) {
+            self.select_animation(interacted_item, shift, false);
+        }
+    }
+
+    fn browse_hitboxes(
+        &mut self,
+        direction: BrowseDirection,
+        shift: bool,
+    ) -> Result<(), DocumentError> {
+        let item_pool = self.selectable_hitboxes()?;
+        let delta = direction.as_list_offset(ListMode::Linear);
+        if let Some((_, _, _, hitbox_name)) =
+            (&item_pool).offset_from(self.view.selection.hitboxes.last_interacted.as_ref(), delta)
+        {
+            self.select_hitbox(hitbox_name, shift, false)?;
+        }
+        Ok(())
+    }
+
+    fn browse_keyframes(
+        &mut self,
+        browse_direction: BrowseDirection,
+        shift: bool,
+    ) -> Result<(), DocumentError> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation = self
+            .sheet
+            .animation(&animation_name)
+            .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
+        let ((direction, index), _) = self.get_workbench_keyframe()?;
+        let current_keyframe = (animation_name.clone(), direction, index);
+        let reference_item = self
+            .view
+            .selection
+            .keyframes
+            .last_interacted
+            .as_ref()
+            .or(Some(&current_keyframe));
+        if let Some((_, direction, index)) =
+            animation.offset_from(reference_item, browse_direction, self.view.timeline_clock)
+        {
+            self.select_keyframe(direction, index, shift, false)?;
         }
         Ok(())
     }
@@ -491,7 +516,7 @@ trait ItemPoolTimeline {
     fn offset_from(
         &self,
         from: Option<&(String, Direction, usize)>,
-        delta: BrowseSelectionDirection,
+        direction: BrowseDirection,
         timeline_clock: Duration,
     ) -> Option<(String, Direction, usize)>;
 }
@@ -631,20 +656,20 @@ impl ItemPoolTimeline for &Animation {
     fn offset_from(
         &self,
         from: Option<&(String, Direction, usize)>,
-        browse_direction: BrowseSelectionDirection,
+        browse_direction: BrowseDirection,
         timeline_clock: Duration,
     ) -> Option<(String, Direction, usize)> {
         let (animation_name, direction, index) = from?;
         let animation_name = animation_name.clone();
         match browse_direction {
-            BrowseSelectionDirection::Left => {
+            BrowseDirection::Left => {
                 if *index > 0 {
                     Some((animation_name, *direction, index - 1))
                 } else {
                     None
                 }
             }
-            BrowseSelectionDirection::Right => {
+            BrowseDirection::Right => {
                 let sequence = self.sequence(*direction)?;
                 if sequence.keyframe(index + 1).is_some() {
                     Some((animation_name, *direction, index + 1))
@@ -652,7 +677,7 @@ impl ItemPoolTimeline for &Animation {
                     None
                 }
             }
-            BrowseSelectionDirection::Up => reverse_all::<Direction>()
+            BrowseDirection::Up => reverse_all::<Direction>()
                 .cycle()
                 .skip_while(|d| d != direction)
                 .skip(1)
@@ -665,7 +690,7 @@ impl ItemPoolTimeline for &Animation {
                     }
                     None
                 }),
-            BrowseSelectionDirection::Down => all::<Direction>()
+            BrowseDirection::Down => all::<Direction>()
                 .cycle()
                 .skip_while(|d| d != direction)
                 .skip(1)
@@ -682,20 +707,20 @@ impl ItemPoolTimeline for &Animation {
     }
 }
 
-impl BrowseSelectionDirection {
+impl BrowseDirection {
     fn is_horizontal(&self) -> bool {
         match self {
-            BrowseSelectionDirection::Up | BrowseSelectionDirection::Down => false,
-            BrowseSelectionDirection::Left | BrowseSelectionDirection::Right => true,
+            BrowseDirection::Up | BrowseDirection::Down => false,
+            BrowseDirection::Left | BrowseDirection::Right => true,
         }
     }
 
     fn as_vec2(&self) -> Vector2D<i32> {
         match self {
-            BrowseSelectionDirection::Up => vec2(0, -1),
-            BrowseSelectionDirection::Down => vec2(0, 1),
-            BrowseSelectionDirection::Left => vec2(-1, 0),
-            BrowseSelectionDirection::Right => vec2(1, 0),
+            BrowseDirection::Up => vec2(0, -1),
+            BrowseDirection::Down => vec2(0, 1),
+            BrowseDirection::Left => vec2(-1, 0),
+            BrowseDirection::Right => vec2(1, 0),
         }
     }
 

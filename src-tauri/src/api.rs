@@ -441,7 +441,7 @@ pub fn nudge_selection(
 #[tauri::command]
 pub fn browse_selection(
     app_state: tauri::State<'_, AppState>,
-    direction: dto::BrowseSelectionDirection,
+    direction: dto::BrowseDirection,
     shift: bool,
 ) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
