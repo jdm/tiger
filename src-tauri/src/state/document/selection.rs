@@ -213,7 +213,10 @@ impl Document {
         shift: bool,
     ) -> Result<(), DocumentError> {
         let ctrl = false;
-        if !self.view.selection.frames.is_empty() {
+        let is_horizontal = browse_direction.is_horizontal();
+        if !self.view.selection.frames.is_empty()
+            && (!is_horizontal || self.view.frames_list_mode != ListMode::Linear)
+        {
             let item_pool = self.selectable_frames();
             let delta = browse_direction.as_list_offset(self.view.frames_list_mode);
             if let Some(interacted_item) =
@@ -221,7 +224,7 @@ impl Document {
             {
                 self.select_frame(interacted_item, shift, ctrl);
             }
-        } else if !self.view.selection.animations.is_empty() {
+        } else if !self.view.selection.animations.is_empty() && !is_horizontal {
             let item_pool = self.selectable_animations();
             let delta = browse_direction.as_list_offset(ListMode::Linear);
             if let Some(interacted_item) = (&item_pool).offset_from(
@@ -230,7 +233,7 @@ impl Document {
             ) {
                 self.select_animation(interacted_item, shift, ctrl);
             }
-        } else if !self.view.selection.hitboxes.is_empty() {
+        } else if !self.view.selection.hitboxes.is_empty() && !is_horizontal {
             let item_pool = self.selectable_hitboxes()?;
             let delta = browse_direction.as_list_offset(ListMode::Linear);
             if let Some((_, _, _, hitbox_name)) = (&item_pool)
@@ -678,6 +681,13 @@ impl ItemPoolTimeline for &Animation {
 }
 
 impl BrowseSelectionDirection {
+    fn is_horizontal(&self) -> bool {
+        match self {
+            BrowseSelectionDirection::Up | BrowseSelectionDirection::Down => false,
+            BrowseSelectionDirection::Left | BrowseSelectionDirection::Right => true,
+        }
+    }
+
     fn as_vec2(&self) -> Vector2D<i32> {
         match self {
             BrowseSelectionDirection::Up => vec2(0, -1),
