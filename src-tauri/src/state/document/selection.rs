@@ -1,4 +1,4 @@
-use enum_iterator::Sequence;
+use enum_iterator::{all, reverse_all, Sequence};
 use euclid::default::Vector2D;
 use euclid::vec2;
 use std::borrow::Borrow;
@@ -652,30 +652,32 @@ impl ItemPoolTimeline for &Animation {
                     None
                 }
             }
-            BrowseSelectionDirection::Up => {
-                let mut new_direction = direction.previous();
-                while let Some(d) = new_direction {
+            BrowseSelectionDirection::Up => reverse_all::<Direction>()
+                .cycle()
+                .skip_while(|d| d != direction)
+                .skip(1)
+                .take_while(|d| d != direction)
+                .find_map(|d| {
                     if let Some(sequence) = self.sequence(d) {
                         if let Some((new_index, _)) = sequence.keyframe_at(timeline_clock) {
-                            return Some((animation_name, d, new_index));
+                            return Some((animation_name.clone(), d, new_index));
                         }
                     }
-                    new_direction = d.previous();
-                }
-                None
-            }
-            BrowseSelectionDirection::Down => {
-                let mut new_direction = direction.next();
-                while let Some(d) = new_direction {
+                    None
+                }),
+            BrowseSelectionDirection::Down => all::<Direction>()
+                .cycle()
+                .skip_while(|d| d != direction)
+                .skip(1)
+                .take_while(|d| d != direction)
+                .find_map(|d| {
                     if let Some(sequence) = self.sequence(d) {
                         if let Some((new_index, _)) = sequence.keyframe_at(timeline_clock) {
-                            return Some((animation_name, d, new_index));
+                            return Some((animation_name.clone(), d, new_index));
                         }
                     }
-                    new_direction = d.next();
-                }
-                None
-            }
+                    None
+                }),
         }
     }
 }
