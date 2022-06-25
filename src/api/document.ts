@@ -1,5 +1,5 @@
 import {
-  AlterSelectionDirection,
+  BrowseSelectionDirection,
   ContentTab,
   Direction,
   DirectionPreset,
@@ -90,13 +90,13 @@ export async function nudgeSelection(
   );
 }
 
-export async function alterSelection(
-  direction: AlterSelectionDirection,
+export async function browseSelection(
+  direction: BrowseSelectionDirection,
   shift: boolean
 ): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(
-    await invoke("alter_selection", {
+    await invoke("browse_selection", {
       direction: direction,
       shift: shift,
     })

@@ -439,15 +439,15 @@ pub fn nudge_selection(
 }
 
 #[tauri::command]
-pub fn alter_selection(
+pub fn browse_selection(
     app_state: tauri::State<'_, AppState>,
-    direction: dto::AlterSelectionDirection,
+    direction: dto::BrowseSelectionDirection,
     shift: bool,
 ) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::AlterSelection(direction.into(), shift))
+                .process_command(Command::BrowseSelection(direction.into(), shift))
                 .ok();
         }
     }))

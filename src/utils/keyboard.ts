@@ -1,6 +1,6 @@
 import { newDocument, openDocuments, saveAs } from "@/api/local";
 import {
-  alterSelection,
+  browseSelection,
   beginExportAs,
   centerWorkbench,
   deleteSelection,
@@ -20,7 +20,7 @@ import {
 } from "@/api/document";
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
 import { useAppStore } from "@/stores/app";
-import { AlterSelectionDirection, NudgeDirection } from "@/api/dto";
+import { BrowseSelectionDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
   console.log(document.activeElement?.tagName);
@@ -94,13 +94,13 @@ function onKeyDown(event: KeyboardEvent) {
     } else if (event.key == "Delete") {
       deleteSelection();
     } else if (event.key == "ArrowUp") {
-      alterSelection(AlterSelectionDirection.Up, event.shiftKey);
+      browseSelection(BrowseSelectionDirection.Up, event.shiftKey);
     } else if (event.key == "ArrowDown") {
-      alterSelection(AlterSelectionDirection.Down, event.shiftKey);
+      browseSelection(BrowseSelectionDirection.Down, event.shiftKey);
     } else if (event.key == "ArrowLeft") {
-      alterSelection(AlterSelectionDirection.Left, event.shiftKey);
+      browseSelection(BrowseSelectionDirection.Left, event.shiftKey);
     } else if (event.key == "ArrowRight") {
-      alterSelection(AlterSelectionDirection.Right, event.shiftKey);
+      browseSelection(BrowseSelectionDirection.Right, event.shiftKey);
     }
   }
 }

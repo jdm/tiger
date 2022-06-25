@@ -11,11 +11,11 @@ use crate::sheet::{Animation, Direction};
 use crate::state::*;
 
 #[derive(Clone, Debug, Default, PartialEq)]
-pub struct MultiSelection {
-    pub(super) frames: MultiSelectionData<PathBuf>,
-    pub(super) animations: MultiSelectionData<String>,
-    pub(super) hitboxes: MultiSelectionData<(String, Direction, usize, String)>,
-    pub(super) keyframes: MultiSelectionData<(String, Direction, usize)>,
+pub struct SelectionState {
+    pub(super) frames: Selection<PathBuf>,
+    pub(super) animations: Selection<String>,
+    pub(super) hitboxes: Selection<(String, Direction, usize, String)>,
+    pub(super) keyframes: Selection<(String, Direction, usize)>,
 }
 
 #[derive(Clone, Copy, Debug, PartialEq)]
@@ -27,7 +27,7 @@ pub enum NudgeDirection {
 }
 
 #[derive(Clone, Copy, Debug)]
-pub enum AlterSelectionDirection {
+pub enum BrowseSelectionDirection {
     Up,
     Down,
     Left,
@@ -35,7 +35,7 @@ pub enum AlterSelectionDirection {
 }
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct MultiSelectionData<T>
+pub struct Selection<T>
 where
     T: std::cmp::Eq + std::hash::Hash + std::clone::Clone,
 {
@@ -167,15 +167,15 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn alter_selection(
+    pub(super) fn browse_selection(
         &mut self,
-        alter_direction: AlterSelectionDirection,
+        browse_direction: BrowseSelectionDirection,
         shift: bool,
     ) -> Result<(), DocumentError> {
         let ctrl = false;
         if !self.view.selection.frames.is_empty() {
             let item_pool = self.selectable_frames();
-            let delta = alter_direction.as_list_offset(self.view.frames_list_mode);
+            let delta = browse_direction.as_list_offset(self.view.frames_list_mode);
             if let Some(interacted_item) =
                 (&item_pool).offset_from(self.view.selection.frames.last_interacted.as_ref(), delta)
             {
@@ -183,7 +183,7 @@ impl Document {
             }
         } else if !self.view.selection.animations.is_empty() {
             let item_pool = self.selectable_animations();
-            let delta = alter_direction.as_list_offset(ListMode::Linear);
+            let delta = browse_direction.as_list_offset(ListMode::Linear);
             if let Some(interacted_item) = (&item_pool).offset_from(
                 self.view.selection.animations.last_interacted.as_ref(),
                 delta,
@@ -192,7 +192,7 @@ impl Document {
             }
         } else if !self.view.selection.hitboxes.is_empty() {
             let item_pool = self.selectable_hitboxes()?;
-            let delta = alter_direction.as_list_offset(ListMode::Linear);
+            let delta = browse_direction.as_list_offset(ListMode::Linear);
             if let Some((_, _, _, hitbox_name)) = (&item_pool)
                 .offset_from(self.view.selection.hitboxes.last_interacted.as_ref(), delta)
             {
@@ -214,7 +214,7 @@ impl Document {
                 .as_ref()
                 .or(Some(&current_keyframe));
             if let Some((_, direction, index)) =
-                animation.offset_from(reference_item, alter_direction, self.view.timeline_clock)
+                animation.offset_from(reference_item, browse_direction, self.view.timeline_clock)
             {
                 self.select_keyframe(direction, index, shift, ctrl)?;
             }
@@ -248,7 +248,7 @@ impl Document {
     }
 }
 
-impl MultiSelection {
+impl SelectionState {
     pub fn clear(&mut self) {
         *self = Default::default();
     }
@@ -342,7 +342,7 @@ impl MultiSelection {
 }
 
 impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Default
-    for MultiSelectionData<T>
+    for Selection<T>
 {
     fn default() -> Self {
         Self {
@@ -353,7 +353,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Defa
     }
 }
 
-impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> MultiSelectionData<T> {
+impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Selection<T> {
     pub fn new(items: Vec<T>) -> Self {
         Self {
             pivot: items.last().cloned(),
@@ -464,10 +464,10 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Mult
 }
 
 impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> From<T>
-    for MultiSelectionData<T>
+    for Selection<T>
 {
     fn from(selected_item: T) -> Self {
-        MultiSelectionData::new(vec![selected_item])
+        Selection::new(vec![selected_item])
     }
 }
 
@@ -483,7 +483,7 @@ trait ItemPoolTimeline {
     fn offset_from(
         &self,
         from: Option<&(String, Direction, usize)>,
-        delta: AlterSelectionDirection,
+        delta: BrowseSelectionDirection,
         timeline_clock: Duration,
     ) -> Option<(String, Direction, usize)>;
 }
@@ -623,20 +623,20 @@ impl ItemPoolTimeline for &Animation {
     fn offset_from(
         &self,
         from: Option<&(String, Direction, usize)>,
-        alter_direction: AlterSelectionDirection,
+        browse_direction: BrowseSelectionDirection,
         timeline_clock: Duration,
     ) -> Option<(String, Direction, usize)> {
         let (animation_name, direction, index) = from?;
         let animation_name = animation_name.clone();
-        match alter_direction {
-            AlterSelectionDirection::Left => {
+        match browse_direction {
+            BrowseSelectionDirection::Left => {
                 if *index > 0 {
                     Some((animation_name, *direction, index - 1))
                 } else {
                     None
                 }
             }
-            AlterSelectionDirection::Right => {
+            BrowseSelectionDirection::Right => {
                 let sequence = self.sequence(*direction)?;
                 if sequence.keyframe(index + 1).is_some() {
                     Some((animation_name, *direction, index + 1))
@@ -644,7 +644,7 @@ impl ItemPoolTimeline for &Animation {
                     None
                 }
             }
-            AlterSelectionDirection::Up => {
+            BrowseSelectionDirection::Up => {
                 let mut new_direction = direction.previous();
                 while let Some(d) = new_direction {
                     if let Some(sequence) = self.sequence(d) {
@@ -656,7 +656,7 @@ impl ItemPoolTimeline for &Animation {
                 }
                 None
             }
-            AlterSelectionDirection::Down => {
+            BrowseSelectionDirection::Down => {
                 let mut new_direction = direction.next();
                 while let Some(d) = new_direction {
                     if let Some(sequence) = self.sequence(d) {
@@ -672,13 +672,13 @@ impl ItemPoolTimeline for &Animation {
     }
 }
 
-impl AlterSelectionDirection {
+impl BrowseSelectionDirection {
     fn as_vec2(&self) -> Vector2D<i32> {
         match self {
-            AlterSelectionDirection::Up => vec2(0, -1),
-            AlterSelectionDirection::Down => vec2(0, 1),
-            AlterSelectionDirection::Left => vec2(-1, 0),
-            AlterSelectionDirection::Right => vec2(1, 0),
+            BrowseSelectionDirection::Up => vec2(0, -1),
+            BrowseSelectionDirection::Down => vec2(0, 1),
+            BrowseSelectionDirection::Left => vec2(-1, 0),
+            BrowseSelectionDirection::Right => vec2(1, 0),
         }
     }
 
@@ -777,7 +777,7 @@ impl Eq for dyn HitboxID + '_ {}
 
 #[test]
 fn can_replace_selection() {
-    let mut selection: MultiSelectionData<i32> = 0.into();
+    let mut selection: Selection<i32> = 0.into();
     assert!(selection.contains(&0));
 
     selection.alter(0, &[0, 1, 2, 3], false, false);
@@ -790,7 +790,7 @@ fn can_replace_selection() {
 
 #[test]
 fn can_toggle_individual_items() {
-    let mut selection: MultiSelectionData<i32> = 0.into();
+    let mut selection: Selection<i32> = 0.into();
     assert!(selection.contains(&0));
 
     selection.alter(2, &[0, 1, 2, 3], false, true);
@@ -804,7 +804,7 @@ fn can_toggle_individual_items() {
 
 #[test]
 fn can_select_a_range() {
-    let mut selection: MultiSelectionData<i32> = 2.into();
+    let mut selection: Selection<i32> = 2.into();
     selection.alter(5, &(0..=8).collect::<Vec<_>>(), true, false);
     assert!(!selection.contains(&1));
     assert!(selection.contains(&2));
@@ -816,7 +816,7 @@ fn can_select_a_range() {
 
 #[test]
 fn can_adjust_a_range() {
-    let mut selection: MultiSelectionData<i32> = 10.into();
+    let mut selection: Selection<i32> = 10.into();
 
     selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
     selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, false);
@@ -843,7 +843,7 @@ fn can_adjust_a_range() {
 
 #[test]
 fn can_select_multiple_ranges() {
-    let mut selection: MultiSelectionData<i32> = 2.into();
+    let mut selection: Selection<i32> = 2.into();
     selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
     selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
     selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
@@ -857,7 +857,7 @@ fn can_select_multiple_ranges() {
 
 #[test]
 fn can_revert_from_multiple_to_single_range() {
-    let mut selection: MultiSelectionData<i32> = 2.into();
+    let mut selection: Selection<i32> = 2.into();
     selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
     selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
     selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
@@ -869,7 +869,7 @@ fn can_revert_from_multiple_to_single_range() {
 
 #[test]
 fn can_adjust_multiple_ranges() {
-    let mut selection: MultiSelectionData<i32> = 2.into();
+    let mut selection: Selection<i32> = 2.into();
     selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
     selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
     selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
@@ -892,7 +892,7 @@ fn can_adjust_multiple_ranges() {
 
 #[test]
 fn can_remove_individual_item() {
-    let mut selection: MultiSelectionData<i32> = MultiSelectionData::new(vec![3, 4, 5, 6]);
+    let mut selection: Selection<i32> = Selection::new(vec![3, 4, 5, 6]);
     selection.remove(&4);
     assert!(selection.contains(&3));
     assert!(!selection.contains(&4));

@@ -21,7 +21,7 @@ pub enum ListMode {
 pub struct View {
     pub(super) content_tab: ContentTab,
     pub(super) frames_list_mode: ListMode,
-    pub(super) selection: MultiSelection,
+    pub(super) selection: SelectionState,
     pub(super) frames_filter: String,
     pub(super) animations_filter: String,
     pub(super) current_animation: Option<String>,
@@ -124,7 +124,7 @@ impl Document {
         &self.view.animations_filter
     }
 
-    pub fn selection(&self) -> &MultiSelection {
+    pub fn selection(&self) -> &SelectionState {
         &self.view.selection
     }
 

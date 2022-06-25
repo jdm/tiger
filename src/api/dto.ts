@@ -142,7 +142,7 @@ export enum NudgeDirection {
   Right = "Right",
 }
 
-export enum AlterSelectionDirection {
+export enum BrowseSelectionDirection {
   Up = "Up",
   Down = "Down",
   Left = "Left",

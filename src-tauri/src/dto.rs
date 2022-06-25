@@ -174,7 +174,7 @@ pub enum NudgeDirection {
 }
 
 #[derive(Clone, Deserialize)]
-pub enum AlterSelectionDirection {
+pub enum BrowseSelectionDirection {
     Up,
     Down,
     Left,
@@ -521,13 +521,13 @@ impl From<NudgeDirection> for state::NudgeDirection {
     }
 }
 
-impl From<AlterSelectionDirection> for state::AlterSelectionDirection {
-    fn from(direction: AlterSelectionDirection) -> Self {
+impl From<BrowseSelectionDirection> for state::BrowseSelectionDirection {
+    fn from(direction: BrowseSelectionDirection) -> Self {
         match direction {
-            AlterSelectionDirection::Up => state::AlterSelectionDirection::Up,
-            AlterSelectionDirection::Down => state::AlterSelectionDirection::Down,
-            AlterSelectionDirection::Left => state::AlterSelectionDirection::Left,
-            AlterSelectionDirection::Right => state::AlterSelectionDirection::Right,
+            BrowseSelectionDirection::Up => state::BrowseSelectionDirection::Up,
+            BrowseSelectionDirection::Down => state::BrowseSelectionDirection::Down,
+            BrowseSelectionDirection::Left => state::BrowseSelectionDirection::Left,
+            BrowseSelectionDirection::Right => state::BrowseSelectionDirection::Right,
         }
     }
 }
