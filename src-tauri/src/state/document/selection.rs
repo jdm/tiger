@@ -275,7 +275,7 @@ impl Document {
             .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
         let ((direction, index), _) = self.get_workbench_keyframe()?;
         let current_keyframe = (animation_name.clone(), direction, index);
-        let reference_item = self
+        let from_keyframe = self
             .view
             .selection
             .keyframes
@@ -283,7 +283,7 @@ impl Document {
             .as_ref()
             .or(Some(&current_keyframe));
         if let Some((_, direction, index)) =
-            animation.offset_from(reference_item, browse_direction, self.view.timeline_clock)
+            animation.offset_from(from_keyframe, browse_direction, self.view.timeline_clock)
         {
             self.select_keyframe(direction, index, shift, false)?;
         }
