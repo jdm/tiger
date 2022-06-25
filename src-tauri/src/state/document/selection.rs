@@ -144,13 +144,13 @@ impl Document {
 
     pub(super) fn alter_selection(
         &mut self,
-        direction: AlterSelectionDirection,
+        alter_direction: AlterSelectionDirection,
         shift: bool,
     ) -> Result<(), DocumentError> {
         let ctrl = false;
         if !self.view.selection.frames.is_empty() {
             let item_pool = self.selectable_frames();
-            let delta = direction.as_list_offset(self.view.frames_list_mode);
+            let delta = alter_direction.as_list_offset(self.view.frames_list_mode);
             if let Some(interacted_item) =
                 (&item_pool).offset_from(self.view.selection.frames.last_interacted.as_ref(), delta)
             {
@@ -158,7 +158,7 @@ impl Document {
             }
         } else if !self.view.selection.animations.is_empty() {
             let item_pool = self.selectable_animations();
-            let delta = direction.as_list_offset(ListMode::Linear);
+            let delta = alter_direction.as_list_offset(ListMode::Linear);
             if let Some(interacted_item) = (&item_pool).offset_from(
                 self.view.selection.animations.last_interacted.as_ref(),
                 delta,
@@ -167,11 +167,35 @@ impl Document {
             }
         } else if !self.view.selection.hitboxes.is_empty() {
             let item_pool = self.selectable_hitboxes()?;
-            let delta = direction.as_list_offset(ListMode::Linear);
+            let delta = alter_direction.as_list_offset(ListMode::Linear);
             if let Some(interacted_item) = (&item_pool)
                 .offset_from(self.view.selection.hitboxes.last_interacted.as_ref(), delta)
             {
                 self.select_item(&SelectionItem::Hitbox(interacted_item.3), shift, ctrl)?;
+            }
+        } else {
+            let (animation_name, _) = self.get_workbench_animation()?;
+            let animation = self
+                .sheet
+                .animation(&animation_name)
+                .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
+            let ((direction, index), _) = self.get_workbench_keyframe()?;
+            let current_keyframe = (animation_name.clone(), direction, index);
+            let reference_item = self
+                .view
+                .selection
+                .keyframes
+                .last_interacted
+                .as_ref()
+                .or(Some(&current_keyframe));
+            if let Some(interacted_item) =
+                animation.offset_from(reference_item, alter_direction, self.view.timeline_clock)
+            {
+                self.select_item(
+                    &SelectionItem::Keyframe(interacted_item.1, interacted_item.2),
+                    shift,
+                    ctrl,
+                )?;
             }
         }
         Ok(())
@@ -463,6 +487,15 @@ trait ItemPool1D<T> {
     fn offset_from(&self, from: Option<&T>, delta: i32) -> Option<T>;
 }
 
+trait ItemPoolTimeline {
+    fn offset_from(
+        &self,
+        from: Option<&(String, Direction, usize)>,
+        delta: AlterSelectionDirection,
+        timeline_clock: Duration,
+    ) -> Option<(String, Direction, usize)>;
+}
+
 // General case for 1D ordered list
 impl<T> ItemPool<T> for &[T]
 where
@@ -591,6 +624,59 @@ impl ItemPool<(String, Direction, usize)> for &Animation {
                 }
             })
             .collect()
+    }
+}
+
+impl ItemPoolTimeline for &Animation {
+    fn offset_from(
+        &self,
+        from: Option<&(String, Direction, usize)>,
+        alter_direction: AlterSelectionDirection,
+        timeline_clock: Duration,
+    ) -> Option<(String, Direction, usize)> {
+        let (animation_name, direction, index) = from?;
+        let animation_name = animation_name.clone();
+        match alter_direction {
+            AlterSelectionDirection::Left => {
+                if *index > 0 {
+                    Some((animation_name, *direction, index - 1))
+                } else {
+                    None
+                }
+            }
+            AlterSelectionDirection::Right => {
+                let sequence = self.sequence(*direction)?;
+                if sequence.keyframe(index + 1).is_some() {
+                    Some((animation_name, *direction, index + 1))
+                } else {
+                    None
+                }
+            }
+            AlterSelectionDirection::Up => {
+                let mut new_direction = direction.previous();
+                while let Some(d) = new_direction {
+                    if let Some(sequence) = self.sequence(d) {
+                        if let Some((new_index, _)) = sequence.keyframe_at(timeline_clock) {
+                            return Some((animation_name, d, new_index));
+                        }
+                    }
+                    new_direction = d.previous();
+                }
+                None
+            }
+            AlterSelectionDirection::Down => {
+                let mut new_direction = direction.next();
+                while let Some(d) = new_direction {
+                    if let Some(sequence) = self.sequence(d) {
+                        if let Some((new_index, _)) = sequence.keyframe_at(timeline_clock) {
+                            return Some((animation_name, d, new_index));
+                        }
+                    }
+                    new_direction = d.next();
+                }
+                None
+            }
+        }
     }
 }
 
