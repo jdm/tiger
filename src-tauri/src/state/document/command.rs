@@ -1,4 +1,5 @@
 use euclid::default::Vector2D;
+use std::fmt::Display;
 use std::{path::PathBuf, time::Duration};
 
 use crate::sheet::{Direction, DirectionPreset, Sheet};
@@ -306,15 +307,121 @@ impl Document {
         Ok(())
     }
 
-    pub fn get_undo_command(&self) -> Option<&Command> {
+    fn get_undo_command(&self) -> Option<&Command> {
         self.history[self.history_index].last_command.as_ref()
     }
 
-    pub fn get_redo_command(&self) -> Option<&Command> {
+    fn get_redo_command(&self) -> Option<&Command> {
         if self.history_index < self.history.len() - 1 {
             self.history[self.history_index + 1].last_command.as_ref()
         } else {
             None
+        }
+    }
+
+    pub fn get_undo_effect(&self) -> Option<String> {
+        self.get_undo_command().map(|c| c.to_string())
+    }
+
+    pub fn get_redo_effect(&self) -> Option<String> {
+        self.get_redo_command().map(|c| c.to_string())
+    }
+}
+
+impl Display for Command {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Command::Undo => f.write_str("Undo"),
+            Command::Redo => f.write_str("Redo"),
+            Command::FocusContentTab(_) => f.write_str("Change Tab"),
+            Command::SetFramesListMode(_) => f.write_str("Change View Mode"),
+            Command::FilterFrames(_) => f.write_str("Filter Frames"),
+            Command::FilterAnimations(_) => f.write_str("Filter Animations"),
+            Command::ImportFrames(_) => f.write_str("Import Frames"),
+            Command::DeleteFrame(_) => f.write_str("Delete Frame"),
+            Command::DeleteSelectedFrames => f.write_str("Delete Frames"),
+            Command::DeleteSelection => f.write_str("Delete"),
+            Command::NudgeSelection(_, _) => f.write_str("Nudge"),
+            Command::BrowseSelection(_, _) => f.write_str("Select"),
+            Command::ClearSelection => f.write_str("Clear Selection"),
+            Command::SelectFrame(_, _, _) => f.write_str("Select Frame"),
+            Command::SelectAnimation(_, _, _) => f.write_str("Select Animation"),
+            Command::SelectKeyframe(_, _, _, _) => f.write_str("Select Keyframe"),
+            Command::SelectHitbox(_, _, _) => f.write_str("Select Hitbox"),
+            Command::Pan(_) => f.write_str("Pan"),
+            Command::CenterWorkbench => f.write_str("Center Workbench"),
+            Command::ZoomInWorkbench => f.write_str("Zoom In Workbench"),
+            Command::ZoomOutWorkbench => f.write_str("Zoom Out Workbench"),
+            Command::SetWorkbenchZoomFactor(_) => f.write_str("Set Workbench Zoom"),
+            Command::ResetWorkbenchZoom => f.write_str("Reset Workbench Zoom"),
+            Command::EnableSpriteDarkening => f.write_str("Enable Sprite Darkening"),
+            Command::DisableSpriteDarkening => f.write_str("Disable Sprite Darkening"),
+            Command::HideSprite => f.write_str("Hide Sprite"),
+            Command::ShowSprite => f.write_str("Show Sprite"),
+            Command::HideHitboxes => f.write_str("Hide Hitboxes"),
+            Command::ShowHitboxes => f.write_str("Show Hitboxes"),
+            Command::HideOrigin => f.write_str("Hide Origin"),
+            Command::ShowOrigin => f.write_str("Show Origin"),
+            Command::CreateAnimation => f.write_str("Create Animation"),
+            Command::EditAnimation(_) => f.write_str("Open Animation"),
+            Command::RenameAnimation(_, _) => f.write_str("Rename Animation"),
+            Command::DeleteAnimation(_) => f.write_str("Delete Animation"),
+            Command::DeleteSelectedAnimations => f.write_str("Delete Animations"),
+            Command::Tick(_) => f.write_str("Tick"),
+            Command::Play => f.write_str("Start Playback"),
+            Command::Pause => f.write_str("Pause Playback"),
+            Command::ScrubTimeline(_) => f.write_str("Scrub Timeline"),
+            Command::JumpToAnimationStart => f.write_str("Jump To Start"),
+            Command::JumpToAnimationEnd => f.write_str("Jump To End"),
+            Command::JumpToPreviousFrame => f.write_str("Jump To Previous Frame"),
+            Command::JumpToNextFrame => f.write_str("Jump To Next Frame"),
+            Command::ZoomInTimeline => f.write_str("Zoom In Timeline"),
+            Command::ZoomOutTimeline => f.write_str("Zoom Out Timeline"),
+            Command::SetTimelineZoomAmount(_) => f.write_str("Set Timeline Zoom"),
+            Command::ResetTimelineZoom => f.write_str("Reset Timeline Zoom"),
+            Command::SetAnimationLooping(_) => f.write_str("Toggle Looping"),
+            Command::ApplyDirectionPreset(_) => f.write_str("Set Perspective"),
+            Command::SelectDirection(_) => f.write_str("Select Directions"),
+            Command::BeginDragAndDropFrame(_) => f.write_str("Begin Frame Drag And Drop"),
+            Command::DropFrameOnTimeline(_, _) => f.write_str("Drop Frame"),
+            Command::EndDragAndDropFrame => f.write_str("End Frame Drag And Drop"),
+            Command::DeleteSelectedKeyframes => f.write_str("Delete Keyframes"),
+            Command::SetKeyframeDuration(_) => f.write_str("Set Keyframe Duration"),
+            Command::SetKeyframeOffsetX(_) => f.write_str("Start Keyframe X Offset"),
+            Command::SetKeyframeOffsetY(_) => f.write_str("Start Keyframe Y Offset"),
+            Command::BeginDragAndDropKeyframe(_, _) => f.write_str("Begin Keyframe Drag And Drop"),
+            Command::DropKeyframeOnTimeline(_, _) => f.write_str("Drop Keyframe"),
+            Command::EndDragAndDropKeyframe => f.write_str("End Keyframe Drag And Drop"),
+            Command::BeginDragKeyframeDuration(_, _) => f.write_str("Adjust Keyframe Duration"),
+            Command::UpdateDragKeyframeDuration(_) => f.write_str("Adjust Keyframe Duration"),
+            Command::EndDragKeyframeDuration() => f.write_str("Adjust Keyframe Duration"),
+            Command::BeginNudgeKeyframe(_, _) => f.write_str("Nudge Keyframe"),
+            Command::UpdateNudgeKeyframe(_, _) => f.write_str("Nudge Keyframe"),
+            Command::EndNudgeKeyframe() => f.write_str("Nudge Keyframe"),
+            Command::CreateHitbox(_) => f.write_str("Create Hitbox"),
+            Command::RenameHitbox(_, _) => f.write_str("Rename Hitbox"),
+            Command::DeleteHitbox(_) => f.write_str("Delete Hitbox"),
+            Command::DeleteSelectedHitboxes => f.write_str("Delete Hitboxes"),
+            Command::LockHitboxes => f.write_str("Lock Hitboxes"),
+            Command::UnlockHitboxes => f.write_str("Unlock Hitboxes"),
+            Command::SetHitboxPositionX(_) => f.write_str("Set Hitbox X Position"),
+            Command::SetHitboxPositionY(_) => f.write_str("Set Hitbox Y Position"),
+            Command::SetHitboxWidth(_) => f.write_str("Set Hitbox Width"),
+            Command::SetHitboxHeight(_) => f.write_str("Set Hitbox Height"),
+            Command::TogglePreserveAspectRatio => f.write_str("Toggle Preserve Aspect Ratio"),
+            Command::BeginNudgeHitbox(_) => f.write_str("Nudge Hitbox"),
+            Command::UpdateNudgeHitbox(_, _) => f.write_str("Nudge Hitbox"),
+            Command::EndNudgeHitbox => f.write_str("Nudge Hitbox"),
+            Command::BeginResizeHitbox(_, _) => f.write_str("Resize Hitbox"),
+            Command::UpdateResizeHitbox(_, _) => f.write_str("Resize Hitbox"),
+            Command::EndResizeHitbox => f.write_str("Resize Hitbox"),
+            Command::BeginExportAs => f.write_str("Open Export Setings"),
+            Command::SetExportTemplateFile(_) => f.write_str("Set Template File"),
+            Command::SetExportTextureFile(_) => f.write_str("Set Texture File"),
+            Command::SetExportMetadataFile(_) => f.write_str("Set Metadata File"),
+            Command::SetExportMetadataPathsRoot(_) => f.write_str("Set Metadata Paths Root"),
+            Command::CancelExportAs => f.write_str("Cancel Export"),
+            Command::EndExportAs => f.write_str("End Export"),
         }
     }
 }

@@ -20,6 +20,8 @@ export type Document = {
   path: string;
   name: string;
   hasUnsavedChanges: boolean;
+  undoEffect: string;
+  redoEffect: string;
   wasCloseRequested: boolean;
   sheet: Sheet;
   contentTab: ContentTab;

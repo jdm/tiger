@@ -103,7 +103,7 @@
   - [x] Save As
   - [x] Save All
   - [x] Keyboard controls
-  - [ ] Undo command names
+  - [x] Undo command names
   - [x] Auto reload images on frame edit
   - [x] Floating toolbar in workbench
   - [x] Better looking playback controls
