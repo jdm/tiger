@@ -57,7 +57,7 @@ pub struct Transient {
 impl Document {
     pub(super) fn begin_drag_and_drop_frame(&mut self, frame: PathBuf) {
         if !self.view.selection.is_frame_selected(&frame) {
-            self.view.selection.select_frame(frame.clone());
+            self.select_frame_only(frame.clone());
         }
         self.transient.frame_drag_and_drop = Some(frame);
     }
@@ -80,7 +80,7 @@ impl Document {
         if !timeline_is_playing {
             self.view.timeline_clock = Duration::from_millis(sequence.keyframe_times()[index]);
         }
-        self.view.selection.select_keyframes(
+        self.select_keyframes_only(
             (index..(index + selected_frames.len()))
                 .map(|i| (animation_name.clone(), direction, i)),
         );
@@ -107,9 +107,7 @@ impl Document {
             .selection
             .is_keyframe_selected(&animation_name, direction, index)
         {
-            self.view
-                .selection
-                .select_keyframe(animation_name, direction, index);
+            self.select_keyframe_only(animation_name, direction, index);
         }
         self.transient.keyframe_drag_and_drop = Some((direction, index));
         Ok(())
@@ -186,7 +184,7 @@ impl Document {
         // Update selection
         let new_selection = (insert_index..(insert_index + selection.len()))
             .map(|i| (animation_name.clone(), direction, i));
-        self.view.selection.select_keyframes(new_selection);
+        self.select_keyframes_only(new_selection);
         self.view.current_sequence = Some(direction);
 
         Ok(())
@@ -216,9 +214,7 @@ impl Document {
             .selection
             .is_keyframe_selected(&animation_name, direction, index)
         {
-            self.view
-                .selection
-                .select_keyframe(animation_name, direction, index);
+            self.select_keyframe_only(animation_name, direction, index);
             self.view.current_sequence = Some(direction);
         }
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
@@ -317,7 +313,7 @@ impl Document {
             nudge.keyframe_being_dragged.0,
             nudge.keyframe_being_dragged.1,
         ) {
-            self.view.selection.select_keyframe(
+            self.select_keyframe_only(
                 animation_name,
                 nudge.keyframe_being_dragged.0,
                 nudge.keyframe_being_dragged.1,
@@ -409,12 +405,7 @@ impl Document {
             index,
             &nudge.hitbox_being_dragged,
         ) {
-            self.view.selection.select_hitbox(
-                animation_name,
-                direction,
-                index,
-                nudge.hitbox_being_dragged,
-            );
+            self.select_hitbox_only(animation_name, direction, index, nudge.hitbox_being_dragged);
         }
 
         if !both_axis {

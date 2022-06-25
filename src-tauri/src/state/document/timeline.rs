@@ -27,7 +27,7 @@ impl Document {
                                 self.persistent.timeline_is_playing = false;
                                 self.view.timeline_clock = Duration::from_millis(d);
                                 if self.view.selection.keyframes().count() <= 1 {
-                                    self.view.selection.select_keyframe(
+                                    self.select_keyframe_only(
                                         animation_name,
                                         direction,
                                         num_keyframes - 1,
@@ -72,9 +72,7 @@ impl Document {
             .keyframe_index_at(self.view.timeline_clock)
             .unwrap_or_default();
         if self.view.selection.keyframes().count() <= 1 {
-            self.view
-                .selection
-                .select_keyframe(animation_name, direction, keyframe_index);
+            self.select_keyframe_only(animation_name, direction, keyframe_index);
         }
         Ok(())
     }
@@ -90,9 +88,7 @@ impl Document {
         };
         let keyframe_index = sequence.keyframe_index_at(new_time).unwrap_or_default();
         self.view.timeline_clock = new_time;
-        self.view
-            .selection
-            .select_keyframe(animation_name, direction, keyframe_index);
+        self.select_keyframe_only(animation_name, direction, keyframe_index);
         Ok(())
     }
 
@@ -152,9 +148,7 @@ impl Document {
         let animation_name = animation_name.clone();
         let (direction, sequence) = self.get_workbench_sequence()?;
         if let Some(keyframe) = sequence.keyframe_index_at(self.view.timeline_clock) {
-            self.view
-                .selection
-                .select_keyframe(animation_name, direction, keyframe);
+            self.select_keyframe_only(animation_name, direction, keyframe);
         } else {
             self.view.selection.keyframes.clear();
         }

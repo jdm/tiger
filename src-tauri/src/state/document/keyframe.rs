@@ -39,9 +39,7 @@ impl Document {
         if let Some(position) = position {
             hitbox.set_position(position);
         }
-        self.view
-            .selection
-            .select_hitbox(animation_name, direction, index, hitbox_name);
+        self.select_hitbox_only(animation_name, direction, index, hitbox_name);
         Ok(())
     }
 
@@ -55,7 +53,7 @@ impl Document {
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
         keyframe.rename_hitbox(&old_name, &new_name)?;
 
-        self.view.selection.select_hitbox(
+        self.select_hitbox_only(
             animation_name,
             direction,
             index,

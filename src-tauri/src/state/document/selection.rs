@@ -79,6 +79,46 @@ impl Document {
         Ok(())
     }
 
+    pub fn select_frame_only(&mut self, frame: PathBuf) {
+        self.view.selection.clear();
+        self.view.selection.frames.only(vec![frame]);
+    }
+
+    pub fn select_animation_only(&mut self, animation: String) {
+        self.view.selection.clear();
+        self.view.selection.animations.only(vec![animation]);
+    }
+
+    pub fn select_keyframe_only(&mut self, animation: String, direction: Direction, index: usize) {
+        self.view.selection.clear();
+        self.view
+            .selection
+            .keyframes
+            .only(vec![(animation, direction, index)]);
+    }
+
+    pub fn select_keyframes_only<T>(&mut self, keyframes: T)
+    where
+        T: IntoIterator<Item = (String, Direction, usize)>,
+    {
+        self.view.selection.clear();
+        self.view.selection.keyframes.only(keyframes);
+    }
+
+    pub fn select_hitbox_only(
+        &mut self,
+        animation: String,
+        direction: Direction,
+        index: usize,
+        hitbox: String,
+    ) {
+        self.view.selection.clear();
+        self.view
+            .selection
+            .hitboxes
+            .only(vec![(animation, direction, index, hitbox)]);
+    }
+
     pub(super) fn select_frame<T: AsRef<Path>>(&mut self, path: T, shift: bool, ctrl: bool) {
         self.view.selection.animations.clear();
         self.view.selection.keyframes.clear();
@@ -251,41 +291,6 @@ impl Document {
 impl SelectionState {
     pub fn clear(&mut self) {
         *self = Default::default();
-    }
-
-    pub fn select_frame(&mut self, frame: PathBuf) {
-        self.clear();
-        self.frames.only(vec![frame]);
-    }
-
-    pub fn select_animation(&mut self, animation: String) {
-        self.clear();
-        self.animations.only(vec![animation]);
-    }
-
-    pub fn select_keyframe(&mut self, animation: String, direction: Direction, index: usize) {
-        self.clear();
-        self.keyframes.only(vec![(animation, direction, index)]);
-    }
-
-    pub fn select_keyframes<T>(&mut self, keyframes: T)
-    where
-        T: IntoIterator<Item = (String, Direction, usize)>,
-    {
-        self.clear();
-        self.keyframes.only(keyframes);
-    }
-
-    pub fn select_hitbox(
-        &mut self,
-        animation: String,
-        direction: Direction,
-        index: usize,
-        hitbox: String,
-    ) {
-        self.clear();
-        self.hitboxes
-            .only(vec![(animation, direction, index, hitbox)]);
     }
 
     pub fn is_frame_selected(&self, path: &Path) -> bool {
