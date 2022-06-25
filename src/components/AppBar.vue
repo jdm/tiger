@@ -51,8 +51,17 @@ const fileMenuEntries = [
 
 const editMenuEntries = computed(() => {
 	return [
-		{ name: `Undo ${app.currentDocument?.undoEffect || ''}`, shortcut: "Ctrl+Z", action: undo },
-		{ name: `Redo ${app.currentDocument?.redoEffect || ''}`, shortcut: "Ctrl+Shift+Z", action: redo },
+		{
+			name: `Undo ${app.currentDocument?.undoEffect || ''}`,
+			shortcut: "Ctrl+Z", action: undo,
+			disabled: app.currentDocument?.undoEffect == null
+		},
+		{
+			name:
+				`Redo ${app.currentDocument?.redoEffect || ''}`,
+			shortcut: "Ctrl+Shift+Z", action: redo,
+			disabled: app.currentDocument?.redoEffect == null
+		},
 	];
 });
 

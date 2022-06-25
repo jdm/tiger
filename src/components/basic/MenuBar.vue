@@ -28,6 +28,7 @@ export type MenuEntry = {
 	name: string,
 	shortcut?: string,
 	action?: () => Promise<void>,
+	disabled?: boolean,
 };
 
 defineProps<{
