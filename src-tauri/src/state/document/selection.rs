@@ -18,14 +18,6 @@ pub struct MultiSelection {
     pub(super) keyframes: MultiSelectionData<(String, Direction, usize)>,
 }
 
-#[derive(Clone, Debug)]
-pub enum SelectionItem {
-    Frame(PathBuf),
-    Animation(String),
-    Hitbox(String),
-    Keyframe(Direction, usize),
-}
-
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum NudgeDirection {
     Up,
@@ -40,16 +32,6 @@ pub enum AlterSelectionDirection {
     Down,
     Left,
     Right,
-}
-
-pub enum MultiSelectionEdit<'a> {
-    Frames(PathBuf, Vec<PathBuf>),
-    Animations(String, Vec<String>),
-    Hitboxes(
-        (String, Direction, usize, String),
-        Vec<(String, Direction, usize, String)>,
-    ),
-    Keyframes((String, Direction, usize), &'a Animation),
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -97,48 +79,91 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn select_item(
+    pub(super) fn select_frame<T: AsRef<Path>>(&mut self, path: T, shift: bool, ctrl: bool) {
+        self.view.selection.animations.clear();
+        self.view.selection.keyframes.clear();
+        self.view.selection.hitboxes.clear();
+
+        self.view.selection.frames.alter(
+            path.as_ref().to_owned(),
+            &self.selectable_frames(),
+            shift,
+            ctrl,
+        );
+    }
+
+    pub(super) fn select_animation<T: AsRef<str>>(&mut self, name: T, shift: bool, ctrl: bool) {
+        self.view.selection.frames.clear();
+        self.view.selection.keyframes.clear();
+        self.view.selection.hitboxes.clear();
+
+        self.view.selection.animations.alter(
+            name.as_ref().to_owned(),
+            &self.selectable_animations(),
+            shift,
+            ctrl,
+        );
+    }
+
+    pub(super) fn select_keyframe(
         &mut self,
-        selection: &SelectionItem,
+        direction: Direction,
+        index: usize,
         shift: bool,
         ctrl: bool,
     ) -> Result<(), DocumentError> {
-        let edit = match selection {
-            SelectionItem::Frame(f) => {
-                MultiSelectionEdit::Frames(f.clone(), self.selectable_frames())
-            }
-            SelectionItem::Animation(a) => {
-                MultiSelectionEdit::Animations(a.clone(), self.selectable_animations())
-            }
-            SelectionItem::Hitbox(h) => {
-                let (animation_name, _) = self.get_workbench_animation()?;
-                let ((direction, index), _) = self.get_workbench_keyframe()?;
-                MultiSelectionEdit::Hitboxes(
-                    (animation_name.clone(), direction, index, h.clone()),
-                    self.selectable_hitboxes()?,
-                )
-            }
-            SelectionItem::Keyframe(d, i) => {
-                self.view.current_sequence = Some(*d);
-                let (_, sequence) = self.get_workbench_sequence()?;
-                if !self.persistent.timeline_is_playing {
-                    self.view.timeline_clock = Duration::from_millis(
-                        sequence
-                            .keyframe_times()
-                            .get(*i)
-                            .copied()
-                            .unwrap_or_default(),
-                    );
-                }
-                let (animation_name, _) = self.get_workbench_animation()?;
-                let animation = self
-                    .sheet
-                    .animation(&animation_name)
-                    .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
-                MultiSelectionEdit::Keyframes((animation_name.clone(), *d, *i), animation)
-            }
-        };
-        self.view.selection.alter(edit, shift, ctrl);
+        self.view.selection.frames.clear();
+        self.view.selection.animations.clear();
+        self.view.selection.hitboxes.clear();
+
+        self.view.current_sequence = Some(direction);
+        if !self.persistent.timeline_is_playing {
+            let (_, sequence) = self.get_workbench_sequence()?;
+            self.view.timeline_clock = Duration::from_millis(
+                sequence
+                    .keyframe_times()
+                    .get(index)
+                    .copied()
+                    .unwrap_or_default(),
+            );
+        }
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let animation = self
+            .sheet
+            .animation(&animation_name)
+            .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
+
+        self.view.selection.keyframes.alter(
+            (animation_name, direction, index),
+            animation,
+            shift,
+            ctrl,
+        );
+
+        Ok(())
+    }
+
+    pub(super) fn select_hitbox<T: AsRef<str>>(
+        &mut self,
+        name: T,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<(), DocumentError> {
+        self.view.selection.frames.clear();
+        self.view.selection.animations.clear();
+        self.view.selection.keyframes.clear();
+
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let ((direction, index), _) = self.get_workbench_keyframe()?;
+        self.view.selection.hitboxes.alter(
+            (animation_name, direction, index, name.as_ref().to_owned()),
+            &self.selectable_hitboxes()?,
+            shift,
+            ctrl,
+        );
+
         Ok(())
     }
 
@@ -154,7 +179,7 @@ impl Document {
             if let Some(interacted_item) =
                 (&item_pool).offset_from(self.view.selection.frames.last_interacted.as_ref(), delta)
             {
-                self.select_item(&SelectionItem::Frame(interacted_item), shift, ctrl)?;
+                self.select_frame(interacted_item, shift, ctrl);
             }
         } else if !self.view.selection.animations.is_empty() {
             let item_pool = self.selectable_animations();
@@ -163,15 +188,15 @@ impl Document {
                 self.view.selection.animations.last_interacted.as_ref(),
                 delta,
             ) {
-                self.select_item(&SelectionItem::Animation(interacted_item), shift, ctrl)?;
+                self.select_animation(interacted_item, shift, ctrl);
             }
         } else if !self.view.selection.hitboxes.is_empty() {
             let item_pool = self.selectable_hitboxes()?;
             let delta = alter_direction.as_list_offset(ListMode::Linear);
-            if let Some(interacted_item) = (&item_pool)
+            if let Some((_, _, _, hitbox_name)) = (&item_pool)
                 .offset_from(self.view.selection.hitboxes.last_interacted.as_ref(), delta)
             {
-                self.select_item(&SelectionItem::Hitbox(interacted_item.3), shift, ctrl)?;
+                self.select_hitbox(hitbox_name, shift, ctrl)?;
             }
         } else {
             let (animation_name, _) = self.get_workbench_animation()?;
@@ -188,14 +213,10 @@ impl Document {
                 .last_interacted
                 .as_ref()
                 .or(Some(&current_keyframe));
-            if let Some(interacted_item) =
+            if let Some((_, direction, index)) =
                 animation.offset_from(reference_item, alter_direction, self.view.timeline_clock)
             {
-                self.select_item(
-                    &SelectionItem::Keyframe(interacted_item.1, interacted_item.2),
-                    shift,
-                    ctrl,
-                )?;
+                self.select_keyframe(direction, index, shift, ctrl)?;
             }
         }
         Ok(())
@@ -265,35 +286,6 @@ impl MultiSelection {
         self.clear();
         self.hitboxes
             .only(vec![(animation, direction, index, hitbox)]);
-    }
-
-    pub fn alter(&mut self, edit: MultiSelectionEdit, shift: bool, ctrl: bool) {
-        if !matches!(edit, MultiSelectionEdit::Frames(_, _)) {
-            self.frames.clear();
-        }
-        if !matches!(edit, MultiSelectionEdit::Animations(_, _)) {
-            self.animations.clear();
-        }
-        if !matches!(edit, MultiSelectionEdit::Hitboxes(_, _)) {
-            self.hitboxes.clear();
-        }
-        if !matches!(edit, MultiSelectionEdit::Keyframes(_, _)) {
-            self.keyframes.clear();
-        }
-        match edit {
-            MultiSelectionEdit::Frames(item, set) => {
-                self.frames.alter(item, &set, shift, ctrl);
-            }
-            MultiSelectionEdit::Animations(item, set) => {
-                self.animations.alter(item, &set, shift, ctrl);
-            }
-            MultiSelectionEdit::Hitboxes(item, set) => {
-                self.hitboxes.alter(item, &set, shift, ctrl);
-            }
-            MultiSelectionEdit::Keyframes(item, animation) => {
-                self.keyframes.alter(item, animation, shift, ctrl);
-            }
-        }
     }
 
     pub fn is_frame_selected(&self, path: &Path) -> bool {

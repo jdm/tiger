@@ -19,7 +19,10 @@ pub enum Command {
     NudgeSelection(NudgeDirection, bool),
     AlterSelection(AlterSelectionDirection, bool),
     ClearSelection,
-    SelectItem(SelectionItem, bool, bool),
+    SelectFrame(PathBuf, bool, bool),
+    SelectAnimation(String, bool, bool),
+    SelectKeyframe(Direction, usize, bool, bool),
+    SelectHitbox(String, bool, bool),
     Pan(Vector2D<f32>),
     CenterWorkbench,
     ZoomInWorkbench,
@@ -120,7 +123,13 @@ impl Document {
             Command::NudgeSelection(d, l) => self.nudge_selection(d, l)?,
             Command::AlterSelection(d, shift) => self.alter_selection(d, shift)?,
             Command::ClearSelection => self.view.selection.clear(),
-            Command::SelectItem(ref item, shift, ctrl) => self.select_item(item, shift, ctrl)?,
+            Command::SelectFrame(ref p, shift, ctrl) => self.select_frame(p, shift, ctrl),
+            Command::SelectAnimation(ref n, shift, ctrl) => self.select_animation(n, shift, ctrl),
+
+            Command::SelectKeyframe(d, i, shift, ctrl) => {
+                self.select_keyframe(d, i, shift, ctrl)?
+            }
+            Command::SelectHitbox(ref n, shift, ctrl) => self.select_hitbox(n, shift, ctrl)?,
             Command::Pan(delta) => self.view.pan(delta),
             Command::CenterWorkbench => self.view.center_workbench(),
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),

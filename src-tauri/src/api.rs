@@ -6,7 +6,7 @@ use std::time::Duration;
 use crate::dto::{self, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet;
-use crate::state::{App, AppState, Command, Document, DocumentError, SelectionItem};
+use crate::state::{App, AppState, Command, Document, DocumentError};
 
 impl AppState {
     pub fn mutate<F>(&self, operation: F) -> Patch
@@ -472,7 +472,7 @@ pub fn select_frame(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::SelectItem(SelectionItem::Frame(path), shift, ctrl))
+                .process_command(Command::SelectFrame(path, shift, ctrl))
                 .ok();
         }
     }))
@@ -488,11 +488,7 @@ pub fn select_animation(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::SelectItem(
-                    SelectionItem::Animation(name),
-                    shift,
-                    ctrl,
-                ))
+                .process_command(Command::SelectAnimation(name, shift, ctrl))
                 .ok();
         }
     }))
@@ -509,8 +505,9 @@ pub fn select_keyframe(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::SelectItem(
-                    SelectionItem::Keyframe(direction.into(), index),
+                .process_command(Command::SelectKeyframe(
+                    direction.into(),
+                    index,
                     shift,
                     ctrl,
                 ))
@@ -529,11 +526,7 @@ pub fn select_hitbox(
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::SelectItem(
-                    SelectionItem::Hitbox(name),
-                    shift,
-                    ctrl,
-                ))
+                .process_command(Command::SelectHitbox(name, shift, ctrl))
                 .ok();
         }
     }))
