@@ -1,6 +1,6 @@
 <template>
 	<div data-tauri-drag-region @dblclick="toggleMaximize"
-		class="flex flex-row justify-between bg-plastic-800 shadow-lg shadow-black/15">
+		class="h-11 flex flex-row justify-between bg-plastic-800 shadow-lg shadow-black/15">
 		<div class="self-stretch">
 			<slot name="left" />
 		</div>

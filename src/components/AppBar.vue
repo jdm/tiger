@@ -8,8 +8,8 @@
 		</template>
 		<template #right>
 			<div>
-				<div v-if="!app.isReleaseBuild">
-					<button @click="onToggleDevTools" class="p-2 px-4 text-white"
+				<div v-if="!app.isReleaseBuild" class="h-full inline-flex items-center">
+					<button @click="onToggleDevTools" class="p-1 px-2 rounded-md text-white"
 						:class="debugMode ? 'bg-green-500' : 'bg-red-500'">🐛</button>
 				</div>
 			</div>
