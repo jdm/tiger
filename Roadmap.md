@@ -97,6 +97,7 @@
 
 - [x] UI rewrite (prettier)
 - [x] In-place rename UX
+- [x] Right click menu to rename item
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
 - [x] Can display frames in thumbnail or list mode
@@ -118,15 +119,16 @@
 ## Tiger 0.5
 
 - [ ] Angle in liquid template sequence data
-- [ ] Nicer looking paths in export settings (no concat)
+- [ ] Nicer looking paths in export settings (no ../ concat)
 - [ ] Consider merging some code between save, save_as and save_all
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files
-- [ ] Export perf improvements
-- [ ] Duplicate animation / keyframe (within same sheet)
+- [ ] Copy/paste animations
+- [ ] Copy/paste keyframes
 - [ ] Copy/paste hitboxes
-- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
+- [ ] Unit test timeline commands
+- [ ] Unit test transient commands
 
 ## Tiger 0.6
 
@@ -134,13 +136,18 @@
 - [ ] Add buttons to align frame edges or center to origin
 - [ ] Draw hitbox names in workbench
 - [ ] Playback speed controls
-- [ ] Time snapping of animation frames
-- [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes arent correctly centered
+- [ ] Time snapping / quantizing of animation frames
+- [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes are not correctly centered
 
 ## Tiger 0.7
 
-- [ ] Right click menu to rename item
-- [ ] Export dialog links to documentation
+- [ ] Export perf improvements
+- [ ] Can zoom workbench with mousewheel
+- [ ] Can zoom timeline with mousewheel
+- [ ] Can scroll timeline with mousewheel
+- [ ] Backend keeps track of frames pane scroll position in undo stack
+- [ ] Backend keeps track of animations pane scroll position in undo stack
+- [ ] Backend keeps track of timeline scroll position in undo stack
 
 ## Tiger 0.8
 
@@ -152,12 +159,13 @@
 
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
-- [ ] Can scroll timeline with mousewheel
-- [ ] Backend keeps track of content pane scroll position in undo stack
-- [ ] Backend keeps track of timeline scroll position in undo stack
 - [ ] Fix jank spacing in exported metadata files
 - [ ] Export complete notification
 - [ ] Unit test UI
+- [ ] Document template format
+- [ ] Export dialog links to documentation
+- [ ] Auto-updates
+- [ ] Splash screen
 
 ## Tiger 1.0
 
@@ -165,10 +173,9 @@
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Provide export templates for some common formats (TBD)
-- [ ] Document template format
-- [ ] Readme Logo
+- [ ] Readme logo
 - [ ] About dialog
-- [ ] App icon
+- [ ] App icon (file explorer, taskbar, add/remove programers, installer, title bar)
 - [ ] Itch.io or other distribution method
 
 ## Post 1.0
@@ -181,7 +188,6 @@
 - [ ] Import animation data from other software (Asesprite, TBD)
 - [ ] Sockets (like hitbox but point)
 - [ ] Events (arbitrary markers on timeline)
-- [ ] Copy/paste animation or keyframe (between sheets)
-- [ ] Drag and drop frames from OS to content panel
+- [ ] Drag and drop frames from OS to content panel 
 - [ ] Drag and drop frames from OS to timeline panel
 - [ ] Projects?
