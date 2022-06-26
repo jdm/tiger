@@ -21,16 +21,13 @@ jobs:
           type: now
           target_branch: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout Release Branch
-        uses: actions/checkout@v2
-        with:
-          ref: release
       - name: Create Github Release
         id: create-release
         uses: softprops/action-gh-release@v1
         with:
           name: Tiger ${{ github.event.inputs.versionNumber }}
           tag_name: ${{ github.event.inputs.versionNumber }}
+          target_commitish: release
           draft: true
 
   build_windows_binaries:
@@ -46,7 +43,9 @@ jobs:
       - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
+          default: true
       - name: Install frontend dependencies
         run: npm install
       - uses: tauri-apps/tauri-action@v0
