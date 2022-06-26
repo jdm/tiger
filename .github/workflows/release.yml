@@ -31,6 +31,7 @@ jobs:
         with:
           name: Tiger ${{ github.event.inputs.versionNumber }}
           tag_name: ${{ github.event.inputs.versionNumber }}
+          target_commitish: release
           draft: true
 
   build_windows_binaries:
@@ -46,7 +47,9 @@ jobs:
       - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
+          toolchain: stable
           profile: minimal
+          default: true
       - name: Install frontend dependencies
         run: npm install
       - uses: tauri-apps/tauri-action@v0

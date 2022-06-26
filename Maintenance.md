@@ -1,8 +1,11 @@
 # How to make a release
 
-- Update version number in Cargo.toml
-- Run `make_release.ps1`
-- After CI completes, find the release on Github and move it from Draft to Published
+- On Github, go to **Actions**, select the **Make Release** workflow and click **Run workflow**
+- Select the branch to deploy (usually `master`)
+- Input a user-facing version name (eg: **0.3.0**)
+- Click the **Run workflow** button
+- After CI completes, find the release on Github and write the changelog
+- Move the release from Draft to Published
 
 Note that the Github web UI will separate the release from the corresponding tag until published.
 
