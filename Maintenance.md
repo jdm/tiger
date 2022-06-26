@@ -7,8 +7,6 @@
 - After CI completes, find the release on Github and write the changelog
 - Move the release from Draft to Published
 
-Note that the Github web UI will separate the release from the corresponding tag until published.
-
 # How to increment Tiger format version
 
 1. Create a new module file under `src/sheet/compat/versionN.rs` (copy-paste the previous version as a starting point)
