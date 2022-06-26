@@ -12,13 +12,7 @@ pub enum Clipboard {
 impl Document {
     pub fn copy(&self) -> Option<Clipboard> {
         if !self.view.selection.hitboxes.is_empty() {
-            let hitboxes = self
-                .get_selected_hitboxes()
-                .ok()?
-                .into_iter()
-                .map(|(name, hitbox)| (name.clone(), hitbox.clone()))
-                .collect::<HashMap<String, Hitbox>>();
-            Some(Clipboard::Hitboxes(hitboxes))
+            self.copy_hitboxes()
         } else {
             None
         }
@@ -26,13 +20,25 @@ impl Document {
 
     pub(super) fn paste(&mut self, clipboard: Clipboard) -> Result<(), DocumentError> {
         match clipboard {
-            Clipboard::Hitboxes(hitboxes) => {
-                let (_, keyframe) = self.get_workbench_keyframe_mut()?;
-                for (name, hitbox) in hitboxes {
-                    let (_, new_hitbox) = keyframe.create_hitbox(name);
-                    *new_hitbox = hitbox;
-                }
-            }
+            Clipboard::Hitboxes(hitboxes) => self.paste_hitboxes(hitboxes),
+        }
+    }
+
+    fn copy_hitboxes(&self) -> Option<Clipboard> {
+        let hitboxes = self
+            .get_selected_hitboxes()
+            .ok()?
+            .into_iter()
+            .map(|(name, hitbox)| (name.clone(), hitbox.clone()))
+            .collect::<HashMap<String, Hitbox>>();
+        Some(Clipboard::Hitboxes(hitboxes))
+    }
+
+    fn paste_hitboxes(&mut self, hitboxes: HashMap<String, Hitbox>) -> Result<(), DocumentError> {
+        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        for (name, hitbox) in hitboxes {
+            let (_, new_hitbox) = keyframe.create_hitbox(name);
+            *new_hitbox = hitbox;
         }
         Ok(())
     }
