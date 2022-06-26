@@ -3323,7 +3323,7 @@ dependencies = [
 
 [[package]]
 name = "tiger"
-version = "0.4.0-wip"
+version = "0.0.0-development"
 dependencies = [
  "derivative",
  "enum-iterator",
