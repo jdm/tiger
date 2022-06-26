@@ -53,5 +53,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.create-release.outputs.RELEASE_ID }}
-          tauriScript: >
-            npm tauri build --config '{ \"package\": { \"version\": \"${{ github.event.inputs.versionNumber }}\" } }'
+          args: >
+            --config '{ \"package\": { \"version\": \"${{ github.event.inputs.versionNumber }}\" } }'
