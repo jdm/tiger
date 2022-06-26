@@ -25,8 +25,10 @@ import Button from "@/components/basic/Button.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import MultiSwitch, { MultiSwitchItem } from "@/components/basic/MultiSwitch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
-import Frame from "@/components/content/Frame.vue"
+import Frame from "@/components/frames/Frame.vue"
 import { ListMode } from "@/api/dto"
+
+// TODO Consider saving and restoring scroll positions in view state
 
 const app = useAppStore();
 

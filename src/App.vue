@@ -4,7 +4,10 @@
       <AppBar v-model:debugMode="allowContextMenu" />
       <div class="flex-1 relative">
         <div class="absolute inset-0 min-h-0 flex flex-row space-x-5 p-5">
-          <ContentPane class="basis-[28rem] min-w-0" />
+          <div class="basis-[28rem] min-w-0 flex flex-col space-y-5">
+            <AnimationsPane class="flex-1" />
+            <FramesPane class="flex-1" />
+          </div>
           <div class="flex-1 min-w-0 flex flex-col">
             <div class="flex-1 min-h-0 flex flex-row space-x-5 pb-5">
               <WorkbenchPane class="flex-1" />
@@ -34,10 +37,11 @@ import { useAppStore } from "@/stores/app"
 import { useSpriteStore } from "@/stores/sprite"
 import { registerKeyboardShortcuts, unregisterKeyboardShortcuts } from "@/utils/keyboard"
 import AppBar from "@/components/AppBar.vue"
+import AnimationsPane from "@/components/animations/AnimationsPane.vue"
 import ContextMenuLayer from "@/components/basic/ContextMenuLayer.vue"
-import ContentPane from "@/components/content/ContentPane.vue"
 import DetailsPane from "@/components/details/DetailsPane.vue"
 import ExportOverlay from "@/components/export/ExportOverlay.vue"
+import FramesPane from "@/components/frames/FramesPane.vue"
 import KeyframePane from "@/components/keyframe/KeyframePane.vue"
 import TimelinePane from "@/components/timeline/TimelinePane.vue"
 import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"

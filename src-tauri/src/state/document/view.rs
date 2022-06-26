@@ -6,12 +6,6 @@ use crate::sheet::Direction;
 use crate::state::*;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum ContentTab {
-    Frames,
-    Animations,
-}
-
-#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ListMode {
     Linear,
     Grid4xN,
@@ -19,7 +13,6 @@ pub enum ListMode {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
-    pub(super) content_tab: ContentTab,
     pub(super) frames_list_mode: ListMode,
     pub(super) selection: SelectionState,
     pub(super) frames_filter: String,
@@ -40,7 +33,6 @@ pub struct View {
 impl Default for View {
     fn default() -> View {
         View {
-            content_tab: ContentTab::Frames,
             frames_list_mode: ListMode::Grid4xN,
             selection: Default::default(),
             frames_filter: Default::default(),
@@ -108,10 +100,6 @@ impl View {
 }
 
 impl Document {
-    pub fn content_tab(&self) -> ContentTab {
-        self.view.content_tab
-    }
-
     pub fn frames_list_mode(&self) -> ListMode {
         self.view.frames_list_mode
     }

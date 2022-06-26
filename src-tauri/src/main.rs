@@ -42,7 +42,6 @@ fn main() {
             api::save_as,
             api::undo,
             api::redo,
-            api::focus_content_tab,
             api::set_frames_list_mode,
             api::filter_frames,
             api::filter_animations,

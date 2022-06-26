@@ -24,7 +24,6 @@ export type Document = {
   redoEffect: string | null;
   wasCloseRequested: boolean;
   sheet: Sheet;
-  contentTab: ContentTab;
   framesListMode: ListMode;
   framesFilter: string;
   animationsFilter: string;
@@ -115,11 +114,6 @@ export type Hitbox = {
   size: [number, number];
   key: string;
 };
-
-export enum ContentTab {
-  Frames = "Frames",
-  Animations = "Animations",
-}
 
 export enum ListMode {
   Linear = "Linear",

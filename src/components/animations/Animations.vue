@@ -18,10 +18,12 @@
 import { computed } from "vue"
 import { createAnimation, filterAnimations } from "@/api/document"
 import { useAppStore } from "@/stores/app"
+import Animation from "@/components/animations/Animation.vue"
 import Button from "@/components/basic/Button.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
-import Animation from "@/components/content/Animation.vue"
+
+// TODO Consider saving and restoring scroll positions in view state
 
 const app = useAppStore();
 

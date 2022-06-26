@@ -37,7 +37,6 @@ pub struct Document {
     redo_effect: Option<String>,
     was_close_requested: bool,
     sheet: Sheet,
-    content_tab: ContentTab,
     frames_list_mode: ListMode,
     frames_filter: String,
     animations_filter: String,
@@ -141,12 +140,6 @@ pub struct Hitbox {
     top_left: (i32, i32),
     size: (u32, u32),
     key: Uuid,
-}
-
-#[derive(Clone, Deserialize, Serialize)]
-pub enum ContentTab {
-    Frames,
-    Animations,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -281,7 +274,6 @@ impl From<&state::Document> for Document {
             redo_effect: document.get_redo_effect(),
             was_close_requested: document.close_requested(),
             sheet,
-            content_tab: document.content_tab().into(),
             frames_list_mode: document.frames_list_mode().into(),
             frames_filter: document.frames_filter().to_owned(),
             animations_filter: document.animations_filter().to_owned(),
@@ -459,24 +451,6 @@ impl From<(String, &sheet::Hitbox)> for Hitbox {
             top_left: hitbox.position().to_tuple(),
             size: hitbox.size().to_tuple(),
             key: hitbox.key(),
-        }
-    }
-}
-
-impl From<ContentTab> for state::ContentTab {
-    fn from(content_tab: ContentTab) -> Self {
-        match content_tab {
-            ContentTab::Frames => state::ContentTab::Frames,
-            ContentTab::Animations => state::ContentTab::Animations,
-        }
-    }
-}
-
-impl From<state::ContentTab> for ContentTab {
-    fn from(content_tab: state::ContentTab) -> Self {
-        match content_tab {
-            state::ContentTab::Frames => ContentTab::Frames,
-            state::ContentTab::Animations => ContentTab::Animations,
         }
     }
 }

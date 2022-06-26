@@ -9,7 +9,6 @@ use crate::state::*;
 pub enum Command {
     Undo,
     Redo,
-    FocusContentTab(ContentTab),
     SetFramesListMode(ListMode),
     FilterFrames(String),
     FilterAnimations(String),
@@ -113,7 +112,6 @@ impl Document {
         match command {
             Command::Undo => self.undo()?,
             Command::Redo => self.redo()?,
-            Command::FocusContentTab(t) => self.view.content_tab = t,
             Command::SetFramesListMode(m) => self.view.frames_list_mode = m,
             Command::FilterFrames(ref q) => self.view.frames_filter = q.clone(),
             Command::FilterAnimations(ref q) => self.view.animations_filter = q.clone(),
@@ -331,8 +329,7 @@ impl Document {
 impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Command::FocusContentTab(_)
-            | Command::SetFramesListMode(_)
+            Command::SetFramesListMode(_)
             | Command::FilterFrames(_)
             | Command::FilterAnimations(_)
             | Command::BrowseSelection(_, _)

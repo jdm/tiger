@@ -1,6 +1,5 @@
 import {
   BrowseDirection,
-  ContentTab,
   Direction,
   DirectionPreset,
   ListMode,
@@ -33,11 +32,6 @@ export async function undo(): Promise<void> {
 export async function redo(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("redo"));
-}
-
-export async function focusContentTab(contentTab: ContentTab): Promise<void> {
-  const appStore = useAppStore();
-  appStore.patch(await invoke("focus_content_tab", { contentTab: contentTab }));
 }
 
 export async function setFramesListMode(listMode: ListMode): Promise<void> {
