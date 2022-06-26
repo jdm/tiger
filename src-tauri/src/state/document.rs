@@ -4,6 +4,7 @@ use thiserror::Error;
 
 use crate::sheet::*;
 
+mod clipboard;
 mod command;
 mod content;
 mod export;
@@ -13,6 +14,7 @@ mod timeline;
 mod transient;
 mod view;
 
+pub use clipboard::*;
 pub use command::*;
 pub use content::*;
 pub use export::*;
@@ -326,6 +328,27 @@ impl Document {
                             None
                         }
                     })
+            })
+            .collect())
+    }
+
+    pub fn get_selected_hitboxes(&self) -> Result<Vec<(&String, &Hitbox)>, DocumentError> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let selection = self.view.selection.clone();
+        let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
+        Ok(keyframe
+            .hitboxes_iter()
+            .filter_map(|(hitbox_name, hitbox)| {
+                if selection.is_hitbox_selected(
+                    animation_name.clone(),
+                    direction,
+                    index,
+                    hitbox_name,
+                ) {
+                    Some((hitbox_name, hitbox))
+                } else {
+                    None
+                }
             })
             .collect())
     }

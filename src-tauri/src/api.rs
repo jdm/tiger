@@ -2,6 +2,7 @@ use euclid::vec2;
 use json_patch::Patch;
 use std::path::PathBuf;
 use std::time::Duration;
+use tauri::ClipboardManager;
 
 use crate::dto::{self, ToFileName};
 use crate::export::export_sheet;
@@ -324,6 +325,38 @@ pub fn redo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(|app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::Redo).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn copy(
+    tauri_app: tauri::AppHandle,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(data) = app.current_document().and_then(|d| d.copy()) {
+            if let Ok(serialized) = serde_json::to_string(&data) {
+                let mut clipboard = tauri_app.clipboard_manager();
+                clipboard.write_text(serialized).ok();
+            }
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn paste(
+    tauri_app: tauri::AppHandle,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        let clipboard = tauri_app.clipboard_manager();
+        if let Ok(Some(serialized)) = clipboard.read_text() {
+            if let Ok(data) = serde_json::from_str(&serialized) {
+                if let Some(document) = app.current_document_mut() {
+                    document.process_command(Command::Paste(data)).ok();
+                }
+            }
         }
     }))
 }

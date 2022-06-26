@@ -21,7 +21,7 @@
 import { computed } from "vue"
 import { useAppStore } from "@/stores/app"
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app"
-import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench } from "@/api/document"
+import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste } from "@/api/document"
 import { newDocument, openDocuments, saveAs } from "@/api/local"
 import MenuBar from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
@@ -62,6 +62,9 @@ const editMenuEntries = computed(() => {
 			shortcut: "Ctrl+Shift+Z", action: redo,
 			disabled: app.currentDocument?.redoEffect == null
 		},
+		{},
+		{ name: "Copy", shortcut: "Ctrl+C", action: copy, },
+		{ name: "Paste", shortcut: "Ctrl+V", action: paste, },
 	];
 });
 

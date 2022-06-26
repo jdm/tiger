@@ -9,6 +9,7 @@ use crate::state::*;
 pub enum Command {
     Undo,
     Redo,
+    Paste(Clipboard),
     SetFramesListMode(ListMode),
     FilterFrames(String),
     FilterAnimations(String),
@@ -112,6 +113,7 @@ impl Document {
         match command {
             Command::Undo => self.undo()?,
             Command::Redo => self.redo()?,
+            Command::Paste(ref c) => self.paste(c.clone())?,
             Command::SetFramesListMode(m) => self.view.frames_list_mode = m,
             Command::FilterFrames(ref q) => self.view.frames_filter = q.clone(),
             Command::FilterAnimations(ref q) => self.view.animations_filter = q.clone(),
@@ -372,6 +374,9 @@ impl Display for Command {
 
             Command::Undo => f.write_str("Undo"),
             Command::Redo => f.write_str("Redo"),
+            Command::Paste(c) => match c {
+                Clipboard::Hitboxes(_) => f.write_str("Paste Hitboxes"),
+            },
             Command::ImportFrames(_) => f.write_str("Import Frames"),
             Command::DeleteFrame(_) => f.write_str("Delete Frame"),
             Command::DeleteSelectedFrames => f.write_str("Delete Frames"),

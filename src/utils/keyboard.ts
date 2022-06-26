@@ -3,9 +3,11 @@ import {
   browseSelection,
   beginExportAs,
   centerWorkbench,
+  copy,
   deleteSelection,
   doExport,
   nudgeSelection,
+  paste,
   pause,
   play,
   redo,
@@ -55,6 +57,10 @@ function onKeyDown(event: KeyboardEvent) {
       undo();
     } else if (event.key == "Z") {
       redo();
+    } else if (event.key == "c") {
+      copy();
+    } else if (event.key == "v") {
+      paste();
     } else if (event.key == " ") {
       centerWorkbench();
     } else if (event.key == "+" || event.key == "=") {

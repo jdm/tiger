@@ -113,6 +113,9 @@
 - [x] Add toggle to hide keyframes (replaces linking/locking)
 - [x] Add sprite darkening readility mode
 - [x] Workbench tabs
+- [ ] Copy/paste animations
+- [ ] Copy/paste keyframes
+- [x] Copy/paste hitboxes
 - [x] Replace powershell release script with Github action
 - [x] Unit test sheet module
 
@@ -124,9 +127,6 @@
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files
-- [ ] Copy/paste animations
-- [ ] Copy/paste keyframes
-- [ ] Copy/paste hitboxes
 - [ ] Unit test timeline commands
 - [ ] Unit test transient commands
 

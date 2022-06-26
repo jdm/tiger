@@ -10,7 +10,7 @@ impl Document {
     }
 
     pub(super) fn create_animation(&mut self) -> Result<(), DocumentError> {
-        let (animation_name, animation) = self.sheet.create_animation();
+        let (animation_name, animation) = self.sheet.create_animation("New Animation");
         animation.apply_direction_preset(DirectionPreset::FourDirections);
         self.select_animation_only(animation_name.clone());
         self.edit_animation(animation_name)

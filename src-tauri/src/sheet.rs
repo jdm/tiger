@@ -5,6 +5,7 @@ use euclid::rect;
 #[cfg(test)]
 use euclid::vec2;
 use pathdiff::diff_paths;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
 use std::collections::{BTreeMap, HashSet};
 use std::fs::File;
@@ -176,15 +177,12 @@ impl Sheet {
         }
     }
 
-    pub fn create_animation(&mut self) -> (String, &mut Animation) {
-        let mut name = "New Animation".to_owned();
-        let mut index = 2;
-        while self.has_animation(&name) {
-            name = format!("New Animation {}", index);
-            index += 1;
-        }
-        let animation = Animation::default();
-        self.animations.insert(name.clone(), animation);
+    pub fn create_animation<T: AsRef<str>>(
+        &mut self,
+        proposed_name: T,
+    ) -> (String, &mut Animation) {
+        let name = generate_unique_name(proposed_name.as_ref(), |n| !self.has_animation(&n));
+        self.animations.insert(name.clone(), Animation::default());
         (name.clone(), self.animations.get_mut(&name).unwrap())
     }
 
@@ -493,13 +491,8 @@ impl Keyframe {
         self.hitboxes.contains_key(name.as_ref())
     }
 
-    pub fn create_hitbox(&mut self) -> (String, &mut Hitbox) {
-        let mut name = "New Hitbox".to_owned();
-        let mut index = 2;
-        while self.has_hitbox(&name) {
-            name = format!("New Hitbox {}", index);
-            index += 1;
-        }
+    pub fn create_hitbox<T: AsRef<str>>(&mut self, proposed_name: T) -> (String, &mut Hitbox) {
+        let name = generate_unique_name(proposed_name.as_ref(), |n| !self.has_hitbox(n));
         self.hitboxes.insert(name.clone(), Hitbox::new());
         (name.clone(), self.hitboxes.get_mut(&name).unwrap())
     }
@@ -666,6 +659,31 @@ impl LiquidExportSettings {
     }
 }
 
+fn generate_unique_name<F: Fn(&str) -> bool>(proposed_name: &str, validate: F) -> String {
+    let name_regex = Regex::new(r"(?P<base>.*?)(?P<suffix>\d+)$").unwrap();
+    if validate(proposed_name) {
+        return proposed_name.to_owned();
+    }
+
+    let (base, mut suffix): (String, usize) = name_regex
+        .captures(proposed_name)
+        .map(|c| {
+            (
+                c.name("base").unwrap().as_str().to_owned(),
+                c.name("suffix").unwrap().as_str().parse().unwrap_or(0),
+            )
+        })
+        .unwrap_or_else(|| (proposed_name.to_owned() + " ", 2));
+
+    loop {
+        let name = format!("{base}{suffix}");
+        suffix += 1;
+        if validate(&name) {
+            return name;
+        }
+    }
+}
+
 #[test]
 fn can_read_write_sheet_from_disk() {
     let original = Sheet::read("test-data/sample_sheet_1.tiger").unwrap();
@@ -695,7 +713,7 @@ fn deleting_frame_remove_its_usage() {
     let mut sheet = Sheet::default();
     sheet.add_frame("frame.png");
 
-    let (animation_name, animation) = sheet.create_animation();
+    let (animation_name, animation) = sheet.create_animation("Animation");
     animation.apply_direction_preset(DirectionPreset::EightDirections);
     animation
         .sequence_mut(Direction::East)
@@ -746,13 +764,13 @@ fn can_sort_frames() {
 #[test]
 fn can_add_and_remove_sheet_animation() {
     let mut sheet = Sheet::default();
-    let (name_1, _animation) = sheet.create_animation();
+    let (name_1, _animation) = sheet.create_animation("Animation");
     assert!(sheet.has_animation(&name_1));
     assert!(sheet.animation(&name_1).is_some());
     assert!(sheet.animation_mut(&name_1).is_some());
     assert_eq!(sheet.animations_iter().count(), 1);
 
-    let (name_2, _animation) = sheet.create_animation();
+    let (name_2, _animation) = sheet.create_animation("Animation");
     assert!(sheet.has_animation(&name_2));
 
     sheet.delete_animation(&name_1);
@@ -765,7 +783,7 @@ fn can_add_and_remove_sheet_animation() {
 #[test]
 fn can_rename_sheet_animation() {
     let mut sheet = Sheet::default();
-    let (old_name, _animation) = sheet.create_animation();
+    let (old_name, _animation) = sheet.create_animation("Animation");
     sheet.rename_animation(&old_name, "updated name").unwrap();
     assert!(sheet.animation("updated name").is_some());
     assert!(sheet.animation(&old_name).is_none());
@@ -774,16 +792,16 @@ fn can_rename_sheet_animation() {
 #[test]
 fn can_rename_sheet_animation_to_same_name() {
     let mut sheet = Sheet::default();
-    let (old_name, _animation) = sheet.create_animation();
+    let (old_name, _animation) = sheet.create_animation("Animation");
     sheet.rename_animation(&old_name, &old_name).unwrap();
 }
 
 #[test]
 fn cannot_rename_sheet_animation_to_existing_name() {
     let mut sheet = Sheet::default();
-    let (old_name, _animation) = sheet.create_animation();
+    let (old_name, _animation) = sheet.create_animation("Animation");
     sheet.rename_animation(&old_name, "conflict").unwrap();
-    let (old_name, _animation) = sheet.create_animation();
+    let (old_name, _animation) = sheet.create_animation("Animation");
     assert!(sheet.rename_animation(&old_name, "conflict").is_err());
 }
 
@@ -947,7 +965,7 @@ fn can_read_write_keyframe_offset() {
 #[test]
 fn can_add_and_remove_keyframe_hitbox() {
     let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
-    let (name, _hitbox) = keyframe.create_hitbox();
+    let (name, _hitbox) = keyframe.create_hitbox("Hitbox");
     assert!(keyframe.has_hitbox(&name));
     assert_eq!(keyframe.hitboxes_iter().count(), 1);
     assert_eq!(keyframe.hitboxes_iter_mut().count(), 1);
@@ -961,7 +979,7 @@ fn can_add_and_remove_keyframe_hitbox() {
 fn can_rename_keyframe_hitbox() {
     let frame = Path::new("./example/directory/texture.png");
     let mut keyframe = Keyframe::new(frame);
-    let (old_name, _hitbox) = keyframe.create_hitbox();
+    let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
     keyframe.rename_hitbox(&old_name, "updated name").unwrap();
     assert!(keyframe.has_hitbox("updated name"));
     assert!(!keyframe.has_hitbox(&old_name));
@@ -971,10 +989,10 @@ fn can_rename_keyframe_hitbox() {
 fn can_rename_hitbox_to_existing_name() {
     let frame = Path::new("./example/directory/texture.png");
     let mut keyframe = Keyframe::new(frame);
-    let (old_name, _hitbox) = keyframe.create_hitbox();
+    let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
     keyframe.rename_hitbox(&old_name, "conflict").unwrap();
 
-    let (old_name, _hitbox) = keyframe.create_hitbox();
+    let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
     assert!(keyframe.rename_hitbox(&old_name, "conflict").is_err());
 }
 
@@ -1056,4 +1074,23 @@ fn liquid_export_settings_can_adjust_paths() {
     let path = Path::new("metadata_paths_root");
     settings.set_metadata_paths_root(path);
     assert_eq!(settings.metadata_paths_root(), path);
+}
+
+#[test]
+fn generate_unique_name_respects_suggestions() {
+    assert_eq!("oink", generate_unique_name("oink", |_| true));
+}
+
+#[test]
+fn generate_unique_name_finds_workarounds() {
+    assert_eq!("oink 2", generate_unique_name("oink", |n| n != "oink"));
+    assert_eq!(
+        "oink 3",
+        generate_unique_name("oink", |n| n != "oink" && n != "oink 2")
+    );
+}
+
+#[test]
+fn generate_unique_name_detects_existing_numbers() {
+    assert_eq!("oink 3", generate_unique_name("oink 2", |n| n != "oink 2"));
 }

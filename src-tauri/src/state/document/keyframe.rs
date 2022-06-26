@@ -35,7 +35,7 @@ impl Document {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
-        let (hitbox_name, hitbox) = keyframe.create_hitbox();
+        let (hitbox_name, hitbox) = keyframe.create_hitbox("New Hitbox");
         if let Some(position) = position {
             hitbox.set_position(position);
         }

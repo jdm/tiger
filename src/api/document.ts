@@ -34,6 +34,16 @@ export async function redo(): Promise<void> {
   appStore.patch(await invoke("redo"));
 }
 
+export async function copy(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("copy"));
+}
+
+export async function paste(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("paste"));
+}
+
 export async function setFramesListMode(listMode: ListMode): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("set_frames_list_mode", { listMode: listMode }));
