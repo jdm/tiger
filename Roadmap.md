@@ -113,7 +113,7 @@
 - [x] Add toggle to hide keyframes (replaces linking/locking)
 - [x] Add sprite darkening readility mode
 - [x] Workbench tabs
-- [ ] Replace powershell release script with Github action
+- [x] Replace powershell release script with Github action
 - [x] Unit test sheet module
 
 ## Tiger 0.5
