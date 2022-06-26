@@ -21,10 +21,6 @@ jobs:
           type: now
           target_branch: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout Release Branch
-        uses: actions/checkout@v2
-        with:
-          ref: release
       - name: Create Github Release
         id: create-release
         uses: softprops/action-gh-release@v1
