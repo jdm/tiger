@@ -54,4 +54,4 @@ jobs:
         with:
           releaseId: ${{ needs.create-release.outputs.RELEASE_ID }}
           args: >
-            --config '{ \"package\": { \"version\": \"${{ github.event.inputs.versionNumber }}\" } }'
+            --config '{ "package": { "version": "${{ github.event.inputs.versionNumber }}" } }'
