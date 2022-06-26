@@ -1,44 +1,58 @@
 on:
-  push:
-    tags:
-    - '[0-9]+.[0-9]+.[0-9]+**'
+  workflow_dispatch:
+    inputs:
+      versionNumber:
+        description: "User-facing version number (eg: 0.3.0)"
+        required: true
 
-name: Release
+name: Make Release
 
 jobs:
-  build:
-    name: Upload Release Asset
-    runs-on: windows-latest
+  setup_release:
+    name: Setup Release
+    runs-on: ubuntu-latest
+    outputs:
+      RELEASE_ID: ${{ steps.create-release.outputs.id }}
+
     steps:
-      - name: Checkout code
+      - name: Merge to Release Branch
+        uses: devmasx/merge-branch@v1.3.1
+        with:
+          type: now
+          target_branch: release
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout Release Branch
         uses: actions/checkout@v2
-      - name: Install toolchain
+        with:
+          ref: release
+      - name: Create Github Release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Tiger ${{ github.event.inputs.versionNumber }}
+          tag_name: ${{ github.event.inputs.versionNumber }}
+          draft: true
+
+  build_windows_binaries:
+    name: Build Windows Binaries
+    runs-on: windows-latest
+    needs: setup_release
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: release
+      - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: stable
-          default: true
-      - name: Build
-        uses: actions-rs/cargo@v1
-        with:
-          command: rustc
-          args: --release --verbose -- -C link-arg=/SUBSYSTEM:WINDOWS -C link-arg=/ENTRY:mainCRTStartup
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1.0.0
+          profile: minimal
+      - name: Install frontend dependencies
+        run: npm install
+      - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Tiger ${{ github.ref }}
-          draft: true
-          prerelease: false
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1.0.1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./target/release/tiger.exe
-          asset_name: tiger.exe
-          asset_content_type: application/x-msdownload
+          releaseId: ${{ needs.create-release.outputs.RELEASE_ID }}
+          tauriScript: >
+            cargo tauri build --config '{ \"package\": { \"version\": \"${{ github.event.inputs.versionNumber }}\" } }'

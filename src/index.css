@@ -1,0 +1,32 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  color-scheme: dark;
+}
+
+.pixelated {
+  image-rendering: pixelated;
+}
+
+.styled-scrollbars {
+  --scrollbar-foreground: theme("colors.zinc.700");
+  --scrollbar-background: theme("colors.zinc.900");
+  scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
+}
+
+.styled-scrollbars::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+.styled-scrollbars::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-foreground);
+  border-radius: 4px;
+}
+
+.styled-scrollbars::-webkit-scrollbar-track {
+  background: var(--scrollbar-background);
+  border-radius: 4px;
+}

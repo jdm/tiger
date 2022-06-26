@@ -75,7 +75,11 @@
 - [x] Dependencies update
 - [x] Remove placeholder app icon
 - [x] Get rid of failure crate
+- [x] Compile on Rust Stable
+- [x] Remove commands threads (keep long commands thread)
 - [x] Move hitbox data from frames to animation frames
+- [x] Frame and hitboxes can be moved using arrow keys
+- [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
 - [x] Editing hitboxes while animation is in workbench
   - [x] Hitboxes can be created and moved while an animation is in the workbench
   - [x] When multiple hitboxes and the animation frame are overlapping, mouse hovers and clicks should only interact with one of them
@@ -91,39 +95,53 @@
 
 ## Tiger 0.4
 
-- [ ] Support multiple directions/angles for the same animation
-- [ ] Workbench tabs
+- [x] UI rewrite (prettier)
+- [x] In-place rename UX
+- [x] Right click menu to delete item
+- [x] Filter frames/animations in content panel by text search
+- [x] Can display frames in thumbnail or list mode
+- [x] Add option to hide origin
+- [x] Add option to hide hitboxes
+- [x] Add option to lock hitboxes
+- [x] Add readability mode
+- [x] Edit hitbox offset and size from details panel
+- [x] Edit keyframe duration and offset from details panel
+- [x] Support multiple directions/angles for the same animation
+  - [x] Sheet stores multiple sequences per animation
+  - [x] Can preview and edit multiple sequences
+  - [x] Shift selecting keyframes on timeline selects the keyframes you would expect
+- [x] Add toggle to hide keyframes (replaces linking/locking)
+- [x] Add sprite darkening readility mode
+- [x] Workbench tabs
 - [ ] Replace powershell release script with Github action
-- [ ] Automatically add extensions to exported files
-- [ ] Default paths for NFD dialogs
-- [ ] Add menu entry to open recent files
+- [x] Unit test sheet module
 
 ## Tiger 0.5
 
-- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
+- [ ] Angle in liquid template sequence data
+- [ ] Nicer looking paths in export settings (no concat)
+- [ ] Consider merging some code between save, save_as and save_all
+- [ ] Automatically add extensions to exported files
+- [ ] Default paths for NFD dialogs
+- [ ] Add menu entry to open recent files
 - [ ] Export perf improvements
 - [ ] Duplicate animation / keyframe (within same sheet)
 - [ ] Copy/paste hitboxes
-- [ ] Unit test sheet module
+- [ ] Rework content browser: view animations and frames at the same time, possibly with previews?
 
 ## Tiger 0.6
 
-- [ ] Add option to hide hitboxes while looking at animations in workbench
-- [ ] Add option or keyboard shortcut (held) to hide origin crosshair
+- [ ] Tooltips everywhere
 - [ ] Add buttons to align frame edges or center to origin
-- [x] Frame and hitboxes can be moved using arrow keys
 - [ ] Draw hitbox names in workbench
 - [ ] Playback speed controls
 - [ ] Time snapping of animation frames
+- [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes arent correctly centered
 
 ## Tiger 0.7
 
-- [ ] Filter frames/animations in content panel by text search
-- [ ] In-place rename UX
-- [ ] Right click menu to rename/delete item
-- [ ] Edit keyframe duration and offset from selection panel
-- [ ] Edit hitbox offset and size from selection panel
-- [x] Fix issue where O key gets stuck after using Ctrl+O shortcut (https://github.com/Gekkio/imgui-rs/pull/215)
+- [ ] Right click menu to rename item
+- [ ] Export dialog links to documentation
 
 ## Tiger 0.8
 
@@ -133,20 +151,21 @@
 
 ## Tiger 0.9
 
-- [ ] Review TODO.dpi
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
-- [ ] Prettier UI and review TODO.style
-- [ ] Visual distinction between frame in workbench, editing animation or editing hitboxes (background color/pattern?)
+- [ ] Can scroll timeline with mousewheel
+- [ ] Backend keeps track of content pane scroll position in undo stack
+- [ ] Backend keeps track of timeline scroll position in undo stack
+- [ ] Fix jank spacing in exported metadata files
+- [ ] Export complete notification
 - [ ] Unit test UI
 
 ## Tiger 1.0
 
 - [ ] Review all TODO
+- [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Provide export templates for some common formats (TBD)
-- [x] Compile on Rust Stable
-- [x] Remove commands threads (keep long commands thread)
 - [ ] Document template format
 - [ ] Readme Logo
 - [ ] About dialog
@@ -161,8 +180,8 @@
 - [ ] Hitbox colors
 - [ ] Import frames from single sheet image
 - [ ] Import animation data from other software (Asesprite, TBD)
-- [ ] Anchor points (like hitbox but point)
-- [ ] Place arbitrary markers ("events") on timeline
+- [ ] Sockets (like hitbox but point)
+- [ ] Events (arbitrary markers on timeline)
 - [ ] Copy/paste animation or keyframe (between sheets)
 - [ ] Drag and drop frames from OS to content panel
 - [ ] Drag and drop frames from OS to timeline panel
