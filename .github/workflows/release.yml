@@ -33,7 +33,7 @@ jobs:
   build_windows_binaries:
     name: Build Windows Binaries
     runs-on: windows-latest
-    needs: setup_release
+    needs: prepare-release
 
     steps:
       - name: Checkout Release branch
