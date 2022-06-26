@@ -21,6 +21,10 @@ jobs:
           type: now
           target_branch: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Checkout Release branch
+        uses: actions/checkout@v2
+        with:
+          ref: release
       - name: Add <version number> git tag
         run: |
           git config --global user.name ${{ github.actor }}
