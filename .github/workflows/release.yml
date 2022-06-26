@@ -54,4 +54,4 @@ jobs:
         with:
           releaseId: ${{ needs.create-release.outputs.RELEASE_ID }}
           tauriScript: >
-            cargo tauri build --config '{ \"package\": { \"version\": \"${{ github.event.inputs.versionNumber }}\" } }'
+            npm tauri build --config '{ \"package\": { \"version\": \"${{ github.event.inputs.versionNumber }}\" } }'
