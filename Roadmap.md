@@ -113,7 +113,7 @@
 - [x] Add toggle to hide keyframes (replaces linking/locking)
 - [x] Add sprite darkening readility mode
 - [x] Workbench tabs
-- [ ] Copy/paste animations
+- [x] Copy/paste animations
 - [ ] Copy/paste keyframes
 - [x] Copy/paste hitboxes
 - [x] Replace powershell release script with Github action

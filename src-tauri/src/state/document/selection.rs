@@ -89,6 +89,14 @@ impl Document {
         self.view.selection.animations.only(vec![animation]);
     }
 
+    pub fn select_animations_only<T>(&mut self, animations: T)
+    where
+        T: IntoIterator<Item = String>,
+    {
+        self.view.selection.clear();
+        self.view.selection.animations.only(animations);
+    }
+
     pub fn select_keyframe_only(&mut self, animation: String, direction: Direction, index: usize) {
         self.view.selection.clear();
         self.view
@@ -117,6 +125,14 @@ impl Document {
             .selection
             .hitboxes
             .only(vec![(animation, direction, index, hitbox)]);
+    }
+
+    pub fn select_hitboxes_only<T>(&mut self, hitboxes: T)
+    where
+        T: IntoIterator<Item = (String, Direction, usize, String)>,
+    {
+        self.view.selection.clear();
+        self.view.selection.hitboxes.only(hitboxes);
     }
 
     pub(super) fn select_frame<T: AsRef<Path>>(&mut self, path: T, shift: bool, ctrl: bool) {
