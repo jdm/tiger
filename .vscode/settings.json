@@ -1,0 +1,6 @@
+{
+  "rust-analyzer.cargo.unsetTest": [
+    "core",
+    "derivative" // TODO.upstream remove this https://github.com/rust-lang/rust-analyzer/issues/7459
+  ]
+}
