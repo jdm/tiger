@@ -91,7 +91,7 @@ fn can_copy_paste_animation() {
     document.paste(clipboard).unwrap();
 
     assert_eq!(document.sheet.animations_iter().count(), 2);
-    assert!(document.view.selection.is_animation_selected("animation"));
+    assert!(document.view.selection.is_animation_selected("animation 2"));
 }
 
 #[test]
