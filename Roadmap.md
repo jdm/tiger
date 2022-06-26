@@ -103,7 +103,6 @@
 - [x] Add option to hide origin
 - [x] Add option to hide hitboxes
 - [x] Add option to lock hitboxes
-- [x] Add readability mode
 - [x] Edit hitbox offset and size from details panel
 - [x] Edit keyframe duration and offset from details panel
 - [x] Support multiple directions/angles for the same animation
