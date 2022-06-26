@@ -331,37 +331,55 @@ impl Document {
 impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            Command::FocusContentTab(_)
+            | Command::SetFramesListMode(_)
+            | Command::FilterFrames(_)
+            | Command::FilterAnimations(_)
+            | Command::BrowseSelection(_, _)
+            | Command::ClearSelection
+            | Command::SelectFrame(_, _, _)
+            | Command::SelectAnimation(_, _, _)
+            | Command::SelectKeyframe(_, _, _, _)
+            | Command::SelectHitbox(_, _, _)
+            | Command::Pan(_)
+            | Command::CenterWorkbench
+            | Command::ZoomInWorkbench
+            | Command::ZoomOutWorkbench
+            | Command::SetWorkbenchZoomFactor(_)
+            | Command::ResetWorkbenchZoom
+            | Command::EnableSpriteDarkening
+            | Command::DisableSpriteDarkening
+            | Command::HideSprite
+            | Command::ShowSprite
+            | Command::HideHitboxes
+            | Command::ShowHitboxes
+            | Command::HideOrigin
+            | Command::ShowOrigin
+            | Command::ScrubTimeline(_)
+            | Command::JumpToAnimationStart
+            | Command::JumpToAnimationEnd
+            | Command::JumpToPreviousFrame
+            | Command::JumpToNextFrame
+            | Command::ZoomInTimeline
+            | Command::ZoomOutTimeline
+            | Command::SetTimelineZoomAmount(_)
+            | Command::ResetTimelineZoom => f.write_str("Navigation"),
+
+            Command::BeginExportAs
+            | Command::SetExportTemplateFile(_)
+            | Command::SetExportTextureFile(_)
+            | Command::SetExportMetadataFile(_)
+            | Command::SetExportMetadataPathsRoot(_)
+            | Command::CancelExportAs
+            | Command::EndExportAs => f.write_str("Change Export Settings"),
+
             Command::Undo => f.write_str("Undo"),
             Command::Redo => f.write_str("Redo"),
-            Command::FocusContentTab(_) => f.write_str("Change Tab"),
-            Command::SetFramesListMode(_) => f.write_str("Change View Mode"),
-            Command::FilterFrames(_) => f.write_str("Filter Frames"),
-            Command::FilterAnimations(_) => f.write_str("Filter Animations"),
             Command::ImportFrames(_) => f.write_str("Import Frames"),
             Command::DeleteFrame(_) => f.write_str("Delete Frame"),
             Command::DeleteSelectedFrames => f.write_str("Delete Frames"),
             Command::DeleteSelection => f.write_str("Delete"),
             Command::NudgeSelection(_, _) => f.write_str("Nudge"),
-            Command::BrowseSelection(_, _) => f.write_str("Select"),
-            Command::ClearSelection => f.write_str("Clear Selection"),
-            Command::SelectFrame(_, _, _) => f.write_str("Select Frame"),
-            Command::SelectAnimation(_, _, _) => f.write_str("Select Animation"),
-            Command::SelectKeyframe(_, _, _, _) => f.write_str("Select Keyframe"),
-            Command::SelectHitbox(_, _, _) => f.write_str("Select Hitbox"),
-            Command::Pan(_) => f.write_str("Pan"),
-            Command::CenterWorkbench => f.write_str("Center Workbench"),
-            Command::ZoomInWorkbench => f.write_str("Zoom In Workbench"),
-            Command::ZoomOutWorkbench => f.write_str("Zoom Out Workbench"),
-            Command::SetWorkbenchZoomFactor(_) => f.write_str("Set Workbench Zoom"),
-            Command::ResetWorkbenchZoom => f.write_str("Reset Workbench Zoom"),
-            Command::EnableSpriteDarkening => f.write_str("Enable Sprite Darkening"),
-            Command::DisableSpriteDarkening => f.write_str("Disable Sprite Darkening"),
-            Command::HideSprite => f.write_str("Hide Sprite"),
-            Command::ShowSprite => f.write_str("Show Sprite"),
-            Command::HideHitboxes => f.write_str("Hide Hitboxes"),
-            Command::ShowHitboxes => f.write_str("Show Hitboxes"),
-            Command::HideOrigin => f.write_str("Hide Origin"),
-            Command::ShowOrigin => f.write_str("Show Origin"),
             Command::CreateAnimation => f.write_str("Create Animation"),
             Command::EditAnimation(_) => f.write_str("Open Animation"),
             Command::RenameAnimation(_, _) => f.write_str("Rename Animation"),
@@ -370,34 +388,13 @@ impl Display for Command {
             Command::Tick(_) => f.write_str("Tick"),
             Command::Play => f.write_str("Start Playback"),
             Command::Pause => f.write_str("Pause Playback"),
-            Command::ScrubTimeline(_) => f.write_str("Scrub Timeline"),
-            Command::JumpToAnimationStart => f.write_str("Jump To Start"),
-            Command::JumpToAnimationEnd => f.write_str("Jump To End"),
-            Command::JumpToPreviousFrame => f.write_str("Jump To Previous Frame"),
-            Command::JumpToNextFrame => f.write_str("Jump To Next Frame"),
-            Command::ZoomInTimeline => f.write_str("Zoom In Timeline"),
-            Command::ZoomOutTimeline => f.write_str("Zoom Out Timeline"),
-            Command::SetTimelineZoomAmount(_) => f.write_str("Set Timeline Zoom"),
-            Command::ResetTimelineZoom => f.write_str("Reset Timeline Zoom"),
             Command::SetAnimationLooping(_) => f.write_str("Toggle Looping"),
             Command::ApplyDirectionPreset(_) => f.write_str("Set Perspective"),
             Command::SelectDirection(_) => f.write_str("Select Directions"),
-            Command::BeginDragAndDropFrame(_) => f.write_str("Begin Frame Drag And Drop"),
-            Command::DropFrameOnTimeline(_, _) => f.write_str("Drop Frame"),
-            Command::EndDragAndDropFrame => f.write_str("End Frame Drag And Drop"),
             Command::DeleteSelectedKeyframes => f.write_str("Delete Keyframes"),
             Command::SetKeyframeDuration(_) => f.write_str("Set Keyframe Duration"),
             Command::SetKeyframeOffsetX(_) => f.write_str("Start Keyframe X Offset"),
             Command::SetKeyframeOffsetY(_) => f.write_str("Start Keyframe Y Offset"),
-            Command::BeginDragAndDropKeyframe(_, _) => f.write_str("Begin Keyframe Drag And Drop"),
-            Command::DropKeyframeOnTimeline(_, _) => f.write_str("Drop Keyframe"),
-            Command::EndDragAndDropKeyframe => f.write_str("End Keyframe Drag And Drop"),
-            Command::BeginDragKeyframeDuration(_, _) => f.write_str("Adjust Keyframe Duration"),
-            Command::UpdateDragKeyframeDuration(_) => f.write_str("Adjust Keyframe Duration"),
-            Command::EndDragKeyframeDuration() => f.write_str("Adjust Keyframe Duration"),
-            Command::BeginNudgeKeyframe(_, _) => f.write_str("Nudge Keyframe"),
-            Command::UpdateNudgeKeyframe(_, _) => f.write_str("Nudge Keyframe"),
-            Command::EndNudgeKeyframe() => f.write_str("Nudge Keyframe"),
             Command::CreateHitbox(_) => f.write_str("Create Hitbox"),
             Command::RenameHitbox(_, _) => f.write_str("Rename Hitbox"),
             Command::DeleteHitbox(_) => f.write_str("Delete Hitbox"),
@@ -409,19 +406,30 @@ impl Display for Command {
             Command::SetHitboxWidth(_) => f.write_str("Set Hitbox Width"),
             Command::SetHitboxHeight(_) => f.write_str("Set Hitbox Height"),
             Command::TogglePreserveAspectRatio => f.write_str("Toggle Preserve Aspect Ratio"),
-            Command::BeginNudgeHitbox(_) => f.write_str("Nudge Hitbox"),
-            Command::UpdateNudgeHitbox(_, _) => f.write_str("Nudge Hitbox"),
-            Command::EndNudgeHitbox => f.write_str("Nudge Hitbox"),
-            Command::BeginResizeHitbox(_, _) => f.write_str("Resize Hitbox"),
-            Command::UpdateResizeHitbox(_, _) => f.write_str("Resize Hitbox"),
-            Command::EndResizeHitbox => f.write_str("Resize Hitbox"),
-            Command::BeginExportAs => f.write_str("Open Export Setings"),
-            Command::SetExportTemplateFile(_) => f.write_str("Set Template File"),
-            Command::SetExportTextureFile(_) => f.write_str("Set Texture File"),
-            Command::SetExportMetadataFile(_) => f.write_str("Set Metadata File"),
-            Command::SetExportMetadataPathsRoot(_) => f.write_str("Set Metadata Paths Root"),
-            Command::CancelExportAs => f.write_str("Cancel Export"),
-            Command::EndExportAs => f.write_str("End Export"),
+
+            Command::BeginDragAndDropFrame(_)
+            | Command::DropFrameOnTimeline(_, _)
+            | Command::EndDragAndDropFrame => f.write_str("Create Keyframe"),
+
+            Command::BeginDragAndDropKeyframe(_, _)
+            | Command::DropKeyframeOnTimeline(_, _)
+            | Command::EndDragAndDropKeyframe => f.write_str("Reorder Keyframes"),
+
+            Command::BeginDragKeyframeDuration(_, _)
+            | Command::UpdateDragKeyframeDuration(_)
+            | Command::EndDragKeyframeDuration() => f.write_str("Adjust Keyframe Duration"),
+
+            Command::BeginNudgeKeyframe(_, _)
+            | Command::UpdateNudgeKeyframe(_, _)
+            | Command::EndNudgeKeyframe() => f.write_str("Nudge Keyframe"),
+
+            Command::BeginNudgeHitbox(_)
+            | Command::UpdateNudgeHitbox(_, _)
+            | Command::EndNudgeHitbox => f.write_str("Nudge Hitbox"),
+
+            Command::BeginResizeHitbox(_, _)
+            | Command::UpdateResizeHitbox(_, _)
+            | Command::EndResizeHitbox => f.write_str("Resize Hitbox"),
         }
     }
 }
