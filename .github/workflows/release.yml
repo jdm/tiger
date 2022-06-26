@@ -8,7 +8,7 @@ on:
 name: Make Release
 
 jobs:
-  setup_release:
+  prepare-release:
     name: Setup Release
     runs-on: ubuntu-latest
     outputs:
@@ -56,7 +56,7 @@ jobs:
         run: npm install
       - name: Build binaries
         uses: tauri-apps/tauri-action@v0
+        with:
+          releaseId: ${{ needs.prepare-release.outputs.RELEASE_ID }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          releaseId: ${{ needs.create-release.outputs.RELEASE_ID }}
