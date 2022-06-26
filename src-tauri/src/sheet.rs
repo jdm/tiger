@@ -952,7 +952,7 @@ fn can_add_and_remove_keyframe_hitbox() {
     assert_eq!(keyframe.hitboxes_iter().count(), 1);
     assert_eq!(keyframe.hitboxes_iter_mut().count(), 1);
     keyframe.delete_hitbox(&name);
-    assert!(keyframe.has_hitbox(&name));
+    assert!(!keyframe.has_hitbox(&name));
     assert_eq!(keyframe.hitboxes_iter().count(), 0);
     assert_eq!(keyframe.hitboxes_iter_mut().count(), 0);
 }
