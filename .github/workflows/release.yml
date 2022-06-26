@@ -15,13 +15,13 @@ jobs:
       RELEASE_ID: ${{ steps.create-release.outputs.id }}
 
     steps:
-      - name: Merge to Release Branch
+      - name: Merge to Release branch
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
           target_branch: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Github Release
+      - name: Create Github release
         id: create-release
         uses: softprops/action-gh-release@v1
         with:
@@ -36,11 +36,17 @@ jobs:
     needs: setup_release
 
     steps:
-      - name: Checkout
+      - name: Checkout Release branch
         uses: actions/checkout@v2
         with:
           ref: release
-      - name: Install Rust Toolchain
+      - name: Update version in tauri.conf.json
+        uses: jossef/action-set-json-field@v2
+        with:
+          file: src-tauri/tauri.conf.json
+          field: package.version
+          value: ${{ github.event.inputs.versionNumber }}
+      - name: Install Rust toolchain
         uses: actions-rs/toolchain@v1
         with:
           toolchain: stable
@@ -48,10 +54,9 @@ jobs:
           default: true
       - name: Install frontend dependencies
         run: npm install
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build binaries
+        uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           releaseId: ${{ needs.create-release.outputs.RELEASE_ID }}
-          args: >
-            --config '{ "package": { "version": "${{ github.event.inputs.versionNumber }}" } }'
