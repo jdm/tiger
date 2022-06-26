@@ -2,17 +2,17 @@
 
 Tiger is a graphical tool for generating spritesheets and metadata about the animation and hitboxes they contain.
 
-![Tiger](res/readme/screenshot-0.2.0.png?raw=true "Tiger")
+![Tiger](res/readme/screenshot-0.4.0.png?raw=true "Tiger")
 
 # Key Features
 
 - Timeline-editing for authoring animations
 - Easy to add and position hitboxes
-- Support for custom formats when exporting metadata
+- Use custom formats when exporting spritesheet metadata
 - Generated texture atlas for use in-engine
 - Free and open-source with a permissive license
 
-⚠️ This project is under development. It is already usable and is generating spritesheets for [Project Crystal](https://github.com/agersant/crystal). However, you should come back in a few months if you are looking for a polished experience!
+⚠️ This project is under development.
 
 # Getting Started
 
