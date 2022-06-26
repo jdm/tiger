@@ -473,10 +473,6 @@ impl Keyframe {
         self.key
     }
 
-    pub fn set_frame<T: AsRef<Path>>(&mut self, new_frame: T) {
-        self.frame = new_frame.as_ref().to_owned();
-    }
-
     pub fn set_duration_millis(&mut self, new_duration: u64) {
         self.duration_millis = new_duration;
     }
@@ -491,14 +487,6 @@ impl Keyframe {
 
     pub fn hitboxes_iter_mut(&mut self) -> impl Iterator<Item = (&String, &mut Hitbox)> {
         self.hitboxes.iter_mut()
-    }
-
-    pub fn hitbox<T: AsRef<str>>(&self, name: T) -> Option<&Hitbox> {
-        self.hitboxes.get(name.as_ref())
-    }
-
-    pub fn hitbox_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Hitbox> {
-        self.hitboxes.get_mut(name.as_ref())
     }
 
     pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
@@ -936,13 +924,10 @@ fn can_query_sequence_by_time_elapsed() {
 }
 
 #[test]
-fn can_read_write_keyframe_frame() {
+fn can_read_keyframe_frame() {
     let frame = Path::new("./example/directory/texture.png");
-    let other_frame = Path::new("./example/directory/other_texture.png");
-    let mut keyframe = Keyframe::new(frame);
+    let keyframe = Keyframe::new(frame);
     assert_eq!(keyframe.frame(), frame);
-    keyframe.set_frame(other_frame);
-    assert_eq!(keyframe.frame(), other_frame);
 }
 
 #[test]
@@ -963,13 +948,11 @@ fn can_read_write_keyframe_offset() {
 fn can_add_and_remove_keyframe_hitbox() {
     let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
     let (name, _hitbox) = keyframe.create_hitbox();
-    assert!(keyframe.hitbox(&name).is_some());
-    assert!(keyframe.hitbox_mut(&name).is_some());
+    assert!(keyframe.has_hitbox(&name));
     assert_eq!(keyframe.hitboxes_iter().count(), 1);
     assert_eq!(keyframe.hitboxes_iter_mut().count(), 1);
     keyframe.delete_hitbox(&name);
-    assert!(keyframe.hitbox(&name).is_none());
-    assert!(keyframe.hitbox_mut(&name).is_none());
+    assert!(keyframe.has_hitbox(&name));
     assert_eq!(keyframe.hitboxes_iter().count(), 0);
     assert_eq!(keyframe.hitboxes_iter_mut().count(), 0);
 }
@@ -980,8 +963,8 @@ fn can_rename_keyframe_hitbox() {
     let mut keyframe = Keyframe::new(frame);
     let (old_name, _hitbox) = keyframe.create_hitbox();
     keyframe.rename_hitbox(&old_name, "updated name").unwrap();
-    assert!(keyframe.hitbox("updated name").is_some());
-    assert!(keyframe.hitbox(&old_name).is_none());
+    assert!(keyframe.has_hitbox("updated name"));
+    assert!(!keyframe.has_hitbox(&old_name));
 }
 
 #[test]
