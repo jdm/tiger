@@ -286,6 +286,13 @@ impl Document {
         Ok(((direction, index), keyframe))
     }
 
+    pub fn get_selected_animations(&self) -> Vec<(&String, &Animation)> {
+        self.sheet
+            .animations_iter()
+            .filter(|(name, _)| self.view.selection.is_animation_selected(name))
+            .collect()
+    }
+
     pub fn get_selected_keyframes(
         &self,
     ) -> Result<Vec<(Direction, usize, &Keyframe)>, DocumentError> {

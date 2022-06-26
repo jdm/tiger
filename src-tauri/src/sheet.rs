@@ -182,7 +182,7 @@ impl Sheet {
         proposed_name: T,
     ) -> (String, &mut Animation) {
         let name = generate_unique_name(proposed_name.as_ref(), |n| !self.has_animation(&n));
-        self.animations.insert(name.clone(), Animation::default());
+        self.animations.insert(name.clone(), Animation::new());
         (name.clone(), self.animations.get_mut(&name).unwrap())
     }
 
@@ -269,6 +269,30 @@ impl PartialOrd for Frame {
 }
 
 impl Animation {
+    fn new() -> Self {
+        Self {
+            sequences: Default::default(),
+            is_looping: Default::default(),
+            key: Uuid::new_v4(),
+        }
+    }
+
+    pub fn duplicate(&self) -> Animation {
+        Animation {
+            sequences: self
+                .sequences
+                .iter()
+                .map(|(d, s)| (*d, s.duplicate()))
+                .collect(),
+            is_looping: self.is_looping,
+            key: Uuid::new_v4(),
+        }
+    }
+
+    pub fn key(&self) -> Uuid {
+        self.key
+    }
+
     pub fn looping(&self) -> bool {
         self.is_looping
     }
@@ -349,6 +373,12 @@ impl DirectionPreset {
 }
 
 impl Sequence {
+    pub fn duplicate(&self) -> Sequence {
+        Sequence {
+            keyframes: self.keyframes.iter().map(Keyframe::duplicate).collect(),
+        }
+    }
+
     pub fn num_keyframes(&self) -> usize {
         self.keyframes.len()
     }
@@ -455,6 +485,20 @@ impl Keyframe {
         }
     }
 
+    pub fn duplicate(&self) -> Keyframe {
+        Keyframe {
+            frame: self.frame.clone(),
+            hitboxes: self
+                .hitboxes
+                .iter()
+                .map(|(n, h)| (n.clone(), h.duplicate()))
+                .collect(),
+            duration_millis: self.duration_millis,
+            offset: self.offset,
+            key: Uuid::new_v4(),
+        }
+    }
+
     pub fn frame(&self) -> &Path {
         &self.frame
     }
@@ -530,6 +574,13 @@ impl Hitbox {
                 top_left: (-10, -10),
                 size: (20, 20),
             }),
+            key: Uuid::new_v4(),
+        }
+    }
+
+    pub fn duplicate(&self) -> Hitbox {
+        Hitbox {
+            geometry: self.geometry.clone(),
             key: Uuid::new_v4(),
         }
     }
@@ -807,7 +858,7 @@ fn cannot_rename_sheet_animation_to_existing_name() {
 
 #[test]
 fn can_read_write_animation_looping() {
-    let mut animation = Animation::default();
+    let mut animation = Animation::new();
     animation.set_looping(true);
     assert!(animation.looping());
     animation.set_looping(false);
@@ -816,7 +867,7 @@ fn can_read_write_animation_looping() {
 
 #[test]
 fn can_access_animation_sequences() {
-    let mut animation = Animation::default();
+    let mut animation = Animation::new();
     animation.apply_direction_preset(DirectionPreset::FourDirections);
     assert!(animation.sequence(Direction::West).is_some());
     assert!(animation.sequence_mut(Direction::West).is_some());
@@ -826,7 +877,7 @@ fn can_access_animation_sequences() {
 
 #[test]
 fn can_animation_can_apply_direction_preset() {
-    let mut animation = Animation::default();
+    let mut animation = Animation::new();
     assert_eq!(animation.direction_preset(), None);
     for preset in all::<DirectionPreset>() {
         animation.apply_direction_preset(preset);
@@ -836,7 +887,7 @@ fn can_animation_can_apply_direction_preset() {
 
 #[test]
 fn animation_can_recognize_direction_preset() {
-    let mut animation = Animation::default();
+    let mut animation = Animation::new();
     animation
         .sequences
         .insert(Direction::NorthEast, Sequence::default());

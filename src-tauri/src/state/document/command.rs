@@ -375,6 +375,7 @@ impl Display for Command {
             Command::Undo => f.write_str("Undo"),
             Command::Redo => f.write_str("Redo"),
             Command::Paste(c) => match c {
+                Clipboard::Animations(_) => f.write_str("Paste Animations"),
                 Clipboard::Hitboxes(_) => f.write_str("Paste Hitboxes"),
             },
             Command::ImportFrames(_) => f.write_str("Import Frames"),

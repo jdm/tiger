@@ -88,6 +88,7 @@ pub struct Animation {
     sequences: HashMap<Direction, Sequence>,
     direction_preset: Option<DirectionPreset>,
     is_looping: bool,
+    key: Uuid,
 }
 
 #[derive(Clone, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
@@ -356,6 +357,7 @@ where
                 .collect(),
             direction_preset: animation.1.direction_preset().map(|p| p.into()),
             is_looping: animation.1.looping(),
+            key: animation.1.key(),
         }
     }
 }

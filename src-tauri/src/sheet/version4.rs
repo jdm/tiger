@@ -27,10 +27,15 @@ pub struct Frame {
     pub(in crate::sheet) source: PathBuf,
 }
 
-#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
+#[derive(Derivative)]
+#[derivative(PartialEq)]
+#[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Animation {
     pub(in crate::sheet) sequences: BTreeMap<Direction, Sequence>,
     pub(in crate::sheet) is_looping: bool,
+    #[derivative(PartialEq = "ignore")]
+    #[serde(skip, default = "Uuid::new_v4")]
+    pub(in crate::sheet) key: Uuid,
 }
 
 #[derive(
@@ -148,6 +153,7 @@ impl From<previous_version::Animation> for Animation {
         Animation {
             sequences: BTreeMap::from([(Direction::East, old.timeline.into())]),
             is_looping: old.is_looping,
+            key: Uuid::new_v4(),
         }
     }
 }
