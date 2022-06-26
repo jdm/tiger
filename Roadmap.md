@@ -112,9 +112,11 @@
   - [x] Workbench interactive elements sort priority
   - [x] Make details panel not completely placeholder
   - [ ] Typography
-  - [ ] Review tiger-imgui for anything forgotten
+  - [x] Review tiger-imgui for anything forgotten
   - [x] Minimize/Maximize/Restore icons
   - [x] Refactor `selection.rs` (again)
+  - [ ] Auto select a frame when opening animation
+  - [ ] F2 to rename animation/hitbox
 - [x] In-place rename UX
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
