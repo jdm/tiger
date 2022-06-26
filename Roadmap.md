@@ -95,27 +95,7 @@
 
 ## Tiger 0.4
 
-- [ ] UI rewrite (prettier)
-  - [x] Export dialog
-  - [x] Export error dialog
-  - [x] Open error dialog
-  - [x] Save error dialog
-  - [x] Save As
-  - [x] Save All
-  - [x] Keyboard controls
-  - [x] Undo command names
-  - [x] Auto reload images on frame edit
-  - [x] Floating toolbar in workbench
-  - [x] Better looking playback controls
-  - [x] Better looking timeline zoom controls
-  - [x] Jump to next/previous frame
-  - [x] Workbench interactive elements sort priority
-  - [x] Make details panel not completely placeholder
-  - [ ] Typography
-  - [x] Review tiger-imgui for anything forgotten
-  - [x] Minimize/Maximize/Restore icons
-  - [x] Refactor `selection.rs` (again)
-  - [x] Auto select a frame when opening animation
+- [x] UI rewrite (prettier)
 - [x] In-place rename UX
 - [x] Right click menu to delete item
 - [x] Filter frames/animations in content panel by text search
