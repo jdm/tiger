@@ -21,6 +21,16 @@ impl Document {
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
         self.persistent.timeline_is_playing = false;
+
+        let (_, animation) = self.get_workbench_animation()?;
+        if self.get_workbench_sequence().is_err() {
+            let any_direction = animation.sequences_iter().next().map(|(d, _s)| *d);
+            self.view.current_sequence = any_direction;
+        }
+        if let Some(direction) = self.view.current_sequence {
+            self.select_keyframe_only(name.as_ref().to_owned(), direction, 0);
+        }
+
         Ok(())
     }
 

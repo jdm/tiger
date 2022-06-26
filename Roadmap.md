@@ -115,7 +115,7 @@
   - [x] Review tiger-imgui for anything forgotten
   - [x] Minimize/Maximize/Restore icons
   - [x] Refactor `selection.rs` (again)
-  - [ ] Auto select a frame when opening animation
+  - [x] Auto select a frame when opening animation
   - [ ] F2 to rename animation/hitbox
 - [x] In-place rename UX
 - [x] Right click menu to delete item
