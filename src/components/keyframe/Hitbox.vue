@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { Hitbox as HitboxDTO } from "@/api/dto"
-import { deleteHitbox, deleteSelectedHitboxes, renameHitbox, selectHitbox } from "@/api/document"
+import { copy, cut, deleteHitbox, deleteSelectedHitboxes, renameHitbox, selectHitbox } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
@@ -33,7 +33,10 @@ const el: Ref<HTMLElement | null> = ref(null);
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
 const contextMenuEntries = [
-	{ name: "Delete", action: deleteSelectedHitboxes },
+	{ name: "Cut", shortcut: "Ctrl+X", action: cut },
+	{ name: "Copy", shortcut: "Ctrl+C", action: copy },
+	{},
+	{ name: "Delete", shortcut: "Del", action: deleteSelectedHitboxes },
 ];
 
 function onOpenContextMenu(event: MouseEvent) {

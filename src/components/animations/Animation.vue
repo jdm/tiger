@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { Animation as AnimationDTO } from "@/api/dto"
-import { deleteAnimation, deleteSelectedAnimations, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
+import { copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
@@ -33,8 +33,11 @@ const newName = ref("");
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
 const contextMenuEntries = [
+	{ name: "Cut", shortcut: "Ctrl+X", action: cut },
+	{ name: "Copy", shortcut: "Ctrl+C", action: copy },
+	{},
 	{ name: "Rename", action: beginRename },
-	{ name: "Delete", action: deleteSelectedAnimations },
+	{ name: "Delete", shortcut: "Del", action: deleteSelectedAnimations },
 ];
 
 function onOpenContextMenu(event: MouseEvent) {

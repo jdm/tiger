@@ -18,7 +18,7 @@
 import { computed, Ref, ref } from "vue"
 import { Direction } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
-import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration, endDragAndDropKeyframe, deleteSelectedKeyframes } from "@/api/document"
+import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration, endDragAndDropKeyframe, deleteSelectedKeyframes, copy, cut } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 
@@ -38,7 +38,10 @@ const props = defineProps<{
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
 const contextMenuEntries = [
-	{ name: "Delete", action: deleteSelectedKeyframes },
+	{ name: "Cut", shortcut: "Ctrl+X", action: cut },
+	{ name: "Copy", shortcut: "Ctrl+C", action: copy },
+	{},
+	{ name: "Delete", shortcut: "Del", action: deleteSelectedKeyframes },
 ];
 
 const dynamicClasses = computed(() => {

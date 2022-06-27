@@ -31,7 +31,7 @@ const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 const dragCursorElement: Ref<HTMLElement | null> = ref(null);
 
 const contextMenuEntries = [
-	{ name: "Delete", action: deleteSelectedFrames },
+	{ name: "Delete", shortcut: "Del", action: deleteSelectedFrames },
 ];
 
 function onOpenContextMenu(event: MouseEvent) {
