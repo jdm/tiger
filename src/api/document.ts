@@ -34,6 +34,11 @@ export async function redo(): Promise<void> {
   appStore.patch(await invoke("redo"));
 }
 
+export async function cut(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("cut"));
+}
+
 export async function copy(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("copy"));

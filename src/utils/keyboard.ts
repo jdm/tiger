@@ -19,6 +19,7 @@ import {
   zoomInWorkbench,
   zoomOutTimeline,
   zoomOutWorkbench,
+  cut,
 } from "@/api/document";
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
 import { useAppStore } from "@/stores/app";
@@ -57,6 +58,8 @@ function onKeyDown(event: KeyboardEvent) {
       undo();
     } else if (event.key == "Z") {
       redo();
+    } else if (event.key == "x") {
+      cut();
     } else if (event.key == "c") {
       copy();
     } else if (event.key == "v") {

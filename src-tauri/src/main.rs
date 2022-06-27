@@ -42,6 +42,7 @@ fn main() {
             api::save_as,
             api::undo,
             api::redo,
+            api::cut,
             api::copy,
             api::paste,
             api::set_frames_list_mode,

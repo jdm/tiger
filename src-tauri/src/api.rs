@@ -330,6 +330,24 @@ pub fn redo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
+pub fn cut(
+    tauri_app: tauri::AppHandle,
+    app_state: tauri::State<'_, AppState>,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(|app| {
+        if let Some(data) = app.current_document().and_then(|d| d.copy()) {
+            if let Ok(serialized) = serde_json::to_string(&data) {
+                let mut clipboard = tauri_app.clipboard_manager();
+                clipboard.write_text(serialized).ok();
+            }
+        }
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::DeleteSelection).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn copy(
     tauri_app: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
