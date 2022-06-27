@@ -118,9 +118,13 @@
 - [x] Copy/paste hitboxes
 - [x] Replace powershell release script with Github action
 - [x] Unit test sheet module
+- [ ] Save export settings before attempting export
+
 
 ## Tiger 0.5
 
+- [ ] Export process creates intermediate directories if needed
+- [ ] Error dialog specifies problematic path when export fails due to IO problem
 - [ ] Angle in liquid template sequence data
 - [ ] Nicer looking paths in export settings (no ../ concat)
 - [ ] Consider merging some code between save, save_as and save_all
