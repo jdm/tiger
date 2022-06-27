@@ -129,6 +129,7 @@
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files
+- [ ] Export dialog form validation
 - [ ] Unit test timeline commands
 - [ ] Unit test transient commands
 
