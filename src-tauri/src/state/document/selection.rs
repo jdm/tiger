@@ -50,6 +50,7 @@ impl Document {
         self.delete_selected_animations();
         self.delete_selected_keyframes()?;
         self.delete_selected_hitboxes()?;
+        self.view.selection.clear();
         Ok(())
     }
 

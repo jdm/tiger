@@ -114,7 +114,7 @@
 - [x] Add sprite darkening readility mode
 - [x] Workbench tabs
 - [x] Copy/paste animations
-- [ ] Copy/paste keyframes
+- [x] Copy/paste keyframes
 - [x] Copy/paste hitboxes
 - [x] Replace powershell release script with Github action
 - [x] Unit test sheet module

@@ -7,6 +7,7 @@ use crate::state::*;
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum Clipboard {
     Animations(HashMap<String, Animation>),
+    Keyframes(Vec<Keyframe>),
     Hitboxes(HashMap<String, Hitbox>),
 }
 
@@ -14,6 +15,8 @@ impl Document {
     pub fn copy(&self) -> Option<Clipboard> {
         if !self.view.selection.animations.is_empty() {
             self.copy_animations()
+        } else if !self.view.selection.keyframes.is_empty() {
+            self.copy_keyframes()
         } else if !self.view.selection.hitboxes.is_empty() {
             self.copy_hitboxes()
         } else {
@@ -24,6 +27,7 @@ impl Document {
     pub(super) fn paste(&mut self, clipboard: Clipboard) -> Result<(), DocumentError> {
         match clipboard {
             Clipboard::Animations(animations) => self.paste_animations(animations),
+            Clipboard::Keyframes(keyframes) => self.paste_keyframes(keyframes),
             Clipboard::Hitboxes(hitboxes) => self.paste_hitboxes(hitboxes),
         }
     }
@@ -48,6 +52,34 @@ impl Document {
             *new_animation = animation.duplicate();
         }
         self.select_animations_only(new_animation_names);
+        Ok(())
+    }
+
+    fn copy_keyframes(&self) -> Option<Clipboard> {
+        let keyframes = self
+            .get_selected_keyframes()
+            .ok()?
+            .into_iter()
+            .map(|(_, _, keyframe)| keyframe.clone())
+            .collect();
+        Some(Clipboard::Keyframes(keyframes))
+    }
+
+    fn paste_keyframes(&mut self, keyframes: Vec<Keyframe>) -> Result<(), DocumentError> {
+        let index = self
+            .get_workbench_keyframe()
+            .map(|((_, index), _)| index)
+            .unwrap_or_default();
+        let (animation_name, _) = self.get_workbench_animation_mut()?;
+        let num_keyframes = keyframes.len();
+        let (direction, sequence) = self.get_workbench_sequence_mut()?;
+        for keyframe in keyframes.into_iter().rev() {
+            let new_keyframe = keyframe.duplicate();
+            sequence.insert_keyframe(new_keyframe, index)?;
+        }
+        self.select_keyframes_only(
+            (index..(index + num_keyframes)).map(|i| (animation_name.clone(), direction, i)),
+        );
         Ok(())
     }
 
