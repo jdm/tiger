@@ -47,8 +47,8 @@ pub enum SheetError {
     HitboxNotFound(String),
     #[error("A hitbox with the name `{0}` already exists")]
     HitboxNameAlreadyExists(String),
-    #[error("Error converting an absolute path to a relative path")]
-    AbsoluteToRelativePath,
+    #[error("Error converting an absolute path to a relative path\nAbsolute path: `{0}`\nRelative path root: `{1}`")]
+    AbsoluteToRelativePath(PathBuf, PathBuf),
     #[error("Animation is missing a keyframe at index `{0}`")]
     InvalidFrameIndex(usize),
 }
@@ -105,17 +105,26 @@ impl Sheet {
         Ok(())
     }
 
-    fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
+    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
-            frame.source = diff_paths(&frame.source, relative_to.as_ref())
-                .ok_or(SheetError::AbsoluteToRelativePath)?;
+            frame.source = diff_paths(&frame.source, relative_to.as_ref()).ok_or_else(|| {
+                SheetError::AbsoluteToRelativePath(
+                    frame.source.clone(),
+                    relative_to.as_ref().to_owned(),
+                )
+            })?;
         }
         for (_name, animation) in sheet.animations.iter_mut() {
             for (_direction, sequence) in animation.sequences.iter_mut() {
                 for keyframe in sequence.keyframes_iter_mut() {
-                    keyframe.frame = diff_paths(&keyframe.frame, relative_to.as_ref())
-                        .ok_or(SheetError::AbsoluteToRelativePath)?;
+                    keyframe.frame =
+                        diff_paths(&keyframe.frame, relative_to.as_ref()).ok_or_else(|| {
+                            SheetError::AbsoluteToRelativePath(
+                                keyframe.frame.clone(),
+                                relative_to.as_ref().to_owned(),
+                            )
+                        })?;
                 }
             }
         }
@@ -657,14 +666,37 @@ impl LiquidExportSettings {
         relative_to: T,
     ) -> Result<LiquidExportSettings, SheetError> {
         Ok(LiquidExportSettings {
-            template_file: diff_paths(&self.template_file, relative_to.as_ref())
-                .ok_or(SheetError::AbsoluteToRelativePath)?,
-            texture_file: diff_paths(&self.texture_file, relative_to.as_ref())
-                .ok_or(SheetError::AbsoluteToRelativePath)?,
-            metadata_file: diff_paths(&self.metadata_file, relative_to.as_ref())
-                .ok_or(SheetError::AbsoluteToRelativePath)?,
+            template_file: diff_paths(&self.template_file, relative_to.as_ref()).ok_or_else(
+                || {
+                    SheetError::AbsoluteToRelativePath(
+                        self.template_file.clone(),
+                        relative_to.as_ref().to_owned(),
+                    )
+                },
+            )?,
+            texture_file: diff_paths(&self.texture_file, relative_to.as_ref()).ok_or_else(
+                || {
+                    SheetError::AbsoluteToRelativePath(
+                        self.texture_file.clone(),
+                        relative_to.as_ref().to_owned(),
+                    )
+                },
+            )?,
+            metadata_file: diff_paths(&self.metadata_file, relative_to.as_ref()).ok_or_else(
+                || {
+                    SheetError::AbsoluteToRelativePath(
+                        self.metadata_file.clone(),
+                        relative_to.as_ref().to_owned(),
+                    )
+                },
+            )?,
             metadata_paths_root: diff_paths(&self.metadata_paths_root, relative_to.as_ref())
-                .ok_or(SheetError::AbsoluteToRelativePath)?,
+                .ok_or_else(|| {
+                    SheetError::AbsoluteToRelativePath(
+                        self.metadata_paths_root.clone(),
+                        relative_to.as_ref().to_owned(),
+                    )
+                })?,
         })
     }
 
