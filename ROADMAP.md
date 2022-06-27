@@ -118,8 +118,6 @@
 - [x] Copy/paste hitboxes
 - [x] Replace powershell release script with Github action
 - [x] Unit test sheet module
-- [ ] Save export settings before attempting export
-
 
 ## Tiger 0.5
 

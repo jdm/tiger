@@ -1438,11 +1438,17 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 
 #[tauri::command]
 pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    let mut patch = app_state.mutate(|app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::EndExportAs).ok();
+        }
+    });
+
     let (sheet, document_name) = {
         let app = app_state.0.lock().unwrap();
         match app.current_document() {
             Some(d) => (d.sheet().clone(), d.path().to_file_name()),
-            _ => return Ok(Patch(Vec::new())),
+            _ => return Ok(patch),
         }
     };
 
@@ -1450,19 +1456,19 @@ pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patc
         .await
         .unwrap();
 
-    Ok(app_state.mutate(|app| match result {
-        Ok(_) => {
-            if let Some(document) = app.current_document_mut() {
-                document.process_command(Command::EndExportAs).ok();
-            }
+    let mut additional_patch = app_state.mutate(|app| {
+        if let Err(e) = result {
+            app.show_error_message(
+                "Export Error".to_owned(),
+                format!(
+                    "An error occured while trying to export `{}`",
+                    document_name.to_file_name(),
+                ),
+                e.to_string(),
+            );
         }
-        Err(e) => app.show_error_message(
-            "Export Error".to_owned(),
-            format!(
-                "An error occured while trying to export `{}`",
-                document_name.to_file_name(),
-            ),
-            e.to_string(),
-        ),
-    }))
+    });
+
+    patch.0.append(&mut additional_patch.0);
+    Ok(patch)
 }
