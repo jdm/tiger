@@ -127,6 +127,40 @@ fn can_copy_paste_animation() {
 }
 
 #[test]
+fn can_copy_paste_keyframe() {
+    let mut document = Document::new("tmp");
+    document.sheet = Sheet::default();
+    let (_, animation) = document.sheet.create_animation("animation");
+    animation.apply_direction_preset(DirectionPreset::EightDirections);
+
+    {
+        let mut keyframe = Keyframe::new("frame.png");
+        keyframe.create_hitbox("hitbox");
+        animation
+            .sequence_mut(Direction::East)
+            .unwrap()
+            .insert_keyframe(keyframe, 0)
+            .unwrap();
+    }
+
+    document.edit_animation("animation").unwrap();
+    document.select_keyframe_only("animation".to_owned(), Direction::East, 0);
+    let clipboard = document.copy().unwrap();
+
+    document.select_direction(Direction::South).unwrap();
+    document.paste(clipboard).unwrap();
+
+    assert!(document
+        .sheet
+        .animation("animation")
+        .unwrap()
+        .sequence(Direction::South)
+        .unwrap()
+        .keyframe(0)
+        .is_some());
+}
+
+#[test]
 fn can_copy_paste_hitbox() {
     let mut document = Document::new("tmp");
     document.sheet = Sheet::default();
