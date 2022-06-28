@@ -121,13 +121,11 @@
 
 ## Tiger 0.5
 
+- [ ] Document template format
+- [ ] Export dialog links to documentation
 - [ ] Export process creates intermediate directories if needed
 - [ ] Error dialog specifies problematic path when export fails due to IO problem
-- [ ] Angle in liquid template sequence data
 - [ ] Nicer looking paths in export settings (no ../ concat)
-- [ ] Consider merging some code between save, save_as and save_all
-- [ ] Automatically add extensions to exported files
-- [ ] Default paths for NFD dialogs
 - [ ] Add menu entry to open recent files
 - [ ] Export dialog form validation
 - [ ] Unit test timeline commands
@@ -136,7 +134,6 @@
 ## Tiger 0.6
 
 - [ ] Tooltips everywhere
-- [ ] Add buttons to align frame edges or center to origin
 - [ ] Draw hitbox names in workbench
 - [ ] Playback speed controls
 - [ ] Time snapping / quantizing of animation frames
@@ -156,6 +153,9 @@
 
 - [ ] Handle missing frame files (warning + offer to relocate)
 - [ ] In-place tutorials instead of blank data
+- [ ] Consider merging some code between save, save_as and save_all
+- [ ] Automatically add extensions to exported files
+- [ ] Default paths for NFD dialogs
 - [ ] Unit test state module
 
 ## Tiger 0.9
@@ -165,8 +165,6 @@
 - [ ] Fix jank spacing in exported metadata files
 - [ ] Export complete notification
 - [ ] Unit test UI
-- [ ] Document template format
-- [ ] Export dialog links to documentation
 - [ ] Auto-updates
 - [ ] Splash screen
 
