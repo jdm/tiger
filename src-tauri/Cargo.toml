@@ -5,7 +5,7 @@ authors = ["Antoine Gersant <antoine.gersant@lesforges.org>"]
 license = "MIT"
 default-run = "tiger"
 edition = "2021"
-rust-version = "1.57"
+rust-version = "1.63"
 
 [build-dependencies]
 tauri-build = { version = "1.1", features = [] }
