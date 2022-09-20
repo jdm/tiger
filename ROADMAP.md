@@ -119,6 +119,11 @@
 - [x] Replace powershell release script with Github action
 - [x] Unit test sheet module
 
+## Tiger 0.4.1
+
+- [x] Fixed a bug where changes caused by mouse clicks would not appear immediately
+- [ ] Panning workbench or nudging frames/hitboxes inside it is extremely slow in dev builds
+
 ## Tiger 0.5
 
 - [ ] Document template format
