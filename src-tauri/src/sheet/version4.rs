@@ -15,7 +15,7 @@ struct VersionedSheet {
     sheet: Sheet,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Sheet {
     pub(in crate::sheet) frames: Vec<Frame>,
     pub(in crate::sheet) animations: BTreeMap<String, Animation>,
@@ -105,12 +105,12 @@ pub enum Shape {
     Rectangle(Rectangle),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ExportSettings {
     Liquid(LiquidExportSettings),
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct LiquidExportSettings {
     pub(in crate::sheet) template_file: PathBuf,
     pub(in crate::sheet) texture_file: PathBuf,

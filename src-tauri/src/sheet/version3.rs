@@ -12,7 +12,7 @@ struct VersionedSheet {
     sheet: Sheet,
 }
 
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Sheet {
     pub(in crate::sheet) frames: Vec<Frame>,
     pub(in crate::sheet) animations: Vec<Animation>,
@@ -52,7 +52,7 @@ pub enum Shape {
     Rectangle(Rectangle),
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct ExportSettings {
     pub(in crate::sheet) format: ExportFormat,
     pub(in crate::sheet) texture_destination: PathBuf,
@@ -60,7 +60,7 @@ pub struct ExportSettings {
     pub(in crate::sheet) metadata_paths_root: PathBuf,
 }
 
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ExportFormat {
     Template(PathBuf),
 }

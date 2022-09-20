@@ -5,7 +5,7 @@ use std::time::Duration;
 use crate::sheet::Direction;
 use crate::state::*;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ListMode {
     Linear,
     Grid4xN,

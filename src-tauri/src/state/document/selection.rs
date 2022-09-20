@@ -10,7 +10,7 @@ use std::time::Duration;
 use crate::sheet::{Animation, Direction};
 use crate::state::*;
 
-#[derive(Clone, Debug, Default, PartialEq)]
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SelectionState {
     pub(super) frames: Selection<PathBuf>,
     pub(super) animations: Selection<String>,
@@ -18,7 +18,7 @@ pub struct SelectionState {
     pub(super) keyframes: Selection<(String, Direction, usize)>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum NudgeDirection {
     Up,
     Down,
@@ -34,7 +34,7 @@ pub enum BrowseDirection {
     Right,
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Selection<T>
 where
     T: std::cmp::Eq + std::hash::Hash + std::clone::Clone,

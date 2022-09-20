@@ -25,7 +25,7 @@ pub(super) struct HitboxNudge {
     pub(super) original_positions: HashMap<String, Vector2D<i32>>,
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub enum ResizeAxis {
     N,
     S,
