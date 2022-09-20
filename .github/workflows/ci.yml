@@ -25,4 +25,4 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Run backend tests
         working-directory: ./src-tauri
-        run: cargo test --release
+        run: cargo test
