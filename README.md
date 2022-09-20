@@ -30,4 +30,4 @@ Tiger is a graphical tool for generating spritesheets and metadata about the ani
 
 # Roadmap
 
-See [here](Roadmap.md).
+See [here](ROADMAP.md).
