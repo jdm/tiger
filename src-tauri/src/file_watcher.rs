@@ -1,4 +1,4 @@
-use notify::*;
+use notify_debouncer_mini::{notify::*, *};
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::mpsc::*;
@@ -7,21 +7,21 @@ use std::time::Duration;
 use crate::state::*;
 
 pub struct FileWatcher {
-    watcher: RecommendedWatcher,
+    debouncer: Debouncer<RecommendedWatcher>,
     watched_files: HashSet<PathBuf>,
 }
 
 impl FileWatcher {
-    pub fn init() -> (Self, Receiver<DebouncedEvent>) {
+    pub fn init() -> (Self, Receiver<DebounceEventResult>) {
         let (sender, receiver) = channel();
         let file_watcher = Self::new(sender);
         (file_watcher, receiver)
     }
 
-    fn new(event_sink: Sender<DebouncedEvent>) -> FileWatcher {
-        let watcher = watcher(event_sink, Duration::from_millis(200)).unwrap();
+    fn new(event_sink: Sender<DebounceEventResult>) -> FileWatcher {
+        let debouncer = new_debouncer(Duration::from_millis(200), None, event_sink).unwrap();
         FileWatcher {
-            watcher,
+            debouncer,
             watched_files: HashSet::new(),
         }
     }
@@ -43,7 +43,7 @@ impl FileWatcher {
 
         for file in files_to_unwatch {
             self.watched_files.remove(&file);
-            if self.watcher.unwatch(&file).is_err() {
+            if self.debouncer.watcher().unwatch(&file).is_err() {
                 println!("Error removing file watch for {:?}", &file);
             }
         }
@@ -56,7 +56,8 @@ impl FileWatcher {
         for file in files_to_watch {
             self.watched_files.insert(file.to_owned());
             if self
-                .watcher
+                .debouncer
+                .watcher()
                 .watch(&file, RecursiveMode::NonRecursive)
                 .is_err()
             {

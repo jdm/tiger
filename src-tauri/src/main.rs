@@ -3,8 +3,6 @@
     windows_subsystem = "windows"
 )]
 
-use file_watcher::FileWatcher;
-use notify::DebouncedEvent;
 use std::{path::PathBuf, time::Duration};
 use tauri::{Manager, WindowEvent};
 
@@ -15,6 +13,7 @@ mod file_watcher;
 mod sheet;
 mod state;
 
+use file_watcher::FileWatcher;
 use state::AppState;
 
 fn main() {
@@ -151,16 +150,14 @@ fn main() {
                 struct TextureInvalidationEvent {
                     path: PathBuf,
                 }
-                if let Ok(event) = file_events_receiver.recv() {
-                    match event {
-                        DebouncedEvent::Write(path)
-                        | DebouncedEvent::Create(path)
-                        | DebouncedEvent::Remove(path) => {
-                            tauri_app_handle
-                                .emit_all("invalidate-texture", TextureInvalidationEvent { path })
-                                .ok();
-                        }
-                        _ => (),
+                if let Ok(Ok(events)) = file_events_receiver.recv() {
+                    for event in events {
+                        tauri_app_handle
+                            .emit_all(
+                                "invalidate-texture",
+                                TextureInvalidationEvent { path: event.path },
+                            )
+                            .ok();
                     }
                 }
             });
