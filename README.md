@@ -16,18 +16,17 @@ Tiger is a graphical tool for generating spritesheets and metadata about the ani
 
 # Getting Started
 
-## Requirements
+Tiger is only supported on Windows and has no dependencies. To install it:
 
-- Windows 7 or newer
-
-## Installation
-
-### Windows
-
-1. Download the [latest release](https://github.com/agersant/tiger/releases/latest) (you want the .exe file)
-2. Run the executable
+1. Go to the [latest release](https://github.com/agersant/tiger/releases/latest) page
+2. Download the `.msi` installer
+2. Run the installer
 3. That's it, you're done!
 
-# Roadmap
+# Contributing
 
-See [here](ROADMAP.md).
+- 🗨 For feedback or suggesting new features, please use [Discussions](https://github.com/agersant/tiger/discussions).
+- 🐛 For bug reports, please use the [Issues Tracker](https://github.com/agersant/tiger/issues).
+- 🛠 Planned changes and features are listed in the project [Roadmap](ROADMAP.md).
+- ❌ Please do not create pull requests.
+
