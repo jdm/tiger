@@ -25,7 +25,7 @@ Tiger is only supported on Windows and has no dependencies. To install it:
 
 # Contributing
 
-- 🗨 For feedback or suggesting new features, please use [Discussions](https://github.com/agersant/tiger/discussions).
+- 🗨 For help, feedback or suggesting new features, please use [Discussions](https://github.com/agersant/tiger/discussions).
 - 🐛 For bug reports, please use the [Issues Tracker](https://github.com/agersant/tiger/issues).
 - 🛠 Planned changes and features are listed in the project [Roadmap](ROADMAP.md).
 - ❌ Please do not create pull requests.
