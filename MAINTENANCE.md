@@ -1,11 +1,11 @@
 # How to make a release
 
+- Move relevant section of ROADMAP.md into CHANGELOG.md, commit and push
 - On Github, go to **Actions**, select the **Make Release** workflow and click **Run workflow**
 - Select the branch to deploy (usually `master`)
 - Input a user-facing version name (eg: **0.3.0**)
 - Click the **Run workflow** button
-- After CI completes, find the release on Github and write the changelog
-- Move the release from Draft to Published
+- After CI completes, move the release from Draft to Published on Github
 
 # How to increment Tiger format version
 
