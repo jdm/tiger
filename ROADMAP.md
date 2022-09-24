@@ -122,7 +122,7 @@
 ## Tiger 0.4.1
 
 - [x] Fixed a bug where changes caused by mouse clicks would not appear immediately
-- [ ] Panning workbench or nudging frames/hitboxes inside it is extremely slow in dev builds
+- [x] Major performance improvements to panning/dragging actions
 
 ## Tiger 0.5
 

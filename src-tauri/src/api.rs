@@ -4,21 +4,24 @@ use std::path::PathBuf;
 use std::time::Duration;
 use tauri::ClipboardManager;
 
-use crate::dto::{self, ToFileName};
+use crate::dto::{self, DiffStrategy, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet;
 use crate::state::{App, AppState, Command, Document, DocumentError};
 
 impl AppState {
-    pub fn mutate<F>(&self, operation: F) -> Patch
+    pub fn mutate<F>(&self, diff_strategy: DiffStrategy, operation: F) -> Patch
     where
         F: FnOnce(&mut App),
     {
         let mut app = self.0.lock().unwrap();
 
-        let old_state: dto::App = (&*app).into();
+        let mut old_state: dto::App = (&*app).into();
         operation(&mut *app);
-        let new_state: dto::App = (&*app).into();
+        let mut new_state: dto::App = (&*app).into();
+
+        old_state.trim_for_fast_diff(diff_strategy);
+        new_state.trim_for_fast_diff(diff_strategy);
 
         let old_json = serde_json::to_value(old_state);
         let new_json = serde_json::to_value(new_state);
@@ -41,7 +44,7 @@ pub fn get_state(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> 
 
 #[tauri::command]
 pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.new_document(path);
     }))
 }
@@ -62,7 +65,7 @@ pub async fn open_documents(
         ));
     }
 
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         for document in documents {
             match document {
                 (_, Ok(d)) => {
@@ -85,7 +88,7 @@ pub async fn open_documents(
 
 #[tauri::command]
 pub fn focus_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.focus_document(&path).ok();
     }))
 }
@@ -96,7 +99,7 @@ pub fn close_document(
     app_state: tauri::State<'_, AppState>,
     path: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.document_mut(&path) {
             document.request_close();
         }
@@ -112,7 +115,7 @@ pub fn close_current_document(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.request_close();
         }
@@ -128,7 +131,7 @@ pub fn close_all_documents(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         for document in app.documents_iter_mut() {
             document.request_close();
         }
@@ -144,7 +147,7 @@ pub fn request_exit(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.request_exit();
         if app.should_exit() {
             window.close().ok();
@@ -154,14 +157,14 @@ pub fn request_exit(
 
 #[tauri::command]
 pub fn cancel_exit(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.cancel_exit();
     }))
 }
 
 #[tauri::command]
 pub fn acknowledge_error(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.acknowledge_error();
     }))
 }
@@ -171,7 +174,7 @@ pub fn close_without_saving(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         let path = app.current_document().map(|d| d.path().to_owned());
         if let Some(path) = path {
             app.close_document(path);
@@ -201,7 +204,7 @@ pub async fn save(
         .await
         .unwrap();
 
-    Ok(app_state.mutate(|app| match result {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| match result {
         Ok(_) => {
             if let Some(document) = app.document_mut(&destination) {
                 document.mark_as_saved(version);
@@ -240,7 +243,7 @@ pub async fn save_as(
         .await
         .unwrap();
 
-    Ok(app_state.mutate(|app| match result {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| match result {
         Ok(_) => {
             app.relocate_document(old_path, &new_path);
             if let Some(document) = app.document_mut(&new_path) {
@@ -290,7 +293,7 @@ pub async fn save_all(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()
         .into_iter()
         .map(|r| r.unwrap());
 
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         for (document_to_save, result) in documents_to_save.iter().zip(results) {
             match result {
                 Ok(_) => {
@@ -313,7 +316,7 @@ pub async fn save_all(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()
 
 #[tauri::command]
 pub fn undo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::Undo).ok();
         }
@@ -322,7 +325,7 @@ pub fn undo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn redo(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::Redo).ok();
         }
@@ -334,7 +337,7 @@ pub fn cut(
     tauri_app: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(data) = app.current_document().and_then(|d| d.copy()) {
             if let Ok(serialized) = serde_json::to_string(&data) {
                 let mut clipboard = tauri_app.clipboard_manager();
@@ -352,7 +355,7 @@ pub fn copy(
     tauri_app: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(data) = app.current_document().and_then(|d| d.copy()) {
             if let Ok(serialized) = serde_json::to_string(&data) {
                 let mut clipboard = tauri_app.clipboard_manager();
@@ -367,7 +370,7 @@ pub fn paste(
     tauri_app: tauri::AppHandle,
     app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         let clipboard = tauri_app.clipboard_manager();
         if let Ok(Some(serialized)) = clipboard.read_text() {
             if let Ok(data) = serde_json::from_str(&serialized) {
@@ -384,7 +387,7 @@ pub fn set_frames_list_mode(
     app_state: tauri::State<'_, AppState>,
     list_mode: dto::ListMode,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetFramesListMode(list_mode.into()))
@@ -398,7 +401,7 @@ pub fn filter_frames(
     app_state: tauri::State<'_, AppState>,
     search_query: String,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::FilterFrames(search_query))
@@ -412,7 +415,7 @@ pub fn filter_animations(
     app_state: tauri::State<'_, AppState>,
     search_query: String,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::FilterAnimations(search_query))
@@ -426,7 +429,7 @@ pub fn import_frames(
     app_state: tauri::State<'_, AppState>,
     paths: Vec<PathBuf>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ImportFrames(paths)).ok();
         }
@@ -435,7 +438,7 @@ pub fn import_frames(
 
 #[tauri::command]
 pub fn delete_frame(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::DeleteFrame(path)).ok();
         }
@@ -444,7 +447,7 @@ pub fn delete_frame(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Res
 
 #[tauri::command]
 pub fn delete_selected_frames(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::DeleteSelectedFrames).ok();
         }
@@ -453,7 +456,7 @@ pub fn delete_selected_frames(app_state: tauri::State<'_, AppState>) -> Result<P
 
 #[tauri::command]
 pub fn delete_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::DeleteSelection).ok();
         }
@@ -466,7 +469,7 @@ pub fn nudge_selection(
     direction: dto::NudgeDirection,
     large_nudge: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::NudgeSelection(direction.into(), large_nudge))
@@ -481,7 +484,7 @@ pub fn browse_selection(
     direction: dto::BrowseDirection,
     shift: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BrowseSelection(direction.into(), shift))
@@ -492,7 +495,7 @@ pub fn browse_selection(
 
 #[tauri::command]
 pub fn clear_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ClearSelection).ok();
         }
@@ -506,7 +509,7 @@ pub fn select_frame(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SelectFrame(path, shift, ctrl))
@@ -522,7 +525,7 @@ pub fn select_animation(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SelectAnimation(name, shift, ctrl))
@@ -539,7 +542,7 @@ pub fn select_keyframe(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SelectKeyframe(
@@ -560,7 +563,7 @@ pub fn select_hitbox(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SelectHitbox(name, shift, ctrl))
@@ -571,7 +574,7 @@ pub fn select_hitbox(
 
 #[tauri::command]
 pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::Pan(vec2(delta.0 as f32, delta.1 as f32)))
@@ -582,7 +585,7 @@ pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<P
 
 #[tauri::command]
 pub fn center_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::CenterWorkbench).ok();
         }
@@ -591,7 +594,7 @@ pub fn center_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 
 #[tauri::command]
 pub fn zoom_in_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ZoomInWorkbench).ok();
         }
@@ -600,7 +603,7 @@ pub fn zoom_in_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 
 #[tauri::command]
 pub fn zoom_out_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ZoomOutWorkbench).ok();
         }
@@ -612,7 +615,7 @@ pub fn set_workbench_zoom_factor(
     app_state: tauri::State<'_, AppState>,
     zoom_factor: u32,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
@@ -623,7 +626,7 @@ pub fn set_workbench_zoom_factor(
 
 #[tauri::command]
 pub fn reset_workbench_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ResetWorkbenchZoom).ok();
         }
@@ -632,7 +635,7 @@ pub fn reset_workbench_zoom(app_state: tauri::State<'_, AppState>) -> Result<Pat
 
 #[tauri::command]
 pub fn enable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::EnableSpriteDarkening)
@@ -643,7 +646,7 @@ pub fn enable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result<
 
 #[tauri::command]
 pub fn disable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DisableSpriteDarkening)
@@ -654,7 +657,7 @@ pub fn disable_sprite_darkening(app_state: tauri::State<'_, AppState>) -> Result
 
 #[tauri::command]
 pub fn hide_sprite(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::HideSprite).ok();
         }
@@ -663,7 +666,7 @@ pub fn hide_sprite(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn show_sprite(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ShowSprite).ok();
         }
@@ -672,7 +675,7 @@ pub fn show_sprite(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::HideHitboxes).ok();
         }
@@ -681,7 +684,7 @@ pub fn hide_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()>
 
 #[tauri::command]
 pub fn show_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ShowHitboxes).ok();
         }
@@ -690,7 +693,7 @@ pub fn show_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()>
 
 #[tauri::command]
 pub fn hide_origin(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::HideOrigin).ok();
         }
@@ -699,7 +702,7 @@ pub fn hide_origin(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn show_origin(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ShowOrigin).ok();
         }
@@ -708,7 +711,7 @@ pub fn show_origin(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn create_animation(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::CreateAnimation).ok();
         }
@@ -717,7 +720,7 @@ pub fn create_animation(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 
 #[tauri::command]
 pub fn edit_animation(app_state: tauri::State<'_, AppState>, name: String) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EditAnimation(name)).ok();
         }
@@ -730,7 +733,7 @@ pub fn rename_animation(
     old_name: String,
     new_name: String,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::RenameAnimation(old_name, new_name))
@@ -741,7 +744,7 @@ pub fn rename_animation(
 
 #[tauri::command]
 pub fn delete_animation(app_state: tauri::State<'_, AppState>, name: String) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DeleteAnimation(name))
@@ -752,7 +755,7 @@ pub fn delete_animation(app_state: tauri::State<'_, AppState>, name: String) -> 
 
 #[tauri::command]
 pub fn delete_selected_animations(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DeleteSelectedAnimations)
@@ -763,7 +766,7 @@ pub fn delete_selected_animations(app_state: tauri::State<'_, AppState>) -> Resu
 
 #[tauri::command]
 pub fn tick(app_state: tauri::State<'_, AppState>, delta_time_millis: f64) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::Tick(Duration::from_nanos(
@@ -776,7 +779,7 @@ pub fn tick(app_state: tauri::State<'_, AppState>, delta_time_millis: f64) -> Re
 
 #[tauri::command]
 pub fn play(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::Play).ok();
         }
@@ -785,7 +788,7 @@ pub fn play(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn pause(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::Pause).ok();
         }
@@ -797,7 +800,7 @@ pub fn scrub_timeline(
     app_state: tauri::State<'_, AppState>,
     time_millis: u64,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
@@ -808,7 +811,7 @@ pub fn scrub_timeline(
 
 #[tauri::command]
 pub fn jump_to_animation_start(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::JumpToAnimationStart).ok();
         }
@@ -817,7 +820,7 @@ pub fn jump_to_animation_start(app_state: tauri::State<'_, AppState>) -> Result<
 
 #[tauri::command]
 pub fn jump_to_animation_end(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::JumpToAnimationEnd).ok();
         }
@@ -826,7 +829,7 @@ pub fn jump_to_animation_end(app_state: tauri::State<'_, AppState>) -> Result<Pa
 
 #[tauri::command]
 pub fn jump_to_previous_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::JumpToPreviousFrame).ok();
         }
@@ -835,7 +838,7 @@ pub fn jump_to_previous_frame(app_state: tauri::State<'_, AppState>) -> Result<P
 
 #[tauri::command]
 pub fn jump_to_next_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::JumpToNextFrame).ok();
         }
@@ -844,7 +847,7 @@ pub fn jump_to_next_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch
 
 #[tauri::command]
 pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ZoomInTimeline).ok();
         }
@@ -853,7 +856,7 @@ pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 
 #[tauri::command]
 pub fn zoom_out_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ZoomOutTimeline).ok();
         }
@@ -865,7 +868,7 @@ pub fn set_timeline_zoom_amount(
     app_state: tauri::State<'_, AppState>,
     amount: f32,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetTimelineZoomAmount(amount))
@@ -876,7 +879,7 @@ pub fn set_timeline_zoom_amount(
 
 #[tauri::command]
 pub fn reset_timeline_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ResetTimelineZoom).ok();
         }
@@ -888,7 +891,7 @@ pub fn set_animation_looping(
     app_state: tauri::State<'_, AppState>,
     is_looping: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetAnimationLooping(is_looping))
@@ -902,7 +905,7 @@ pub fn apply_direction_preset(
     app_state: tauri::State<'_, AppState>,
     preset: dto::DirectionPreset,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::ApplyDirectionPreset(preset.into()))
@@ -916,7 +919,7 @@ pub fn select_direction(
     app_state: tauri::State<'_, AppState>,
     direction: dto::Direction,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SelectDirection(direction.into()))
@@ -930,7 +933,7 @@ pub fn begin_drag_and_drop_frame(
     app_state: tauri::State<'_, AppState>,
     frame: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BeginDragAndDropFrame(frame))
@@ -945,7 +948,7 @@ pub fn drop_frame_on_timeline(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DropFrameOnTimeline(direction.into(), index))
@@ -956,7 +959,7 @@ pub fn drop_frame_on_timeline(
 
 #[tauri::command]
 pub fn end_drag_and_drop_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndDragAndDropFrame).ok();
         }
@@ -965,7 +968,7 @@ pub fn end_drag_and_drop_frame(app_state: tauri::State<'_, AppState>) -> Result<
 
 #[tauri::command]
 pub fn delete_selected_keyframes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DeleteSelectedKeyframes)
@@ -979,7 +982,7 @@ pub fn set_keyframe_duration(
     app_state: tauri::State<'_, AppState>,
     duration_millis: u64,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeDuration(Duration::from_millis(
@@ -992,7 +995,7 @@ pub fn set_keyframe_duration(
 
 #[tauri::command]
 pub fn set_keyframe_offset_x(app_state: tauri::State<'_, AppState>, x: i32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeOffsetX(x))
@@ -1003,7 +1006,7 @@ pub fn set_keyframe_offset_x(app_state: tauri::State<'_, AppState>, x: i32) -> R
 
 #[tauri::command]
 pub fn set_keyframe_offset_y(app_state: tauri::State<'_, AppState>, y: i32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeOffsetY(y))
@@ -1018,7 +1021,7 @@ pub fn begin_drag_and_drop_keyframe(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
@@ -1033,7 +1036,7 @@ pub fn drop_keyframe_on_timeline(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
@@ -1044,7 +1047,7 @@ pub fn drop_keyframe_on_timeline(
 
 #[tauri::command]
 pub fn end_drag_and_drop_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::EndDragAndDropKeyframe)
@@ -1059,7 +1062,7 @@ pub fn begin_drag_keyframe_duration(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
@@ -1073,7 +1076,7 @@ pub fn update_drag_keyframe_duration(
     app_state: tauri::State<'_, AppState>,
     delta_millis: i64,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::UpdateDragKeyframeDuration(delta_millis))
@@ -1084,7 +1087,7 @@ pub fn update_drag_keyframe_duration(
 
 #[tauri::command]
 pub fn end_drag_keyframe_duration(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::EndDragKeyframeDuration())
@@ -1099,7 +1102,7 @@ pub fn begin_nudge_keyframe(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
@@ -1114,7 +1117,7 @@ pub fn update_nudge_keyframe(
     displacement: (i32, i32),
     both_axis: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
@@ -1125,7 +1128,7 @@ pub fn update_nudge_keyframe(
 
 #[tauri::command]
 pub fn end_nudge_keyframe(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndNudgeKeyframe()).ok();
         }
@@ -1137,7 +1140,7 @@ pub fn create_hitbox(
     app_state: tauri::State<'_, AppState>,
     position: Option<(i32, i32)>,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::CreateHitbox(position.map(|p| p.into())))
@@ -1152,7 +1155,7 @@ pub fn rename_hitbox(
     old_name: String,
     new_name: String,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::RenameHitbox(old_name, new_name))
@@ -1163,7 +1166,7 @@ pub fn rename_hitbox(
 
 #[tauri::command]
 pub fn delete_hitbox(app_state: tauri::State<'_, AppState>, name: String) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::DeleteHitbox(name)).ok();
         }
@@ -1172,7 +1175,7 @@ pub fn delete_hitbox(app_state: tauri::State<'_, AppState>, name: String) -> Res
 
 #[tauri::command]
 pub fn delete_selected_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::DeleteSelectedHitboxes)
@@ -1183,7 +1186,7 @@ pub fn delete_selected_hitboxes(app_state: tauri::State<'_, AppState>) -> Result
 
 #[tauri::command]
 pub fn lock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::LockHitboxes).ok();
         }
@@ -1192,7 +1195,7 @@ pub fn lock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()>
 
 #[tauri::command]
 pub fn unlock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::UnlockHitboxes).ok();
         }
@@ -1201,7 +1204,7 @@ pub fn unlock_hitboxes(app_state: tauri::State<'_, AppState>) -> Result<Patch, (
 
 #[tauri::command]
 pub fn set_hitbox_position_x(app_state: tauri::State<'_, AppState>, x: i32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetHitboxPositionX(x))
@@ -1212,7 +1215,7 @@ pub fn set_hitbox_position_x(app_state: tauri::State<'_, AppState>, x: i32) -> R
 
 #[tauri::command]
 pub fn set_hitbox_position_y(app_state: tauri::State<'_, AppState>, y: i32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetHitboxPositionY(y))
@@ -1223,7 +1226,7 @@ pub fn set_hitbox_position_y(app_state: tauri::State<'_, AppState>, y: i32) -> R
 
 #[tauri::command]
 pub fn set_hitbox_width(app_state: tauri::State<'_, AppState>, width: u32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetHitboxWidth(width))
@@ -1234,7 +1237,7 @@ pub fn set_hitbox_width(app_state: tauri::State<'_, AppState>, width: u32) -> Re
 
 #[tauri::command]
 pub fn set_hitbox_height(app_state: tauri::State<'_, AppState>, height: u32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetHitboxHeight(height))
@@ -1245,7 +1248,7 @@ pub fn set_hitbox_height(app_state: tauri::State<'_, AppState>, height: u32) -> 
 
 #[tauri::command]
 pub fn toggle_preserve_aspect_ratio(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::TogglePreserveAspectRatio)
@@ -1259,7 +1262,7 @@ pub fn begin_nudge_hitbox(
     app_state: tauri::State<'_, AppState>,
     name: String,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BeginNudgeHitbox(name))
@@ -1274,7 +1277,7 @@ pub fn update_nudge_hitbox(
     displacement: (i32, i32),
     both_axis: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
@@ -1285,7 +1288,7 @@ pub fn update_nudge_hitbox(
 
 #[tauri::command]
 pub fn end_nudge_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndNudgeHitbox).ok();
         }
@@ -1298,7 +1301,7 @@ pub fn begin_resize_hitbox(
     name: String,
     axis: dto::ResizeAxis,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::BeginResizeHitbox(name, axis.into()))
@@ -1313,7 +1316,7 @@ pub fn update_resize_hitbox(
     displacement: (i32, i32),
     preserve_aspect_ratio: bool,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::UpdateResizeHitbox(
@@ -1327,7 +1330,7 @@ pub fn update_resize_hitbox(
 
 #[tauri::command]
 pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndResizeHitbox).ok();
         }
@@ -1349,7 +1352,7 @@ pub async fn export(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> 
         .unwrap()
     {
         Ok(_) => Ok(Patch(Vec::new())),
-        Err(e) => Ok(app_state.mutate(|app| {
+        Err(e) => Ok(app_state.mutate(DiffStrategy::Full, |app| {
             app.show_error_message(
                 "Export Error".to_owned(),
                 format!(
@@ -1364,7 +1367,7 @@ pub async fn export(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> 
 
 #[tauri::command]
 pub fn begin_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::BeginExportAs).ok();
         }
@@ -1376,7 +1379,7 @@ pub fn set_export_template_file(
     app_state: tauri::State<'_, AppState>,
     file: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetExportTemplateFile(file))
@@ -1390,7 +1393,7 @@ pub fn set_export_texture_file(
     app_state: tauri::State<'_, AppState>,
     file: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetExportTextureFile(file))
@@ -1404,7 +1407,7 @@ pub fn set_export_metadata_file(
     app_state: tauri::State<'_, AppState>,
     file: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetExportMetadataFile(file))
@@ -1418,7 +1421,7 @@ pub fn set_export_metadata_paths_root(
     app_state: tauri::State<'_, AppState>,
     directory: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::SetExportMetadataPathsRoot(directory))
@@ -1429,7 +1432,7 @@ pub fn set_export_metadata_paths_root(
 
 #[tauri::command]
 pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(|app| {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::CancelExportAs).ok();
         }
@@ -1438,7 +1441,7 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 
 #[tauri::command]
 pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    let mut patch = app_state.mutate(|app| {
+    let mut patch = app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndExportAs).ok();
         }
@@ -1456,7 +1459,7 @@ pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patc
         .await
         .unwrap();
 
-    let mut additional_patch = app_state.mutate(|app| {
+    let mut additional_patch = app_state.mutate(DiffStrategy::Full, |app| {
         if let Err(e) = result {
             app.show_error_message(
                 "Export Error".to_owned(),

@@ -13,7 +13,7 @@ use crate::state;
 #[serde(rename_all = "camelCase")]
 pub struct App {
     documents: Vec<Document>,
-    current_document_path: Option<String>,
+    current_document_path: Option<PathBuf>,
     is_release_build: bool,
     error: Option<UserFacingError>,
 }
@@ -186,6 +186,12 @@ pub struct ExportSettings {
     metadata_paths_root: PathBuf,
 }
 
+#[derive(Clone, Copy)]
+pub enum DiffStrategy {
+    Full,
+    OnlyWorkbench,
+}
+
 pub trait ToFileStem {
     fn to_file_stem(&self) -> String;
 }
@@ -216,11 +222,29 @@ impl From<&state::App> for App {
     fn from(app: &state::App) -> Self {
         Self {
             documents: app.documents_iter().map(|d| d.into()).collect(),
-            current_document_path: app
-                .current_document()
-                .map(|d| d.path().to_string_lossy().into_owned()),
+            current_document_path: app.current_document().map(|d| d.path().to_owned()),
             is_release_build: !cfg!(debug_assertions),
             error: app.error().map(|e| e.into()),
+        }
+    }
+}
+
+impl App {
+    pub fn trim_for_fast_diff(&mut self, diff_strategy: DiffStrategy) {
+        match diff_strategy {
+            DiffStrategy::Full => (),
+            DiffStrategy::OnlyWorkbench => {
+                for document in &mut self.documents {
+                    document.sheet.frames.clear();
+                    if Some(&document.path) == self.current_document_path.as_ref() {
+                        document.sheet.animations.retain(|name, _| {
+                            Some(name) == document.current_animation_name.as_ref()
+                        });
+                    } else {
+                        document.sheet.animations.clear();
+                    }
+                }
+            }
         }
     }
 }
