@@ -26,7 +26,6 @@ import { useAppStore } from "@/stores/app";
 import { BrowseDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
-  console.log(document.activeElement?.tagName);
   if (document.activeElement?.tagName == "INPUT") {
     return;
   }
