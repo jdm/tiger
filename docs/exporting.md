@@ -20,13 +20,13 @@ The `Texture File` and `Metadata File` options in the Export dialog tell Tiger w
 
 The exported metadata text file does not obey a specific format. It is up to you to define the format by providing a template file. This template file is specified using the `Metadata Template File` option in the Export dialog. You most likely only need to make one template file for your entire project / game engine.
 
-Here is an example of a simple template file which could be used to generate XML metadata about your spritesheet:
+Here is an example of a simple template file which could be used to generate XML metadata:
 
 ```
 <sprite>
-	{% for frame in frames %}
+	\{% for frame in frames %}
 	<frame id="{{frame.index}}" x="{{frame.x}}" y="{{frame.y}}" width="{{frame.width}}" height="{{frame.height}}" />
-	{% endfor %}
+	\{% endfor %}
 </sprite>
 ```
 
