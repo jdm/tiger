@@ -12,6 +12,7 @@
 - [ ] Export dialog form validation
 - [ ] Unit test timeline commands
 - [ ] Unit test transient commands
+- [x] Fixed a bug where Ctrl+Shift+E opened a Search With Bing panel
 
 ## Tiger 0.6
 

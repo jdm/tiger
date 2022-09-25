@@ -49,6 +49,7 @@ function onKeyDown(event: KeyboardEvent) {
       doExport();
     } else if (event.key == "E") {
       beginExportAs();
+      event.preventDefault();
     } else if (event.key == "w") {
       closeCurrentDocument();
     } else if (event.key == "W") {
