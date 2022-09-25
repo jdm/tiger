@@ -1,7 +1,8 @@
-title: Tiger Documentation
+title: Tiger
 lang: en
 
 remote_theme: just-the-docs/just-the-docs
+color_scheme: dark
 
 plugins:
   - jemoji
