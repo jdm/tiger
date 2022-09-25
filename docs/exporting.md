@@ -22,13 +22,15 @@ The exported metadata text file does not obey a specific format. It is up to you
 
 Here is an example of a simple template file which could be used to generate XML metadata:
 
-```
+{% raw %}
+```liquid
 <sprite>
-	\{% for frame in frames %\}
-	<frame id="\{\{frame.index\}\}" x="\{\{frame.x\}\}" y="\{\{frame.y\}\}" width="\{\{frame.width\}\}" height="\{\{frame.height\}\}" />
-	\{% endfor %\}
+	{% for frame in frames %}
+	<frame id="{{frame.index}}" x="{{frame.x}}" y="{{frame.y}}" width="{{frame.width}}" height="{{frame.height}}" />
+	{% endfor %}
 </sprite>
 ```
+{% endraw %}
 
 When used, this template would generate metadata files like the following:
 
