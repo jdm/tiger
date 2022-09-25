@@ -63,6 +63,7 @@ struct LiquidFrame {
 fn liquid_data_from_frame(
     sheet: &Sheet,
     frame: &Frame,
+    settings: &LiquidExportSettings,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidFrame, MetadataError> {
     let index = sheet
@@ -74,8 +75,13 @@ fn liquid_data_from_frame(
         .get(frame.source())
         .ok_or(MetadataError::FrameWasNotPacked)?;
 
+    let source_path = diff_paths(frame.source(), settings.metadata_paths_root())
+        .ok_or(MetadataError::AbsoluteToRelativePath)?
+        .to_string_lossy()
+        .into_owned();
+
     Ok(LiquidFrame {
-        source: frame.source().to_string_lossy().into_owned(),
+        source: source_path,
         index: index as i32,
         x: frame_layout.position_in_sheet.0 as i32,
         y: frame_layout.position_in_sheet.1 as i32,
@@ -97,6 +103,7 @@ struct LiquidKeyframe {
 fn liquid_data_from_keyframe(
     sheet: &Sheet,
     keyframe: &Keyframe,
+    settings: &LiquidExportSettings,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidKeyframe, MetadataError> {
     let packed_frame = texture_layout
@@ -110,7 +117,7 @@ fn liquid_data_from_keyframe(
     let frame = sheet
         .frame(keyframe.frame())
         .ok_or(MetadataError::InvalidFrameReference)?;
-    let frame_data = liquid_data_from_frame(sheet, frame, texture_layout)?;
+    let frame_data = liquid_data_from_frame(sheet, frame, settings, texture_layout)?;
 
     let mut hitboxes = Vec::new();
     for (hitbox_name, hitbox) in keyframe.hitboxes_iter() {
@@ -138,11 +145,12 @@ fn liquid_data_from_sequence(
     sheet: &Sheet,
     direction: Direction,
     sequence: &Sequence,
+    settings: &LiquidExportSettings,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidSequence, MetadataError> {
     let mut keyframes = Vec::new();
     for keyframe in sequence.keyframes_iter() {
-        let frame = liquid_data_from_keyframe(sheet, keyframe, texture_layout)?;
+        let frame = liquid_data_from_keyframe(sheet, keyframe, settings, texture_layout)?;
         keyframes.push(frame);
     }
 
@@ -163,11 +171,13 @@ fn liquid_data_from_animation(
     sheet: &Sheet,
     animation_name: String,
     animation: &Animation,
+    settings: &LiquidExportSettings,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidAnimation, MetadataError> {
     let mut sequences = Vec::new();
     for (direction, sequence) in animation.sequences_iter() {
-        let sequence = liquid_data_from_sequence(sheet, *direction, sequence, texture_layout)?;
+        let sequence =
+            liquid_data_from_sequence(sheet, *direction, sequence, settings, texture_layout)?;
         sequences.push(sequence);
     }
 
@@ -193,7 +203,12 @@ fn liquid_data_from_sheet(
     let frames = {
         let mut frames = Vec::new();
         for frame in sheet.frames_iter() {
-            frames.push(liquid_data_from_frame(sheet, frame, texture_layout)?);
+            frames.push(liquid_data_from_frame(
+                sheet,
+                frame,
+                settings,
+                texture_layout,
+            )?);
         }
         frames
     };
@@ -205,6 +220,7 @@ fn liquid_data_from_sheet(
                 sheet,
                 animation_name.clone(),
                 animation,
+                settings,
                 texture_layout,
             )?;
             animations.push(animation_data);
