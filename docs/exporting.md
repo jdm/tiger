@@ -89,10 +89,10 @@ The spritesheet data that can be referenced in the template is described in the 
 | Field        | Type                    | Description |
 |:-------------|:------------------------|:------------|
 | frame        | [Frame](#frame)         | Frame to display during this keyframe. |
+| hitboxes     | [Hitbox](#hitbox)[]     | List of hitboxes in this keyframe. |
 | duration     | Number                  | Duration in milliseconds. |
 | x            | Number                  | Horizontal position of this keyframe, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
 | y            | Number                  | Vertical position of this keyframe, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin. |
-| hitboxes     | [Hitbox](#hitbox)[]     | List of hitboxes in this keyframe. |
 
 ### Hitbox
 
