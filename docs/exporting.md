@@ -24,9 +24,9 @@ Here is an example of a simple template file which could be used to generate XML
 
 ```
 <sprite>
-	\{% for frame in frames %}
-	<frame id="{{frame.index}}" x="{{frame.x}}" y="{{frame.y}}" width="{{frame.width}}" height="{{frame.height}}" />
-	\{% endfor %}
+	\{% for frame in frames %\}
+	<frame id="\{\{frame.index\}\}" x="\{\{frame.x\}\}" y="\{\{frame.y\}\}" width="\{\{frame.width\}\}" height="\{\{frame.height\}\}" />
+	\{% endfor %\}
 </sprite>
 ```
 
