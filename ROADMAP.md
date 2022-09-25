@@ -3,6 +3,7 @@
 ## Tiger 0.5
 
 - [x] Document template format
+	- [ ] Switch documentation Github Pages to `release` branch
 - [ ] Export dialog links to documentation
 - [ ] Export process creates intermediate directories if needed
 - [ ] Error dialog specifies problematic path when export fails due to IO problem

@@ -23,6 +23,8 @@ Tiger is only supported on Windows and has no dependencies. To install it:
 2. Run the installer
 3. That's it, you're done!
 
+To learn how to integrate Tiger sheets in your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
+
 # Contributing
 
 - 🗨 For help, feedback or suggesting new features, please use [Discussions](https://github.com/agersant/tiger/discussions).
