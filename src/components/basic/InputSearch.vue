@@ -15,7 +15,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUpdate, ref, watch, WritableComputedRef } from "vue";
+import { computed, WritableComputedRef } from "vue";
 import { SearchIcon, XIcon } from "@heroicons/vue/solid"
 import InputText from "@/components/basic/InputText.vue"
 
