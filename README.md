@@ -1,6 +1,6 @@
 [![Actions Status](https://github.com/agersant/tiger/workflows/Build/badge.svg)](https://github.com/agersant/tiger/actions) [![codecov](https://codecov.io/gh/agersant/tiger/branch/master/graph/badge.svg?token=Ekd9mm2Wii)](https://codecov.io/gh/agersant/tiger)
 
-Tiger is a graphical tool for generating spritesheets and metadata about the animation and hitboxes they contain.
+Tiger is a graphical tool to author game spritesheets and associated metadata.
 
 ![Tiger](res/readme/screenshot-0.4.0.png?raw=true "Tiger")
 
