@@ -50,19 +50,54 @@ The spritesheet data that can be referenced in the template is described in the 
 
 ### Global Variables
 
-| Field        | Type              | Description |
-|:-------------|:------------------|:------------|
-| sheet_image  | String            | Path to the atlas image file containing all the fames in the spritesheet. This path is relative to the directory selected in the `Metadata Root Directory` option of the Export dialog. |
-| frames       | [Frame](#frame)[] | List of all the frames in the spritesheet. |
-| animations   | Animation[]       | List of all the animations in the spritesheet. |
+| Field        | Type                      | Description |
+|:-------------|:--------------------------|:------------|
+| sheet_image  | String                    | Path to the atlas image file containing all the fames in the spritesheet. This path is relative to the directory selected in the `Metadata Root Directory` option of the Export dialog. |
+| frames       | [Frame](#frame)[]         | List of all the frames in the spritesheet. |
+| animations   | [Animation](#animation)[] | List of all the animations in the spritesheet. |
 
 ### Frame
 
 | Field        | Type         | Description |
 |:-------------|:-------------|:------------|
 | source       | String       | Path to the source image file of this individual frame. This path is relative to the directory selected in the `Metadata Root Directory` option of the Export dialog. |
-| index        | Number       | Arbitrary frame identifier. Animations will refer to these identifiers to reference specific frames. |
+| index        | Number       | Arbitrary frame identifier. |
 | x            | Number       | Horizontal position of the frame in the atlas image file, measured from the left edge. |
 | y            | Number       | Vertical position of the frame in the atlas image file, measured from the top edge. |
 | width        | Number       | Frame width in pixels. |
 | height       | Number       | Frame height in pixels. |
+
+### Animation
+
+| Field        | Type                    | Description |
+|:-------------|:------------------------|:------------|
+| name	       | String                  | Name of the animation. |
+| is_looping   | Boolean                 | True if the animation is meant to repeat after it ends. |
+| sequences    | [Sequence](#sequence)[] | List of sequences in this animation. There is one sequence per direction in the animation. |
+
+### Sequence
+
+| Field        | Type                    | Description |
+|:-------------|:------------------------|:------------|
+| direction    | Direction               | Direction the sequence. |
+| keyframes    | [Keyframe](#keyframe)[] | Chronological list of keyframes in this sequence. |
+
+### Keyframe
+
+| Field        | Type                    | Description |
+|:-------------|:------------------------|:------------|
+| frame        | [Frame](#frame)         | Frame to display during this keyframe. |
+| duration     | Number                  | Duration in milliseconds. |
+| x            | Number                  | Horizontal position of this keyframe, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
+| y            | Number                  | Vertical position of this keyframe, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin. |
+| hitboxes     | [Hitbox](#hitbox)[]     | List of hitboxes in this keyframe. |
+
+### Hitbox
+
+| Field        | Type                    | Description |
+|:-------------|:------------------------|:------------|
+| name         | String                  | Name of the hitbox. |
+| x            | Number                  | Horizontal position of this hitbox, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
+| y            | Number                  | Vertical position of this hitbox, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin. |
+| width        | Number                  | Hitbox width in pixels. |
+| height       | Number                  | Hitbox height in pixels. |
