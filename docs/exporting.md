@@ -22,7 +22,7 @@ The exported metadata text file does not obey a specific format. It is up to you
 
 Here is an example of a simple template file which could be used to generate XML metadata about your spritesheet:
 
-```liquid
+```
 <sprite>
 	{% for frame in frames %}
 	<frame id="{{frame.index}}" x="{{frame.x}}" y="{{frame.y}}" width="{{frame.width}}" height="{{frame.height}}" />
