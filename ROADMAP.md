@@ -2,7 +2,7 @@
 
 ## Tiger 0.5
 
-- [ ] Document template format
+- [x] Document template format
 - [ ] Export dialog links to documentation
 - [ ] Export process creates intermediate directories if needed
 - [ ] Error dialog specifies problematic path when export fails due to IO problem
