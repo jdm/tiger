@@ -1,3 +1,7 @@
+---
+nav_order: 1
+---
+
 # Home
 
 Welcome to the Tiger documentation!
