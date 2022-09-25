@@ -26,6 +26,9 @@
           "allow": ["**"]
         }
       },
+      "shell": {
+        "open": true
+      },
       "window": {
         "minimize": true,
         "maximize": true,

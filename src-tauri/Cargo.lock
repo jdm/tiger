@@ -1873,6 +1873,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2f7254b99e31cad77da24b08ebf628882739a608578bb1bcdfc1f9c21260d7c0"
 
 [[package]]
+name = "open"
+version = "3.0.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4a3100141f1733ea40b53381b0ae3117330735ef22309a190ac57b9576ea716"
+dependencies = [
+ "pathdiff",
+ "windows-sys",
+]
+
+[[package]]
 name = "pango"
 version = "0.15.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2907,9 +2917,11 @@ dependencies = [
  "ignore",
  "objc",
  "once_cell",
+ "open",
  "percent-encoding",
  "rand 0.8.5",
  "raw-window-handle",
+ "regex",
  "rfd",
  "semver 1.0.14",
  "serde",
@@ -2962,6 +2974,7 @@ dependencies = [
  "png 0.17.6",
  "proc-macro2",
  "quote",
+ "regex",
  "semver 1.0.14",
  "serde",
  "serde_json",

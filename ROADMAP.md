@@ -4,7 +4,7 @@
 
 - [x] Document template format
 	- [ ] Switch documentation Github Pages to `release` branch
-- [ ] Export dialog links to documentation
+- [x] Export dialog links to documentation
 - [ ] Export process creates intermediate directories if needed
 - [ ] Error dialog specifies problematic path when export fails due to IO problem
 - [ ] Nicer looking paths in export settings (no ../ concat)

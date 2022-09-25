@@ -41,18 +41,17 @@
 							<Button label="Cancel" @click="cancelExportAs" />
 						</div>
 
-						<!-- TODO Link to documentation -->
-						<!-- <div class="flex-1 flex flex-col justify-end">
+						<div class="flex-1 flex flex-col justify-end">
 							<div
-								class="flex items-center rounded-md text-md p-5 text-amber-800 bg-amber-400 shadow-lg  shadow-amber-600/20">
-								<BookOpenIcon class="mr-6 w-8 h-8" />
+								class="flex items-center rounded-md text-md p-4 text-amber-800 bg-amber-400 shadow-lg  shadow-amber-600/20">
+								<BookOpenIcon class="mr-4 w-8 h-8" />
 								<div>
-									Confused about all these options? Check out the <span
-										class="underline underline-offset-2">documentation</span> about what they
-									mean.
+									Confused about these options? Check out the <a
+										href="https://agersant.github.io/tiger/exporting.html" target="_blank"
+										class="underline underline-offset-2">documentation</a>.
 								</div>
 							</div>
-						</div> -->
+						</div>
 					</div>
 				</div>
 			</div>
@@ -63,6 +62,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
+import { BookOpenIcon } from "@heroicons/vue/outline"
 import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
