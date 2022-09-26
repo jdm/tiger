@@ -16,14 +16,15 @@
 
 ## Tiger 0.6
 
-- [ ] Tooltips everywhere
 - [ ] Draw hitbox names in workbench
 - [ ] Playback speed controls
 - [ ] Time snapping / quantizing of animation frames
 - [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes are not correctly centered
+- [ ] Add button to open sheet folder in explorer
 
 ## Tiger 0.7
 
+- [ ] Tooltips everywhere
 - [ ] Export perf improvements
 - [ ] Can zoom workbench with mousewheel
 - [ ] Can zoom timeline with mousewheel
