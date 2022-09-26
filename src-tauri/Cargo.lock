@@ -2803,6 +2803,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
+name = "sugar_path"
+version = "0.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e42e4daefe03df49891087a9d7ddad4175bb656e0fa1f48bd8b9e48f4b12b28f"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
 name = "syn"
 version = "1.0.100"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3173,6 +3182,7 @@ dependencies = [
  "regex",
  "serde",
  "serde_json",
+ "sugar_path",
  "tauri",
  "tauri-build",
  "texture_packer",

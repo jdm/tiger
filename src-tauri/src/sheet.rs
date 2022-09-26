@@ -14,6 +14,7 @@ use std::io::BufWriter;
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
+use sugar_path::SugarPath;
 use thiserror::Error;
 use uuid::Uuid;
 
@@ -137,12 +138,12 @@ impl Sheet {
     fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Sheet {
         let mut sheet = self.clone();
         for frame in sheet.frames_iter_mut() {
-            frame.source = relative_to.as_ref().join(&frame.source)
+            frame.source = relative_to.as_ref().join(&frame.source).normalize();
         }
         for (_name, animation) in sheet.animations.iter_mut() {
             for (_direction, sequence) in animation.sequences.iter_mut() {
                 for keyframe in sequence.keyframes_iter_mut() {
-                    keyframe.frame = relative_to.as_ref().join(&&keyframe.frame);
+                    keyframe.frame = relative_to.as_ref().join(&&keyframe.frame).normalize();
                 }
             }
         }
@@ -702,10 +703,13 @@ impl LiquidExportSettings {
 
     pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> LiquidExportSettings {
         LiquidExportSettings {
-            template_file: relative_to.as_ref().join(&self.template_file),
-            texture_file: relative_to.as_ref().join(&self.texture_file),
-            metadata_file: relative_to.as_ref().join(&self.metadata_file),
-            metadata_paths_root: relative_to.as_ref().join(&self.metadata_paths_root),
+            template_file: relative_to.as_ref().join(&self.template_file).normalize(),
+            texture_file: relative_to.as_ref().join(&self.texture_file).normalize(),
+            metadata_file: relative_to.as_ref().join(&self.metadata_file).normalize(),
+            metadata_paths_root: relative_to
+                .as_ref()
+                .join(&self.metadata_paths_root)
+                .normalize(),
         }
     }
 

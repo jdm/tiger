@@ -26,6 +26,7 @@ regex = "1.5.6"
 pathdiff = "0.2.1"
 serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
+sugar_path = "0.0.6"
 tauri = { version = "1.1", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
 texture_packer = "0.24"
 thiserror = "1.0"
