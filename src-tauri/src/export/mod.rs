@@ -1,5 +1,8 @@
 use image::ImageError;
-use std::{fs::File, io::Write};
+use std::{
+    fs::{create_dir_all, File},
+    io::Write,
+};
 use thiserror::Error;
 
 use crate::sheet::*;
@@ -38,11 +41,20 @@ pub fn export_sheet(sheet: &Sheet) -> Result<(), ExportError> {
                 generate_sheet_metadata(sheet, export_settings, packed_sheet.get_layout())?;
 
             {
-                let mut file = File::create(liquid_settings.metadata_file())?;
+                let path = liquid_settings.metadata_file();
+                if let Some(directory) = path.parent() {
+                    create_dir_all(directory)?;
+                }
+                let mut file = File::create(path)?;
                 file.write_all(&metadata.into_bytes())?;
             }
+
             {
-                let mut file = File::create(liquid_settings.texture_file())?;
+                let path = liquid_settings.texture_file();
+                if let Some(directory) = path.parent() {
+                    create_dir_all(directory)?;
+                }
+                let mut file = File::create(path)?;
                 packed_sheet
                     .get_texture()
                     .write_to(&mut file, image::ImageFormat::Png)?;
