@@ -6,7 +6,7 @@
 	- [ ] Switch documentation Github Pages to `release` branch
 - [x] Export dialog links to documentation
 - [x] Export process creates intermediate directories if needed
-- [ ] Error dialog specifies problematic path when export fails due to IO problem
+- [x] Error dialog specifies problematic path when export fails due to IO problem
 - [x] Nicer looking paths in export settings (no ../ concat)
 - [ ] Add menu entry to open recent files
 - [ ] Export dialog form validation

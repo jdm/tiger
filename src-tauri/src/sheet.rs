@@ -36,7 +36,7 @@ pub use self::version4::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
-    #[error("Filesystem error for file `{0}`: `{1}`")]
+    #[error("Filesystem error for `{0}`: `{1}`")]
     IoError(PathBuf, std::io::Error),
     #[error(transparent)]
     SerdeError(#[from] serde_json::Error),

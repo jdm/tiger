@@ -20,8 +20,8 @@ pub enum MetadataError {
     InvalidFrameReference,
     #[error("The sheet contains a frame which was not packed into the texture atlas")]
     FrameWasNotPacked,
-    #[error("Error converting an absolute path to a relative path")]
-    AbsoluteToRelativePath,
+    #[error("Error converting an absolute path to a relative path\nAbsolute path: `{0}`\nRelative path root: `{1}`")]
+    AbsoluteToRelativePath(PathBuf, PathBuf),
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
@@ -203,8 +203,12 @@ fn liquid_data_from_sheet(
 
     let sheet_image = {
         let relative_to = settings.metadata_paths_root();
-        let image_path = diff_paths(&settings.texture_file(), relative_to)
-            .ok_or(MetadataError::AbsoluteToRelativePath)?;
+        let image_path = diff_paths(&settings.texture_file(), relative_to).ok_or_else(|| {
+            MetadataError::AbsoluteToRelativePath(
+                settings.texture_file().to_owned(),
+                relative_to.to_owned(),
+            )
+        })?;
         image_path.to_string_lossy().into_owned()
     };
 

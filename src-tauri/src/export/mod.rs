@@ -2,6 +2,7 @@ use image::ImageError;
 use std::{
     fs::{create_dir_all, File},
     io::Write,
+    path::{Path, PathBuf},
 };
 use thiserror::Error;
 
@@ -17,8 +18,8 @@ pub use texture::*;
 pub enum ExportError {
     #[error("Missing export settings")]
     NoExportSettings,
-    #[error("{0}")]
-    IoError(#[from] std::io::Error),
+    #[error("Filesystem error for `{0}`: `{1}`")]
+    IoError(PathBuf, std::io::Error),
     #[error("{0}")]
     MetadataError(#[from] MetadataError),
     #[error("{0}")]
@@ -43,18 +44,19 @@ pub fn export_sheet(sheet: &Sheet) -> Result<(), ExportError> {
             {
                 let path = liquid_settings.metadata_file();
                 if let Some(directory) = path.parent() {
-                    create_dir_all(directory)?;
+                    create_dir(directory)?;
                 }
-                let mut file = File::create(path)?;
-                file.write_all(&metadata.into_bytes())?;
+                let mut file = create_file(path)?;
+                file.write_all(&metadata.into_bytes())
+                    .map_err(|e| ExportError::IoError(path.to_owned(), e))?;
             }
 
             {
                 let path = liquid_settings.texture_file();
                 if let Some(directory) = path.parent() {
-                    create_dir_all(directory)?;
+                    create_dir(directory)?;
                 }
-                let mut file = File::create(path)?;
+                let mut file = create_file(path)?;
                 packed_sheet
                     .get_texture()
                     .write_to(&mut file, image::ImageFormat::Png)?;
@@ -63,4 +65,12 @@ pub fn export_sheet(sheet: &Sheet) -> Result<(), ExportError> {
     }
 
     Ok(())
+}
+
+fn create_file(path: &Path) -> Result<File, ExportError> {
+    File::create(path).map_err(|e| ExportError::IoError(path.to_owned(), e))
+}
+
+fn create_dir(path: &Path) -> Result<(), ExportError> {
+    create_dir_all(path).map_err(|e| ExportError::IoError(path.to_owned(), e))
 }
