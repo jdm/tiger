@@ -56,7 +56,7 @@ pub struct Document {
     lock_hitboxes: bool,
     preserve_aspect_ratio: bool,
     is_dragging_keyframe_duration: bool,
-    frames_being_dragged: Vec<PathBuf>,
+    frames_being_dragged: HashSet<PathBuf>,
     keyframes_being_dragged: HashSet<(Direction, usize)>,
     hitboxes_being_nudged: HashSet<String>,
     hitboxes_being_resized: HashSet<String>,

@@ -96,13 +96,11 @@ impl Document {
         Ok(())
     }
 
-    pub fn frames_being_dragged(&self) -> Vec<PathBuf> {
-        let mut frames = match self.transient.frame_drag_and_drop.is_some() {
+    pub fn frames_being_dragged(&self) -> HashSet<PathBuf> {
+        match self.transient.frame_drag_and_drop.is_some() {
             true => self.view.selection.frames().cloned().collect(),
-            false => Vec::new(),
-        };
-        frames.sort();
-        frames
+            false => HashSet::new(),
+        }
     }
 
     pub(super) fn begin_drag_and_drop_keyframe(
@@ -665,7 +663,7 @@ fn keeps_track_of_frames_being_dragged() {
     d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
     assert_eq!(
         d.frames_being_dragged(),
-        vec![PathBuf::from("walk_0"), PathBuf::from("walk_2")]
+        HashSet::from([PathBuf::from("walk_0"), PathBuf::from("walk_2")]),
     );
 
     d.drop_frame_on_timeline(Direction::North, 0).unwrap();
