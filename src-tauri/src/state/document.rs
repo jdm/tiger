@@ -220,7 +220,7 @@ impl Document {
             .ok_or(DocumentError::NotEditingAnyAnimation)?;
         let animation = self
             .sheet
-            .animation(&animation_name)
+            .animation(animation_name)
             .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.to_owned()))?;
         Ok((animation_name, animation))
     }

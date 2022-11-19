@@ -288,7 +288,7 @@ impl Document {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation = self
             .sheet
-            .animation(&animation_name)
+            .animation(animation_name)
             .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
         let ((direction, index), _) = self.get_workbench_keyframe()?;
         let current_keyframe = (animation_name.clone(), direction, index);

@@ -17,7 +17,7 @@ impl AppState {
         let mut app = self.0.lock().unwrap();
 
         let mut old_state: dto::App = (&*app).into();
-        operation(&mut *app);
+        operation(&mut app);
         let mut new_state: dto::App = (&*app).into();
 
         old_state.trim_for_fast_diff(diff_strategy);

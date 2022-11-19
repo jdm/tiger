@@ -143,7 +143,7 @@ impl Sheet {
         for (_name, animation) in sheet.animations.iter_mut() {
             for (_direction, sequence) in animation.sequences.iter_mut() {
                 for keyframe in sequence.keyframes_iter_mut() {
-                    keyframe.frame = relative_to.as_ref().join(&&keyframe.frame).normalize();
+                    keyframe.frame = relative_to.as_ref().join(&keyframe.frame).normalize();
                 }
             }
         }
@@ -191,7 +191,7 @@ impl Sheet {
         &mut self,
         proposed_name: T,
     ) -> (String, &mut Animation) {
-        let name = generate_unique_name(proposed_name.as_ref(), |n| !self.has_animation(&n));
+        let name = generate_unique_name(proposed_name.as_ref(), |n| !self.has_animation(n));
         self.animations.insert(name.clone(), Animation::new());
         (name.clone(), self.animations.get_mut(&name).unwrap())
     }
@@ -343,12 +343,7 @@ impl Animation {
 impl DirectionPreset {
     pub fn from_directions<T: Iterator<Item = Direction>>(directions: T) -> Option<Self> {
         let directions_set: HashSet<Direction> = directions.collect();
-        for preset in all::<DirectionPreset>() {
-            if directions_set == preset.directions() {
-                return Some(preset);
-            }
-        }
-        None
+        all::<DirectionPreset>().find(|&preset| directions_set == preset.directions())
     }
 
     pub fn directions(&self) -> HashSet<Direction> {
@@ -834,15 +829,15 @@ fn can_add_and_remove_sheet_frames() {
     assert_eq!(sheet.frames_iter().count(), 0);
     sheet.add_frames(&vec![&Path::new("foo.png"), &Path::new("bar.png")]);
     assert_eq!(sheet.frames_iter().count(), 2);
-    sheet.delete_frame(&Path::new("foo.png"));
+    sheet.delete_frame(Path::new("foo.png"));
     assert_eq!(sheet.frames_iter().count(), 1);
 }
 
 #[test]
 fn can_sort_frames() {
-    let frame_a = Frame::new(&Path::new("a"));
-    let frame_b = Frame::new(&Path::new("b"));
-    let frame_c = Frame::new(&Path::new("c"));
+    let frame_a = Frame::new(Path::new("a"));
+    let frame_b = Frame::new(Path::new("b"));
+    let frame_c = Frame::new(Path::new("c"));
     assert!(frame_a < frame_b);
     assert!(frame_a < frame_c);
     assert!(frame_b < frame_c);
@@ -946,8 +941,8 @@ fn animation_can_recognize_direction_preset() {
 #[test]
 fn can_add_and_remove_sequence_keyframe() {
     let mut sequence = Sequence::default();
-    let keyframe_a = Keyframe::new(&Path::new("a.png"));
-    let keyframe_b = Keyframe::new(&Path::new("b.png"));
+    let keyframe_a = Keyframe::new(Path::new("a.png"));
+    let keyframe_b = Keyframe::new(Path::new("b.png"));
 
     sequence.insert_keyframe(keyframe_a, 0).unwrap();
     sequence.insert_keyframe(keyframe_b, 1).unwrap();
@@ -989,8 +984,8 @@ fn can_measure_sequence_duration() {
     let mut sequence = Sequence::default();
     assert_eq!(sequence.duration_millis(), None);
 
-    let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
-    let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
+    let mut keyframe_a = Keyframe::new(Path::new("a.png"));
+    let mut keyframe_b = Keyframe::new(Path::new("b.png"));
     keyframe_a.set_duration_millis(150);
     keyframe_b.set_duration_millis(250);
     sequence.insert_keyframe(keyframe_a, 0).unwrap();
@@ -1004,9 +999,9 @@ fn can_query_sequence_by_time_elapsed() {
     let mut sequence = Sequence::default();
     assert!(sequence.keyframe_at(Duration::default()).is_none());
 
-    let mut keyframe_a = Keyframe::new(&Path::new("a.png"));
+    let mut keyframe_a = Keyframe::new(Path::new("a.png"));
     keyframe_a.set_duration_millis(200);
-    let mut keyframe_b = Keyframe::new(&Path::new("b.png"));
+    let mut keyframe_b = Keyframe::new(Path::new("b.png"));
     keyframe_b.set_duration_millis(200);
 
     sequence.insert_keyframe(keyframe_a, 0).unwrap();

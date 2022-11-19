@@ -203,7 +203,7 @@ fn liquid_data_from_sheet(
 
     let sheet_image = {
         let relative_to = settings.metadata_paths_root();
-        let image_path = diff_paths(&settings.texture_file(), relative_to).ok_or_else(|| {
+        let image_path = diff_paths(settings.texture_file(), relative_to).ok_or_else(|| {
             MetadataError::AbsoluteToRelativePath(
                 settings.texture_file().to_owned(),
                 relative_to.to_owned(),
@@ -229,7 +229,7 @@ pub(super) fn generate_sheet_metadata(
             let template = liquid::ParserBuilder::with_stdlib()
                 .build()
                 .map_err(|_| MetadataError::ParserInitError)?
-                .parse_file(&liquid_settings.template_file())
+                .parse_file(liquid_settings.template_file())
                 .map_err(MetadataError::TemplateParsingError)?;
             let globals = liquid_data_from_sheet(sheet, liquid_settings, texture_layout)?;
             let liquid_sheet =
