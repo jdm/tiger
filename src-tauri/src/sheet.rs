@@ -18,6 +18,8 @@ use sugar_path::SugarPath;
 use thiserror::Error;
 use uuid::Uuid;
 
+#[cfg(test)]
+mod test;
 pub(in crate::sheet) mod version1;
 pub(in crate::sheet) mod version2;
 pub(in crate::sheet) mod version3;

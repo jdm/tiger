@@ -67,7 +67,13 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> Result<(), DocumentError> {
-        let selected_frames: Vec<PathBuf> = self.view.selection.frames().cloned().collect(); // TODO sort
+        let selected_frames = {
+            let mut frames: Vec<PathBuf> = self.view.selection.frames().cloned().collect();
+            frames.sort();
+            frames.reverse();
+            frames
+        };
+
         let timeline_is_playing = self.persistent.timeline_is_playing;
         let (animation_name, animation) = self.get_workbench_animation_mut()?;
         let sequence = animation
@@ -89,10 +95,12 @@ impl Document {
     }
 
     pub fn frames_being_dragged(&self) -> Vec<PathBuf> {
-        match self.transient.frame_drag_and_drop.is_some() {
+        let mut frames = match self.transient.frame_drag_and_drop.is_some() {
             true => self.view.selection.frames().cloned().collect(),
             false => Vec::new(),
-        }
+        };
+        frames.sort();
+        frames
     }
 
     pub(super) fn begin_drag_and_drop_keyframe(
@@ -578,4 +586,85 @@ impl ResizeAxis {
         use ResizeAxis::*;
         self == NW || self == NE || self == SW || self == SE
     }
+}
+
+#[test]
+fn can_drag_and_drop_frame_to_timeline() {
+    use std::path::Path;
+
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet
+        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+    d.edit_animation("walk_cycle").unwrap();
+
+    d.begin_drag_and_drop_frame(PathBuf::from("walk_1"));
+    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+    d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+    d.begin_drag_and_drop_frame(PathBuf::from("walk_2"));
+    d.drop_frame_on_timeline(Direction::North, 2).unwrap();
+
+    let animation = d.sheet.animation("walk_cycle").unwrap();
+    let sequence = animation.sequence(Direction::North).unwrap();
+    let keyframes = sequence
+        .keyframes_iter()
+        .map(|k| k.frame())
+        .collect::<Vec<_>>();
+    assert_eq!(
+        keyframes,
+        vec![
+            Path::new("walk_0"),
+            Path::new("walk_1"),
+            Path::new("walk_2")
+        ]
+    );
+}
+
+#[test]
+fn can_drag_and_drop_multiple_frames_to_timeline() {
+    use std::path::Path;
+
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_2"]);
+    d.sheet
+        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+    d.edit_animation("walk_cycle").unwrap();
+
+    d.select_frame("walk_0", false, true);
+    d.select_frame("walk_2", false, true);
+    d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+
+    let animation = d.sheet.animation("walk_cycle").unwrap();
+    let sequence = animation.sequence(Direction::North).unwrap();
+    let keyframes = sequence
+        .keyframes_iter()
+        .map(|k| k.frame())
+        .collect::<Vec<_>>();
+    assert_eq!(keyframes, vec![Path::new("walk_0"), Path::new("walk_2")]);
+}
+
+#[test]
+fn keeps_track_of_frames_being_dragged() {
+    use std::path::Path;
+
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet
+        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+    d.edit_animation("walk_cycle").unwrap();
+
+    d.select_frame("walk_0", false, true);
+    d.select_frame("walk_2", false, true);
+    assert!(d.frames_being_dragged().is_empty());
+
+    d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+    assert_eq!(
+        d.frames_being_dragged(),
+        vec![PathBuf::from("walk_0"), PathBuf::from("walk_2")]
+    );
+
+    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+    assert!(d.frames_being_dragged().is_empty());
 }
