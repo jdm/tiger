@@ -2,8 +2,6 @@ use core::cmp::Ordering;
 use enum_iterator::all;
 use euclid::default::*;
 use euclid::rect;
-#[cfg(test)]
-use euclid::vec2;
 use pathdiff::diff_paths;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -17,6 +15,11 @@ use std::time::Duration;
 use sugar_path::SugarPath;
 use thiserror::Error;
 use uuid::Uuid;
+
+#[cfg(test)]
+use euclid::vec2;
+#[cfg(test)]
+use std::collections::HashMap;
 
 #[cfg(test)]
 mod test;
@@ -795,23 +798,19 @@ fn can_add_and_remove_sheet_frame() {
 #[test]
 fn deleting_frame_remove_its_usage() {
     let mut sheet = Sheet::default();
-    sheet.add_frame("frame.png");
+    sheet.add_test_animation(
+        "Animation",
+        HashMap::from([(Direction::North, vec!["frame.png"])]),
+    );
 
-    let (animation_name, animation) = sheet.create_animation("Animation");
-    animation.apply_direction_preset(DirectionPreset::EightDirections);
-    animation
-        .sequence_mut(Direction::East)
-        .unwrap()
-        .insert_keyframe(Keyframe::new(Path::new("frame.png")), 0)
-        .unwrap();
     sheet.delete_frame("frame.png");
 
     assert_eq!(
         0,
         sheet
-            .animation(animation_name)
+            .animation("Animation")
             .unwrap()
-            .sequence(Direction::East)
+            .sequence(Direction::North)
             .unwrap()
             .num_keyframes()
     );
