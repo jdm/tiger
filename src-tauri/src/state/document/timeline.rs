@@ -174,3 +174,162 @@ impl Document {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use std::collections::HashMap;
+
+    use super::*;
+
+    #[test]
+    fn can_toggle_playback() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.advance_timeline(Duration::from_millis(50));
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+        d.play().unwrap();
+        assert!(d.is_timeline_playing());
+        d.advance_timeline(Duration::from_millis(100));
+        assert_eq!(d.timeline_clock().as_millis(), 100);
+        d.pause().unwrap();
+        assert!(!d.is_timeline_playing());
+        d.advance_timeline(Duration::from_millis(100));
+        assert_eq!(d.timeline_clock().as_millis(), 100);
+    }
+
+    #[test]
+    fn playback_stops_at_the_end_sequence() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.play().unwrap();
+        d.advance_timeline(Duration::from_millis(500));
+        assert_eq!(d.timeline_clock().as_millis(), 300);
+        assert!(!d.is_timeline_playing());
+    }
+
+    #[test]
+    fn can_loop_animation() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.set_animation_looping(true).unwrap();
+        d.play().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+        d.advance_timeline(Duration::from_millis(50));
+        assert_eq!(d.timeline_clock().as_millis(), 50);
+        d.advance_timeline(Duration::from_millis(100));
+        assert_eq!(d.timeline_clock().as_millis(), 150);
+        d.advance_timeline(Duration::from_millis(400));
+        assert_eq!(d.timeline_clock().as_millis(), 250);
+    }
+
+    #[test]
+    fn can_jump_to_animation_boundaries() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.advance_timeline(Duration::from_millis(50));
+
+        d.jump_to_animation_start().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+
+        d.jump_to_animation_end().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 300);
+    }
+
+    #[test]
+    fn can_jump_to_next_or_previous_frame() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.advance_timeline(Duration::from_millis(50));
+
+        d.jump_to_next_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 100);
+        d.jump_to_next_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 200);
+        d.jump_to_next_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 200);
+        d.jump_to_previous_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 100);
+        d.jump_to_previous_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+        d.jump_to_previous_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+    }
+
+    #[test]
+    fn can_change_direction_preset() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.apply_direction_preset(DirectionPreset::EightDirections)
+            .unwrap();
+
+        assert_eq!(
+            8,
+            d.sheet
+                .animation("walk_cycle")
+                .unwrap()
+                .sequences_iter()
+                .count()
+        );
+    }
+
+    #[test]
+    fn can_delete_keyframes() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_keyframes_only(vec![
+            ("walk_cycle".to_owned(), Direction::North, 1),
+            ("walk_cycle".to_owned(), Direction::North, 2),
+        ]);
+
+        d.delete_selected_keyframes().unwrap();
+        assert_eq!(
+            1,
+            d.sheet
+                .sequence("walk_cycle", Direction::North)
+                .num_keyframes()
+        );
+    }
+}
