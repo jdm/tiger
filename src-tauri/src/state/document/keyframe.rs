@@ -53,12 +53,7 @@ impl Document {
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
         keyframe.rename_hitbox(&old_name, &new_name)?;
 
-        self.select_hitbox_only(
-            animation_name,
-            direction,
-            index,
-            new_name.as_ref().to_owned(),
-        );
+        self.select_hitbox_only(animation_name, direction, index, new_name);
         Ok(())
     }
 

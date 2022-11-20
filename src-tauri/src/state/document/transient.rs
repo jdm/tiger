@@ -92,12 +92,12 @@ impl Document {
         );
         self.view.current_sequence = Some(direction);
 
-        self.clear_transient();
+        self.transient.frame_drag_and_drop = None;
         Ok(())
     }
 
     pub(super) fn end_drag_and_drop_frame(&mut self) {
-        self.clear_transient();
+        self.transient.frame_drag_and_drop = None;
     }
 
     pub fn frames_being_dragged(&self) -> HashSet<PathBuf> {
@@ -199,12 +199,12 @@ impl Document {
         self.select_keyframes_only(new_selection);
         self.view.current_sequence = Some(direction);
 
-        self.clear_transient();
+        self.transient.keyframe_drag_and_drop = None;
         Ok(())
     }
 
     pub(super) fn end_drag_and_drop_keyframe(&mut self) {
-        self.clear_transient();
+        self.transient.keyframe_drag_and_drop = None;
     }
 
     pub fn keyframes_being_dragged(&self) -> HashSet<(Direction, usize)> {
@@ -284,7 +284,7 @@ impl Document {
     }
 
     pub(super) fn end_drag_keyframe_duration(&mut self) {
-        self.clear_transient();
+        self.transient.keyframe_duration_drag = None;
     }
 
     pub fn is_dragging_keyframe_duration(&self) -> bool {
@@ -379,6 +379,10 @@ impl Document {
         Ok(())
     }
 
+    pub(super) fn end_nudge_keyframe(&mut self) {
+        self.transient.keyframe_nudge = None;
+    }
+
     pub(super) fn nudge_keyframe(keyframe: &mut Keyframe, new_offset: Vector2D<i32>) {
         let old_offset = keyframe.offset();
         keyframe.set_offset(new_offset);
@@ -460,6 +464,10 @@ impl Document {
         }
 
         Ok(())
+    }
+
+    pub(super) fn end_nudge_hitbox(&mut self) {
+        self.transient.hitbox_nudge = None;
     }
 
     pub fn hitboxes_being_nudged(&self) -> HashSet<&String> {
@@ -899,4 +907,67 @@ fn keeps_track_of_keyframe_durations_being_dragged() {
     assert!(d.is_dragging_keyframe_duration());
     d.end_drag_keyframe_duration();
     assert!(!d.is_dragging_keyframe_duration());
+}
+
+#[test]
+fn can_nudge_keyframes() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+    d.view.set_workbench_zoom_factor(1);
+
+    d.select_keyframes_only([
+        ("walk_cycle".to_owned(), Direction::North, 0),
+        ("walk_cycle".to_owned(), Direction::North, 1),
+    ]);
+
+    d.begin_nudge_keyframe(Direction::North, 0).unwrap();
+    d.update_nudge_keyframe(vec2(5, 10), true).unwrap();
+    assert_eq!(
+        d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
+        vec2(5, 10),
+    );
+    assert_eq!(
+        d.sheet.keyframe("walk_cycle", Direction::North, 1).offset(),
+        vec2(5, 10),
+    );
+}
+
+#[test]
+fn can_nudge_hitbox() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+    d.view.set_workbench_zoom_factor(1);
+
+    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+    keyframe.create_hitbox("my_hitbox");
+    let initial = d
+        .sheet
+        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+        .rectangle();
+
+    d.begin_nudge_hitbox("my_hitbox").unwrap();
+    d.update_nudge_hitbox(vec2(5, 10), true).unwrap();
+    d.end_nudge_hitbox();
+    let hitbox = d
+        .sheet
+        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+    assert_eq!(
+        hitbox.rectangle(),
+        euclid::rect(
+            initial.origin.x + 5,
+            initial.origin.y + 10,
+            initial.size.width,
+            initial.size.height
+        )
+    );
 }

@@ -188,12 +188,7 @@ fn can_copy_paste_hitbox() {
     }
 
     document.edit_animation("animation").unwrap();
-    document.select_hitbox_only(
-        "animation".to_owned(),
-        Direction::East,
-        0,
-        "hitbox".to_owned(),
-    );
+    document.select_hitbox_only("animation", Direction::East, 0, "hitbox");
     let clipboard = document.copy().unwrap();
 
     document.select_direction(Direction::North).unwrap();

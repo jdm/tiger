@@ -182,7 +182,7 @@ impl Document {
             Command::EndDragKeyframeDuration() => self.end_drag_keyframe_duration(),
             Command::BeginNudgeKeyframe(d, i) => self.begin_nudge_keyframe(d, i)?,
             Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
-            Command::EndNudgeKeyframe() => (),
+            Command::EndNudgeKeyframe() => self.end_nudge_keyframe(),
             Command::CreateHitbox(p) => self.create_hitbox(p)?,
             Command::RenameHitbox(ref old_name, ref new_name) => {
                 self.rename_hitbox(old_name, new_name)?
@@ -200,7 +200,7 @@ impl Document {
             }
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
             Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
-            Command::EndNudgeHitbox => (),
+            Command::EndNudgeHitbox => self.end_nudge_hitbox(),
             Command::BeginResizeHitbox(ref n, a) => self.begin_resize_hitbox(n, a)?,
             Command::UpdateResizeHitbox(d, a) => self.update_resize_hitbox(d, a)?,
             Command::EndResizeHitbox => (),

@@ -41,4 +41,26 @@ impl Sheet {
         let sequence = animation.sequence(direction).unwrap();
         sequence.keyframe(index).unwrap()
     }
+
+    pub fn keyframe_mut<T: AsRef<str>>(
+        &mut self,
+        animation_name: T,
+        direction: Direction,
+        index: usize,
+    ) -> &mut Keyframe {
+        let animation = self.animation_mut(animation_name).unwrap();
+        let sequence = animation.sequence_mut(direction).unwrap();
+        sequence.keyframe_mut(index).unwrap()
+    }
+
+    pub fn hitbox<T: AsRef<str>, U: AsRef<str>>(
+        &self,
+        animation_name: T,
+        direction: Direction,
+        index: usize,
+        hitbox_name: U,
+    ) -> &Hitbox {
+        let keyframe = self.keyframe(animation_name, direction, index);
+        keyframe.hitboxes.get(hitbox_name.as_ref()).unwrap()
+    }
 }

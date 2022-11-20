@@ -114,18 +114,20 @@ impl Document {
         self.view.selection.keyframes.only(keyframes);
     }
 
-    pub fn select_hitbox_only(
+    pub fn select_hitbox_only<T: AsRef<str>, U: AsRef<str>>(
         &mut self,
-        animation: String,
+        animation: T,
         direction: Direction,
         index: usize,
-        hitbox: String,
+        hitbox: U,
     ) {
         self.view.selection.clear();
-        self.view
-            .selection
-            .hitboxes
-            .only(vec![(animation, direction, index, hitbox)]);
+        self.view.selection.hitboxes.only(vec![(
+            animation.as_ref().to_owned(),
+            direction,
+            index,
+            hitbox.as_ref().to_owned(),
+        )]);
     }
 
     pub fn select_hitboxes_only<T>(&mut self, hitboxes: T)
