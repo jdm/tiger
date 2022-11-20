@@ -63,4 +63,15 @@ impl Sheet {
         let keyframe = self.keyframe(animation_name, direction, index);
         keyframe.hitboxes.get(hitbox_name.as_ref()).unwrap()
     }
+
+    pub fn hitbox_mut<T: AsRef<str>, U: AsRef<str>>(
+        &mut self,
+        animation_name: T,
+        direction: Direction,
+        index: usize,
+        hitbox_name: U,
+    ) -> &mut Hitbox {
+        let keyframe = self.keyframe_mut(animation_name, direction, index);
+        keyframe.hitboxes.get_mut(hitbox_name.as_ref()).unwrap()
+    }
 }

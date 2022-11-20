@@ -683,14 +683,12 @@ fn keeps_track_of_frames_being_dragged() {
     d.select_frame("walk_0", false, true);
     d.select_frame("walk_2", false, true);
     assert!(d.frames_being_dragged().is_empty());
-
     d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
     assert_eq!(
         d.frames_being_dragged(),
         HashSet::from([PathBuf::from("walk_0"), PathBuf::from("walk_2")]),
     );
-
-    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+    d.end_drag_and_drop_frame();
     assert!(d.frames_being_dragged().is_empty());
 }
 
@@ -821,7 +819,7 @@ fn keeps_track_of_keyframes_being_dragged() {
         d.keyframes_being_dragged(),
         HashSet::from([(Direction::North, 0), (Direction::North, 1)])
     );
-    d.drop_keyframe_on_timeline(Direction::North, 3).unwrap();
+    d.end_drag_and_drop_keyframe();
     assert!(d.keyframes_being_dragged().is_empty());
 }
 
@@ -840,12 +838,12 @@ fn can_drag_keyframe_duration() {
         .duration_millis();
 
     d.edit_animation("walk_cycle").unwrap();
-    d.begin_drag_keyframe_duration(Direction::North, 0).unwrap();
+    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
     d.update_drag_keyframe_duration(50).unwrap();
     d.end_drag_keyframe_duration();
     let new_duration = d
         .sheet
-        .keyframe("walk_cycle", Direction::North, 0)
+        .keyframe("walk_cycle", Direction::North, 1)
         .duration_millis();
 
     assert_eq!(new_duration, old_duration + 50);
@@ -914,7 +912,44 @@ fn keeps_track_of_keyframe_durations_being_dragged() {
 }
 
 #[test]
-fn can_nudge_keyframes() {
+fn can_nudge_keyframe() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+    d.view.set_workbench_zoom_factor(1);
+
+    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+    keyframe.create_hitbox("my_hitbox");
+    let initial = d
+        .sheet
+        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+        .rectangle();
+
+    d.begin_nudge_keyframe(Direction::North, 0).unwrap();
+    d.update_nudge_keyframe(vec2(5, 10), false).unwrap();
+    assert_eq!(
+        d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
+        vec2(0, 10),
+    );
+    assert_eq!(
+        d.sheet
+            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+            .rectangle(),
+        euclid::rect(
+            initial.origin.x,
+            initial.origin.y + 10,
+            initial.size.width,
+            initial.size.height
+        ),
+    );
+}
+
+#[test]
+fn can_nudge_multiple_keyframes() {
     let mut d = Document::new("tmp");
     d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
     d.sheet.add_test_animation(
@@ -960,7 +995,7 @@ fn can_nudge_hitbox() {
         .rectangle();
 
     d.begin_nudge_hitbox("my_hitbox").unwrap();
-    d.update_nudge_hitbox(vec2(5, 10), true).unwrap();
+    d.update_nudge_hitbox(vec2(5, 10), false).unwrap();
     d.end_nudge_hitbox();
     let hitbox = d
         .sheet
@@ -968,7 +1003,7 @@ fn can_nudge_hitbox() {
     assert_eq!(
         hitbox.rectangle(),
         euclid::rect(
-            initial.origin.x + 5,
+            initial.origin.x,
             initial.origin.y + 10,
             initial.size.width,
             initial.size.height
@@ -1001,6 +1036,58 @@ fn keeps_track_of_hitboxes_being_nudged() {
 
 #[test]
 fn can_resize_hitbox() {
+    use euclid::rect;
+
+    let test_cases: Vec<(_, Vector2D<i32>, euclid::default::Rect<i32>)> = vec![
+        (ResizeAxis::NW, vec2(10, 10), rect(10, 10, 90, 90)),
+        (ResizeAxis::NE, vec2(10, 10), rect(0, 10, 110, 90)),
+        (ResizeAxis::SW, vec2(10, 10), rect(10, 0, 90, 110)),
+        (ResizeAxis::SE, vec2(10, 10), rect(0, 0, 110, 110)),
+        (ResizeAxis::N, vec2(10, 10), rect(0, 10, 100, 90)),
+        (ResizeAxis::W, vec2(10, 10), rect(10, 0, 90, 100)),
+        (ResizeAxis::S, vec2(10, 10), rect(0, 0, 100, 110)),
+        (ResizeAxis::E, vec2(10, 10), rect(0, 0, 110, 100)),
+    ];
+
+    for (axis, delta, expected) in test_cases {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.view.set_workbench_zoom_factor(1);
+
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("my_hitbox");
+        let hitbox = d
+            .sheet
+            .hitbox_mut("walk_cycle", Direction::North, 0, "my_hitbox");
+        hitbox.set_position(vec2(0, 0));
+        hitbox.set_size(vec2(100, 100));
+
+        d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+        d.begin_resize_hitbox("my_hitbox", axis).unwrap();
+        d.update_resize_hitbox(delta, false).unwrap();
+        d.end_resize_hitbox();
+        let hitbox = d
+            .sheet
+            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+        assert_eq!(
+            hitbox.rectangle(),
+            euclid::rect(
+                expected.origin.x,
+                expected.origin.y,
+                expected.size.width,
+                expected.size.height
+            )
+        );
+    }
+}
+
+#[test]
+fn can_resize_hitbox_while_preserving_aspect_ratio() {
     let mut d = Document::new("tmp");
     d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
     d.sheet.add_test_animation(
@@ -1019,7 +1106,7 @@ fn can_resize_hitbox() {
 
     d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
     d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
-    d.update_resize_hitbox(vec2(40, 80), false).unwrap();
+    d.update_resize_hitbox(vec2(40, 80), true).unwrap();
     d.end_resize_hitbox();
     let hitbox = d
         .sheet
@@ -1029,7 +1116,7 @@ fn can_resize_hitbox() {
         euclid::rect(
             initial.origin.x,
             initial.origin.y,
-            initial.size.width + 40,
+            initial.size.width + 80,
             initial.size.height + 80
         )
     );
