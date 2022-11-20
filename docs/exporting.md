@@ -83,7 +83,7 @@ The spritesheet data that can be referenced in the template is described in the 
 
 | Field     | Type                    | Description                                       |
 | :-------- | :---------------------- | :------------------------------------------------ |
-| direction | Direction               | Direction of the sequence.                        |
+| direction | [Direction](#direction) | Direction of the sequence.                        |
 | keyframes | [Keyframe](#keyframe)[] | Chronological list of keyframes in this sequence. |
 
 ### Keyframe
@@ -105,3 +105,16 @@ The spritesheet data that can be referenced in the template is described in the 
 | y      | Number | Vertical position of this hitbox, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.             |
 | width  | Number | Hitbox width in pixels.                                                                                                                                          |
 | height | Number | Hitbox height in pixels.                                                                                                                                         |
+
+### Direction
+
+String with one of the following values:
+
+- North
+- East
+- South
+- West
+- NorthEast
+- NorthWest
+- SouthEast
+- SouthWest
