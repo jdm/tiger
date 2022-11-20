@@ -470,13 +470,13 @@ impl Document {
         self.transient.hitbox_nudge = None;
     }
 
-    pub fn hitboxes_being_nudged(&self) -> HashSet<&String> {
+    pub fn hitboxes_being_nudged(&self) -> HashSet<&str> {
         match self.transient.hitbox_nudge.is_some() {
             true => self
                 .view
                 .selection
                 .hitboxes()
-                .map(|(_, _, _, hitbox_name)| hitbox_name)
+                .map(|(_, _, _, hitbox_name)| hitbox_name.as_str())
                 .collect(),
             false => HashSet::new(),
         }
@@ -589,13 +589,17 @@ impl Document {
         Ok(())
     }
 
-    pub fn hitboxes_being_resized(&self) -> HashSet<&String> {
+    pub(super) fn end_resize_hitbox(&mut self) {
+        self.transient.hitbox_resize = None;
+    }
+
+    pub fn hitboxes_being_resized(&self) -> HashSet<&str> {
         match self.transient.hitbox_resize.is_some() {
             true => self
                 .view
                 .selection
                 .hitboxes()
-                .map(|(_, _, _, hitbox_name)| hitbox_name)
+                .map(|(_, _, _, hitbox_name)| hitbox_name.as_str())
                 .collect(),
             false => HashSet::new(),
         }
@@ -970,4 +974,86 @@ fn can_nudge_hitbox() {
             initial.size.height
         )
     );
+}
+
+#[test]
+fn keeps_track_of_hitboxes_being_nudged() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+    d.view.set_workbench_zoom_factor(1);
+
+    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+    keyframe.create_hitbox("my_hitbox");
+
+    assert!(d.hitboxes_being_nudged().is_empty());
+    d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+    d.begin_nudge_hitbox("my_hitbox").unwrap();
+    assert_eq!(d.hitboxes_being_nudged(), HashSet::from(["my_hitbox"]));
+    d.update_nudge_hitbox(vec2(5, 10), true).unwrap();
+    d.end_nudge_hitbox();
+    assert!(d.hitboxes_being_nudged().is_empty());
+}
+
+#[test]
+fn can_resize_hitbox() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+    d.view.set_workbench_zoom_factor(1);
+
+    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+    keyframe.create_hitbox("my_hitbox");
+    let initial = d
+        .sheet
+        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+        .rectangle();
+
+    d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+    d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
+    d.update_resize_hitbox(vec2(40, 80), false).unwrap();
+    d.end_resize_hitbox();
+    let hitbox = d
+        .sheet
+        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+    assert_eq!(
+        hitbox.rectangle(),
+        euclid::rect(
+            initial.origin.x,
+            initial.origin.y,
+            initial.size.width + 40,
+            initial.size.height + 80
+        )
+    );
+}
+
+#[test]
+fn keeps_track_of_hitboxes_being_resized() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+    d.view.set_workbench_zoom_factor(1);
+
+    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+    keyframe.create_hitbox("my_hitbox");
+
+    assert!(d.hitboxes_being_resized().is_empty());
+    d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+    d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
+    assert_eq!(d.hitboxes_being_resized(), HashSet::from(["my_hitbox"]));
+    d.update_resize_hitbox(vec2(40, 80), false).unwrap();
+    d.end_resize_hitbox();
+    assert!(d.hitboxes_being_resized().is_empty());
 }

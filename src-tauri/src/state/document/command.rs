@@ -203,7 +203,7 @@ impl Document {
             Command::EndNudgeHitbox => self.end_nudge_hitbox(),
             Command::BeginResizeHitbox(ref n, a) => self.begin_resize_hitbox(n, a)?,
             Command::UpdateResizeHitbox(d, a) => self.update_resize_hitbox(d, a)?,
-            Command::EndResizeHitbox => (),
+            Command::EndResizeHitbox => self.end_resize_hitbox(),
             Command::BeginExportAs => self.begin_export_as(),
             Command::SetExportTemplateFile(ref p) => self.set_export_template_file(p)?,
             Command::SetExportTextureFile(ref p) => self.set_export_texture_file(p)?,

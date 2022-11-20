@@ -330,12 +330,12 @@ impl From<&state::Document> for Document {
             hitboxes_being_nudged: document
                 .hitboxes_being_nudged()
                 .into_iter()
-                .cloned()
+                .map(String::from)
                 .collect(),
             hitboxes_being_resized: document
                 .hitboxes_being_resized()
                 .into_iter()
-                .cloned()
+                .map(String::from)
                 .collect(),
             export_settings_being_edited: document.export_settings_edit().map(|s| s.into()),
         }
