@@ -30,4 +30,15 @@ impl Sheet {
             }
         }
     }
+
+    pub fn keyframe<T: AsRef<str>>(
+        &self,
+        animation_name: T,
+        direction: Direction,
+        index: usize,
+    ) -> &Keyframe {
+        let animation = self.animation(animation_name).unwrap();
+        let sequence = animation.sequence(direction).unwrap();
+        sequence.keyframe(index).unwrap()
+    }
 }

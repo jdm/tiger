@@ -96,6 +96,10 @@ impl Document {
         Ok(())
     }
 
+    pub(super) fn end_drag_and_drop_frame(&mut self) {
+        self.clear_transient();
+    }
+
     pub fn frames_being_dragged(&self) -> HashSet<PathBuf> {
         match self.transient.frame_drag_and_drop.is_some() {
             true => self.view.selection.frames().cloned().collect(),
@@ -199,6 +203,10 @@ impl Document {
         Ok(())
     }
 
+    pub(super) fn end_drag_and_drop_keyframe(&mut self) {
+        self.clear_transient();
+    }
+
     pub fn keyframes_being_dragged(&self) -> HashSet<(Direction, usize)> {
         match self.transient.keyframe_drag_and_drop.is_some() {
             true => self
@@ -273,6 +281,10 @@ impl Document {
         }
 
         Ok(())
+    }
+
+    pub(super) fn end_drag_keyframe_duration(&mut self) {
+        self.clear_transient();
     }
 
     pub fn is_dragging_keyframe_duration(&self) -> bool {
@@ -799,4 +811,92 @@ fn keeps_track_of_keyframes_being_dragged() {
     );
     d.drop_keyframe_on_timeline(Direction::North, 3).unwrap();
     assert!(d.keyframes_being_dragged().is_empty());
+}
+
+#[test]
+fn can_drag_keyframe_duration() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+
+    let old_duration = d
+        .sheet
+        .keyframe("walk_cycle", Direction::North, 0)
+        .duration_millis();
+
+    d.edit_animation("walk_cycle").unwrap();
+    d.begin_drag_keyframe_duration(Direction::North, 0).unwrap();
+    d.update_drag_keyframe_duration(50).unwrap();
+    d.end_drag_keyframe_duration();
+    let new_duration = d
+        .sheet
+        .keyframe("walk_cycle", Direction::North, 0)
+        .duration_millis();
+
+    assert_eq!(new_duration, old_duration + 50);
+}
+
+#[test]
+fn can_drag_multiple_keyframe_durations() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+
+    let old_duration = d
+        .sheet
+        .keyframe("walk_cycle", Direction::North, 0)
+        .duration_millis();
+
+    d.edit_animation("walk_cycle").unwrap();
+    d.select_keyframes_only([
+        ("walk_cycle".to_owned(), Direction::North, 0),
+        ("walk_cycle".to_owned(), Direction::North, 1),
+    ]);
+    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+    d.update_drag_keyframe_duration(50).unwrap();
+    d.end_drag_keyframe_duration();
+
+    assert_eq!(
+        d.sheet
+            .keyframe("walk_cycle", Direction::North, 0)
+            .duration_millis(),
+        old_duration + 25
+    );
+
+    assert_eq!(
+        d.sheet
+            .keyframe("walk_cycle", Direction::North, 1)
+            .duration_millis(),
+        old_duration + 25
+    );
+}
+
+#[test]
+fn keeps_track_of_keyframe_durations_being_dragged() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    d.edit_animation("walk_cycle").unwrap();
+
+    d.select_keyframes_only([
+        ("walk_cycle".to_owned(), Direction::North, 0),
+        ("walk_cycle".to_owned(), Direction::North, 1),
+    ]);
+
+    assert!(!d.is_dragging_keyframe_duration());
+    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+    assert!(d.is_dragging_keyframe_duration());
+    d.update_drag_keyframe_duration(50).unwrap();
+    assert!(d.is_dragging_keyframe_duration());
+    d.end_drag_keyframe_duration();
+    assert!(!d.is_dragging_keyframe_duration());
 }
