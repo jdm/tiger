@@ -3,7 +3,7 @@
 ## Tiger 0.5
 
 - [x] Document template format
-	- [ ] Switch documentation Github Pages to `release` branch
+  - [ ] Switch documentation Github Pages to `release` branch
 - [x] Export dialog links to documentation
 - [x] Export process creates intermediate directories if needed
 - [x] Error dialog specifies problematic path when export fails due to IO problem
@@ -11,7 +11,7 @@
 - [ ] Add menu entry to open recent files
 - [ ] Export dialog form validation
 - [ ] Unit test timeline commands
-- [ ] Unit test transient commands
+- [x] Unit test transient commands
 - [x] Fixed a bug where Ctrl+Shift+E opened a Search With Bing panel
 
 ## Tiger 0.6
@@ -73,6 +73,6 @@
 - [ ] Import animation data from other software (Asesprite, TBD)
 - [ ] Sockets (like hitbox but point)
 - [ ] Events (arbitrary markers on timeline)
-- [ ] Drag and drop frames from OS to content panel 
+- [ ] Drag and drop frames from OS to content panel
 - [ ] Drag and drop frames from OS to timeline panel
 - [ ] Projects?
