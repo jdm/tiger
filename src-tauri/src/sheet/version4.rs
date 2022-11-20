@@ -42,6 +42,7 @@ pub struct Animation {
     Clone,
     Copy,
     Debug,
+    Default,
     Eq,
     Hash,
     PartialEq,
@@ -52,6 +53,7 @@ pub struct Animation {
     enum_iterator::Sequence,
 )]
 pub enum Direction {
+    #[default]
     East,
     NorthEast,
     North,

@@ -1,4 +1,4 @@
-use enum_iterator::{all, reverse_all, Sequence};
+use enum_iterator::{all, reverse_all};
 use euclid::default::Vector2D;
 use euclid::vec2;
 use std::borrow::Borrow;
@@ -607,18 +607,17 @@ where
     }
 }
 
-// Special case for keyframe selection, where shift+select needs to select keyframes based on their durations and directions
+// Specialization for keyframe selection, where shift+select needs to select keyframes based on their durations and directions
 impl ItemPool<(String, Direction, usize)> for &Animation {
     fn get_range(
         &self,
         from: Option<&(String, Direction, usize)>,
         to: &(String, Direction, usize),
     ) -> Vec<(String, Direction, usize)> {
-        // TODO switch to unwrap or default once https://github.com/rust-lang/rust/pull/94457 is on stable
         let from = from
             .filter(|from| from.0 == to.0)
             .cloned()
-            .unwrap_or_else(|| (to.0.clone(), Direction::first().unwrap(), 0));
+            .unwrap_or_default();
 
         let animation_name = &from.0;
 
