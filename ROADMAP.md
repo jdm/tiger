@@ -10,7 +10,7 @@
 - [x] Nicer looking paths in export settings (no ../ concat)
 - [ ] Add menu entry to open recent files
 - [ ] Export dialog form validation
-- [ ] Unit test timeline commands
+- [x] Unit test timeline commands
 - [x] Unit test transient commands
 - [x] Fixed a bug where Ctrl+Shift+E opened a Search With Bing panel
 
