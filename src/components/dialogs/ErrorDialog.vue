@@ -4,7 +4,7 @@
 			<p class="pb-1">{{ error.summary }}</p>
 			<div
 				class="py-2 pl-4 pr-32 max-w-xl select-text bg-plastic-700 border-4 border-plastic-700 rounded-md text-xs text-plastic-300 overflow-y-scroll styled-scrollbars">
-				<p class="whitespace-pre-wrap">{{ error.details }}</p>
+				<p class="whitespace-pre-wrap font-mono">{{ error.details }}</p>
 			</div>
 		</template>
 		<template #actions>
