@@ -1,13 +1,10 @@
 <template>
 	<div class="pointer-events-none">
-		<Transition name="fade">
-			<div v-if="settings" class="absolute inset-0 pointer-events-auto bg-black/70" />
-		</Transition>
-		<Transition name="slide">
+		<ScreenCover :visible="settings != null" />
+		<Transition name="pane-slide" @after-leave="onHidden" @after-enter="onVisible">
 			<div v-if="settings" class="absolute inset-0 pointer-events-auto ">
 				<div class="w-full h-full flex flex-row justify-end">
 					<div class="h-full w-[40rem] p-10 flex flex-col space-y-16 bg-plastic-700">
-
 						<div class="flex flex-col space-y-4">
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>
 							<InputField label="Texture File">
@@ -16,8 +13,10 @@
 										placeholder="C:\ExampleGame\Assets\Sprites\Hero.png" />
 								</template>
 								<template #error>
-									<InputError v-if="textureFile && validation?.textureFileError"
-										:shortErrorText="shortErrorText(validation.textureFileError)" />
+									<Transition name="error-slide">
+										<InputError v-if="introComplete && textureFile && validation?.textureFileError"
+											:shortErrorText="shortErrorText(validation.textureFileError)" />
+									</Transition>
 								</template>
 							</InputField>
 							<InputField label="Metadata File">
@@ -26,8 +25,11 @@
 										placeholder="C:\ExampleGame\Assets\Sprites\Hero.json" />
 								</template>
 								<template #error>
-									<InputError v-if="metadataFile && validation?.metadataFileError"
-										:shortErrorText="shortErrorText(validation.metadataFileError)" />
+									<Transition name="error-slide">
+										<InputError
+											v-if="introComplete && metadataFile && validation?.metadataFileError"
+											:shortErrorText="shortErrorText(validation.metadataFileError)" />
+									</Transition>
 								</template>
 							</InputField>
 						</div>
@@ -40,9 +42,12 @@
 										placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
 								</template>
 								<template #error>
-									<InputError v-if="templateFile && validation?.templateFileError"
-										:shortErrorText="shortErrorText(validation.templateFileError)"
-										:longErrorText="longErrorText(validation.templateFileError) || undefined" />
+									<Transition name="error-slide">
+										<InputError
+											v-if="introComplete && templateFile && validation?.templateFileError"
+											:shortErrorText="shortErrorText(validation.templateFileError)"
+											:longErrorText="longErrorText(validation.templateFileError) || undefined" />
+									</Transition>
 								</template>
 							</InputField>
 							<InputField label="Metadata Root Directory">
@@ -51,8 +56,11 @@
 										placeholder="C:\ExampleGame" />
 								</template>
 								<template #error>
-									<InputError v-if="metadataRoot && validation?.metadataPathsRootError"
-										:shortErrorText="shortErrorText(validation.metadataPathsRootError)" />
+									<Transition name="error-slide">
+										<InputError
+											v-if="introComplete && metadataRoot && validation?.metadataPathsRootError"
+											:shortErrorText="shortErrorText(validation.metadataPathsRootError)" />
+									</Transition>
 								</template>
 							</InputField>
 						</div>
@@ -83,7 +91,7 @@
 
 
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, ref } from "vue"
 import { BookOpenIcon } from "@heroicons/vue/outline"
 import { ExportSettingsError } from "@/api/dto"
 import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
@@ -92,6 +100,7 @@ import Button from "@/components/basic/Button.vue"
 import InputError from "@/components/basic/InputError.vue"
 import InputField from "@/components/basic/InputField.vue"
 import InputPath from "@/components/basic/InputPath.vue"
+import ScreenCover from "@/components/basic/ScreenCover.vue"
 
 const app = useAppStore();
 const settings = computed(() => app.currentDocument?.exportSettingsBeingEdited);
@@ -117,6 +126,16 @@ const metadataRoot = computed({
 	set: setExportMetadataPathsRoot,
 });
 
+const introComplete = ref(false);
+
+function onHidden() {
+	introComplete.value = false;
+}
+
+function onVisible() {
+	introComplete.value = true;
+}
+
 function shortErrorText(error: ExportSettingsError): string {
 	switch (error) {
 		case "ExpectedAbsolutePath": return "This path should be absolute, not relative.";
@@ -124,7 +143,6 @@ function shortErrorText(error: ExportSettingsError): string {
 		case "ExpectedFile": return "This path should be a file, not a directory.";
 		case "FileNotFound": return "This file does not exist.";
 	}
-	console.log(error);
 	if (error.templateParseError) {
 		return "This template file has invalid syntax.";
 	}
@@ -144,35 +162,37 @@ function longErrorText(error: ExportSettingsError): string | null {
 	}
 	return null;
 }
-
 </script>
 
-<style scoped>
-.fade-enter-active {
-	transition: opacity 0.3s ease-out;
-}
-
-.fade-leave-active {
-	transition: opacity 0.2s ease-in;
-}
-
-.fade-enter-from,
-.fade-leave-to {
-	opacity: 0;
-}
-
-.slide-enter-active {
+<style>
+.pane-slide-enter-active {
 	transition-property: transform;
 	transition: 0.3s ease-out;
 }
 
-.slide-leave-active {
+.pane-slide-leave-active {
 	transition-property: transform;
 	transition: 0.2s ease-in;
 }
 
-.slide-enter-from,
-.slide-leave-to {
+.pane-slide-enter-from,
+.pane-slide-leave-to {
 	transform: translateX(100%);
+}
+
+.error-slide-enter-active {
+	transition-property: opacity, transform;
+	transition: 0.3s ease-out;
+}
+
+.error-slide-leave-active {
+	transition-property: opacity, transform;
+	transition: 0.2s ease-in;
+}
+
+.error-slide-enter-from,
+.error-slide-leave-to {
+	opacity: 0;
+	transform: translateX(-10px);
 }
 </style>
