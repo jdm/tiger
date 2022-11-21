@@ -10,40 +10,62 @@
 
 						<div class="flex flex-col space-y-4">
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>
-							<div>
-								<InputLabel>Texture File</InputLabel>
-								<InputPath v-model="textureFile" class="mt-1 rounded-md"
-									placeholder="C:\ExampleGame\Assets\Sprites\Hero.png" />
-							</div>
-							<div>
-								<InputLabel>Metadata File</InputLabel>
-								<InputPath v-model="metadataFile" class="mt-1 rounded-md"
-									placeholder="C:\ExampleGame\Assets\Sprites\Hero.json" />
-							</div>
+							<InputField label="Texture File">
+								<template #content>
+									<InputPath v-model="textureFile" class="mt-1"
+										placeholder="C:\ExampleGame\Assets\Sprites\Hero.png" />
+								</template>
+								<template #error>
+									<InputError v-if="textureFile && validation?.textureFileError"
+										:shortErrorText="shortErrorText(validation.textureFileError)" />
+								</template>
+							</InputField>
+							<InputField label="Metadata File">
+								<template #content>
+									<InputPath v-model="metadataFile" class="mt-1"
+										placeholder="C:\ExampleGame\Assets\Sprites\Hero.json" />
+								</template>
+								<template #error>
+									<InputError v-if="metadataFile && validation?.metadataFileError"
+										:shortErrorText="shortErrorText(validation.metadataFileError)" />
+								</template>
+							</InputField>
 						</div>
 
 						<div class="flex flex-col space-y-4">
 							<h1 class="text-plastic-200 text-xl">Metadata Format</h1>
-							<div>
-								<InputLabel>Metadata Template File</InputLabel>
-								<InputPath v-model="templateFile" :pick-existing="true" class="mt-1 rounded-md"
-									placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
-							</div>
-							<div>
-								<InputLabel>Metadata Root Directory</InputLabel>
-								<InputPath v-model="metadataRoot" :isDirectory="true" class="mt-1 rounded-md"
-									placeholder="C:\ExampleGame" />
-							</div>
+							<InputField label="Metadata Template File">
+								<template #content>
+									<InputPath v-model="templateFile" class="mt-1"
+										placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
+								</template>
+								<template #error>
+									<InputError v-if="templateFile && validation?.templateFileError"
+										:shortErrorText="shortErrorText(validation.templateFileError)"
+										:longErrorText="longErrorText(validation.templateFileError) || undefined" />
+								</template>
+							</InputField>
+							<InputField label="Metadata Root Directory">
+								<template #content>
+									<InputPath v-model="metadataRoot" :isDirectory="true" class="mt-1"
+										placeholder="C:\ExampleGame" />
+								</template>
+								<template #error>
+									<InputError v-if="metadataRoot && validation?.metadataPathsRootError"
+										:shortErrorText="shortErrorText(validation.metadataPathsRootError)" />
+								</template>
+							</InputField>
 						</div>
 
 						<div class="flex space-x-4 justify-end">
-							<Button label="Export" :positive="true" @click="endExportAs" />
+							<Button label="Export" :positive="true" @click="endExportAs"
+								:disabled="!validation?.validSettings" />
 							<Button label="Cancel" @click="cancelExportAs" />
 						</div>
 
 						<div class="flex-1 flex flex-col justify-end">
 							<div
-								class="flex items-center rounded-md text-md p-4 text-amber-800 bg-amber-400 shadow-lg  shadow-amber-600/20">
+								class="flex items-center rounded-md text-md p-4 text-amber-800 bg-amber-400 shadow-lg shadow-amber-600/25">
 								<BookOpenIcon class="mr-4 w-8 h-8" />
 								<div>
 									Confused about these options? Check out the <a
@@ -63,14 +85,17 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { BookOpenIcon } from "@heroicons/vue/outline"
+import { ExportSettingsError } from "@/api/dto"
 import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import Button from "@/components/basic/Button.vue"
-import InputLabel from "@/components/basic/InputLabel.vue"
+import InputError from "@/components/basic/InputError.vue"
+import InputField from "@/components/basic/InputField.vue"
 import InputPath from "@/components/basic/InputPath.vue"
 
 const app = useAppStore();
 const settings = computed(() => app.currentDocument?.exportSettingsBeingEdited);
+const validation = computed(() => app.currentDocument?.exportSettingsValidation);
 
 const textureFile = computed({
 	get: () => settings.value?.textureFile || "",
@@ -91,6 +116,34 @@ const metadataRoot = computed({
 	get: () => settings.value?.metadataPathsRoot || "",
 	set: setExportMetadataPathsRoot,
 });
+
+function shortErrorText(error: ExportSettingsError): string {
+	switch (error) {
+		case "ExpectedAbsolutePath": return "This path should be absolute, not relative.";
+		case "ExpectedDirectory": return "This path should be a directory, not a file.";
+		case "ExpectedFile": return "This path should be a file, not a directory.";
+		case "FileNotFound": return "This file does not exist.";
+	}
+	console.log(error);
+	if (error.templateParseError) {
+		return "This template file has invalid syntax.";
+	}
+	return "Unknown Error";
+}
+
+
+function longErrorText(error: ExportSettingsError): string | null {
+	switch (error) {
+		case "ExpectedAbsolutePath": return null;
+		case "ExpectedDirectory": return null;
+		case "ExpectedFile": return null;
+		case "FileNotFound": return null;
+	}
+	if (error.templateParseError) {
+		return error.templateParseError;
+	}
+	return null;
+}
 
 </script>
 

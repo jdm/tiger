@@ -61,6 +61,7 @@ pub struct Document {
     hitboxes_being_nudged: HashSet<String>,
     hitboxes_being_resized: HashSet<String>,
     export_settings_being_edited: Option<ExportSettings>,
+    export_settings_validation: Option<ExportSettingsValidation>,
 }
 
 #[derive(Clone, Serialize)]
@@ -184,6 +185,26 @@ pub struct ExportSettings {
     texture_file: PathBuf,
     metadata_file: PathBuf,
     metadata_paths_root: PathBuf,
+}
+
+#[derive(Clone, Serialize)]
+pub enum ExportSettingsError {
+    ExpectedAbsolutePath,
+    ExpectedDirectory,
+    ExpectedFile,
+    FileNotFound,
+    #[serde(rename = "templateParseError")]
+    TemplateParseError(String),
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportSettingsValidation {
+    valid_settings: bool,
+    template_file_error: Option<ExportSettingsError>,
+    texture_file_error: Option<ExportSettingsError>,
+    metadata_file_error: Option<ExportSettingsError>,
+    metadata_paths_root_error: Option<ExportSettingsError>,
 }
 
 #[derive(Clone, Copy)]
@@ -337,7 +358,11 @@ impl From<&state::Document> for Document {
                 .into_iter()
                 .map(String::from)
                 .collect(),
-            export_settings_being_edited: document.export_settings_edit().map(|s| s.into()),
+            export_settings_being_edited: document.export_settings_edit().ok().map(|s| s.into()),
+            export_settings_validation: document
+                .validate_export_settings()
+                .ok()
+                .map(|s| (&s).into()),
         }
     }
 }
@@ -545,6 +570,36 @@ impl From<&sheet::ExportSettings> for ExportSettings {
                 metadata_file: liquid_settings.metadata_file().to_owned(),
                 metadata_paths_root: liquid_settings.metadata_paths_root().to_owned(),
             },
+        }
+    }
+}
+
+impl From<&state::ExportSettingsValidation> for ExportSettingsValidation {
+    fn from(validation: &state::ExportSettingsValidation) -> Self {
+        match validation {
+            state::ExportSettingsValidation::Liquid(l) => Self {
+                valid_settings: *l == state::LiquidExportSettingsValidation::default(),
+                template_file_error: l.template_file_error().map(|e| e.into()),
+                texture_file_error: l.texture_file_error().map(|e| e.into()),
+                metadata_file_error: l.metadata_file_error().map(|e| e.into()),
+                metadata_paths_root_error: l.metadata_paths_root_error().map(|e| e.into()),
+            },
+        }
+    }
+}
+
+impl From<&state::ExportSettingsError> for ExportSettingsError {
+    fn from(e: &state::ExportSettingsError) -> Self {
+        match e {
+            state::ExportSettingsError::ExpectedAbsolutePath => {
+                ExportSettingsError::ExpectedAbsolutePath
+            }
+            state::ExportSettingsError::ExpectedDirectory => ExportSettingsError::ExpectedDirectory,
+            state::ExportSettingsError::ExpectedFile => ExportSettingsError::ExpectedFile,
+            state::ExportSettingsError::FileNotFound => ExportSettingsError::FileNotFound,
+            state::ExportSettingsError::TemplateParseError(details) => {
+                ExportSettingsError::TemplateParseError(details.clone())
+            }
         }
     }
 }

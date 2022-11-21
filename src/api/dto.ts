@@ -48,6 +48,7 @@ export type Document = {
   hitboxesBeingNudged: string[];
   hitboxesBeingResized: string[];
   exportSettingsBeingEdited: ExportSettings | null;
+  exportSettingsValidation: ExportSettingsValidation | null;
 };
 
 export type Sheet = {
@@ -150,6 +151,25 @@ export type ExportSettings = {
   textureFile: string;
   metadataFile: string;
   metadataPathsRoot: string;
+};
+
+export type TemplateParseError = {
+  templateParseError: string;
+};
+
+export type ExportSettingsError =
+  | "ExpectedAbsolutePath"
+  | "ExpectedDirectory"
+  | "ExpectedFile"
+  | "FileNotFound"
+  | TemplateParseError;
+
+export type ExportSettingsValidation = {
+  validSettings: boolean;
+  templateFileError: ExportSettingsError | null;
+  textureFileError: ExportSettingsError | null;
+  metadataFileError: ExportSettingsError | null;
+  metadataPathsRootError: ExportSettingsError | null;
 };
 
 export type TextureInvalidationEvent = {

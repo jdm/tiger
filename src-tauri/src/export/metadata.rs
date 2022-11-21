@@ -219,6 +219,14 @@ fn liquid_data_from_sheet(
     })
 }
 
+pub fn parse_template(template_file: &Path) -> Result<liquid::Template, MetadataError> {
+    liquid::ParserBuilder::with_stdlib()
+        .build()
+        .map_err(|_| MetadataError::ParserInitError)?
+        .parse_file(template_file)
+        .map_err(MetadataError::TemplateParsingError)
+}
+
 pub(super) fn generate_sheet_metadata(
     sheet: &Sheet,
     export_settings: &ExportSettings,
@@ -226,11 +234,7 @@ pub(super) fn generate_sheet_metadata(
 ) -> Result<String, MetadataError> {
     match export_settings {
         ExportSettings::Liquid(liquid_settings) => {
-            let template = liquid::ParserBuilder::with_stdlib()
-                .build()
-                .map_err(|_| MetadataError::ParserInitError)?
-                .parse_file(liquid_settings.template_file())
-                .map_err(MetadataError::TemplateParsingError)?;
+            let template = parse_template(liquid_settings.template_file())?;
             let globals = liquid_data_from_sheet(sheet, liquid_settings, texture_layout)?;
             let liquid_sheet =
                 liquid::to_object(&globals).map_err(MetadataError::TemplateRenderingError)?;

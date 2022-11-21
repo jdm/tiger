@@ -43,6 +43,25 @@ pub fn get_state(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> 
 }
 
 #[tauri::command]
+pub fn show_error_message(
+    app_state: tauri::State<'_, AppState>,
+    title: String,
+    summary: String,
+    details: String,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
+        app.show_error_message(title, summary, details);
+    }))
+}
+
+#[tauri::command]
+pub fn acknowledge_error(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(DiffStrategy::Full, |app| {
+        app.acknowledge_error();
+    }))
+}
+
+#[tauri::command]
 pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
     Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.new_document(path);
@@ -159,13 +178,6 @@ pub fn request_exit(
 pub fn cancel_exit(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(DiffStrategy::Full, |app| {
         app.cancel_exit();
-    }))
-}
-
-#[tauri::command]
-pub fn acknowledge_error(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
-    Ok(app_state.mutate(DiffStrategy::Full, |app| {
-        app.acknowledge_error();
     }))
 }
 

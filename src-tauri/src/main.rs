@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::{path::PathBuf, time::Duration};
+use std::{collections::HashSet, path::PathBuf, time::Duration};
 use tauri::{Manager, WindowEvent};
 
 mod api;
@@ -18,13 +18,33 @@ use state::AppState;
 
 fn main() {
     let app_state = AppState(Default::default());
-    let (mut file_watcher, file_events_receiver) = FileWatcher::init();
+
+    let texture_watcher_app_state = app_state.clone();
+    let (mut texture_watcher, texture_events_receiver) = FileWatcher::new(move || {
+        let app = texture_watcher_app_state.0.lock().unwrap();
+        app.documents_iter()
+            .flat_map(|d| d.sheet().frames_iter())
+            .map(|f| f.source().to_owned())
+            .collect::<HashSet<_>>()
+    });
+
+    let template_watcher_app_state = app_state.clone();
+    let (mut template_watcher, template_events_receiver) = FileWatcher::new(move || {
+        let app = template_watcher_app_state.0.lock().unwrap();
+        app.documents_iter()
+            .flat_map(|d| d.export_settings_edit())
+            .map(|s| match s {
+                sheet::ExportSettings::Liquid(l) => l.template_file().to_owned(),
+            })
+            .collect::<HashSet<_>>()
+    });
 
     tauri::Builder::default()
         .manage(app_state.clone())
         .invoke_handler(tauri::generate_handler![
             // App
             api::get_state,
+            api::show_error_message,
             api::acknowledge_error,
             api::new_document,
             api::open_documents,
@@ -136,28 +156,40 @@ fn main() {
         ])
         .setup(|tauri_app| {
             // Every 1s, update the list of files we are watching for changes
-            let tauri_app_handle = tauri_app.handle();
             std::thread::spawn(move || loop {
-                let app_state = tauri_app_handle.state::<AppState>();
-                file_watcher.update_watched_files(&app_state);
+                texture_watcher.update_watched_files();
+                template_watcher.update_watched_files();
                 std::thread::sleep(Duration::from_millis(1_000));
             });
 
-            // When a watched file is updated, tell the frontend
+            // Tell the frontend when a texture file is updated
             let tauri_app_handle = tauri_app.handle();
             std::thread::spawn(move || loop {
                 #[derive(Clone, serde::Serialize)]
-                struct TextureInvalidationEvent {
+                struct TextureEvent {
                     path: PathBuf,
                 }
-                if let Ok(Ok(events)) = file_events_receiver.recv() {
+                if let Ok(Ok(events)) = texture_events_receiver.recv() {
                     for event in events {
                         tauri_app_handle
-                            .emit_all(
-                                "invalidate-texture",
-                                TextureInvalidationEvent { path: event.path },
-                            )
+                            .emit_all("invalidate-texture", TextureEvent { path: event.path })
                             .ok();
+                    }
+                }
+            });
+
+            // Tell the frontend when a template file is updated
+            let tauri_app_handle = tauri_app.handle();
+            std::thread::spawn(move || loop {
+                if let Ok(Ok(events)) = template_events_receiver.recv() {
+                    #[derive(Clone, serde::Serialize)]
+                    struct TemplateEvent {
+                        path: PathBuf,
+                    }
+                    for event in events {
+                        tauri_app_handle
+                            .emit_all("invalidate-template", TemplateEvent { path: event.path })
+                            .unwrap();
                     }
                 }
             });
@@ -173,7 +205,8 @@ fn main() {
                     let new_state: dto::App = (&*app).into();
                     event
                         .window()
-                        .emit("force-refresh-state", new_state)
+                        .app_handle()
+                        .emit_all("force-refresh-state", new_state)
                         .unwrap();
                 }
             }

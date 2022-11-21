@@ -29,8 +29,8 @@
 
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
-import { appWindow } from "@tauri-apps/api/window"
 import { onMounted, onUnmounted, ref, watch } from "vue"
+import { getState } from "@/api/app"
 import { AppState, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
@@ -52,12 +52,15 @@ const sprite = useSpriteStore();
 const allowContextMenu = ref(false);
 
 onMounted(() => {
-  appWindow.listen("force-refresh-state", event => {
+  listen("force-refresh-state", event => {
     app.$state = event.payload as AppState;
   });
-  listen('invalidate-texture', event => {
+  listen("invalidate-texture", event => {
     const invalidationEvent = event.payload as TextureInvalidationEvent;
     sprite.invalidate(invalidationEvent.path);
+  });
+  listen("invalidate-template", event => {
+    getState();
   });
   registerKeyboardShortcuts();
 });

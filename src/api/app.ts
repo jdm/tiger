@@ -6,6 +6,21 @@ export async function getState(): Promise<void> {
   appStore.$state = await invoke("get_state");
 }
 
+export async function showErrorMessage(
+  title: string,
+  summary: string,
+  details: string
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("show_error_message", {
+      title: title,
+      summary: summary,
+      details: details,
+    })
+  );
+}
+
 export async function acknowledgeError(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("acknowledge_error"));

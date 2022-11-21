@@ -4,36 +4,28 @@ use std::path::PathBuf;
 use std::sync::mpsc::*;
 use std::time::Duration;
 
-use crate::state::*;
-
-pub struct FileWatcher {
+pub struct FileWatcher<F: Fn() -> HashSet<PathBuf>> {
     debouncer: Debouncer<RecommendedWatcher>,
+    list_files_to_watch: F,
     watched_files: HashSet<PathBuf>,
 }
 
-impl FileWatcher {
-    pub fn init() -> (Self, Receiver<DebounceEventResult>) {
+impl<F: Fn() -> HashSet<PathBuf>> FileWatcher<F> {
+    pub fn new(list_files_to_watch: F) -> (Self, Receiver<DebounceEventResult>) {
         let (sender, receiver) = channel();
-        let file_watcher = Self::new(sender);
+
+        let debouncer = new_debouncer(Duration::from_millis(200), None, sender).unwrap();
+        let file_watcher = FileWatcher {
+            debouncer,
+            list_files_to_watch,
+            watched_files: HashSet::new(),
+        };
+
         (file_watcher, receiver)
     }
 
-    fn new(event_sink: Sender<DebounceEventResult>) -> FileWatcher {
-        let debouncer = new_debouncer(Duration::from_millis(200), None, event_sink).unwrap();
-        FileWatcher {
-            debouncer,
-            watched_files: HashSet::new(),
-        }
-    }
-
-    pub fn update_watched_files(&mut self, app_state: &AppState) {
-        let app = app_state.0.lock().unwrap();
-
-        let all_relevant_files = app
-            .documents_iter()
-            .flat_map(|d| d.sheet().frames_iter())
-            .map(|f| f.source().to_owned())
-            .collect::<HashSet<_>>();
+    pub fn update_watched_files(&mut self) {
+        let all_relevant_files = (self.list_files_to_watch)();
 
         let files_to_unwatch = self
             .watched_files
