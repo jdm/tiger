@@ -9,7 +9,7 @@
 - [x] Error dialog specifies problematic path when export fails due to IO problem
 - [x] Nicer looking paths in export settings (no ../ concat)
 - [ ] Add menu entry to open recent files
-- [ ] Export dialog form validation
+- [x] Export dialog form validation
 - [x] Unit test timeline commands
 - [x] Unit test transient commands
 - [x] Fixed a bug where Ctrl+Shift+E opened a Search With Bing panel
@@ -21,6 +21,8 @@
 - [ ] Time snapping / quantizing of animation frames
 - [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes are not correctly centered
 - [ ] Add button to open sheet folder in explorer
+- [ ] Evaluate https://github.com/ChevyRay/crunch-rs
+- [ ] Evaluate https://github.com/Keats/tera
 
 ## Tiger 0.7
 
