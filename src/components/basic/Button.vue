@@ -1,8 +1,8 @@
 <template>
-	<div class="rounded-md border-2 border-plastic-900">
+	<div class="rounded-md" :class="containerClasses">
 		<button type="button"
 			class="w-full h-full flex flex-row items-center justify-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium border-t border-b-2"
-			:class="dynamicClasses">
+			:disabled="disabled" :class="buttonClasses" @click="emit('click')">
 			<Icon v-if="icon" :name="icon" class="w-6 h-6" />
 			<div v-if="label">{{ label }}</div>
 		</button>
@@ -18,20 +18,31 @@ type ButtonColor = "pink";
 
 const props = defineProps<{
 	label?: string,
+	disabled?: boolean,
 	positive?: boolean,
 	danger?: boolean,
 	customColor?: ButtonColor,
 	icon?: keyof typeof solid,
 }>();
 
-const dynamicClasses = computed(() => {
-	return [
-		...palette.value,
-	]
+const emit = defineEmits<{
+	(e: 'click'): void
+}>();
+
+const containerClasses = computed(() => [...outline.value,]);
+const buttonClasses = computed(() => [...palette.value,]);
+
+const outline = computed(() => {
+	if (props.disabled){
+		return ["border-2", "border-plastic-600"];
+	}
+	return ["border-2", "border-plastic-900"];
 });
 
 const palette = computed(() => {
-	if (props.customColor == "pink") {
+	if (props.disabled){
+		return ["text-plastic-600", "bg-plastic-800", "border-none"];
+	} else if (props.customColor == "pink") {
 		return ["text-pink-100", "bg-gradient-to-b", "from-pink-800", "to-pink-600", "border-t-pink-600", "border-b-pink-900"];
 	} else if (props.danger) {
 		return ["text-red-100", "bg-gradient-to-b", "from-red-800", "to-red-600", "border-t-red-600", "border-b-red-900"];
