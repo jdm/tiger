@@ -237,11 +237,11 @@ impl Document {
     }
 
     pub fn is_saved(&self) -> bool {
-        self.persistent.disk_version == self.version()
+        self.persistent.disk_version == Some(self.version())
     }
 
     pub fn mark_as_saved(&mut self, saved_version: i32) {
-        self.persistent.disk_version = saved_version;
+        self.persistent.disk_version = Some(saved_version);
     }
 
     pub fn version(&self) -> i32 {

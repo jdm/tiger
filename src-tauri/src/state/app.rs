@@ -20,6 +20,7 @@ pub struct AppState(pub Arc<Mutex<App>>);
 pub struct App {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
+    recent_documents: Vec<PathBuf>,
     errors: Vec<UserFacingError>,
     exit_requested: bool,
 }
@@ -49,7 +50,8 @@ impl App {
                 self.documents.push(document);
             }
         }
-        self.current_document = Some(path.as_ref().to_owned());
+        self.focus_document(&path).unwrap();
+        self.add_recent_document(path);
     }
 
     pub fn open_document(&mut self, document: Document) {
@@ -58,13 +60,12 @@ impl App {
             self.documents.push(document);
         }
         self.focus_document(&path).unwrap();
+        self.add_recent_document(path);
     }
 
     pub fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
-        let document = self
-            .document_mut(&path)
-            .ok_or_else(|| AppError::DocumentNotFound(path.as_ref().to_path_buf()))?;
-        document.clear_transient();
+        self.document(&path)
+            .ok_or_else(|| AppError::DocumentNotFound(path.as_ref().to_owned()))?;
         self.current_document = Some(path.as_ref().to_owned());
         Ok(())
     }
@@ -101,8 +102,9 @@ impl App {
             moved_document.set_path(to.as_ref().to_owned());
         }
         if Some(from.as_ref()) == self.current_document.as_deref() {
-            self.current_document = Some(to.as_ref().to_owned());
+            self.focus_document(&to).unwrap();
         }
+        self.add_recent_document(to);
     }
 
     pub fn close_document<T: AsRef<Path>>(&mut self, path: T) {
@@ -173,61 +175,125 @@ impl App {
             self.errors.remove(0);
         }
     }
+
+    fn add_recent_document<T: AsRef<Path>>(&mut self, path: T) {
+        self.recent_documents
+            .retain(|p| p.as_path() != path.as_ref());
+        self.recent_documents.insert(0, path.as_ref().to_owned());
+    }
 }
 
-#[test]
-fn can_open_and_close_documents() {
-    let mut app = App::default();
+#[cfg(test)]
+mod test {
 
-    app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
-    assert_eq!(app.documents_iter().count(), 1);
-    assert!(app.document("test-data/sample_sheet_1.tiger").is_some());
-    assert!(app.document_mut("test-data/sample_sheet_1.tiger").is_some());
+    use std::path::PathBuf;
 
-    app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
-    assert_eq!(app.documents_iter().count(), 2);
-    assert!(app.document("test-data/sample_sheet_2.tiger").is_some());
-    assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_some());
+    use super::*;
 
-    app.close_document("test-data/sample_sheet_2.tiger");
-    assert_eq!(app.documents_iter().count(), 1);
-    assert!(app.document("test-data/sample_sheet_2.tiger").is_none());
-    assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_none());
-}
+    #[test]
+    fn can_open_and_close_documents() {
+        let mut app = App::default();
 
-#[test]
-fn open_and_close_update_focused_document() {
-    let mut app = App::default();
+        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        assert_eq!(app.documents_iter().count(), 1);
+        assert!(app.document("test-data/sample_sheet_1.tiger").is_some());
+        assert!(app.document_mut("test-data/sample_sheet_1.tiger").is_some());
 
-    app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
-    assert_eq!(
-        app.current_document().unwrap().path(),
-        Path::new("test-data/sample_sheet_1.tiger")
-    );
+        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        assert_eq!(app.documents_iter().count(), 2);
+        assert!(app.document("test-data/sample_sheet_2.tiger").is_some());
+        assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_some());
 
-    app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
-    assert_eq!(
-        app.current_document().unwrap().path(),
-        Path::new("test-data/sample_sheet_2.tiger")
-    );
+        app.close_document("test-data/sample_sheet_2.tiger");
+        assert_eq!(app.documents_iter().count(), 1);
+        assert!(app.document("test-data/sample_sheet_2.tiger").is_none());
+        assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_none());
+    }
 
-    app.close_document("test-data/sample_sheet_2.tiger");
-    assert_eq!(
-        app.current_document().unwrap().path(),
-        Path::new("test-data/sample_sheet_1.tiger")
-    );
-}
+    #[test]
+    fn open_and_close_updates_focused_document() {
+        let mut app = App::default();
 
-#[test]
-fn can_manually_focus_a_document() {
-    let mut app = App::default();
+        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        assert_eq!(
+            app.current_document().unwrap().path(),
+            Path::new("test-data/sample_sheet_1.tiger")
+        );
 
-    app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
-    app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
-    app.focus_document("test-data/sample_sheet_1.tiger")
-        .unwrap();
-    assert_eq!(
-        app.current_document().unwrap().path(),
-        Path::new("test-data/sample_sheet_1.tiger")
-    );
+        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        assert_eq!(
+            app.current_document().unwrap().path(),
+            Path::new("test-data/sample_sheet_2.tiger")
+        );
+
+        app.close_document("test-data/sample_sheet_2.tiger");
+        assert_eq!(
+            app.current_document().unwrap().path(),
+            Path::new("test-data/sample_sheet_1.tiger")
+        );
+    }
+
+    #[test]
+    fn can_manually_focus_a_document() {
+        let mut app = App::default();
+
+        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        app.focus_document("test-data/sample_sheet_1.tiger")
+            .unwrap();
+        assert_eq!(
+            app.current_document().unwrap().path(),
+            Path::new("test-data/sample_sheet_1.tiger")
+        );
+    }
+
+    #[test]
+    fn keeps_track_of_recently_opened_documents() {
+        let mut app = App::default();
+
+        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        assert_eq!(
+            app.recent_documents,
+            vec![PathBuf::from("test-data/sample_sheet_1.tiger")]
+        );
+
+        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        assert_eq!(
+            app.recent_documents,
+            vec![
+                PathBuf::from("test-data/sample_sheet_2.tiger"),
+                PathBuf::from("test-data/sample_sheet_1.tiger")
+            ]
+        );
+
+        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        assert_eq!(
+            app.recent_documents,
+            vec![
+                PathBuf::from("test-data/sample_sheet_1.tiger"),
+                PathBuf::from("test-data/sample_sheet_2.tiger"),
+            ]
+        );
+
+        app.relocate_document("test-data/sample_sheet_1.tiger", "relocated");
+        assert_eq!(
+            app.recent_documents,
+            vec![
+                PathBuf::from("relocated"),
+                PathBuf::from("test-data/sample_sheet_1.tiger"),
+                PathBuf::from("test-data/sample_sheet_2.tiger"),
+            ]
+        );
+
+        app.new_document("new");
+        assert_eq!(
+            app.recent_documents,
+            vec![
+                PathBuf::from("new"),
+                PathBuf::from("relocated"),
+                PathBuf::from("test-data/sample_sheet_1.tiger"),
+                PathBuf::from("test-data/sample_sheet_2.tiger"),
+            ]
+        );
+    }
 }

@@ -38,7 +38,7 @@ pub struct Document {
 
 #[derive(Clone, Debug, Default)]
 pub struct Persistent {
-    pub(super) disk_version: i32,
+    pub(super) disk_version: Option<i32>,
     pub(super) close_requested: bool,
     pub(super) timeline_is_playing: bool,
     pub(super) export_settings_edit: Option<ExportSettings>,
@@ -99,7 +99,7 @@ impl Document {
         let mut document = Document::new(&path);
         document.sheet = Sheet::read(path.as_ref())?;
         document.history[0].sheet = document.sheet.clone();
-        document.persistent.disk_version = document.next_version;
+        document.mark_as_saved(document.version());
         Ok(document)
     }
 
@@ -113,10 +113,6 @@ impl Document {
 
     pub fn set_path(&mut self, new_path: PathBuf) {
         self.path = new_path
-    }
-
-    pub fn clear_transient(&mut self) {
-        self.transient = Default::default();
     }
 
     pub fn request_close(&mut self) {
