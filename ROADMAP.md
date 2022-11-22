@@ -42,7 +42,7 @@
 - [ ] Consider merging some code between save, save_as and save_all
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
-- [ ] Unit test state module
+- [ ] Reach satisfying test coverage
 
 ## Tiger 0.9
 
