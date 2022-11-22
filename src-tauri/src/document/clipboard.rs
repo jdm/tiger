@@ -1,8 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 
-use crate::sheet::*;
-use crate::state::*;
+use crate::document::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum Clipboard {

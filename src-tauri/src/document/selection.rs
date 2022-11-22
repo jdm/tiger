@@ -7,8 +7,8 @@ use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use crate::document::*;
 use crate::sheet::{Animation, Direction};
-use crate::state::*;
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SelectionState {

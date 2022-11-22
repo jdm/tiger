@@ -7,14 +7,15 @@ use std::{collections::HashSet, path::PathBuf, time::Duration};
 use tauri::{Manager, WindowEvent};
 
 mod api;
+mod app;
+mod document;
 mod dto;
 mod export;
 mod file_watcher;
 mod sheet;
-mod state;
 
+use app::AppState;
 use file_watcher::FileWatcher;
-use state::AppState;
 
 fn main() {
     let app_state = AppState(Default::default());

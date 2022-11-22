@@ -4,8 +4,8 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
 
+use crate::document::*;
 use crate::sheet::{Direction, Keyframe};
-use crate::state::*;
 
 #[derive(Clone, Debug, PartialEq)]
 pub(super) struct KeyframeDurationDrag {

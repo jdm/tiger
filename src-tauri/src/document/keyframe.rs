@@ -1,7 +1,7 @@
 use euclid::{default::Vector2D, vec2};
 use std::time::Duration;
 
-use crate::state::*;
+use crate::document::*;
 
 impl Document {
     pub(super) fn set_keyframe_duration(

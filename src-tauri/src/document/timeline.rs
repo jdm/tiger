@@ -1,7 +1,7 @@
 use std::time::Duration;
 
+use crate::document::*;
 use crate::sheet::{Direction, DirectionPreset};
-use crate::state::*;
 
 impl Document {
     pub(super) fn tick(&mut self, delta: Duration) {

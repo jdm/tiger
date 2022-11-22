@@ -4,10 +4,11 @@ use std::path::PathBuf;
 use std::time::Duration;
 use tauri::ClipboardManager;
 
+use crate::app::{App, AppState};
+use crate::document::{Command, Document, DocumentError};
 use crate::dto::{self, DiffStrategy, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet;
-use crate::state::{App, AppState, Command, Document, DocumentError};
 
 impl AppState {
     pub fn mutate<F>(&self, diff_strategy: DiffStrategy, operation: F) -> Patch

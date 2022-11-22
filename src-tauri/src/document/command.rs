@@ -2,8 +2,8 @@ use euclid::default::Vector2D;
 use std::fmt::Display;
 use std::{path::PathBuf, time::Duration};
 
+use crate::document::*;
 use crate::sheet::{Direction, DirectionPreset, Sheet};
-use crate::state::*;
 
 #[derive(Clone, Debug)]
 pub enum Command {

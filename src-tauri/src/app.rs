@@ -4,7 +4,7 @@ use std::{
 };
 use thiserror::Error;
 
-use crate::state::{Document, DocumentError};
+use crate::document::{Document, DocumentError};
 
 #[derive(Error, Debug)]
 pub enum AppError {

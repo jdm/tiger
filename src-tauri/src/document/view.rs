@@ -2,8 +2,8 @@ use euclid::default::*;
 use std::path::Path;
 use std::time::Duration;
 
+use crate::document::*;
 use crate::sheet::Direction;
-use crate::state::*;
 
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum ListMode {

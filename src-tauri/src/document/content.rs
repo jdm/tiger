@@ -1,5 +1,5 @@
+use crate::document::*;
 use crate::sheet::DirectionPreset;
-use crate::state::*;
 
 impl Document {
     pub(super) fn delete_selected_frames(&mut self) {

@@ -4,8 +4,9 @@ use std::path::Path;
 use std::path::PathBuf;
 use uuid::Uuid;
 
+use crate::app;
+use crate::document;
 use crate::sheet;
-use crate::state;
 
 // Typescript: @/stores/app
 
@@ -239,8 +240,8 @@ impl<T: AsRef<Path>> ToFileName for T {
     }
 }
 
-impl From<&state::App> for App {
-    fn from(app: &state::App) -> Self {
+impl From<&app::App> for App {
+    fn from(app: &app::App) -> Self {
         Self {
             documents: app.documents_iter().map(|d| d.into()).collect(),
             current_document_path: app.current_document().map(|d| d.path().to_owned()),
@@ -270,8 +271,8 @@ impl App {
     }
 }
 
-impl From<&state::UserFacingError> for UserFacingError {
-    fn from(error: &state::UserFacingError) -> Self {
+impl From<&app::UserFacingError> for UserFacingError {
+    fn from(error: &app::UserFacingError) -> Self {
         Self {
             key: error.key.to_string(),
             title: error.title.clone(),
@@ -281,8 +282,8 @@ impl From<&state::UserFacingError> for UserFacingError {
     }
 }
 
-impl From<&state::Document> for Document {
-    fn from(document: &state::Document) -> Self {
+impl From<&document::Document> for Document {
+    fn from(document: &document::Document) -> Self {
         let mut sheet: Sheet = document.sheet().into();
         for frame in sheet.frames.iter_mut() {
             frame.selected = document.selection().is_frame_selected(&frame.path);
@@ -506,57 +507,57 @@ impl From<(String, &sheet::Hitbox)> for Hitbox {
     }
 }
 
-impl From<ListMode> for state::ListMode {
+impl From<ListMode> for document::ListMode {
     fn from(list_mode: ListMode) -> Self {
         match list_mode {
-            ListMode::Linear => state::ListMode::Linear,
-            ListMode::Grid4xN => state::ListMode::Grid4xN,
+            ListMode::Linear => document::ListMode::Linear,
+            ListMode::Grid4xN => document::ListMode::Grid4xN,
         }
     }
 }
 
-impl From<state::ListMode> for ListMode {
-    fn from(list_mode: state::ListMode) -> Self {
+impl From<document::ListMode> for ListMode {
+    fn from(list_mode: document::ListMode) -> Self {
         match list_mode {
-            state::ListMode::Linear => ListMode::Linear,
-            state::ListMode::Grid4xN => ListMode::Grid4xN,
+            document::ListMode::Linear => ListMode::Linear,
+            document::ListMode::Grid4xN => ListMode::Grid4xN,
         }
     }
 }
 
-impl From<ResizeAxis> for state::ResizeAxis {
+impl From<ResizeAxis> for document::ResizeAxis {
     fn from(resize_axis: ResizeAxis) -> Self {
         match resize_axis {
-            ResizeAxis::N => state::ResizeAxis::N,
-            ResizeAxis::S => state::ResizeAxis::S,
-            ResizeAxis::W => state::ResizeAxis::W,
-            ResizeAxis::E => state::ResizeAxis::E,
-            ResizeAxis::NW => state::ResizeAxis::NW,
-            ResizeAxis::NE => state::ResizeAxis::NE,
-            ResizeAxis::SE => state::ResizeAxis::SE,
-            ResizeAxis::SW => state::ResizeAxis::SW,
+            ResizeAxis::N => document::ResizeAxis::N,
+            ResizeAxis::S => document::ResizeAxis::S,
+            ResizeAxis::W => document::ResizeAxis::W,
+            ResizeAxis::E => document::ResizeAxis::E,
+            ResizeAxis::NW => document::ResizeAxis::NW,
+            ResizeAxis::NE => document::ResizeAxis::NE,
+            ResizeAxis::SE => document::ResizeAxis::SE,
+            ResizeAxis::SW => document::ResizeAxis::SW,
         }
     }
 }
 
-impl From<NudgeDirection> for state::NudgeDirection {
+impl From<NudgeDirection> for document::NudgeDirection {
     fn from(nudge_direction: NudgeDirection) -> Self {
         match nudge_direction {
-            NudgeDirection::Up => state::NudgeDirection::Up,
-            NudgeDirection::Down => state::NudgeDirection::Down,
-            NudgeDirection::Left => state::NudgeDirection::Left,
-            NudgeDirection::Right => state::NudgeDirection::Right,
+            NudgeDirection::Up => document::NudgeDirection::Up,
+            NudgeDirection::Down => document::NudgeDirection::Down,
+            NudgeDirection::Left => document::NudgeDirection::Left,
+            NudgeDirection::Right => document::NudgeDirection::Right,
         }
     }
 }
 
-impl From<BrowseDirection> for state::BrowseDirection {
+impl From<BrowseDirection> for document::BrowseDirection {
     fn from(direction: BrowseDirection) -> Self {
         match direction {
-            BrowseDirection::Up => state::BrowseDirection::Up,
-            BrowseDirection::Down => state::BrowseDirection::Down,
-            BrowseDirection::Left => state::BrowseDirection::Left,
-            BrowseDirection::Right => state::BrowseDirection::Right,
+            BrowseDirection::Up => document::BrowseDirection::Up,
+            BrowseDirection::Down => document::BrowseDirection::Down,
+            BrowseDirection::Left => document::BrowseDirection::Left,
+            BrowseDirection::Right => document::BrowseDirection::Right,
         }
     }
 }
@@ -574,11 +575,11 @@ impl From<&sheet::ExportSettings> for ExportSettings {
     }
 }
 
-impl From<&state::ExportSettingsValidation> for ExportSettingsValidation {
-    fn from(validation: &state::ExportSettingsValidation) -> Self {
+impl From<&document::ExportSettingsValidation> for ExportSettingsValidation {
+    fn from(validation: &document::ExportSettingsValidation) -> Self {
         match validation {
-            state::ExportSettingsValidation::Liquid(l) => Self {
-                valid_settings: *l == state::LiquidExportSettingsValidation::default(),
+            document::ExportSettingsValidation::Liquid(l) => Self {
+                valid_settings: *l == document::LiquidExportSettingsValidation::default(),
                 template_file_error: l.template_file_error().map(|e| e.into()),
                 texture_file_error: l.texture_file_error().map(|e| e.into()),
                 metadata_file_error: l.metadata_file_error().map(|e| e.into()),
@@ -588,16 +589,18 @@ impl From<&state::ExportSettingsValidation> for ExportSettingsValidation {
     }
 }
 
-impl From<&state::ExportSettingsError> for ExportSettingsError {
-    fn from(e: &state::ExportSettingsError) -> Self {
+impl From<&document::ExportSettingsError> for ExportSettingsError {
+    fn from(e: &document::ExportSettingsError) -> Self {
         match e {
-            state::ExportSettingsError::ExpectedAbsolutePath => {
+            document::ExportSettingsError::ExpectedAbsolutePath => {
                 ExportSettingsError::ExpectedAbsolutePath
             }
-            state::ExportSettingsError::ExpectedDirectory => ExportSettingsError::ExpectedDirectory,
-            state::ExportSettingsError::ExpectedFile => ExportSettingsError::ExpectedFile,
-            state::ExportSettingsError::FileNotFound => ExportSettingsError::FileNotFound,
-            state::ExportSettingsError::TemplateParseError(details) => {
+            document::ExportSettingsError::ExpectedDirectory => {
+                ExportSettingsError::ExpectedDirectory
+            }
+            document::ExportSettingsError::ExpectedFile => ExportSettingsError::ExpectedFile,
+            document::ExportSettingsError::FileNotFound => ExportSettingsError::FileNotFound,
+            document::ExportSettingsError::TemplateParseError(details) => {
                 ExportSettingsError::TemplateParseError(details.clone())
             }
         }
