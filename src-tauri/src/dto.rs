@@ -240,7 +240,7 @@ impl<T: AsRef<Path>> ToFileName for T {
     }
 }
 
-impl From<&app::App> for App {
+impl From<&app::App<'_>> for App {
     fn from(app: &app::App) -> Self {
         Self {
             documents: app.documents_iter().map(|d| d.into()).collect(),

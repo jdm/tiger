@@ -10,12 +10,12 @@ use crate::dto::{self, DiffStrategy, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet;
 
-impl AppState {
+impl AppState<'_> {
     pub fn mutate<F>(&self, diff_strategy: DiffStrategy, operation: F) -> Patch
     where
         F: FnOnce(&mut App),
     {
-        let mut app = self.0.lock().unwrap();
+        let mut app = self.0.lock();
 
         let mut old_state: dto::App = (&*app).into();
         operation(&mut app);
@@ -39,7 +39,7 @@ impl AppState {
 
 #[tauri::command]
 pub fn get_state(app_state: tauri::State<'_, AppState>) -> Result<dto::App, ()> {
-    let app = app_state.0.lock().unwrap();
+    let app = app_state.0.lock();
     Ok((&*app).into())
 }
 
@@ -71,7 +71,7 @@ pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Res
 
 #[tauri::command]
 pub async fn open_documents(
-    app_state: tauri::State<'_, AppState>,
+    app_state: tauri::State<'_, AppState<'_>>,
     paths: Vec<PathBuf>,
 ) -> Result<Patch, ()> {
     let mut documents: Vec<(PathBuf, Result<Document, DocumentError>)> = Vec::new();
@@ -202,10 +202,10 @@ pub fn close_without_saving(
 #[tauri::command]
 pub async fn save(
     window: tauri::Window,
-    app_state: tauri::State<'_, AppState>,
+    app_state: tauri::State<'_, AppState<'_>>,
 ) -> Result<Patch, ()> {
     let (sheet, destination, version) = {
-        let app = app_state.0.lock().unwrap();
+        let app = app_state.0.lock();
         match app.current_document() {
             Some(d) => (d.sheet().clone(), d.path().to_owned(), d.version()),
             _ => return Ok(Patch(Vec::new())),
@@ -240,11 +240,11 @@ pub async fn save(
 
 #[tauri::command]
 pub async fn save_as(
-    app_state: tauri::State<'_, AppState>,
+    app_state: tauri::State<'_, AppState<'_>>,
     new_path: PathBuf,
 ) -> Result<Patch, ()> {
     let (sheet, old_path, version) = {
-        let app = app_state.0.lock().unwrap();
+        let app = app_state.0.lock();
         match app.current_document() {
             Some(d) => (d.sheet().clone(), d.path().to_owned(), d.version()),
             _ => return Ok(Patch(Vec::new())),
@@ -275,7 +275,7 @@ pub async fn save_as(
 }
 
 #[tauri::command]
-pub async fn save_all(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub async fn save_all(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
     struct DocumentToSave {
         sheet: sheet::Sheet,
         destination: PathBuf,
@@ -283,7 +283,7 @@ pub async fn save_all(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()
     }
 
     let documents_to_save: Vec<DocumentToSave> = {
-        let app = app_state.0.lock().unwrap();
+        let app = app_state.0.lock();
         app.documents_iter()
             .map(|d| DocumentToSave {
                 sheet: d.sheet().clone(),
@@ -1351,9 +1351,9 @@ pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
-pub async fn export(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub async fn export(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
     let (sheet, document_name) = {
-        let app = app_state.0.lock().unwrap();
+        let app = app_state.0.lock();
         match app.current_document() {
             Some(d) => (d.sheet().clone(), d.path().to_file_name()),
             _ => return Ok(Patch(Vec::new())),
@@ -1453,7 +1453,7 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 }
 
 #[tauri::command]
-pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+pub async fn end_export_as(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
     let mut patch = app_state.mutate(DiffStrategy::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndExportAs).ok();
@@ -1461,7 +1461,7 @@ pub async fn end_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patc
     });
 
     let (sheet, document_name) = {
-        let app = app_state.0.lock().unwrap();
+        let app = app_state.0.lock();
         match app.current_document() {
             Some(d) => (d.sheet().clone(), d.path().to_file_name()),
             _ => return Ok(patch),

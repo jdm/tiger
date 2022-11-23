@@ -1,10 +1,14 @@
+use parking_lot::Mutex;
 use std::{
     path::{Path, PathBuf},
-    sync::{Arc, Mutex},
+    sync::Arc,
 };
 use thiserror::Error;
 
-use crate::document::{Document, DocumentError};
+use crate::{
+    document::{Document, DocumentError},
+    observable::{Delegate, Observable},
+};
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -15,12 +19,12 @@ pub enum AppError {
 }
 
 #[derive(Clone)]
-pub struct AppState(pub Arc<Mutex<App>>);
+pub struct AppState<'a>(pub Arc<Mutex<App<'a>>>);
 #[derive(Debug, Default)]
-pub struct App {
+pub struct App<'a> {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
-    recent_documents: Vec<PathBuf>,
+    recent_documents: Observable<'a, Vec<PathBuf>>,
     errors: Vec<UserFacingError>,
     exit_requested: bool,
 }
@@ -33,7 +37,7 @@ pub struct UserFacingError {
     pub details: String,
 }
 
-impl App {
+impl<'a> App<'a> {
     pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
         self.documents.iter()
     }
@@ -177,9 +181,14 @@ impl App {
     }
 
     fn add_recent_document<T: AsRef<Path>>(&mut self, path: T) {
-        self.recent_documents
-            .retain(|p| p.as_path() != path.as_ref());
-        self.recent_documents.insert(0, path.as_ref().to_owned());
+        self.recent_documents.mutate(|d| {
+            d.retain(|p| p.as_path() != path.as_ref());
+            d.insert(0, path.as_ref().to_owned());
+        });
+    }
+
+    pub fn recent_documents_delegate<'b>(&'b self) -> Delegate<'b, 'a, Vec<PathBuf>> {
+        self.recent_documents.delegate()
     }
 }
 
@@ -253,13 +262,13 @@ mod test {
 
         app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
         assert_eq!(
-            app.recent_documents,
+            *app.recent_documents,
             vec![PathBuf::from("test-data/sample_sheet_1.tiger")]
         );
 
         app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
         assert_eq!(
-            app.recent_documents,
+            *app.recent_documents,
             vec![
                 PathBuf::from("test-data/sample_sheet_2.tiger"),
                 PathBuf::from("test-data/sample_sheet_1.tiger")
@@ -268,7 +277,7 @@ mod test {
 
         app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
         assert_eq!(
-            app.recent_documents,
+            *app.recent_documents,
             vec![
                 PathBuf::from("test-data/sample_sheet_1.tiger"),
                 PathBuf::from("test-data/sample_sheet_2.tiger"),
@@ -277,7 +286,7 @@ mod test {
 
         app.relocate_document("test-data/sample_sheet_1.tiger", "relocated");
         assert_eq!(
-            app.recent_documents,
+            *app.recent_documents,
             vec![
                 PathBuf::from("relocated"),
                 PathBuf::from("test-data/sample_sheet_1.tiger"),
@@ -287,7 +296,7 @@ mod test {
 
         app.new_document("new");
         assert_eq!(
-            app.recent_documents,
+            *app.recent_documents,
             vec![
                 PathBuf::from("new"),
                 PathBuf::from("relocated"),

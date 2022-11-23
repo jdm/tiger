@@ -3,8 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use std::{collections::HashSet, path::PathBuf, time::Duration};
-use tauri::{Manager, WindowEvent};
+use tauri::Manager;
 
 mod api;
 mod app;
@@ -12,36 +11,21 @@ mod document;
 mod dto;
 mod export;
 mod file_watcher;
+mod live_updates;
+mod observable;
+mod recent_files;
 mod sheet;
 
-use app::AppState;
-use file_watcher::FileWatcher;
-
 fn main() {
-    let app_state = AppState(Default::default());
-
-    let texture_watcher_app_state = app_state.clone();
-    let (mut texture_watcher, texture_events_receiver) = FileWatcher::new(move || {
-        let app = texture_watcher_app_state.0.lock().unwrap();
-        app.documents_iter()
-            .flat_map(|d| d.sheet().frames_iter())
-            .map(|f| f.source().to_owned())
-            .collect::<HashSet<_>>()
-    });
-
-    let template_watcher_app_state = app_state.clone();
-    let (mut template_watcher, template_events_receiver) = FileWatcher::new(move || {
-        let app = template_watcher_app_state.0.lock().unwrap();
-        app.documents_iter()
-            .flat_map(|d| d.export_settings_edit())
-            .map(|s| match s {
-                sheet::ExportSettings::Liquid(l) => l.template_file().to_owned(),
-            })
-            .collect::<HashSet<_>>()
-    });
-
     tauri::Builder::default()
-        .manage(app_state.clone())
+        .manage(app::AppState(Default::default()))
+        .setup(|tauri_app| {
+            recent_files::init(tauri_app);
+            live_updates::watch_templates(tauri_app);
+            live_updates::watch_textures(tauri_app);
+            Ok(())
+        })
+        .on_window_event(handle_window_event)
         .invoke_handler(tauri::generate_handler![
             // App
             api::get_state,
@@ -155,63 +139,24 @@ fn main() {
             api::cancel_export_as,
             api::end_export_as,
         ])
-        .setup(|tauri_app| {
-            // Every 1s, update the list of files we are watching for changes
-            std::thread::spawn(move || loop {
-                texture_watcher.update_watched_files();
-                template_watcher.update_watched_files();
-                std::thread::sleep(Duration::from_millis(1_000));
-            });
-
-            // Tell the frontend when a texture file is updated
-            let tauri_app_handle = tauri_app.handle();
-            std::thread::spawn(move || loop {
-                #[derive(Clone, serde::Serialize)]
-                struct TextureEvent {
-                    path: PathBuf,
-                }
-                if let Ok(Ok(events)) = texture_events_receiver.recv() {
-                    for event in events {
-                        tauri_app_handle
-                            .emit_all("invalidate-texture", TextureEvent { path: event.path })
-                            .ok();
-                    }
-                }
-            });
-
-            // Tell the frontend when a template file is updated
-            let tauri_app_handle = tauri_app.handle();
-            std::thread::spawn(move || loop {
-                if let Ok(Ok(events)) = template_events_receiver.recv() {
-                    #[derive(Clone, serde::Serialize)]
-                    struct TemplateEvent {
-                        path: PathBuf,
-                    }
-                    for event in events {
-                        tauri_app_handle
-                            .emit_all("invalidate-template", TemplateEvent { path: event.path })
-                            .unwrap();
-                    }
-                }
-            });
-
-            Ok(())
-        })
-        .on_window_event(move |event| {
-            if let WindowEvent::CloseRequested { api, .. } = event.event() {
-                let mut app = app_state.0.lock().unwrap();
-                app.request_exit();
-                if !app.should_exit() {
-                    api.prevent_close();
-                    let new_state: dto::App = (&*app).into();
-                    event
-                        .window()
-                        .app_handle()
-                        .emit_all("force-refresh-state", new_state)
-                        .unwrap();
-                }
-            }
-        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn handle_window_event(event: tauri::GlobalWindowEvent) {
+    let tauri_app_handle = event.window().app_handle();
+    if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
+        let app_state = tauri_app_handle.state::<app::AppState>();
+        let mut app = app_state.0.lock();
+        app.request_exit();
+        if !app.should_exit() {
+            api.prevent_close();
+            let new_state: dto::App = (&*app).into();
+            event
+                .window()
+                .app_handle()
+                .emit_all("force-refresh-state", new_state)
+                .unwrap();
+        }
+    }
 }
