@@ -20,10 +20,10 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { useAppStore } from "@/stores/app"
-import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app"
+import { openDocuments as doOpenDocuments, closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app"
 import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut } from "@/api/document"
 import { newDocument, openDocuments, saveAs } from "@/api/local"
-import MenuBar from "@/components/basic/MenuBar.vue"
+import MenuBar, { MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
 
 const props = defineProps<{ debugMode: boolean, }>();
@@ -35,9 +35,15 @@ function onToggleDevTools() {
 	emit("update:debugMode", !props.debugMode);
 }
 
-const fileMenuEntries = [
+const fileMenuEntries = computed((): (MenuEntry|Separator)[]=>[
 	{ name: "New Spritesheet…", shortcut: "Ctrl+N", action: newDocument },
 	{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
+	{ name: "Open Recent", submenus: app.recentDocumentPaths.map(d => {
+		return {
+			name: d.name,
+			action: () => doOpenDocuments([d.path]),
+		}}
+	)},
 	{},
 	{ name: "Save", shortcut: "Ctrl+S", action: save },
 	{ name: "Save As…", shortcut: "Ctrl+Shift+S", action: saveAs },
@@ -47,7 +53,7 @@ const fileMenuEntries = [
 	{},
 	{ name: "Close", shortcut: "Ctrl+W", action: closeCurrentDocument },
 	{ name: "Close All", shortcut: "Ctrl+Shift+W", action: closeAllDocuments },
-];
+]);
 
 const editMenuEntries = computed(() => {
 	return [
@@ -82,7 +88,7 @@ const viewMenuEntries = [
 
 const menuEntries = computed(() => {
 	return [
-		{ name: "File", content: fileMenuEntries },
+		{ name: "File", content: fileMenuEntries.value },
 		{ name: "Edit", content: editMenuEntries.value },
 		{ name: "View", content: viewMenuEntries }
 	];
