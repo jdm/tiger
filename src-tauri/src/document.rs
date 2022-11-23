@@ -100,6 +100,16 @@ impl Document {
         document.sheet = Sheet::read(path.as_ref())?;
         document.history[0].sheet = document.sheet.clone();
         document.mark_as_saved(document.version());
+
+        if let Some(name) = document
+            .sheet
+            .animations_iter()
+            .map(|(name, _)| name)
+            .min()
+            .cloned()
+        {
+            document.edit_animation(name)?;
+        }
         Ok(document)
     }
 
