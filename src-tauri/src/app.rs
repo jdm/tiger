@@ -185,6 +185,12 @@ impl<'a> App<'a> {
         });
     }
 
+    pub fn set_recent_documents(&mut self, documents: Vec<PathBuf>) {
+        self.recent_documents.mutate(|d| {
+            *d = documents;
+        });
+    }
+
     pub fn recent_documents_delegate<'b>(&'b self) -> Delegate<'b, 'a, Vec<PathBuf>> {
         self.recent_documents.delegate()
     }

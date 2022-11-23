@@ -15,6 +15,7 @@ tauri-build = { version = "1.1", features = [] }
 
 [dependencies]
 derivative = "2.2.0"
+directories = "4.0.1"
 enum-iterator = "1.1.2"
 euclid = "0.22"
 futures = "0.3"

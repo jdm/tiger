@@ -18,7 +18,7 @@ fn main() {
     tauri::Builder::default()
         .manage(app::AppState(Default::default()))
         .setup(|tauri_app| {
-            features::recent_files::init(tauri_app);
+            features::recent_documents::init(tauri_app);
             features::templates_hot_reload::init(tauri_app);
             features::textures_hot_reload::init(tauri_app);
             Ok(())
