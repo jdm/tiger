@@ -1,34 +1,33 @@
 <template>
-	<div class="relative text-lg ">
+	<div class="relative text-lg">
 		<div class="h-full flex flex-row items-stretch">
 			<MenuBarItem v-for="entry in entries" :entry="entry" :active="entry.name == currentEntry?.name"
-				@click="onItemClicked($event, entry)" @mouseover="onItemHovered($event, entry)" class="px-4" />
+				@click="onItemClicked($event, entry)" @mouseover="onItemHovered($event, entry)" />
 		</div>
 		<div ref="menuHTMLElement">
-			<Menu v-if="currentEntry" :content="currentEntry.content" @executed="onExecuted" class="absolute z-50"
-				:style="menuPosition" />
+			<Menu v-if="currentEntry" :content="currentEntry.content" @executed="onExecuted"
+				class="-mt-0.5 absolute z-50" :style="menuPosition" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
-import MenuBarItem from "@/components/basic/MenuBarItem.vue"
+import { computed, ref, Ref, watch } from "vue"
 import Menu from "@/components/basic/Menu.vue"
-import { ref, Ref } from "@vue/reactivity"
-import { computed, watch } from "vue"
+import MenuBarItem from "@/components/basic/MenuBarItem.vue"
 
 export type MenuBarEntry = {
 	name: string,
-	content: (MenuEntry | Separator)[]
+	content: (MenuEntry | Separator)[],
 };
-
 export type Separator = {};
 
 export type MenuEntry = {
-	name: string,
-	shortcut?: string,
-	action?: () => Promise<void>,
-	disabled?: boolean,
+  name: string,
+  shortcut?: string,
+  action?: () => Promise<void>,
+  submenus?: (MenuEntry | Separator)[],
+  disabled?: boolean,
 };
 
 defineProps<{
