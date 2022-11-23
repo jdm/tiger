@@ -3,6 +3,8 @@
     windows_subsystem = "windows"
 )]
 
+use log::LevelFilter;
+use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use tauri::Manager;
 
 mod api;
@@ -15,6 +17,23 @@ mod sheet;
 mod utils;
 
 fn main() {
+    utils::paths::init();
+
+    CombinedLogger::init(vec![
+        TermLogger::new(
+            LevelFilter::Info,
+            Config::default(),
+            TerminalMode::Mixed,
+            ColorChoice::Auto,
+        ),
+        WriteLogger::new(
+            LevelFilter::Info,
+            Config::default(),
+            std::fs::File::create(utils::paths::log_file()).unwrap(),
+        ),
+    ])
+    .unwrap();
+
     tauri::Builder::default()
         .manage(app::AppState(Default::default()))
         .setup(|tauri_app| {
