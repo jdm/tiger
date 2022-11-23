@@ -8,11 +8,12 @@
 - [x] Export process creates intermediate directories if needed
 - [x] Error dialog specifies problematic path when export fails due to IO problem
 - [x] Nicer looking paths in export settings (no ../ concat)
-- [ ] Add menu entry to open recent files
+- [x] Add menu entry to open recent files
 - [x] Export dialog form validation
 - [x] Unit test timeline commands
 - [x] Unit test transient commands
 - [x] Fixed a bug where Ctrl+Shift+E opened a Search With Bing panel
+- [x] When opening an existing document, an animation is immediately opened for edit
 
 ## Tiger 0.6
 
