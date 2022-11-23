@@ -1,6 +1,7 @@
 use tauri::Manager;
 
-use crate::{app::AppState, observable::Observer};
+use crate::app::AppState;
+use crate::utils::observable::Observer;
 
 pub fn init(tauri_app: &tauri::App) {
     let app_state = tauri_app.state::<AppState>();

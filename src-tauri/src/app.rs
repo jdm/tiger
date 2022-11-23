@@ -5,10 +5,8 @@ use std::{
 };
 use thiserror::Error;
 
-use crate::{
-    document::{Document, DocumentError},
-    observable::{Delegate, Observable},
-};
+use crate::document::{Document, DocumentError};
+use crate::utils::observable::{Delegate, Observable};
 
 #[derive(Error, Debug)]
 pub enum AppError {

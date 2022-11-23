@@ -10,19 +10,17 @@ mod app;
 mod document;
 mod dto;
 mod export;
-mod file_watcher;
-mod live_updates;
-mod observable;
-mod recent_files;
+mod features;
 mod sheet;
+mod utils;
 
 fn main() {
     tauri::Builder::default()
         .manage(app::AppState(Default::default()))
         .setup(|tauri_app| {
-            recent_files::init(tauri_app);
-            live_updates::watch_templates(tauri_app);
-            live_updates::watch_textures(tauri_app);
+            features::recent_files::init(tauri_app);
+            features::templates_hot_reload::init(tauri_app);
+            features::textures_hot_reload::init(tauri_app);
             Ok(())
         })
         .on_window_event(handle_window_event)
