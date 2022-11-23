@@ -15,8 +15,16 @@ use crate::sheet;
 pub struct App {
     documents: Vec<Document>,
     current_document_path: Option<PathBuf>,
+    recent_document_paths: Vec<RecentDocument>,
     is_release_build: bool,
     error: Option<UserFacingError>,
+}
+
+#[derive(Clone, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct RecentDocument {
+    path: PathBuf,
+    name: String,
 }
 
 #[derive(Clone, Serialize)]
@@ -245,6 +253,13 @@ impl From<&app::App<'_>> for App {
         Self {
             documents: app.documents_iter().map(|d| d.into()).collect(),
             current_document_path: app.current_document().map(|d| d.path().to_owned()),
+            recent_document_paths: app
+                .recent_documents()
+                .map(|d| RecentDocument {
+                    path: d.to_owned(),
+                    name: d.to_file_name(),
+                })
+                .collect(),
             is_release_build: !cfg!(debug_assertions),
             error: app.error().map(|e| e.into()),
         }

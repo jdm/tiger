@@ -5,8 +5,14 @@ export type Patch = ReadonlyArray<Operation>;
 export type AppState = {
   documents: Document[];
   currentDocumentPath: string | null;
+  recentDocumentPaths: RecentDocument[];
   isReleaseBuild: boolean;
   error: UserFacingError | null;
+};
+
+export type RecentDocument = {
+  path: string;
+  name: string;
 };
 
 export type UserFacingError = {

@@ -14,6 +14,7 @@ export const useAppStore = defineStore("app", {
     ({
       documents: [],
       currentDocumentPath: null,
+      recentDocumentPaths: [],
       isReleaseBuild: false,
       error: null,
     } as AppState),

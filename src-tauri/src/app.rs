@@ -185,6 +185,10 @@ impl<'a> App<'a> {
         });
     }
 
+    pub fn recent_documents(&self) -> impl Iterator<Item = &Path> {
+        self.recent_documents.iter().map(|d| d.as_path())
+    }
+
     pub fn set_recent_documents(&mut self, documents: Vec<PathBuf>) {
         self.recent_documents.mutate(|d| {
             *d = documents;
