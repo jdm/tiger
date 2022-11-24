@@ -22,6 +22,7 @@
 - [ ] Time snapping / quantizing of animation frames
 - [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes are not correctly centered
 - [ ] Add button to open sheet folder in explorer
+- [ ] Add context menu entry to open frame in explorer
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
 
