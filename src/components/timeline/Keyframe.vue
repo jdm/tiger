@@ -82,7 +82,7 @@ function onOpenContextMenu(event: MouseEvent) {
 		if (!props.selected) {
 			selectKeyframe(props.direction, props.index, false, false);
 		}
-		contextMenu.value.open(event);
+		contextMenu.value.show(event);
 	}
 }
 

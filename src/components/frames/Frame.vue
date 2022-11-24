@@ -39,7 +39,7 @@ function onOpenContextMenu(event: MouseEvent) {
 		if (!props.frame.selected) {
 			selectFrame(props.frame.path, event.shiftKey, event.ctrlKey);
 		}
-		contextMenu.value.open(event);
+		contextMenu.value.show(event);
 	}
 }
 

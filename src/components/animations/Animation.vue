@@ -45,7 +45,7 @@ function onOpenContextMenu(event: MouseEvent) {
 		if (!props.animation.selected) {
 			selectAnimation(props.animation.name, event.shiftKey, event.ctrlKey);
 		}
-		contextMenu.value.open(event);
+		contextMenu.value.show(event);
 	}
 }
 

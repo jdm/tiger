@@ -20,7 +20,7 @@ const position: Ref<[number, number]> = ref([0, 0] as [number, number]);
 const menuHTMLElement: Ref<HTMLElement | null> = ref(null);
 
 defineExpose({
-	open(event: MouseEvent) {
+	show(event: MouseEvent) {
 		open.value = true;
 		position.value = [event.clientX, event.clientY];
 	}

@@ -44,7 +44,7 @@ function onOpenContextMenu(event: MouseEvent) {
 		if (!props.hitbox.selected) {
 			selectHitbox(props.hitbox.name, event.shiftKey, event.ctrlKey);
 		}
-		contextMenu.value.open(event);
+		contextMenu.value.show(event);
 	}
 }
 
