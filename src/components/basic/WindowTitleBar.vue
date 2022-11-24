@@ -1,5 +1,5 @@
 <template>
-	<div data-tauri-drag-region @dblclick="toggleMaximize"
+	<div ref="titleBarElement" data-tauri-drag-region @dblclick="handleDoubleClick"
 		class="h-11 flex flex-row justify-between bg-plastic-800 shadow-lg shadow-black/15">
 		<div class="self-stretch">
 			<slot name="left" />
@@ -33,10 +33,11 @@
 
 <script setup lang="ts">
 import { appWindow } from "@tauri-apps/api/window"
-import { computed, onMounted, ref } from "vue"
+import { computed, onMounted, Ref, ref } from "vue"
 import { requestExit } from "@/api/app"
 
 const isMaximized = ref(false);
+const titleBarElement: Ref<HTMLElement | null> = ref(null);
 
 appWindow.listen("tauri://resize", updateIsMaximized);
 onMounted(updateIsMaximized);
@@ -48,7 +49,10 @@ async function updateIsMaximized() {
 	isMaximized.value = await appWindow.isMaximized();
 }
 
-async function toggleMaximize() {
+async function handleDoubleClick(event: MouseEvent) {
+	if (event.target != titleBarElement.value) {
+		return;
+	}
 	if (isMaximized.value) {
 		appWindow.unmaximize();
 	} else {
