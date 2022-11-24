@@ -9,8 +9,8 @@
 					{{ entry.shortcut }}
 				</div>
 			</div>
-			<ChevronRightIcon v-if="entry.submenus?.length" class="w-5"
-				:class="highlighted && !disabled ? 'text-blue-300' : 'text-zinc-400'" />
+			<ChevronRightIcon v-if="entry.submenus" class="w-5"
+				:class="disabled ? 'text-zinc-600' : highlighted ? 'text-blue-300' : 'text-zinc-400'" />
 		</div>
 	</div>
 </template>
@@ -42,7 +42,7 @@ function onMouseLeave(event: MouseEvent) {
 }
 
 function onClick() {
-	if (props.entry.action) {
+	if (props.entry.action && !disabled.value) {
 		emit("executed");
 		props.entry.action();
 	}
