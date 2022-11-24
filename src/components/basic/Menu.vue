@@ -16,19 +16,9 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref, watch } from "vue"
-import { Separator } from "@/components/basic/MenuBar.vue";
+import { MenuEntry, Separator } from "@/components/basic/MenuBar.vue";
 import MenuItem from "@/components/basic/MenuItem.vue"
 import MenuSeparator from "@/components/basic/MenuSeparator.vue"
-
-// TODO: cursed issue. This is already defined in MenuBar.vue
-// but for some reason things explode when it's imported from there?
-export type MenuEntry = {
-  name: string;
-  shortcut?: string;
-  action?: () => Promise<void>;
-  submenus?: (MenuEntry | Separator)[];
-  disabled?: boolean;
-};
 
 const highlightEntry: Ref<MenuEntry | null> = ref(null);
 const submenuEntry: Ref<MenuEntry | null> = ref(null);
