@@ -40,6 +40,7 @@ const fileMenuEntries = computed((): (MenuEntry|Separator)[]=>[
 	{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
 	{ name: "Open Recent", submenus: app.recentDocumentPaths.map(d => {
 		return {
+			key: d.path,
 			name: d.name,
 			action: () => doOpenDocuments([d.path]),
 		}}

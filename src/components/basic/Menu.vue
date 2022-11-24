@@ -2,7 +2,8 @@
 	<div class="relative z-[99] py-2 rounded-md bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900 shadow-lg
 	shadow-black/25" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
 		<div v-for="entry of content">
-			<MenuItem v-if="'name' in entry" :entry="entry" :highlighted="entry.name == highlightEntry?.name"
+			<MenuItem v-if="'name' in entry" :entry="entry"
+				:highlighted="(entry.key || entry.name) == (highlightEntry?.key || highlightEntry?.name)"
 				@executed="onItemExecuted" @hovered="onItemHovered($event, entry)"
 				@unhovered="onItemUnhovered($event, entry)" />
 			<MenuSeparator v-else />

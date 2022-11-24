@@ -23,6 +23,7 @@ export type MenuBarEntry = {
 export type Separator = {};
 
 export type MenuEntry = {
+  key: string,
   name: string,
   shortcut?: string,
   action?: () => Promise<void>,
