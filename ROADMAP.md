@@ -18,9 +18,9 @@
 - [ ] Can zoom workbench with mousewheel
 - [ ] Can zoom timeline with mousewheel
 - [ ] Can scroll timeline with mousewheel
-- [ ] Backend keeps track of frames pane scroll position in undo stack
-- [ ] Backend keeps track of animations pane scroll position in undo stack
-- [ ] Backend keeps track of timeline scroll position in undo stack
+- [ ] Frames pane scroll position in undo stack
+- [ ] Animations pane scroll position in undo stack
+- [ ] Timeline scroll position in undo stack
 
 ## Tiger 0.8
 

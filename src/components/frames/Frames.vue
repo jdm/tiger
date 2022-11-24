@@ -28,8 +28,6 @@ import PaneInset from "@/components/basic/PaneInset.vue"
 import Frame from "@/components/frames/Frame.vue"
 import { ListMode } from "@/api/dto"
 
-// TODO Consider saving and restoring scroll positions in view state
-
 const app = useAppStore();
 
 const visibleFrames = computed(() => {

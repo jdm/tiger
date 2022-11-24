@@ -36,7 +36,6 @@ pub fn export_sheet(sheet: &Sheet) -> Result<(), ExportError> {
 
     match export_settings {
         ExportSettings::Liquid(liquid_settings) => {
-            // TODO texture export performance is awful
             let packed_sheet = pack_sheet(sheet)?;
             let metadata =
                 generate_sheet_metadata(sheet, export_settings, packed_sheet.get_layout())?;

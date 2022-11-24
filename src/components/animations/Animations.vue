@@ -23,8 +23,6 @@ import Button from "@/components/basic/Button.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 
-// TODO Consider saving and restoring scroll positions in view state
-
 const app = useAppStore();
 
 const visibleAnimations = computed(() => {
