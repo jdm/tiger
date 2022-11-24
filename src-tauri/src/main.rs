@@ -168,7 +168,7 @@ fn handle_window_event(event: tauri::GlobalWindowEvent) {
         app.request_exit();
         if !app.should_exit() {
             api.prevent_close();
-            let new_state: dto::App = (&*app).into();
+            let new_state = app.to_dto(dto::AppTrim::Full);
             event
                 .window()
                 .app_handle()

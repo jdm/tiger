@@ -217,9 +217,15 @@ pub struct ExportSettingsValidation {
 }
 
 #[derive(Clone, Copy)]
-pub enum DiffStrategy {
+pub enum AppTrim {
     Full,
     OnlyWorkbench,
+}
+
+enum SheetTrim {
+    Full,
+    OnlyAnimation(String),
+    Empty,
 }
 
 pub trait ToFileStem {
@@ -248,12 +254,23 @@ impl<T: AsRef<Path>> ToFileName for T {
     }
 }
 
-impl From<&app::App<'_>> for App {
-    fn from(app: &app::App) -> Self {
-        Self {
-            documents: app.documents_iter().map(|d| d.into()).collect(),
-            current_document_path: app.current_document().map(|d| d.path().to_owned()),
-            recent_document_paths: app
+impl app::App<'_> {
+    pub fn to_dto(&self, trim: AppTrim) -> App {
+        App {
+            documents: self
+                .documents_iter()
+                .filter_map(|document| {
+                    let current = self.current_document().map(|d| d.path().to_owned());
+                    let include = match (trim, document.path()) {
+                        (AppTrim::Full, _) => true,
+                        (AppTrim::OnlyWorkbench, p) if Some(p) == current.as_deref() => true,
+                        (AppTrim::OnlyWorkbench, _) => false,
+                    };
+                    include.then(|| document.to_dto(trim))
+                })
+                .collect(),
+            current_document_path: self.current_document().map(|d| d.path().to_owned()),
+            recent_document_paths: self
                 .recent_documents()
                 .map(|d| RecentDocument {
                     path: d.to_owned(),
@@ -261,27 +278,7 @@ impl From<&app::App<'_>> for App {
                 })
                 .collect(),
             is_release_build: !cfg!(debug_assertions),
-            error: app.error().map(|e| e.into()),
-        }
-    }
-}
-
-impl App {
-    pub fn trim_for_fast_diff(&mut self, diff_strategy: DiffStrategy) {
-        match diff_strategy {
-            DiffStrategy::Full => (),
-            DiffStrategy::OnlyWorkbench => {
-                for document in &mut self.documents {
-                    document.sheet.frames.clear();
-                    if Some(&document.path) == self.current_document_path.as_ref() {
-                        document.sheet.animations.retain(|name, _| {
-                            Some(name) == document.current_animation_name.as_ref()
-                        });
-                    } else {
-                        document.sheet.animations.clear();
-                    }
-                }
-            }
+            error: self.error().map(|e| e.into()),
         }
     }
 }
@@ -297,20 +294,29 @@ impl From<&app::UserFacingError> for UserFacingError {
     }
 }
 
-impl From<&document::Document> for Document {
-    fn from(document: &document::Document) -> Self {
-        let mut sheet: Sheet = document.sheet().into();
+impl document::Document {
+    fn to_dto(&self, trim: AppTrim) -> Document {
+        let mut sheet = {
+            let sheet_trim = match (trim, self.current_animation()) {
+                (AppTrim::Full, _) => SheetTrim::Full,
+                (AppTrim::OnlyWorkbench, Some(a)) => SheetTrim::OnlyAnimation(a.clone()),
+                (AppTrim::OnlyWorkbench, None) => SheetTrim::Empty,
+            };
+            self.sheet().to_dto(sheet_trim)
+        };
+
         for frame in sheet.frames.iter_mut() {
-            frame.selected = document.selection().is_frame_selected(&frame.path);
-            frame.filtered_out = document.is_frame_filtered_out(&frame.path);
+            frame.selected = self.selection().is_frame_selected(&frame.path);
+            frame.filtered_out = self.is_frame_filtered_out(&frame.path);
         }
+
         for (animation_name, animation) in sheet.animations.iter_mut() {
-            animation.selected = document.selection().is_animation_selected(animation_name);
-            animation.filtered_out = document.is_animation_filtered_out(animation_name);
+            animation.selected = self.selection().is_animation_selected(animation_name);
+            animation.filtered_out = self.is_animation_filtered_out(animation_name);
             for (direction, sequence) in animation.sequences.iter_mut() {
                 let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
-                    keyframe.selected = document.selection().is_keyframe_selected(
+                    keyframe.selected = self.selection().is_keyframe_selected(
                         animation_name,
                         (*direction).into(),
                         index,
@@ -318,7 +324,7 @@ impl From<&document::Document> for Document {
                     keyframe.start_time_millis = time_millis;
                     time_millis += keyframe.duration_millis;
                     for hitbox in keyframe.hitboxes.iter_mut() {
-                        hitbox.selected = document.selection().is_hitbox_selected(
+                        hitbox.selected = self.selection().is_hitbox_selected(
                             animation_name,
                             (*direction).into(),
                             index,
@@ -328,68 +334,74 @@ impl From<&document::Document> for Document {
                 }
             }
         }
-        Self {
-            path: document.path().to_owned(),
-            name: document.path().to_file_name(),
-            has_unsaved_changes: !document.is_saved(),
-            undo_effect: document.get_undo_effect(),
-            redo_effect: document.get_redo_effect(),
-            was_close_requested: document.close_requested(),
+
+        Document {
+            path: self.path().to_owned(),
+            name: self.path().to_file_name(),
+            has_unsaved_changes: !self.is_saved(),
+            undo_effect: self.get_undo_effect(),
+            redo_effect: self.get_redo_effect(),
+            was_close_requested: self.close_requested(),
             sheet,
-            frames_list_mode: document.frames_list_mode().into(),
-            frames_filter: document.frames_filter().to_owned(),
-            animations_filter: document.animations_filter().to_owned(),
-            workbench_offset: document.workbench_offset().to_i32().to_tuple(),
-            workbench_zoom: document.workbench_zoom(),
-            current_animation_name: document.current_animation().to_owned(),
-            current_sequence_direction: document.current_sequence().map(|d| d.into()),
-            current_keyframe_index: document
+            frames_list_mode: self.frames_list_mode().into(),
+            frames_filter: self.frames_filter().to_owned(),
+            animations_filter: self.animations_filter().to_owned(),
+            workbench_offset: self.workbench_offset().to_i32().to_tuple(),
+            workbench_zoom: self.workbench_zoom(),
+            current_animation_name: self.current_animation().to_owned(),
+            current_sequence_direction: self.current_sequence().map(|d| d.into()),
+            current_keyframe_index: self
                 .get_workbench_sequence()
                 .ok()
-                .and_then(|(_, s)| s.keyframe_index_at(document.timeline_clock())),
-            timeline_clock_millis: document.timeline_clock().as_millis() as u64,
-            timeline_is_playing: document.is_timeline_playing(),
-            timeline_zoom_factor: document.timeline_zoom_factor(),
-            timeline_zoom_amount: document.timeline_zoom_amount(),
-            darken_sprites: document.should_darken_sprites(),
-            hide_sprite: document.is_hiding_sprite(),
-            hide_hitboxes: document.is_hiding_hitboxes(),
-            hide_origin: document.is_hiding_origin(),
-            lock_hitboxes: document.are_hitboxes_locked(),
-            preserve_aspect_ratio: document.preserves_aspect_ratio(),
-            is_dragging_keyframe_duration: document.is_dragging_keyframe_duration(),
-            frames_being_dragged: document.frames_being_dragged(),
-            keyframes_being_dragged: document
+                .and_then(|(_, s)| s.keyframe_index_at(self.timeline_clock())),
+            timeline_clock_millis: self.timeline_clock().as_millis() as u64,
+            timeline_is_playing: self.is_timeline_playing(),
+            timeline_zoom_factor: self.timeline_zoom_factor(),
+            timeline_zoom_amount: self.timeline_zoom_amount(),
+            darken_sprites: self.should_darken_sprites(),
+            hide_sprite: self.is_hiding_sprite(),
+            hide_hitboxes: self.is_hiding_hitboxes(),
+            hide_origin: self.is_hiding_origin(),
+            lock_hitboxes: self.are_hitboxes_locked(),
+            preserve_aspect_ratio: self.preserves_aspect_ratio(),
+            is_dragging_keyframe_duration: self.is_dragging_keyframe_duration(),
+            frames_being_dragged: self.frames_being_dragged(),
+            keyframes_being_dragged: self
                 .keyframes_being_dragged()
                 .into_iter()
                 .map(|(d, i)| (d.into(), i))
                 .collect(),
-            hitboxes_being_nudged: document
+            hitboxes_being_nudged: self
                 .hitboxes_being_nudged()
                 .into_iter()
                 .map(String::from)
                 .collect(),
-            hitboxes_being_resized: document
+            hitboxes_being_resized: self
                 .hitboxes_being_resized()
                 .into_iter()
                 .map(String::from)
                 .collect(),
-            export_settings_being_edited: document.export_settings_edit().ok().map(|s| s.into()),
-            export_settings_validation: document
-                .validate_export_settings()
-                .ok()
-                .map(|s| (&s).into()),
+            export_settings_being_edited: self.export_settings_edit().ok().map(|s| s.into()),
+            export_settings_validation: self.validate_export_settings().ok().map(|s| (&s).into()),
         }
     }
 }
 
-impl From<&sheet::Sheet> for Sheet {
-    fn from(sheet: &sheet::Sheet) -> Self {
-        Self {
-            frames: sheet.frames_iter().map(|f| f.into()).collect(),
-            animations: sheet
+impl sheet::Sheet {
+    fn to_dto(&self, trim: SheetTrim) -> Sheet {
+        Sheet {
+            frames: match trim {
+                SheetTrim::Full => self.frames_iter().map(|f| f.into()).collect(),
+                SheetTrim::OnlyAnimation(_) | SheetTrim::Empty => vec![],
+            },
+            animations: self
                 .animations_iter()
-                .map(|(n, a)| (n.to_owned(), (n, a).into()))
+                .filter(|(name, _)| match &trim {
+                    SheetTrim::Full => true,
+                    SheetTrim::OnlyAnimation(n) => *name == n,
+                    SheetTrim::Empty => false,
+                })
+                .map(|(name, animation)| (name.to_owned(), (name, animation).into()))
                 .collect(),
         }
     }
