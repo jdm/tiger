@@ -36,7 +36,7 @@ const visibleFrames = computed(() => {
 	return app.currentDocument?.sheet.frames.filter((f) => !f.filteredOut);
 });
 
-const listMode = computed(() => app.currentDocument?.framesListMode || ListMode.Linear);
+const listMode = computed(() => app.currentDocument?.framesListMode || ListMode.Grid4xN);
 
 const listModes = computed((): MultiSwitchItem[] => {
 	return [

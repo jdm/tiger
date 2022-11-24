@@ -25,7 +25,7 @@ import FlatToggle from "@/components/basic/FlatToggle.vue"
 const app = useAppStore();
 
 const zoomItems = computed(() => {
-	const zoom = app.currentDocument?.workbenchZoom || 1;
+	const zoom = app.currentDocument?.workbenchZoom || 8;
 	return [
 		{ text: "1x", active: zoom == 1, zoomFactor: 1 },
 		{ text: "2x", active: zoom == 2, zoomFactor: 2 },
