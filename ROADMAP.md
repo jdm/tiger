@@ -2,14 +2,16 @@
 
 ## Tiger 0.6
 
-- [ ] Draw hitbox names in workbench
-- [ ] Playback speed controls
+- [ ] Draw hitbox names in workbench?
+- [ ] Playback speed controls?
 - [ ] Time snapping / quantizing of animation frames
 - [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes are not correctly centered
 - [ ] Add button to open sheet folder in explorer
 - [ ] Add context menu entry to open frame in explorer
+- [ ] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
+- [ ] Evaluate heroicons 2.0
 - [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison
 - [x] Fixed a bug where disabled menu actions could be interacted with
 - [x] Fixed a bug where app window could be restored/maximized by double clicking inside menus
