@@ -218,6 +218,8 @@ impl Document {
         if !matches!(
             command,
             Command::Tick(_)
+                | Command::Undo
+                | Command::Redo
                 | Command::BeginDragAndDropFrame(_)
                 | Command::BeginDragAndDropKeyframe(_, _)
                 | Command::BeginDragKeyframeDuration(_, _)
