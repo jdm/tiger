@@ -98,7 +98,6 @@ impl Document {
     pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, DocumentError> {
         let mut document = Document::new(&path);
         document.sheet = Sheet::read(path.as_ref())?;
-        document.history[0].sheet = document.sheet.clone();
         document.mark_as_saved(document.version());
 
         if let Some(name) = document
@@ -110,6 +109,10 @@ impl Document {
         {
             document.edit_animation(name)?;
         }
+
+        document.history[0].sheet = document.sheet.clone();
+        document.history[0].view = document.view.clone();
+
         Ok(document)
     }
 
