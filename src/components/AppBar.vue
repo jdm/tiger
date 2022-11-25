@@ -20,10 +20,10 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { useAppStore } from "@/stores/app"
-import { openDocuments as doOpenDocuments, closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app"
+import { closeAllDocuments, closeCurrentDocument, openDocuments as doOpenDocuments, revealInExplorer, saveAll } from "@/api/app"
 import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut } from "@/api/document"
 import { newDocument, openDocuments, saveAs } from "@/api/local"
-import MenuBar, { MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
+import MenuBar, { MenuBarEntry, MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
 
 const props = defineProps<{ debugMode: boolean, }>();
@@ -35,7 +35,7 @@ function onToggleDevTools() {
 	emit("update:debugMode", !props.debugMode);
 }
 
-const fileMenuEntries = computed((): (MenuEntry|Separator)[]=>[
+const fileMenuEntries = computed((): (MenuEntry|Separator)[] => [
 	{ name: "New Spritesheet…", shortcut: "Ctrl+N", action: newDocument },
 	{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
 	{ name: "Open Recent", submenus: app.recentDocumentPaths.map(d => {
@@ -46,52 +46,56 @@ const fileMenuEntries = computed((): (MenuEntry|Separator)[]=>[
 		}}
 	)},
 	{},
-	{ name: "Save", shortcut: "Ctrl+S", action: save },
-	{ name: "Save As…", shortcut: "Ctrl+Shift+S", action: saveAs },
-	{ name: "Save All", shortcut: "Ctrl+Alt+S", action: saveAll },
-	{ name: "Export", shortcut: "Ctrl+E", action: doExport },
-	{ name: "Export As…", shortcut: "Ctrl+Shift+E", action: beginExportAs },
+	{ name: "Save", shortcut: "Ctrl+S", action: save, disabled: !app.currentDocument },
+	{ name: "Save As…", shortcut: "Ctrl+Shift+S", action: saveAs, disabled: !app.currentDocument },
+	{ name: "Save All", shortcut: "Ctrl+Alt+S", action: saveAll, disabled: !app.currentDocument },
+	{ name: "Export", shortcut: "Ctrl+E", action: doExport, disabled: !app.currentDocument },
+	{ name: "Export As…", shortcut: "Ctrl+Shift+E", action: beginExportAs, disabled: !app.currentDocument },
 	{},
-	{ name: "Close", shortcut: "Ctrl+W", action: closeCurrentDocument },
-	{ name: "Close All", shortcut: "Ctrl+Shift+W", action: closeAllDocuments },
+	{ name: "Reveal in Explorer", action: () => {
+		if (app.currentDocumentPath) {
+			revealInExplorer(app.currentDocumentPath);
+		}
+	}, disabled: !app.currentDocument },
+	{},
+	{ name: "Close", shortcut: "Ctrl+W", action: closeCurrentDocument, disabled: !app.currentDocument },
+	{ name: "Close All", shortcut: "Ctrl+Shift+W", action: closeAllDocuments, disabled: !app.documents.length },
 ]);
 
-const editMenuEntries = computed(() => {
-	return [
-		{
-			name: `Undo ${app.currentDocument?.undoEffect || ''}`,
-			shortcut: "Ctrl+Z", action: undo,
-			disabled: app.currentDocument?.undoEffect == null
-		},
-		{
-			name:
-				`Redo ${app.currentDocument?.redoEffect || ''}`,
-			shortcut: "Ctrl+Shift+Z", action: redo,
-			disabled: app.currentDocument?.redoEffect == null
-		},
-		{},
-		{ name: "Cut", shortcut: "Ctrl+X", action: cut, },
-		{ name: "Copy", shortcut: "Ctrl+C", action: copy, },
-		{ name: "Paste", shortcut: "Ctrl+V", action: paste, },
-	];
-});
-
-const viewMenuEntries = [
-	{ name: "Center Workbench", shortcut: "Ctrl+Space", action: centerWorkbench },
-	{ name: "Zoom In (Workbench)", shortcut: "Ctrl++", action: zoomInWorkbench },
-	{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-", action: zoomOutWorkbench },
-	{ name: "Reset Zoom (Workbench)", shortcut: "Ctrl+0", action: resetWorkbenchZoom },
+const editMenuEntries = computed((): (MenuEntry|Separator)[] => [
+	{
+		name: `Undo ${app.currentDocument?.undoEffect || ''}`,
+		shortcut: "Ctrl+Z", action: undo,
+		disabled: app.currentDocument?.undoEffect == null
+	},
+	{
+		name:
+			`Redo ${app.currentDocument?.redoEffect || ''}`,
+		shortcut: "Ctrl+Shift+Z", action: redo,
+		disabled: app.currentDocument?.redoEffect == null
+	},
 	{},
-	{ name: "Zoom In (Timeline)", shortcut: "Ctrl+Alt++", action: zoomInTimeline },
-	{ name: "Zoom Out (Timeline)", shortcut: "Ctrl+Alt+-", action: zoomOutTimeline },
-	{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0", action: resetTimelineZoom },
-];
+	{ name: "Cut", shortcut: "Ctrl+X", action: cut, },
+	{ name: "Copy", shortcut: "Ctrl+C", action: copy, },
+	{ name: "Paste", shortcut: "Ctrl+V", action: paste, },
+]);
 
-const menuEntries = computed(() => {
+const viewMenuEntries = computed((): (MenuEntry|Separator)[] => [
+	{ name: "Center Workbench", shortcut: "Ctrl+Space", action: centerWorkbench, disabled: !app.currentDocument },
+	{ name: "Zoom In (Workbench)", shortcut: "Ctrl++", action: zoomInWorkbench, disabled: !app.currentDocument },
+	{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-", action: zoomOutWorkbench, disabled: !app.currentDocument },
+	{ name: "Reset Zoom (Workbench)", shortcut: "Ctrl+0", action: resetWorkbenchZoom, disabled: !app.currentDocument },
+	{},
+	{ name: "Zoom In (Timeline)", shortcut: "Ctrl+Alt++", action: zoomInTimeline, disabled: !app.currentDocument },
+	{ name: "Zoom Out (Timeline)", shortcut: "Ctrl+Alt+-", action: zoomOutTimeline, disabled: !app.currentDocument },
+	{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0", action: resetTimelineZoom, disabled: !app.currentDocument },
+]);
+
+const menuEntries = computed((): MenuBarEntry[] => {
 	return [
 		{ name: "File", content: fileMenuEntries.value },
 		{ name: "Edit", content: editMenuEntries.value },
-		{ name: "View", content: viewMenuEntries }
+		{ name: "View", content: viewMenuEntries.value }
 	];
 });
 

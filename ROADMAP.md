@@ -6,7 +6,7 @@
 - [ ] Playback speed controls?
 - [ ] Time snapping / quantizing of animation frames
 - [ ] Fix bug where when zoomed in a lot, resize handles on hitboxes are not correctly centered
-- [ ] Add button to open sheet folder in explorer
+- [x] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer
 - [ ] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
