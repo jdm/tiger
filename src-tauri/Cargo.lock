@@ -3263,6 +3263,7 @@ dependencies = [
  "serde",
  "serde_json",
  "simplelog",
+ "static_assertions",
  "sugar_path",
  "tauri",
  "tauri-build",

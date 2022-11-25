@@ -57,6 +57,7 @@ fn main() {
             api::close_all_documents,
             api::request_exit,
             api::cancel_exit,
+            api::reveal_in_explorer,
             // Document
             api::close_without_saving,
             api::save,

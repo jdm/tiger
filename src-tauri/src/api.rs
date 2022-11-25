@@ -1,5 +1,6 @@
 use euclid::vec2;
 use json_patch::Patch;
+use static_assertions::assert_cfg;
 use std::path::PathBuf;
 use std::time::Duration;
 use tauri::ClipboardManager;
@@ -177,6 +178,19 @@ pub fn cancel_exit(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::Full, |app| {
         app.cancel_exit();
     }))
+}
+
+#[tauri::command]
+pub fn reveal_in_explorer(path: PathBuf) {
+    // For future improvements, see https://github.com/tauri-apps/tauri/issues/4062
+    assert_cfg!(
+        windows,
+        "`reveal_in_explorer` is not implemented for non-Windows platforms"
+    );
+    std::process::Command::new("explorer")
+        .args(["/select,", path.to_string_lossy().as_ref()]) // The comma after select is not a typo
+        .spawn()
+        .unwrap();
 }
 
 #[tauri::command]

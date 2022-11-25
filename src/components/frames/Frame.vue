@@ -16,6 +16,7 @@
 import { Ref, ref } from "vue"
 import { Frame as FrameDTO } from "@/api/dto"
 import { useSpriteStore } from "@/stores/sprite"
+import { revealInExplorer } from "@/api/app"
 import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame, deleteSelectedFrames, deleteFrame } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
@@ -32,6 +33,7 @@ const dragCursorElement: Ref<HTMLElement | null> = ref(null);
 
 const contextMenuEntries = [
 	{ name: "Delete", shortcut: "Del", action: deleteSelectedFrames },
+	{ name: "Reveal in Explorer", action: () => revealInExplorer(props.frame.path) },
 ];
 
 function onOpenContextMenu(event: MouseEvent) {
