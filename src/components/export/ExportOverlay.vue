@@ -92,7 +92,7 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { BookOpenIcon } from "@heroicons/vue/outline"
+import { BookOpenIcon } from "@heroicons/vue/24/outline"
 import { ExportSettingsError } from "@/api/dto"
 import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
 import { useAppStore } from "@/stores/app"

@@ -1,8 +1,8 @@
 <template>
 	<div @click="(event) => onFrameClicked(event)" @contextmenu.prevent="onOpenContextMenu" @dragstart="onDragStart"
 		@dragend="onDragEnd" draggable="true">
-		<Selectable v-if="compact" left-icon="PhotographIcon" :text="frame.name" :selected="frame.selected"
-			:actions="[{ icon: 'XIcon', callback: onDeleteClicked }]" />
+		<Selectable v-if="compact" left-icon="PhotoIcon" :text="frame.name" :selected="frame.selected"
+			:actions="[{ icon: 'XMarkIcon', callback: onDeleteClicked }]" />
 		<div v-else
 			class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
 			:class="frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">

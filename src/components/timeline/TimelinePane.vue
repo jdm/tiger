@@ -1,9 +1,9 @@
 <template>
 	<Pane>
-		<div class="w-full px-4 p-2 pb-0 flex flex-row items-center">
+		<div class="w-full px-4 py-2 flex flex-row items-center">
 			<div class="flex-1 flex flex-row space-x-2">
 				<PerspectivePicker />
-				<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="RefreshIcon"
+				<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="ArrowPathIcon"
 					@toggled="setAnimationLooping" />
 			</div>
 			<div class="flex-1 flex flex-row justify-center">
@@ -11,12 +11,12 @@
 			</div>
 			<div class="flex-1 flex flex-row justify-end items-center">
 				<div class="flex flex-row items-center space-x-3">
-					<SearchIcon class="h-6 w-5 text-plastic-400" />
+					<MagnifyingGlassIcon class="w-5 text-plastic-400" />
 					<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
 				</div>
 			</div>
 		</div>
-		<PaneInset class="flex-1 m-4 mt-2 ">
+		<PaneInset class="flex-1 m-4 mt-0 ">
 			<div class="relative flex flex-row h-full bg-plastic-700">
 				<div class="flex flex-col">
 					<div class="h-6 bg-plastic-600" />
@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "@vue/reactivity"
-import { SearchIcon } from "@heroicons/vue/solid"
+import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
 	selectDirection, setAnimationLooping, setTimelineZoomAmount

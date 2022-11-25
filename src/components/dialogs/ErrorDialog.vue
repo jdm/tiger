@@ -1,5 +1,5 @@
 <template>
-	<ModalDialog :title="error.title" icon="ExclamationIcon" :error="true">
+	<ModalDialog :title="error.title" icon="ExclamationTriangleIcon" :error="true">
 		<template #body>
 			<p class="pb-1">{{ error.summary }}</p>
 			<div

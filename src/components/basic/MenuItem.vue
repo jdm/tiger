@@ -17,7 +17,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { ChevronRightIcon } from "@heroicons/vue/solid"
+import { ChevronRightIcon } from "@heroicons/vue/20/solid"
 import { MenuEntry } from "@/components/basic/MenuBar.vue"
 
 const props = defineProps<{

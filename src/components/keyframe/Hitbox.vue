@@ -3,8 +3,8 @@
 		<Selectable @click="(event) => onHitboxClicked(event)" @contextmenu.prevent="onOpenContextMenu"
 			:selected="hitbox.selected" :text="hitbox.name" left-icon="TagIcon" :actions="renaming ? [] :
 			[
-				{ icon: 'PencilAltIcon', callback: onRenameClicked },
-				{ icon: 'XIcon', callback: onDeleteClicked }
+				{ icon: 'PencilSquareIcon', callback: onRenameClicked },
+				{ icon: 'XMarkIcon', callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
 				<InputRename v-model="newName" @complete-rename="onRenameInputComplete"

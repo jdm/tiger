@@ -2,10 +2,10 @@
 	<div>
 		<Selectable @click="(event) => onAnimationClicked(event)" @dblclick="onAnimationDoubleClicked"
 			@contextmenu.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
-			left-icon="DocumentIcon" :actions="renaming ? [] :
+			left-icon="FilmIcon" :actions="renaming ? [] :
 			[
-				{ icon: 'PencilAltIcon', callback: beginRename },
-				{ icon: 'XIcon', callback: onDeleteClicked }
+				{ icon: 'PencilSquareIcon', callback: beginRename },
+				{ icon: 'XMarkIcon', callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
 				<InputRename v-model="newName" @complete-rename="onRenameInputComplete"

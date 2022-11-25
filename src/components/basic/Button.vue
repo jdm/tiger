@@ -1,9 +1,9 @@
 <template>
-	<div class="rounded-md" :class="containerClasses">
+	<div class="h-11 rounded-md" :class="containerClasses">
 		<button type="button"
-			class="w-full h-full flex flex-row items-center justify-center space-x-2 px-4 py-1.5 rounded-md text-sm font-medium border-t border-b-2"
+			class="w-full h-full flex flex-row items-center justify-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border-t border-b-2"
 			:disabled="disabled" :class="buttonClasses" @click="emit('click')">
-			<Icon v-if="icon" :name="icon" class="w-6 h-6" />
+			<Icon v-if="icon" :name="icon" mini class="w-5" />
 			<div v-if="label">{{ label }}</div>
 		</button>
 	</div>
@@ -12,7 +12,7 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import Icon from "@/components/basic/Icon.vue"
-import * as solid from "@heroicons/vue/solid"
+import * as solid from "@heroicons/vue/24/solid"
 
 type ButtonColor = "pink";
 

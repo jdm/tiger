@@ -13,7 +13,8 @@
 			<div class="col-span-2 row-span-2 flex flex-col justify-center pl-2">
 				<div class="h-2.5 w-1/2 border-t border-r"
 					:class="preserveAR ? 'border-plastic-300' : 'border-plastic-500'" />
-				<Icon name="LinkIcon" @click="togglePreserveAspectRatio" class="cursor-pointer self-center my-1 w-5 h-5"
+				<Icon name="LinkIcon" mini @click="togglePreserveAspectRatio"
+					class="cursor-pointer self-center my-1 w-5 h-5"
 					:class="preserveAR ? 'text-plastic-300' : 'text-plastic-500'" />
 				<div class="h-2.5 w-1/2 border-b border-r"
 					:class="preserveAR ? 'border-plastic-300' : 'border-plastic-500'" />

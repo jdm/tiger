@@ -11,7 +11,7 @@
 - [ ] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
-- [ ] Evaluate heroicons 2.0
+- [x] Upgrade from Heroicons 1.0 to 2.0
 - [x] Performance improvements to animation playback and drag operations
 - [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison
 - [x] Fixed a bug where disabled menu actions could be interacted with

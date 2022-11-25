@@ -1,16 +1,16 @@
 <template>
 	<div ref="el" class="relative">
-		<div @click="onOpen" class="rounded-md border-2 border-plastic-900">
-			<div class="flex flex-row items-center space-x-2 py-1.5 pl-4 pr-2 rounded-md
+		<div @click="onOpen" class="h-11 rounded-md border-2 border-plastic-900">
+			<div class="h-full flex flex-row items-center space-x-2 pl-4 pr-2 rounded-md
 				border-y  border-t-zinc-300 border-b-zinc-700 bg-zinc-400">
-				<div class="flex-1 grid pr-8 mt-px ">
+				<div class="flex-1 grid pr-8">
 					<div v-for="option in options"
 						class="col-start-1 row-start-1 whitespace-nowrap font-semibold text-plastic-800"
 						:class="option == selectedOption ? 'visible' : 'invisible'">
 						{{ option.name }}
 					</div>
 				</div>
-				<ChevronDownIcon class="w-6 -mb-0.5 text-plastic-600" />
+				<ChevronDownIcon class="w-5 -mb-0.5 text-plastic-600" />
 			</div>
 		</div>
 		<Transition>
@@ -29,7 +29,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref, watch } from "vue"
-import { ChevronDownIcon } from "@heroicons/vue/solid"
+import { ChevronDownIcon } from "@heroicons/vue/20/solid"
 
 export type SelectOption = {
 	name: string,

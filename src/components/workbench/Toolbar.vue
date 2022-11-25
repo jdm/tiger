@@ -8,7 +8,7 @@
 		<FlatMultiSwitch :items="zoomItems" @activate="onZoomClicked" />
 		<FlatToggle icon="SunIcon" v-model="spriteDarkening" />
 		<div class="flex flex-row items-center space-x-1">
-			<FlatToggle icon="PhotographIcon" v-model="drawSprite" color="orange" />
+			<FlatToggle icon="PhotoIcon" v-model="drawSprite" color="orange" />
 			<FlatToggle icon="TagIcon" v-model="drawHitboxes" color="pink" />
 			<FlatToggle icon="PlusIcon" v-model="drawOrigin" color="sky" />
 		</div>

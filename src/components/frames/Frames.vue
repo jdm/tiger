@@ -3,7 +3,7 @@
 		<div class="w-full flex flex-row space-x-2 items-center">
 			<MultiSwitch :items="listModes" @activate="switchListMode" />
 			<InputSearch placeholder="Search frames" v-model="searchQuery" />
-			<Button :positive="true" icon="PhotographIcon" label="Import" @click="importFrames" />
+			<Button :positive="true" icon="PhotoIcon" label="Import" @click="importFrames" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
 			<div class="p-4 overflow-y-auto h-full styled-scrollbars">
@@ -38,8 +38,8 @@ const listMode = computed(() => app.currentDocument?.framesListMode || ListMode.
 
 const listModes = computed((): MultiSwitchItem[] => {
 	return [
-		{ icon: "ViewGridIcon", active: listMode.value == ListMode.Grid4xN, value: ListMode.Grid4xN },
-		{ icon: "ViewListIcon", active: listMode.value == ListMode.Linear, value: ListMode.Linear },
+		{ icon: "Squares2X2Icon", active: listMode.value == ListMode.Grid4xN, value: ListMode.Grid4xN },
+		{ icon: "Bars4Icon", active: listMode.value == ListMode.Linear, value: ListMode.Linear },
 	];
 });
 

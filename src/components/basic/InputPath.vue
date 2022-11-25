@@ -5,7 +5,7 @@
 				cursor-pointer  bg-plastic-600
 				border border-l-0 border-t-plastic-500 border-b-plastic-900 border-r-plastic-800">
 				<FolderIcon v-if="isDirectory" class="w-5 h-5 text-plastic-300" />
-				<DotsHorizontalIcon v-if="!isDirectory" class="w-5 h-5 text-plastic-300" />
+				<EllipsisHorizontalIcon v-if="!isDirectory" class="w-5 h-5 text-plastic-300" />
 			</span>
 		</template>
 	</InputText>
@@ -14,7 +14,7 @@
 <script setup lang="ts">
 import { open, save } from "@tauri-apps/api/dialog";
 import { computed, WritableComputedRef } from "vue";
-import { DotsHorizontalIcon, FolderIcon } from "@heroicons/vue/solid"
+import { EllipsisHorizontalIcon, FolderIcon } from "@heroicons/vue/20/solid"
 import InputText from "@/components/basic/InputText.vue"
 
 const props = defineProps<{

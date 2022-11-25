@@ -1,5 +1,5 @@
 <template>
-	<ModalDialog title="Unsaved Changes" icon="ExclamationIcon">
+	<ModalDialog title="Unsaved Changes" icon="ExclamationTriangleIcon">
 		<template #body>
 			<p class="max-w-md"><span class="italic font-semibold text-orange-500">{{ app.currentDocument?.name
 			}}</span> has been

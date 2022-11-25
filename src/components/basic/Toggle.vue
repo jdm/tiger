@@ -1,18 +1,19 @@
 <template>
-	<div class="rounded-md border-2 border-plastic-900">
-		<div @click="onClicked" class="py-1.5 px-2 rounded-md border-2 cursor-pointer" :class="dynamicClasses">
-			<Icon :name="icon" class="w-6 -mb-px" />
+	<div class="h-11 box-border rounded-md border-2 border-plastic-900">
+		<div @click="onClicked" class="h-full flex rounded-md border-2 cursor-pointer" :class="dynamicClasses">
+			<!-- Using mini icon at non-mini size for extra chonk-->
+			<Icon :name="icon" mini class="w-6 mx-2" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue"
-import * as solid from "@heroicons/vue/solid"
+import * as mini from "@heroicons/vue/20/solid"
 import Icon from "@/components/basic/Icon.vue"
 
 const props = defineProps<{
-	icon: keyof typeof solid,
+	icon: keyof typeof mini,
 	toggled: boolean,
 }>();
 

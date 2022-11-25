@@ -1,10 +1,12 @@
 <template>
-	<Icon @click="onClicked" :name="icon" class="w-9 h-9 p-1.5 cursor-pointer rounded-md border-2" :class="iconClass" />
+	<!-- Mini icon at full size for extra chonk -->
+	<Icon @click="onClicked" :name="icon" mini class="w-9 h-9 p-1.5 cursor-pointer rounded-md border-2"
+		:class="iconClass" />
 </template>
 
 <script setup lang="ts">
 import { computed } from "vue"
-import * as solid from "@heroicons/vue/solid"
+import * as solid from "@heroicons/vue/24/solid"
 import Icon from "@/components/basic/Icon.vue"
 
 export type ToggleColor = "blue" | "orange" | "pink" | "sky";
