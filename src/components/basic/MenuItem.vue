@@ -1,16 +1,18 @@
 <template>
 	<div @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" @click="onClick" class="px-2">
 		<div class="flex" :class="[highlighted && !disabled ? 'bg-blue-600 rounded-sm' : '']">
-			<div class="flex grow justify-between px-4 space-x-20 py-1.5 whitespace-nowrap">
+			<div class="flex grow justify-between pl-7 space-x-14 py-1.5 whitespace-nowrap">
 				<div :class="disabled ? 'text-zinc-600' : highlighted ? 'text-blue-100' : 'text-zinc-400'">
 					{{ entry.name }}
 				</div>
-				<div v-if="entry.shortcut" :class="highlighted && !disabled ? 'text-blue-400' : 'text-zinc-600'">
+				<div :class="highlighted && !disabled ? 'text-blue-400' : 'text-zinc-600'">
 					{{ entry.shortcut }}
 				</div>
 			</div>
-			<ChevronRightIcon v-if="entry.submenus" class="w-5"
-				:class="disabled ? 'text-zinc-600' : highlighted ? 'text-blue-300' : 'text-zinc-400'" />
+			<div class="w-5 mx-1 flex">
+				<ChevronRightIcon v-if="entry.submenus" class="w-5 translate-x-px"
+					:class="disabled ? 'text-zinc-600' : highlighted ? 'text-blue-300' : 'text-zinc-400'" />
+			</div>
 		</div>
 	</div>
 </template>
