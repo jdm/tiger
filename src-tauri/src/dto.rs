@@ -222,6 +222,12 @@ pub enum AppTrim {
     OnlyWorkbench,
 }
 
+pub enum DocumentTrim {
+    Full,
+    OnlyWorkbench,
+    Empty,
+}
+
 enum SheetTrim {
     Full,
     OnlyAnimation(String),
@@ -259,14 +265,14 @@ impl app::App<'_> {
         App {
             documents: self
                 .documents_iter()
-                .filter_map(|document| {
-                    let current = self.current_document().map(|d| d.path().to_owned());
-                    let include = match (trim, document.path()) {
-                        (AppTrim::Full, _) => true,
-                        (AppTrim::OnlyWorkbench, p) if Some(p) == current.as_deref() => true,
-                        (AppTrim::OnlyWorkbench, _) => false,
+                .map(|document| {
+                    let is_current = |path| Some(path) == self.current_document().map(|d| d.path());
+                    let doc_trim = match (trim, document.path()) {
+                        (AppTrim::Full, _) => DocumentTrim::Full,
+                        (AppTrim::OnlyWorkbench, p) if is_current(p) => DocumentTrim::OnlyWorkbench,
+                        (AppTrim::OnlyWorkbench, _) => DocumentTrim::Empty,
                     };
-                    include.then(|| document.to_dto(trim))
+                    document.to_dto(doc_trim)
                 })
                 .collect(),
             current_document_path: self.current_document().map(|d| d.path().to_owned()),
@@ -295,12 +301,13 @@ impl From<&app::UserFacingError> for UserFacingError {
 }
 
 impl document::Document {
-    fn to_dto(&self, trim: AppTrim) -> Document {
+    fn to_dto(&self, trim: DocumentTrim) -> Document {
         let mut sheet = {
             let sheet_trim = match (trim, self.current_animation()) {
-                (AppTrim::Full, _) => SheetTrim::Full,
-                (AppTrim::OnlyWorkbench, Some(a)) => SheetTrim::OnlyAnimation(a.clone()),
-                (AppTrim::OnlyWorkbench, None) => SheetTrim::Empty,
+                (DocumentTrim::Full, _) => SheetTrim::Full,
+                (DocumentTrim::OnlyWorkbench, Some(a)) => SheetTrim::OnlyAnimation(a.clone()),
+                (DocumentTrim::OnlyWorkbench, None) => SheetTrim::Empty,
+                (DocumentTrim::Empty, _) => SheetTrim::Empty,
             };
             self.sheet().to_dto(sheet_trim)
         };
