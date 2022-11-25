@@ -4,8 +4,11 @@ import {
   beginExportAs,
   centerWorkbench,
   copy,
+  cut,
   deleteSelection,
   doExport,
+  jumpToAnimationEnd,
+  jumpToAnimationStart,
   nudgeSelection,
   paste,
   pause,
@@ -19,7 +22,6 @@ import {
   zoomInWorkbench,
   zoomOutTimeline,
   zoomOutWorkbench,
-  cut,
 } from "@/api/document";
 import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
 import { useAppStore } from "@/stores/app";
@@ -110,6 +112,10 @@ function onKeyDown(event: KeyboardEvent) {
       browseSelection(BrowseDirection.Left, event.shiftKey);
     } else if (event.key == "ArrowRight") {
       browseSelection(BrowseDirection.Right, event.shiftKey);
+    } else if (event.key == "Home") {
+      jumpToAnimationStart();
+    } else if (event.key == "End") {
+      jumpToAnimationEnd();
     }
   }
 }

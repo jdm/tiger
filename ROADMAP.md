@@ -9,7 +9,7 @@
 - [ ] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer
 - [ ] Add context menu entries to paste animations/keyframes/hitboxes
-- [ ] Can press Home/End to snap to first/last keyframe
+- [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
 - [x] Upgrade from Heroicons 1.0 to 2.0
@@ -43,9 +43,9 @@
 
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
+- [ ] Document keyboard shortcuts
 - [ ] Fix jank spacing in exported metadata files
 - [ ] Export complete notification
-- [ ] Unit test UI
 - [ ] Auto-updates
 - [ ] Splash screen
 
@@ -54,7 +54,6 @@
 - [ ] Review all TODO
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
-- [ ] Provide export templates for some common formats (TBD)
 - [ ] Readme logo
 - [ ] About dialog
 - [ ] App icon (file explorer, taskbar, add/remove programers, installer, title bar)
@@ -66,6 +65,7 @@
 - [ ] Root motion
 - [ ] Onion skin?
 - [ ] Hitbox colors
+- [ ] Interop with specific game engines (TBD)
 - [ ] Import frames from single sheet image
 - [ ] Import animation data from other software (Asesprite, TBD)
 - [ ] Sockets (like hitbox but point)
