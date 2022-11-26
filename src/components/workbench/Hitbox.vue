@@ -1,14 +1,19 @@
 <template>
-	<BoundingBox :position="hitbox.topLeft" :size="hitbox.size" :darken="true" :colorClasses="boundingBoxClass"
-		class="z-30" />
-	<DragArea v-if="!app.currentDocument?.timelineIsPlaying && !app.currentDocument?.lockHitboxes"
-		:buttons="['left', 'right']" active-cursor="cursor-move"
-		:inactive-cursor="hitbox.selected ? 'cursor-move' : 'cursor-pointer'" @mouseenter="onMouseEnter"
-		@mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
-		class="absolute pointer-events-auto z-50" :style="positionStyle" />
-	<ResizeArea v-if="hitbox.selected" @resize-start="startResize" @resize-update="updateResize" @resize-end="endResize"
-		@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag" class="absolute z-[60]"
-		:style="positionStyle" :size="hitbox.size" />
+	<div class="absolute">
+		<BoundingBox :position="hitbox.topLeft" :size="hitbox.size" :darken="true" :colorClasses="boundingBoxClass"
+			:class="hitbox.selected ? 'z-[50]' : 'z-[30]'" />
+		<BoxLabel :text="hitbox.name" :position="hitbox.topLeft" :size="hitbox.size"
+			:color="hitbox.selected ? 'blue' : 'pink'" :hovered="hovered"
+			:class="hitbox.selected ? 'z-[51]' : 'z-[31]'" />
+		<DragArea v-if=" !app.currentDocument?.timelineIsPlaying && !app.currentDocument?.lockHitboxes"
+			:buttons="['left', 'right']" active-cursor="cursor-move"
+			:inactive-cursor="hitbox.selected ? 'cursor-move' : 'cursor-pointer'" @mouseenter="onMouseEnter"
+			@mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
+			class="absolute pointer-events-auto z-[60]" :style="positionStyle" />
+		<ResizeArea v-if="hitbox.selected" :position="hitbox.topLeft" :size="hitbox.size" @resize-start="startResize"
+			@resize-update="updateResize" @resize-end="endResize" @drag-start="startDrag" @drag-end="endDrag"
+			@drag-update="updateDrag" class="z-[61]" />
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -18,6 +23,7 @@ import { beginNudgeHitbox, beginResizeHitbox, endNudgeHitbox, endResizeHitbox, p
 import { useAppStore } from "@/stores/app"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"
+import BoxLabel from "@/components/workbench/BoxLabel.vue"
 import ResizeArea, { ResizeEvent } from "@/components/workbench/ResizeArea.vue"
 
 const app = useAppStore();

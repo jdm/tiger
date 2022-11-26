@@ -14,10 +14,13 @@
 				10 sprite
 				20 sprite outline
 				30 origin
-				30 hitbox BG & outline
+				30 hitbox BG & outline (not selected)
+				31 hitbox label (not selected)
 				40 sprite drag area
-				50 hitbox drag area
-				60 hitbox resize handle
+				50 hitbox BG & outline (selected)
+				51 hitbox label (selected)
+				60 hitbox drag area
+				61 hitbox resize handle
 				70 floating toolbar
 			-->
 

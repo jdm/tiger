@@ -1,5 +1,5 @@
 <template>
-	<div>
+	<div class="absolute -translate-x-1/2 -translate-y-1/2">
 		<svg viewBox="0 0 100 100" width="30" height="30">
 			<circle cx="50" cy="50" r="24" class="fill-white stroke-blue-600" stroke-width="5" />
 			<circle cx="50" cy="50" r="16" class="fill-blue-600" />

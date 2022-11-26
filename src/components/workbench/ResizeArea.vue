@@ -1,11 +1,13 @@
 <template>
-	<div class="relative">
-		<div v-for="handle in handles" class="absolute" :class="handle.class">
-			<div :style="`transform: translate(${handle.tx || 0}px, ${handle.ty || 0}px)`">
+	<div class="absolute">
+		<div v-for="handle in handles" :key="handle.axis" :style="`transform:
+			translate(${position[0]}px, ${position[1]}px)
+			translate(${handle.tx}px, ${handle.ty}px)
+		`">
+			<div class="transition-transform" :style="`transform: scale(${1 / zoom}, ${1 / zoom})`">
 				<ResizeHandle :axis="handle.axis" @resize-start="onResizeStart" @resize-update="onResizeUpdate"
 					@resize-end="onResizeEnd" @drag-start="onDragStart" @drag-update="onDragUpdate"
-					@drag-end="onDragEnd" class="transition-transform"
-					:style="`transform: scale(${1 / zoom}, ${1 / zoom})`" />
+					@drag-end="onDragEnd" />
 			</div>
 		</div>
 	</div>
@@ -24,6 +26,7 @@ export type ResizeEvent = {
 }
 
 const props = defineProps<{
+	position: [number, number],
 	size: [number, number],
 }>();
 
@@ -41,14 +44,14 @@ const app = useAppStore();
 const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
 
 const handles = computed(() => [
-	{ axis: ResizeAxis.NW, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2" },
-	{ axis: ResizeAxis.N, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2", tx: props.size[0] / 2 },
-	{ axis: ResizeAxis.NE, class: "top-0 right-0 translate-x-1/2 -translate-y-1/2" },
-	{ axis: ResizeAxis.E, class: "top-0 right-0 translate-x-1/2 -translate-y-1/2", ty: props.size[1] / 2 },
-	{ axis: ResizeAxis.SE, class: "bottom-0 right-0 translate-x-1/2 translate-y-1/2" },
-	{ axis: ResizeAxis.S, class: "bottom-0 left-0 -translate-x-1/2 translate-y-1/2", tx: props.size[0] / 2 },
-	{ axis: ResizeAxis.SW, class: "bottom-0 left-0 -translate-x-1/2 translate-y-1/2" },
-	{ axis: ResizeAxis.W, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2", ty: props.size[1] / 2 },
+	{ axis: ResizeAxis.NW, tx:0, ty:0 },
+	{ axis: ResizeAxis.N, tx: props.size[0] / 2, ty: 0 },
+	{ axis: ResizeAxis.NE,tx: props.size[0], ty: 0 },
+	{ axis: ResizeAxis.E, tx: props.size[0], ty: props.size[1] / 2 },
+	{ axis: ResizeAxis.SE, tx: props.size[0], ty: props.size[1] },
+	{ axis: ResizeAxis.S, tx: props.size[0] / 2, ty: props.size[1] },
+	{ axis: ResizeAxis.SW, tx: 0, ty: props.size[1] },
+	{ axis: ResizeAxis.W, tx:0, ty: props.size[1] / 2 },
 ]);
 
 

@@ -4,10 +4,12 @@
 		However, transform:scale() also applies to borders, with no way of scaling back to 1px borders
 		when zoomed in.
 	-->
-	<svg class="absolute" :style="style" :viewBox="`0 0 ${size[0] + 1} ${size[1] + 1}`">
-		<rect :x="1" :y="1" :width="size[0]" :height="size[1]" shape-rendering="crispEdges" :stroke-width="scale"
-			:class="colorClasses" class="ease-in-out duration-150" style="transitionProperty: stroke-width" />
-	</svg>
+	<div class="absolute">
+		<svg class="absolute" :style="style" :viewBox="`0 0 ${size[0] + 1} ${size[1] + 1}`">
+			<rect :x="1" :y="1" :width="size[0]" :height="size[1]" shape-rendering="crispEdges" :stroke-width="scale"
+				:class="colorClasses" class="ease-in-out duration-150" style="transitionProperty: stroke-width" />
+		</svg>
+	</div>
 </template>
 
 <script setup lang="ts">
