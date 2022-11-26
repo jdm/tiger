@@ -18,7 +18,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from "vue"
+import { computed, reactive } from "vue"
 import { useAppStore } from "@/stores/app"
 import { closeAllDocuments, closeCurrentDocument, openDocuments as doOpenDocuments, revealInExplorer, saveAll } from "@/api/app"
 import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut } from "@/api/document"
@@ -77,7 +77,7 @@ const editMenuEntries = computed((): (MenuEntry|Separator)[] => [
 	{},
 	{ name: "Cut", shortcut: "Ctrl+X", action: cut, disabled: !app.canCut },
 	{ name: "Copy", shortcut: "Ctrl+C", action: copy, disabled: !app.canCopy },
-	{ name: "Paste", shortcut: "Ctrl+V", action: paste, },
+	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: !app.canPaste },
 ]);
 
 const viewMenuEntries = computed((): (MenuEntry|Separator)[] => [
@@ -92,11 +92,11 @@ const viewMenuEntries = computed((): (MenuEntry|Separator)[] => [
 ]);
 
 const menuEntries = computed((): MenuBarEntry[] => {
-	return [
-		{ name: "File", content: fileMenuEntries.value },
-		{ name: "Edit", content: editMenuEntries.value },
-		{ name: "View", content: viewMenuEntries.value }
-	];
+	return reactive([
+		{ name: "File", content: fileMenuEntries },
+		{ name: "Edit", content: editMenuEntries },
+		{ name: "View", content: viewMenuEntries }
+	]);
 });
 
 </script>

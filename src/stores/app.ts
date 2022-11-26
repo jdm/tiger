@@ -125,6 +125,9 @@ export const useAppStore = defineStore("app", {
         !!this.selectedHitboxes?.length
       );
     },
+    canPaste(): boolean {
+      return !!this.clipboardManifest && !!this.currentDocument;
+    },
   },
 });
 
