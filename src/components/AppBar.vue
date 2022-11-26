@@ -35,7 +35,7 @@ function onToggleDevTools() {
 	emit("update:debugMode", !props.debugMode);
 }
 
-const fileMenuEntries = computed((): (MenuEntry|Separator)[] => [
+const fileMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 	{ name: "New Spritesheet…", shortcut: "Ctrl+N", action: newDocument },
 	{ name: "Open Spritesheet…", shortcut: "Ctrl+O", action: openDocuments },
 	{ name: "Open Recent", submenus: app.recentDocumentPaths.map(d => {
@@ -60,9 +60,9 @@ const fileMenuEntries = computed((): (MenuEntry|Separator)[] => [
 	{},
 	{ name: "Close", shortcut: "Ctrl+W", action: closeCurrentDocument, disabled: !app.currentDocument },
 	{ name: "Close All", shortcut: "Ctrl+Shift+W", action: closeAllDocuments, disabled: !app.documents.length },
-]);
+]));
 
-const editMenuEntries = computed((): (MenuEntry|Separator)[] => [
+const editMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 	{
 		name: `Undo ${app.currentDocument?.undoEffect || ''}`,
 		shortcut: "Ctrl+Z", action: undo,
@@ -78,9 +78,9 @@ const editMenuEntries = computed((): (MenuEntry|Separator)[] => [
 	{ name: "Cut", shortcut: "Ctrl+X", action: cut, disabled: !app.canCut },
 	{ name: "Copy", shortcut: "Ctrl+C", action: copy, disabled: !app.canCopy },
 	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: !app.canPaste },
-]);
+]));
 
-const viewMenuEntries = computed((): (MenuEntry|Separator)[] => [
+const viewMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 	{ name: "Center Workbench", shortcut: "Ctrl+Space", action: centerWorkbench, disabled: !app.currentDocument },
 	{ name: "Zoom In (Workbench)", shortcut: "Ctrl++", action: zoomInWorkbench, disabled: !app.currentDocument },
 	{ name: "Zoom Out (Workbench)", shortcut: "Ctrl+-", action: zoomOutWorkbench, disabled: !app.currentDocument },
@@ -89,7 +89,7 @@ const viewMenuEntries = computed((): (MenuEntry|Separator)[] => [
 	{ name: "Zoom In (Timeline)", shortcut: "Ctrl+Alt++", action: zoomInTimeline, disabled: !app.currentDocument },
 	{ name: "Zoom Out (Timeline)", shortcut: "Ctrl+Alt+-", action: zoomOutTimeline, disabled: !app.currentDocument },
 	{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0", action: resetTimelineZoom, disabled: !app.currentDocument },
-]);
+]));
 
 const menuEntries = computed((): MenuBarEntry[] => {
 	return reactive([
