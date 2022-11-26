@@ -8,7 +8,7 @@
 		class="absolute pointer-events-auto z-50" :style="positionStyle" />
 	<ResizeArea v-if="hitbox.selected" @resize-start="startResize" @resize-update="updateResize" @resize-end="endResize"
 		@drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag" class="absolute z-[60]"
-		:style="positionStyle" />
+		:style="positionStyle" :size="hitbox.size" />
 </template>
 
 <script setup lang="ts">

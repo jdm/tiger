@@ -1,7 +1,7 @@
 <template>
-	<div>
-		<div class="h-full relative">
-			<div v-for="handle in handles" class="absolute" :class="handle.class">
+	<div class="relative">
+		<div v-for="handle in handles" class="absolute" :class="handle.class">
+			<div :style="`transform: translate(${handle.tx || 0}px, ${handle.ty || 0}px)`">
 				<ResizeHandle :axis="handle.axis" @resize-start="onResizeStart" @resize-update="onResizeUpdate"
 					@resize-end="onResizeEnd" @drag-start="onDragStart" @drag-update="onDragUpdate"
 					@drag-end="onDragEnd" class="transition-transform"
@@ -23,19 +23,9 @@ export type ResizeEvent = {
 	dragEvent: DragAreaEvent,
 }
 
-const app = useAppStore();
-const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
-
-const handles = [
-	{ axis: ResizeAxis.NW, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2" },
-	{ axis: ResizeAxis.N, class: "top-0 left-1/2 -translate-x-1/2 -translate-y-1/2" },
-	{ axis: ResizeAxis.NE, class: "top-0 right-0 translate-x-1/2 -translate-y-1/2" },
-	{ axis: ResizeAxis.E, class: "top-1/2 right-0 translate-x-1/2 -translate-y-1/2" },
-	{ axis: ResizeAxis.SE, class: "bottom-0 right-0 translate-x-1/2 translate-y-1/2" },
-	{ axis: ResizeAxis.S, class: "bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2" },
-	{ axis: ResizeAxis.SW, class: "bottom-0 left-0 -translate-x-1/2 translate-y-1/2" },
-	{ axis: ResizeAxis.W, class: "top-1/2 left-0 -translate-x-1/2 -translate-y-1/2" },
-];
+const props = defineProps<{
+	size: [number, number],
+}>();
 
 const emit =
 	defineEmits<{
@@ -46,6 +36,21 @@ const emit =
 		(e: "dragUpdate", event: DragAreaEvent): void
 		(e: "dragEnd", event: DragAreaEvent): void
 	}>();
+
+const app = useAppStore();
+const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
+
+const handles = computed(() => [
+	{ axis: ResizeAxis.NW, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2" },
+	{ axis: ResizeAxis.N, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2", tx: props.size[0] / 2 },
+	{ axis: ResizeAxis.NE, class: "top-0 right-0 translate-x-1/2 -translate-y-1/2" },
+	{ axis: ResizeAxis.E, class: "top-0 right-0 translate-x-1/2 -translate-y-1/2", ty: props.size[1] / 2 },
+	{ axis: ResizeAxis.SE, class: "bottom-0 right-0 translate-x-1/2 translate-y-1/2" },
+	{ axis: ResizeAxis.S, class: "bottom-0 left-0 -translate-x-1/2 translate-y-1/2", tx: props.size[0] / 2 },
+	{ axis: ResizeAxis.SW, class: "bottom-0 left-0 -translate-x-1/2 translate-y-1/2" },
+	{ axis: ResizeAxis.W, class: "top-0 left-0 -translate-x-1/2 -translate-y-1/2", ty: props.size[1] / 2 },
+]);
+
 
 function onResizeStart(event: ResizeEvent) {
 	emit("resizeStart", event);
