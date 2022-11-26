@@ -11,7 +11,7 @@
           <div class="flex-1 min-w-0 flex flex-col">
             <div class="flex-1 min-h-0 flex flex-row space-x-5 pb-5">
               <WorkbenchPane class="flex-1" />
-              <div class="basis-80 flex flex-col space-y-5">
+              <div class="basis-80 min-w-0 flex flex-col space-y-5">
                 <KeyframePane class="flex-1" />
                 <DetailsPane class="basis-80" />
               </div>

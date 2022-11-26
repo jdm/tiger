@@ -17,6 +17,7 @@
 - [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison
 - [x] Fixed a bug where disabled menu actions could be interacted with
 - [x] Fixed a bug where app window could be restored/maximized by double clicking inside menus
+- [x] Fixed a bug where hitboxes panel could grow when there are long hitbox names
 - [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
 
 ## Tiger 0.7
