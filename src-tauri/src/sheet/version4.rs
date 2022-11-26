@@ -21,7 +21,7 @@ pub struct Sheet<P: Paths> {
     pub(in crate::sheet) animations: BTreeMap<String, Animation<P>>,
     pub(in crate::sheet) export_settings: Option<ExportSettings<P>>,
     #[serde(skip)]
-    pub(in crate::sheet) paths: std::marker::PhantomData<P>,
+    pub(in crate::sheet) paths: P,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
@@ -154,7 +154,7 @@ impl From<previous_version::Sheet> for Sheet<Any> {
                 .map(|o| (o.name.to_owned(), o.into()))
                 .collect(),
             export_settings: old.export_settings.map(|o| o.into()),
-            paths: std::marker::PhantomData,
+            paths: Default::default(),
         }
     }
 }

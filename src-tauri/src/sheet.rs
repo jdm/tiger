@@ -39,13 +39,23 @@ enum Version {
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Absolute;
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
-pub struct Relative;
+pub struct Relative {
+    base: PathBuf,
+}
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Any;
 pub trait Paths: Default + Eq + PartialEq {}
 impl Paths for Absolute {}
 impl Paths for Relative {}
 impl Paths for Any {}
+
+impl<P: AsRef<Path>> From<P> for Relative {
+    fn from(path: P) -> Self {
+        Self {
+            base: path.as_ref().to_owned(),
+        }
+    }
+}
 
 const CURRENT_VERSION: Version = Version::Tiger4;
 pub use self::version4::*;
@@ -177,40 +187,22 @@ impl<P: Paths> Sheet<P> {
 }
 
 impl Sheet<Relative> {
-    pub fn write<T: AsRef<Path>>(&self, path: T) -> Result<(), SheetError> {
-        #[derive(Serialize)]
-        struct VersionedSheet<'a> {
-            version: Version,
-            sheet: &'a Sheet<Relative>,
-        }
-
-        let versioned_sheet = VersionedSheet {
-            version: CURRENT_VERSION,
-            sheet: self,
-        };
-
-        let file = File::create(path.as_ref())
-            .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
-        serde_json::to_writer_pretty(BufWriter::new(file), &versioned_sheet)?;
-        Ok(())
-    }
-
-    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Sheet<Absolute> {
+    pub fn with_absolute_paths(self) -> Sheet<Absolute> {
         Sheet {
             frames: self
                 .frames
                 .into_iter()
-                .map(|f| f.with_absolute_paths(&relative_to))
+                .map(|f| f.with_absolute_paths(&self.paths.base))
                 .collect(),
             animations: self
                 .animations
                 .into_iter()
-                .map(|(n, a)| (n, a.with_absolute_paths(&relative_to)))
+                .map(|(n, a)| (n, a.with_absolute_paths(&self.paths.base)))
                 .collect(),
             export_settings: self
                 .export_settings
-                .map(|s| s.with_absolute_paths(&relative_to)),
-            paths: std::marker::PhantomData,
+                .map(|s| s.with_absolute_paths(&self.paths.base)),
+            paths: Default::default(),
         }
     }
 }
@@ -239,7 +231,15 @@ impl Sheet<Any> {
         Ok(sheet)
     }
 
-    pub fn with_relative_paths(self) -> Result<Sheet<Relative>, SheetError> {
+    pub fn with_relative_paths<P: AsRef<Path>>(
+        self,
+        relative_to: P,
+    ) -> Result<Sheet<Relative>, SheetError> {
+        if !relative_to.as_ref().is_absolute() {
+            return Err(SheetError::AbsolutePathExpected(
+                relative_to.as_ref().to_owned(),
+            ));
+        }
         let export_settings = match self.export_settings {
             Some(s) => Some(s.with_relative_paths()?),
             None => None,
@@ -256,16 +256,31 @@ impl Sheet<Any> {
                 .map(|(n, a)| a.with_relative_paths().map(|a| (n, a)))
                 .collect::<Result<_, _>>()?,
             export_settings,
-            paths: std::marker::PhantomData,
+            paths: relative_to.into(),
         })
     }
 }
 
 impl Sheet<Absolute> {
-    pub fn write<T: AsRef<Path>>(self, path: T) -> Result<(), SheetError> {
-        let mut directory = path.as_ref().to_owned();
+    pub fn write<T: AsRef<Path>>(self, destination: T) -> Result<(), SheetError> {
+        #[derive(Serialize)]
+        struct VersionedSheet {
+            version: Version,
+            sheet: Sheet<Relative>,
+        }
+
+        let mut directory = destination.as_ref().to_owned();
         directory.pop();
-        self.with_relative_paths(directory)?.write(path)
+
+        let versioned_sheet = VersionedSheet {
+            version: CURRENT_VERSION,
+            sheet: self.with_relative_paths(directory)?,
+        };
+
+        let file = File::create(destination.as_ref())
+            .map_err(|e| SheetError::IoError(destination.as_ref().to_owned(), e))?;
+        serde_json::to_writer_pretty(BufWriter::new(file), &versioned_sheet)?;
+        Ok(())
     }
 
     pub fn with_relative_paths<T: AsRef<Path>>(
@@ -288,7 +303,7 @@ impl Sheet<Absolute> {
                 .map(|(n, a)| a.with_relative_paths(&relative_to).map(|a| (n, a)))
                 .collect::<Result<_, _>>()?,
             export_settings,
-            paths: std::marker::PhantomData,
+            paths: relative_to.into(),
         })
     }
 }
@@ -1041,18 +1056,18 @@ fn absolute_to_relative<P: AsRef<Path>, B: AsRef<Path>>(
 fn can_read_write_sheet_from_disk() {
     let original = Sheet::<Any>::read("test-data/sample_sheet_1.tiger")
         .unwrap()
-        .with_relative_paths()
+        .with_relative_paths("test-data")
         .unwrap()
-        .with_absolute_paths("test-data");
+        .with_absolute_paths();
     original
         .clone()
         .write("test-data/sample_sheet_copy.tiger")
         .unwrap();
     let copy = Sheet::<Any>::read("test-data/sample_sheet_copy.tiger")
         .unwrap()
-        .with_relative_paths()
+        .with_relative_paths("test-data")
         .unwrap()
-        .with_absolute_paths("test-data");
+        .with_absolute_paths();
     std::fs::remove_file("test-data/sample_sheet_copy.tiger").unwrap();
     assert_eq!(original, copy);
 }

@@ -103,8 +103,8 @@ impl Document {
 
         let mut document = Document::new(&path);
         document.sheet = Sheet::<Any>::read(path.as_ref())?
-            .with_relative_paths()?
-            .with_absolute_paths(directory);
+            .with_relative_paths(directory)?
+            .with_absolute_paths();
         document.mark_as_saved(document.version());
 
         if let Some(name) = document
