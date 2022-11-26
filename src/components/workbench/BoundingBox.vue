@@ -6,8 +6,9 @@
 	-->
 	<div class="absolute">
 		<svg class="absolute" :style="style" :viewBox="`0 0 ${size[0] + 1} ${size[1] + 1}`">
-			<rect :x="1" :y="1" :width="size[0]" :height="size[1]" shape-rendering="crispEdges" :stroke-width="scale"
-				:class="colorClasses" class="ease-in-out duration-150" style="transitionProperty: stroke-width" />
+			<rect :x="1" :y="1" :width="Math.max(1, size[0])" :height="Math.max(1, size[1])"
+				shape-rendering="crispEdges" :stroke-width="scale" :class="colorClasses"
+				class="ease-in-out duration-150" style="transitionProperty: stroke-width" />
 		</svg>
 	</div>
 </template>
