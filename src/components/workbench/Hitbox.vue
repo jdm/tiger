@@ -3,7 +3,7 @@
 		<BoundingBox :position="hitbox.topLeft" :size="hitbox.size" :darken="true" :colorClasses="boundingBoxClass"
 			:class="hitbox.selected ? 'z-[50]' : 'z-[30]'" />
 		<BoxLabel :text="hitbox.name" :position="hitbox.topLeft" :size="hitbox.size"
-			:color="hitbox.selected ? 'blue' : 'pink'" :hovered="hovered"
+			:color="hitbox.selected ? 'blue' : 'pink'" :hovered="showHover"
 			:class="hitbox.selected ? 'z-[51]' : 'z-[31]'" />
 		<DragArea v-if=" !app.currentDocument?.timelineIsPlaying && !app.currentDocument?.lockHitboxes"
 			:buttons="['left', 'right']" active-cursor="cursor-move"
@@ -33,6 +33,11 @@ const props = defineProps<{
 }>();
 
 const hovered = ref(false);
+const showHover =computed(() => {
+	return hovered.value
+		&& (app.currentDocument?.hitboxesBeingNudged || []).length == 0
+		&& (app.currentDocument?.hitboxesBeingResized || []).length == 0;
+});
 
 const positionStyle = computed(() => {
 	return {
@@ -43,15 +48,11 @@ const positionStyle = computed(() => {
 });
 
 const boundingBoxClass = computed(() => {
-	const showHover = hovered.value
-		&& (app.currentDocument?.hitboxesBeingNudged || []).length == 0
-		&& (app.currentDocument?.hitboxesBeingResized || []).length == 0
-		;
 	return [
-		...(showHover && props.hitbox.selected ? ["stroke-blue-400", "fill-blue-600/20"] : []),
-		...(!showHover && props.hitbox.selected ? ["stroke-blue-600", "fill-blue-600/20"] : []),
-		...(showHover && !props.hitbox.selected ? ["stroke-pink-400", "fill-pink-600/10"] : []),
-		...(!showHover && !props.hitbox.selected ? ["stroke-pink-600", "fill-pink-600/10"] : []),
+		...(showHover.value && props.hitbox.selected ? ["stroke-blue-400", "fill-blue-600/20"] : []),
+		...(!showHover.value && props.hitbox.selected ? ["stroke-blue-600", "fill-blue-600/20"] : []),
+		...(showHover.value && !props.hitbox.selected ? ["stroke-pink-400", "fill-pink-600/10"] : []),
+		...(!showHover.value && !props.hitbox.selected ? ["stroke-pink-600", "fill-pink-600/10"] : []),
 	];
 });
 

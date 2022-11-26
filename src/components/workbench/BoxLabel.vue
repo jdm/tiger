@@ -32,7 +32,7 @@ const app = useAppStore();
 const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
 
 const scale = computed(() => {
-	if (zoom.value * props.size[0] < 50) {
+	if (zoom.value * props.size[0] < 80) {
 		return 0;
 	}
 	if (zoom.value * props.size[1] < 30) {
