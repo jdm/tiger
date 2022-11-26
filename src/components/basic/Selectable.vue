@@ -6,7 +6,7 @@
 			:class="selected ? 'text-blue-200' : 'text-plastic-400'" />
 		<div class="flex-1 min-w-0">
 			<slot name="content">
-				<div class=" whitespace-nowrap overflow-x-hidden text-ellipsis">{{ text }}</div>
+				<div class="mb-0.5 whitespace-nowrap overflow-x-hidden text-ellipsis">{{ text }}</div>
 			</slot>
 		</div>
 		<div v-if="actions && actions.length > 0" class="flex flex-row space-x-1">
