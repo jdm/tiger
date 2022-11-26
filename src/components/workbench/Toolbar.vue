@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref, WritableComputedRef } from "vue";
+import { computed, WritableComputedRef } from "vue";
 import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin, hideSprite, setWorkbenchZoomFactor, showHitboxes, showOrigin, showSprite } from "@/api/document";
 import { useAppStore } from "@/stores/app"
 import FlatMultiSwitch, { FlatMultiSwitchItem } from "@/components/basic/FlatMultiSwitch.vue";
