@@ -29,6 +29,7 @@
 - [ ] Frames pane scroll position in undo stack
 - [ ] Animations pane scroll position in undo stack
 - [ ] Timeline scroll position in undo stack
+- [ ] Project files (.tiger files within a project can be moved without breaking)
 
 ## Tiger 0.8
 
@@ -72,4 +73,3 @@
 - [ ] Events (arbitrary markers on timeline)
 - [ ] Drag and drop frames from OS to content panel
 - [ ] Drag and drop frames from OS to timeline panel
-- [ ] Projects?
