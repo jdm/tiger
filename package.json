@@ -4,9 +4,7 @@
   "version": "0.0.0",
   "scripts": {
     "dev": "vite",
-    "build": "vue-tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "tauri": "tauri"
+    "build": "vue-tsc --noEmit && vite build"
   },
   "dependencies": {
     "@heroicons/vue": "^2.0.13",
