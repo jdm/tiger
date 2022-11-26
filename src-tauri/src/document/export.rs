@@ -55,7 +55,7 @@ impl Document {
             .as_ref()
             .cloned()
             .map(|s| s.with_any_paths())
-            .or_else(|| Some(ExportSettings::<Any>::new()));
+            .or_else(|| Some(ExportSettings::<Any>::default()));
     }
 
     pub(super) fn cancel_export_as(&mut self) {
