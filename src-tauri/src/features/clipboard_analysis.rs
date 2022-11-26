@@ -35,7 +35,9 @@ fn update_clipboard_manifest(app_handle: &tauri::AppHandle) {
         app.set_clipboard_manifest(new_manifest);
     });
 
-    if let Err(e) = app_handle.emit_all(EVENT_FORCE_PATCH_STATE, patch) {
-        error!("Failed to push updated clipboard state: `{e}`");
+    if !patch.0.is_empty() {
+        if let Err(e) = app_handle.emit_all(EVENT_FORCE_PATCH_STATE, patch) {
+            error!("Failed to push updated clipboard state: `{e}`");
+        }
     }
 }
