@@ -2,7 +2,7 @@
 
 ## Tiger 0.6
 
-- [ ] Draw hitbox names in workbench?
+- [x] Draw hitbox names in workbench
 - [ ] Playback speed controls?
 - [ ] Time snapping / quantizing of animation frames
 - [x] Add button to open sheet folder in explorer
@@ -23,6 +23,7 @@
 
 - [ ] Tooltips everywhere
 - [ ] Export perf improvements
+- [ ] Can press F2 to rename animations or hitboxes
 - [ ] Workbench zoom keeps screen center invariant (not origin)
 - [ ] Timeline zoom keeps current position invariant
 - [ ] Can zoom workbench with mousewheel
@@ -31,7 +32,6 @@
 - [ ] Frames pane scroll position in undo stack
 - [ ] Animations pane scroll position in undo stack
 - [ ] Timeline scroll position in undo stack
-- [ ] Project files (.tiger files within a project can be moved without breaking)
 
 ## Tiger 0.8
 
@@ -76,3 +76,4 @@
 - [ ] Events (arbitrary markers on timeline)
 - [ ] Drag and drop frames from OS to content panel
 - [ ] Drag and drop frames from OS to timeline panel
+- [ ] Project files (.tiger files within a project can be moved without breaking)
