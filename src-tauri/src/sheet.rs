@@ -1411,10 +1411,10 @@ fn can_convert_hitbox_to_rectangle() {
 #[test]
 fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
     let absolute = LiquidExportSettings::<Any> {
-        template_file: PathBuf::from("a/b/format.liquid"),
-        texture_file: PathBuf::from("a/b/c/sheet.png"),
-        metadata_file: PathBuf::from("a/b/c/sheet.lua"),
-        metadata_paths_root: PathBuf::from("a/b"),
+        template_file: PathBuf::from("a/b/format.liquid").resolve(),
+        texture_file: PathBuf::from("a/b/c/sheet.png").resolve(),
+        metadata_file: PathBuf::from("a/b/c/sheet.lua").resolve(),
+        metadata_paths_root: PathBuf::from("a/b").resolve(),
         paths: std::marker::PhantomData,
     }
     .with_absolute_paths()
