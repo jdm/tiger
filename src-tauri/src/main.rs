@@ -16,6 +16,9 @@ mod features;
 mod sheet;
 mod utils;
 
+static EVENT_FORCE_PATCH_STATE: &str = "force-patch-state";
+static EVENT_FORCE_REPLACE_STATE: &str = "force-replace-state";
+
 fn main() {
     utils::paths::init();
 
@@ -40,6 +43,7 @@ fn main() {
             features::recent_documents::init(tauri_app);
             features::templates_hot_reload::init(tauri_app);
             features::textures_hot_reload::init(tauri_app);
+            features::clipboard_analysis::init(tauri_app);
             Ok(())
         })
         .on_window_event(handle_window_event)
@@ -173,7 +177,7 @@ fn handle_window_event(event: tauri::GlobalWindowEvent) {
             event
                 .window()
                 .app_handle()
-                .emit_all("force-refresh-state", new_state)
+                .emit_all(EVENT_FORCE_REPLACE_STATE, new_state)
                 .unwrap();
         }
     }

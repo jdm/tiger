@@ -1,7 +1,7 @@
 <template>
 	<div>
 		<Selectable @click="onAnimationClicked" @dblclick="onAnimationDoubleClicked"
-			@contextmenu.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
+			@contextmenu.stop.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
 			left-icon="FilmIcon" :actions="renaming ? [] :
 			[
 				{ icon: 'PencilSquareIcon', callback: beginRename },

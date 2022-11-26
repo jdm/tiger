@@ -10,6 +10,13 @@ pub enum Clipboard {
     Hitboxes(HashMap<String, Hitbox>),
 }
 
+#[derive(Clone, Debug)]
+pub enum ClipboardManifest {
+    Animations,
+    Keyframes,
+    Hitboxes,
+}
+
 impl Document {
     pub fn copy(&self) -> Option<Clipboard> {
         if !self.view.selection.animations.is_empty() {
@@ -108,6 +115,22 @@ impl Document {
         );
         Ok(())
     }
+}
+
+impl Clipboard {
+    pub fn manifest(&self) -> ClipboardManifest {
+        match self {
+            Clipboard::Animations(_) => ClipboardManifest::Animations,
+            Clipboard::Keyframes(_) => ClipboardManifest::Keyframes,
+            Clipboard::Hitboxes(_) => ClipboardManifest::Hitboxes,
+        }
+    }
+}
+
+pub fn clipboard_manifest<S: AsRef<str>>(clipboard_content: S) -> Option<ClipboardManifest> {
+    serde_json::from_str::<Clipboard>(clipboard_content.as_ref())
+        .ok()
+        .map(|c| c.manifest())
 }
 
 #[test]

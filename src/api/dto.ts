@@ -6,6 +6,7 @@ export type AppState = {
   documents: Document[];
   currentDocumentPath: string | null;
   recentDocumentPaths: RecentDocument[];
+  clipboardManifest: ClipboardManifest | null;
   isReleaseBuild: boolean;
   error: UserFacingError | null;
 };
@@ -21,6 +22,12 @@ export type UserFacingError = {
   summary: string;
   details: string;
 };
+
+export enum ClipboardManifest {
+  Animations = "Animations",
+  Keyframes = "Keyframes",
+  Hitboxes = "Hitboxes",
+}
 
 export type Document = {
   path: string;

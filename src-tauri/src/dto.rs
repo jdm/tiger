@@ -5,7 +5,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::app;
-use crate::document;
+use crate::document::{self};
 use crate::sheet::{self, Paths};
 
 // Typescript: @/stores/app
@@ -16,6 +16,7 @@ pub struct App {
     documents: Vec<Document>,
     current_document_path: Option<PathBuf>,
     recent_document_paths: Vec<RecentDocument>,
+    clipboard_manifest: Option<ClipboardManifest>,
     is_release_build: bool,
     error: Option<UserFacingError>,
 }
@@ -25,6 +26,13 @@ pub struct App {
 pub struct RecentDocument {
     path: PathBuf,
     name: String,
+}
+
+#[derive(Clone, Serialize)]
+pub enum ClipboardManifest {
+    Animations,
+    Keyframes,
+    Hitboxes,
 }
 
 #[derive(Clone, Serialize)]
@@ -221,6 +229,7 @@ pub enum AppTrim {
     Full,
     OnlyCurrentDocument,
     OnlyWorkbench,
+    NoDocuments,
 }
 
 pub enum DocumentTrim {
@@ -274,6 +283,7 @@ impl app::App<'_> {
                         (AppTrim::OnlyWorkbench, p) if is_current(p) => DocumentTrim::OnlyWorkbench,
                         (AppTrim::OnlyCurrentDocument, _) => DocumentTrim::Empty,
                         (AppTrim::OnlyWorkbench, _) => DocumentTrim::Empty,
+                        (AppTrim::NoDocuments, _) => DocumentTrim::Empty,
                     };
                     document.to_dto(doc_trim)
                 })
@@ -286,6 +296,7 @@ impl app::App<'_> {
                     name: d.to_file_name(),
                 })
                 .collect(),
+            clipboard_manifest: self.clipboard_manifest().as_ref().map(|m| m.into()),
             is_release_build: !cfg!(debug_assertions),
             error: self.error().map(|e| e.into()),
         }
@@ -299,6 +310,16 @@ impl From<&app::UserFacingError> for UserFacingError {
             title: error.title.clone(),
             summary: error.summary.clone(),
             details: error.details.clone(),
+        }
+    }
+}
+
+impl From<&document::ClipboardManifest> for ClipboardManifest {
+    fn from(manifest: &document::ClipboardManifest) -> Self {
+        match manifest {
+            document::ClipboardManifest::Animations => ClipboardManifest::Animations,
+            document::ClipboardManifest::Keyframes => ClipboardManifest::Keyframes,
+            document::ClipboardManifest::Hitboxes => ClipboardManifest::Hitboxes,
         }
     }
 }

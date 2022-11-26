@@ -361,7 +361,9 @@ pub fn cut(
         if let Some(data) = app.current_document().and_then(|d| d.copy()) {
             if let Ok(serialized) = serde_json::to_string(&data) {
                 let mut clipboard = tauri_app.clipboard_manager();
-                clipboard.write_text(serialized).ok();
+                if clipboard.write_text(serialized).is_ok() {
+                    app.set_clipboard_manifest(Some(data.manifest()));
+                }
             }
         }
         if let Some(document) = app.current_document_mut() {
@@ -379,7 +381,9 @@ pub fn copy(
         if let Some(data) = app.current_document().and_then(|d| d.copy()) {
             if let Ok(serialized) = serde_json::to_string(&data) {
                 let mut clipboard = tauri_app.clipboard_manager();
-                clipboard.write_text(serialized).ok();
+                if clipboard.write_text(serialized).is_ok() {
+                    app.set_clipboard_manifest(Some(data.manifest()));
+                }
             }
         }
     }))

@@ -5,7 +5,7 @@ use std::{
 };
 use thiserror::Error;
 
-use crate::document::{Document, DocumentError};
+use crate::document::{ClipboardManifest, Document, DocumentError};
 use crate::utils::observable::{Delegate, Observable};
 
 #[derive(Error, Debug)]
@@ -23,6 +23,7 @@ pub struct App<'a> {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
     recent_documents: Observable<'a, Vec<PathBuf>>,
+    clipboard_manifest: Option<ClipboardManifest>,
     errors: Vec<UserFacingError>,
     exit_requested: bool,
 }
@@ -197,6 +198,14 @@ impl<'a> App<'a> {
 
     pub fn recent_documents_delegate<'b>(&'b self) -> Delegate<'b, 'a, Vec<PathBuf>> {
         self.recent_documents.delegate()
+    }
+
+    pub fn set_clipboard_manifest(&mut self, new_manifest: Option<ClipboardManifest>) {
+        self.clipboard_manifest = new_manifest;
+    }
+
+    pub fn clipboard_manifest(&self) -> &Option<ClipboardManifest> {
+        &self.clipboard_manifest
     }
 }
 

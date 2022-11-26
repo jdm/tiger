@@ -31,7 +31,7 @@
 import { listen } from "@tauri-apps/api/event"
 import { onMounted, onUnmounted, ref, watch } from "vue"
 import { getState } from "@/api/app"
-import { AppState, TextureInvalidationEvent, } from "@/api/dto"
+import { AppState, Patch, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { useSpriteStore } from "@/stores/sprite"
@@ -52,7 +52,10 @@ const sprite = useSpriteStore();
 const allowContextMenu = ref(false);
 
 onMounted(() => {
-  listen("force-refresh-state", event => {
+  listen("force-patch-state", event => {
+    app.patch(event.payload as Patch);
+  });
+  listen("force-replace-state", event => {
     app.$state = event.payload as AppState;
   });
   listen("invalidate-texture", event => {
