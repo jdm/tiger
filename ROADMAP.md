@@ -49,6 +49,7 @@
 - [ ] Export complete notification
 - [ ] Auto-updates
 - [ ] Splash screen
+- [ ] .tiger file association
 
 ## Tiger 1.0
 
