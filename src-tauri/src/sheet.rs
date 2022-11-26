@@ -38,13 +38,13 @@ enum Version {
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Absolute;
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Relative {
     base: PathBuf,
 }
 #[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct Any;
-pub trait Paths: Default + Eq + PartialEq {}
+pub trait Paths: Eq + PartialEq {}
 impl Paths for Absolute {}
 impl Paths for Relative {}
 impl Paths for Any {}
@@ -319,7 +319,7 @@ impl<P: Paths> Frame<P> {
 impl Frame<Relative> {
     pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Frame<Absolute> {
         Frame {
-            source: relative_to.as_ref().join(&self.source).normalize(),
+            source: relative_to.as_ref().join(&self.source).resolve(),
             paths: std::marker::PhantomData,
         }
     }
@@ -412,7 +412,9 @@ impl<P: Paths> Animation<P> {
     pub fn direction_preset(&self) -> Option<DirectionPreset> {
         DirectionPreset::from_directions(self.sequences_iter().map(|(d, _s)| *d))
     }
+}
 
+impl<P: Paths + Default> Animation<P> {
     pub fn apply_direction_preset(&mut self, preset: DirectionPreset) {
         let directions = preset.directions();
         self.sequences.retain(|d, _s| directions.contains(d));
@@ -747,7 +749,7 @@ impl<P: Paths> Keyframe<P> {
 impl Keyframe<Relative> {
     pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Keyframe<Absolute> {
         Keyframe {
-            frame: relative_to.as_ref().join(&self.frame).normalize(),
+            frame: relative_to.as_ref().join(&self.frame).resolve(),
             hitboxes: self.hitboxes,
             duration_millis: self.duration_millis,
             offset: self.offset,
@@ -845,7 +847,7 @@ impl Hitbox {
     }
 }
 
-impl<P: Paths> ExportSettings<P> {
+impl<P: Paths + Default> ExportSettings<P> {
     pub fn new() -> Self {
         Self::Liquid(LiquidExportSettings::<P>::default())
     }
@@ -947,13 +949,13 @@ impl LiquidExportSettings<Relative> {
         relative_to: T,
     ) -> LiquidExportSettings<Absolute> {
         LiquidExportSettings {
-            template_file: relative_to.as_ref().join(&self.template_file).normalize(),
-            texture_file: relative_to.as_ref().join(&self.texture_file).normalize(),
-            metadata_file: relative_to.as_ref().join(&self.metadata_file).normalize(),
+            template_file: relative_to.as_ref().join(&self.template_file).resolve(),
+            texture_file: relative_to.as_ref().join(&self.texture_file).resolve(),
+            metadata_file: relative_to.as_ref().join(&self.metadata_file).resolve(),
             metadata_paths_root: relative_to
                 .as_ref()
                 .join(&self.metadata_paths_root)
-                .normalize(),
+                .resolve(),
             paths: std::marker::PhantomData,
         }
     }
@@ -1409,14 +1411,17 @@ fn can_convert_hitbox_to_rectangle() {
 #[test]
 fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
     let absolute = LiquidExportSettings::<Absolute> {
-        template_file: Path::new("a/b/format.liquid").to_owned(),
-        texture_file: Path::new("a/b/c/sheet.png").to_owned(),
-        metadata_file: Path::new("a/b/c/sheet.lua").to_owned(),
-        metadata_paths_root: Path::new("a/b").to_owned(),
+        template_file: PathBuf::from("a/b/format.liquid").resolve(),
+        texture_file: PathBuf::from("a/b/c/sheet.png").resolve(),
+        metadata_file: PathBuf::from("a/b/c/sheet.lua").resolve(),
+        metadata_paths_root: PathBuf::from("a/b").resolve(),
         paths: std::marker::PhantomData,
     };
 
-    let relative = absolute.clone().with_relative_paths("a/b").unwrap();
+    let relative = absolute
+        .clone()
+        .with_relative_paths(PathBuf::from("a/b").resolve())
+        .unwrap();
     assert_eq!(relative.template_file, Path::new("format.liquid"));
     assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
     assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::*;
 
-impl<Z: Paths> Sheet<Z> {
+impl<Z: Paths + Default> Sheet<Z> {
     pub fn add_test_animation<N: AsRef<str>, P: AsRef<Path>>(
         &mut self,
         animation_name: N,
