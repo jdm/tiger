@@ -235,11 +235,6 @@ impl Sheet<Any> {
         self,
         relative_to: P,
     ) -> Result<Sheet<Relative>, SheetError> {
-        if !relative_to.as_ref().is_absolute() {
-            return Err(SheetError::AbsolutePathExpected(
-                relative_to.as_ref().to_owned(),
-            ));
-        }
         let export_settings = match self.export_settings {
             Some(s) => Some(s.with_relative_paths()?),
             None => None,
@@ -256,7 +251,7 @@ impl Sheet<Any> {
                 .map(|(n, a)| a.with_relative_paths().map(|a| (n, a)))
                 .collect::<Result<_, _>>()?,
             export_settings,
-            paths: relative_to.into(),
+            paths: relative_to.as_ref().resolve().into(),
         })
     }
 }
@@ -269,7 +264,8 @@ impl Sheet<Absolute> {
             sheet: Sheet<Relative>,
         }
 
-        let mut directory = destination.as_ref().to_owned();
+        let destination = destination.as_ref().resolve();
+        let mut directory = destination.clone();
         directory.pop();
 
         let versioned_sheet = VersionedSheet {
@@ -277,8 +273,7 @@ impl Sheet<Absolute> {
             sheet: self.with_relative_paths(directory)?,
         };
 
-        let file = File::create(destination.as_ref())
-            .map_err(|e| SheetError::IoError(destination.as_ref().to_owned(), e))?;
+        let file = File::create(&destination).map_err(|e| SheetError::IoError(destination, e))?;
         serde_json::to_writer_pretty(BufWriter::new(file), &versioned_sheet)?;
         Ok(())
     }

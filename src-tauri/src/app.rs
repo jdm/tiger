@@ -203,9 +203,8 @@ impl<'a> App<'a> {
 #[cfg(test)]
 mod test {
 
-    use std::path::PathBuf;
-
     use super::*;
+    use std::path::PathBuf;
 
     #[test]
     fn can_open_and_close_documents() {
