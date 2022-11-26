@@ -75,8 +75,8 @@ const editMenuEntries = computed((): (MenuEntry|Separator)[] => [
 		disabled: app.currentDocument?.redoEffect == null
 	},
 	{},
-	{ name: "Cut", shortcut: "Ctrl+X", action: cut, },
-	{ name: "Copy", shortcut: "Ctrl+C", action: copy, },
+	{ name: "Cut", shortcut: "Ctrl+X", action: cut, disabled: !app.canCut },
+	{ name: "Copy", shortcut: "Ctrl+C", action: copy, disabled: !app.canCopy },
 	{ name: "Paste", shortcut: "Ctrl+V", action: paste, },
 ]);
 

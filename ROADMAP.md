@@ -11,6 +11,7 @@
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
+- [ ] Cut and Copy menu entries are now disabled when there is no applicable selection
 - [x] Upgrade from Heroicons 1.0 to 2.0
 - [x] Performance improvements to animation playback and drag operations
 - [x] Fixed a bug where resize handles on hitboxes with odd-numbered dimensions were slightly misaligned

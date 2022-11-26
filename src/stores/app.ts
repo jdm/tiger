@@ -1,6 +1,7 @@
 import {
   Animation,
   AppState,
+  Frame,
   Hitbox,
   Keyframe,
   Patch,
@@ -80,6 +81,20 @@ export const useAppStore = defineStore("app", {
       }
       return null;
     },
+    selectedFrames(): Frame[] | null {
+      if (!this.currentDocument) {
+        return null;
+      }
+      return this.currentDocument.sheet.frames.filter(
+        (frame) => frame.selected
+      );
+    },
+    selectedAnimations(): Animation[] | null {
+      if (!this.sortedAnimations) {
+        return null;
+      }
+      return this.sortedAnimations.filter((animation) => animation.selected);
+    },
     selectedHitboxes(): Hitbox[] | null {
       if (!this.currentKeyframe) {
         return null;
@@ -92,6 +107,21 @@ export const useAppStore = defineStore("app", {
       }
       return Object.values(this.currentAnimation.sequences).flatMap(
         (sequence) => sequence.keyframes.filter((keyframe) => keyframe.selected)
+      );
+    },
+    canCut(): boolean {
+      return (
+        !!this.selectedAnimations?.length ||
+        !!this.selectedKeyframes?.length ||
+        !!this.selectedHitboxes?.length
+      );
+    },
+    canCopy(): boolean {
+      return (
+        !!this.selectedFrames?.length ||
+        !!this.selectedAnimations?.length ||
+        !!this.selectedKeyframes?.length ||
+        !!this.selectedHitboxes?.length
       );
     },
   },
