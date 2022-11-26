@@ -23,6 +23,8 @@
 
 - [ ] Tooltips everywhere
 - [ ] Export perf improvements
+- [ ] Workbench zoom keeps screen center invariant (not origin)
+- [ ] Timeline zoom keeps current position invariant
 - [ ] Can zoom workbench with mousewheel
 - [ ] Can zoom timeline with mousewheel
 - [ ] Can scroll timeline with mousewheel
