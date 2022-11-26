@@ -6,7 +6,7 @@ use uuid::Uuid;
 
 use crate::app;
 use crate::document;
-use crate::sheet;
+use crate::sheet::{self, Paths};
 
 // Typescript: @/stores/app
 
@@ -394,7 +394,7 @@ impl document::Document {
     }
 }
 
-impl sheet::Sheet {
+impl<P: Paths> sheet::Sheet<P> {
     fn to_dto(&self, trim: SheetTrim) -> Sheet {
         Sheet {
             frames: match trim {
@@ -414,8 +414,8 @@ impl sheet::Sheet {
     }
 }
 
-impl From<&sheet::Frame> for Frame {
-    fn from(frame: &sheet::Frame) -> Self {
+impl<P: Paths> From<&sheet::Frame<P>> for Frame {
+    fn from(frame: &sheet::Frame<P>) -> Self {
         Self {
             path: frame.source().to_owned(),
             name: frame.source().to_file_stem(),
@@ -425,11 +425,11 @@ impl From<&sheet::Frame> for Frame {
     }
 }
 
-impl<T> From<(T, &sheet::Animation)> for Animation
+impl<T, P: Paths> From<(T, &sheet::Animation<P>)> for Animation
 where
     T: AsRef<str>,
 {
-    fn from(animation: (T, &sheet::Animation)) -> Self {
+    fn from(animation: (T, &sheet::Animation<P>)) -> Self {
         Self {
             name: animation.0.as_ref().to_owned(),
             selected: false,
@@ -502,8 +502,8 @@ impl From<DirectionPreset> for sheet::DirectionPreset {
     }
 }
 
-impl From<&sheet::Sequence> for Sequence {
-    fn from(sequence: &sheet::Sequence) -> Self {
+impl<P: Paths> From<&sheet::Sequence<P>> for Sequence {
+    fn from(sequence: &sheet::Sequence<P>) -> Self {
         Self {
             keyframes: sequence.keyframes_iter().map(|k| k.into()).collect(),
             duration_millis: sequence.duration_millis(),
@@ -511,8 +511,8 @@ impl From<&sheet::Sequence> for Sequence {
     }
 }
 
-impl From<&sheet::Keyframe> for Keyframe {
-    fn from(keyframe: &sheet::Keyframe) -> Self {
+impl<P: Paths> From<&sheet::Keyframe<P>> for Keyframe {
+    fn from(keyframe: &sheet::Keyframe<P>) -> Self {
         Self {
             frame: keyframe.frame().to_owned(),
             name: keyframe.frame().to_file_stem(),
@@ -596,8 +596,8 @@ impl From<BrowseDirection> for document::BrowseDirection {
     }
 }
 
-impl From<&sheet::ExportSettings> for ExportSettings {
-    fn from(settings: &sheet::ExportSettings) -> Self {
+impl<P: Paths> From<&sheet::ExportSettings<P>> for ExportSettings {
+    fn from(settings: &sheet::ExportSettings<P>) -> Self {
         match settings {
             sheet::ExportSettings::Liquid(liquid_settings) => Self {
                 template_file: liquid_settings.template_file().to_owned(),

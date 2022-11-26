@@ -1,4 +1,5 @@
 use euclid::default::Vector2D;
+use log::error;
 use std::fmt::Display;
 use std::{path::PathBuf, time::Duration};
 
@@ -103,13 +104,13 @@ pub enum Command {
 #[derive(Debug, Default)]
 pub(super) struct HistoryEntry {
     pub(super) last_command: Option<Command>,
-    pub(super) sheet: Sheet,
+    pub(super) sheet: Sheet<Absolute>,
     pub(super) view: View,
     pub(super) version: i32,
 }
 
 impl Document {
-    pub fn process_command(&mut self, command: Command) -> Result<(), DocumentError> {
+    fn process_command_internal(&mut self, command: Command) -> DocumentResult<()> {
         match command {
             Command::Undo => self.undo()?,
             Command::Redo => self.redo()?,
@@ -238,6 +239,14 @@ impl Document {
         Ok(())
     }
 
+    pub fn process_command(&mut self, command: Command) -> DocumentResult<()> {
+        let result = self.process_command_internal(command);
+        if let Err(e) = &result {
+            error!("Error while processing document command: {e}");
+        }
+        result
+    }
+
     pub fn is_saved(&self) -> bool {
         self.persistent.disk_version == Some(self.version())
     }
@@ -289,7 +298,7 @@ impl Document {
         }
     }
 
-    pub fn undo(&mut self) -> Result<(), DocumentError> {
+    pub fn undo(&mut self) -> DocumentResult<()> {
         if self.history_index > 0 {
             self.history_index -= 1;
             self.sheet = self.history[self.history_index].sheet.clone();
@@ -299,7 +308,7 @@ impl Document {
         Ok(())
     }
 
-    pub fn redo(&mut self) -> Result<(), DocumentError> {
+    pub fn redo(&mut self) -> DocumentResult<()> {
         if self.history_index < self.history.len() - 1 {
             self.history_index += 1;
             self.sheet = self.history[self.history_index].sheet.clone();

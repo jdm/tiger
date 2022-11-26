@@ -5,8 +5,8 @@ use crate::document::*;
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum Clipboard {
-    Animations(HashMap<String, Animation>),
-    Keyframes(Vec<Keyframe>),
+    Animations(HashMap<String, Animation<Absolute>>),
+    Keyframes(Vec<Keyframe<Absolute>>),
     Hitboxes(HashMap<String, Hitbox>),
 }
 
@@ -23,7 +23,7 @@ impl Document {
         }
     }
 
-    pub(super) fn paste(&mut self, clipboard: Clipboard) -> Result<(), DocumentError> {
+    pub(super) fn paste(&mut self, clipboard: Clipboard) -> DocumentResult<()> {
         match clipboard {
             Clipboard::Animations(animations) => self.paste_animations(animations),
             Clipboard::Keyframes(keyframes) => self.paste_keyframes(keyframes),
@@ -36,14 +36,14 @@ impl Document {
             .get_selected_animations()
             .into_iter()
             .map(|(name, animation)| (name.clone(), animation.clone()))
-            .collect::<HashMap<String, Animation>>();
+            .collect::<HashMap<String, Animation<Absolute>>>();
         Some(Clipboard::Animations(animations))
     }
 
     fn paste_animations(
         &mut self,
-        animations: HashMap<String, Animation>,
-    ) -> Result<(), DocumentError> {
+        animations: HashMap<String, Animation<Absolute>>,
+    ) -> DocumentResult<()> {
         let mut new_animation_names = vec![];
         for (name, animation) in animations {
             let (new_animation_name, new_animation) = self.sheet.create_animation(name);
@@ -64,7 +64,7 @@ impl Document {
         Some(Clipboard::Keyframes(keyframes))
     }
 
-    fn paste_keyframes(&mut self, keyframes: Vec<Keyframe>) -> Result<(), DocumentError> {
+    fn paste_keyframes(&mut self, keyframes: Vec<Keyframe<Absolute>>) -> DocumentResult<()> {
         let index = self
             .get_workbench_keyframe()
             .map(|((_, index), _)| index)
@@ -92,7 +92,7 @@ impl Document {
         Some(Clipboard::Hitboxes(hitboxes))
     }
 
-    fn paste_hitboxes(&mut self, hitboxes: HashMap<String, Hitbox>) -> Result<(), DocumentError> {
+    fn paste_hitboxes(&mut self, hitboxes: HashMap<String, Hitbox>) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation_mut()?;
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
         let mut new_hitbox_names = vec![];

@@ -5,10 +5,10 @@ use std::time::Duration;
 use tauri::ClipboardManager;
 
 use crate::app::{App, AppState};
-use crate::document::{Command, Document, DocumentError};
+use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, AppTrim, ToFileName};
 use crate::export::export_sheet;
-use crate::sheet;
+use crate::sheet::{Absolute, Sheet};
 
 impl AppState<'_> {
     pub fn mutate<F>(&self, app_trim: AppTrim, operation: F) -> Patch
@@ -71,7 +71,7 @@ pub async fn open_documents(
     app_state: tauri::State<'_, AppState<'_>>,
     paths: Vec<PathBuf>,
 ) -> Result<Patch, ()> {
-    let mut documents: Vec<(PathBuf, Result<Document, DocumentError>)> = Vec::new();
+    let mut documents: Vec<(PathBuf, DocumentResult<Document>)> = Vec::new();
     for path in &paths {
         let open_path = path.to_owned();
         documents.push((
@@ -284,7 +284,7 @@ pub async fn save_as(
 #[tauri::command]
 pub async fn save_all(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
     struct DocumentToSave {
-        sheet: sheet::Sheet,
+        sheet: Sheet<Absolute>,
         destination: PathBuf,
         version: i32,
     }

@@ -27,7 +27,7 @@ pub use view::*;
 #[derive(Debug)]
 pub struct Document {
     path: PathBuf,
-    sheet: Sheet,           // Sheet being edited, fully recorded in history
+    sheet: Sheet<Absolute>, // Sheet being edited, fully recorded in history
     view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
     transient: Transient, // State preventing undo actions when not default, not recorded in history
     persistent: Persistent, // Other state not recorded in history
@@ -41,7 +41,7 @@ pub struct Persistent {
     pub(super) disk_version: Option<i32>,
     pub(super) close_requested: bool,
     pub(super) timeline_is_playing: bool,
-    pub(super) export_settings_edit: Option<ExportSettings>,
+    pub(super) export_settings_edit: Option<ExportSettings<Any>>,
     pub(super) preserve_aspect_ratio: bool,
 }
 
@@ -79,6 +79,8 @@ pub enum DocumentError {
     NotEditingExportSettings,
 }
 
+pub type DocumentResult<T> = Result<T, DocumentError>;
+
 impl Document {
     pub fn new<T: AsRef<Path>>(path: T) -> Document {
         let history_entry: HistoryEntry = Default::default();
@@ -95,9 +97,14 @@ impl Document {
         }
     }
 
-    pub fn open<T: AsRef<Path>>(path: T) -> Result<Document, DocumentError> {
+    pub fn open<T: AsRef<Path>>(path: T) -> DocumentResult<Document> {
+        let mut directory = path.as_ref().to_owned();
+        directory.pop();
+
         let mut document = Document::new(&path);
-        document.sheet = Sheet::read(path.as_ref())?;
+        document.sheet = Sheet::<Any>::read(path.as_ref())?
+            .with_relative_paths()?
+            .with_absolute_paths(directory);
         document.mark_as_saved(document.version());
 
         if let Some(name) = document
@@ -116,7 +123,7 @@ impl Document {
         Ok(document)
     }
 
-    pub fn sheet(&self) -> &Sheet {
+    pub fn sheet(&self) -> &Sheet<Absolute> {
         &self.sheet
     }
 
@@ -222,7 +229,7 @@ impl Document {
             });
     }
 
-    pub fn get_workbench_animation(&self) -> Result<(&String, &Animation), DocumentError> {
+    pub fn get_workbench_animation(&self) -> DocumentResult<(&String, &Animation<Absolute>)> {
         let animation_name = self
             .current_animation()
             .as_ref()
@@ -236,7 +243,7 @@ impl Document {
 
     pub fn get_workbench_animation_mut(
         &mut self,
-    ) -> Result<(String, &mut Animation), DocumentError> {
+    ) -> DocumentResult<(String, &mut Animation<Absolute>)> {
         let animation_name = self
             .current_animation()
             .clone()
@@ -248,7 +255,7 @@ impl Document {
         Ok((animation_name, animation))
     }
 
-    pub fn get_workbench_sequence(&self) -> Result<(Direction, &Sequence), DocumentError> {
+    pub fn get_workbench_sequence(&self) -> DocumentResult<(Direction, &Sequence<Absolute>)> {
         let (_, animation) = self.get_workbench_animation()?;
         let direction = self
             .current_sequence()
@@ -263,7 +270,7 @@ impl Document {
 
     pub fn get_workbench_sequence_mut(
         &mut self,
-    ) -> Result<(Direction, &mut Sequence), DocumentError> {
+    ) -> DocumentResult<(Direction, &mut Sequence<Absolute>)> {
         let direction = self
             .current_sequence()
             .ok_or(DocumentError::NotEditingAnySequence)?;
@@ -276,7 +283,9 @@ impl Document {
         ))
     }
 
-    pub fn get_workbench_keyframe(&self) -> Result<((Direction, usize), &Keyframe), DocumentError> {
+    pub fn get_workbench_keyframe(
+        &self,
+    ) -> DocumentResult<((Direction, usize), &Keyframe<Absolute>)> {
         let (direction, sequence) = self.get_workbench_sequence()?;
         let (index, keyframe) = sequence
             .keyframe_at(self.view.timeline_clock)
@@ -286,7 +295,7 @@ impl Document {
 
     pub fn get_workbench_keyframe_mut(
         &mut self,
-    ) -> Result<((Direction, usize), &mut Keyframe), DocumentError> {
+    ) -> DocumentResult<((Direction, usize), &mut Keyframe<Absolute>)> {
         let timeline_clock = self.view.timeline_clock;
         let (direction, sequence) = self.get_workbench_sequence_mut()?;
         let (index, keyframe) = sequence
@@ -295,7 +304,7 @@ impl Document {
         Ok(((direction, index), keyframe))
     }
 
-    pub fn get_selected_animations(&self) -> Vec<(&String, &Animation)> {
+    pub fn get_selected_animations(&self) -> Vec<(&String, &Animation<Absolute>)> {
         self.sheet
             .animations_iter()
             .filter(|(name, _)| self.view.selection.is_animation_selected(name))
@@ -304,7 +313,7 @@ impl Document {
 
     pub fn get_selected_keyframes(
         &self,
-    ) -> Result<Vec<(Direction, usize, &Keyframe)>, DocumentError> {
+    ) -> DocumentResult<Vec<(Direction, usize, &Keyframe<Absolute>)>> {
         let (animation_name, animation) = self.get_workbench_animation()?;
         Ok(animation
             .sequences_iter()
@@ -328,7 +337,7 @@ impl Document {
 
     pub fn get_selected_keyframes_mut(
         &mut self,
-    ) -> Result<Vec<(Direction, usize, &mut Keyframe)>, DocumentError> {
+    ) -> DocumentResult<Vec<(Direction, usize, &mut Keyframe<Absolute>)>> {
         let selection = self.view.selection.clone();
         let (animation_name, animation) = self.get_workbench_animation_mut()?;
         Ok(animation
@@ -348,7 +357,7 @@ impl Document {
             .collect())
     }
 
-    pub fn get_selected_hitboxes(&self) -> Result<Vec<(&String, &Hitbox)>, DocumentError> {
+    pub fn get_selected_hitboxes(&self) -> DocumentResult<Vec<(&String, &Hitbox)>> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let selection = self.view.selection.clone();
         let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
@@ -369,9 +378,7 @@ impl Document {
             .collect())
     }
 
-    pub fn get_selected_hitboxes_mut(
-        &mut self,
-    ) -> Result<Vec<(String, &mut Hitbox)>, DocumentError> {
+    pub fn get_selected_hitboxes_mut(&mut self) -> DocumentResult<Vec<(String, &mut Hitbox)>> {
         let (animation_name, _) = self.get_workbench_animation_mut()?;
         let selection = self.view.selection.clone();
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;

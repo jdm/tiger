@@ -66,7 +66,7 @@ impl Document {
         &mut self,
         direction: Direction,
         index: usize,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let selected_frames = {
             let mut frames: Vec<PathBuf> = self.view.selection.frames().cloned().collect();
             frames.sort();
@@ -111,7 +111,7 @@ impl Document {
         &mut self,
         direction: Direction,
         index: usize,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         if !self
@@ -129,7 +129,7 @@ impl Document {
         &mut self,
         direction: Direction,
         index: usize,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let timeline_is_playing = self.persistent.timeline_is_playing;
 
         // Sort affected keyframes
@@ -223,7 +223,7 @@ impl Document {
         &mut self,
         direction: Direction,
         index: usize,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         if !self
@@ -248,7 +248,7 @@ impl Document {
     pub(super) fn update_drag_keyframe_duration(
         &mut self,
         delta_millis: i64,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let drag_state = self
             .transient
             .keyframe_duration_drag
@@ -295,7 +295,7 @@ impl Document {
         &mut self,
         direction: Direction,
         index: usize,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (_, animation) = self.get_workbench_animation()?;
         self.transient.keyframe_nudge = Some(KeyframeNudge {
             keyframe_being_dragged: (direction, index),
@@ -317,7 +317,7 @@ impl Document {
         &mut self,
         mut displacement: Vector2D<i32>,
         both_axis: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let zoom = self.workbench_zoom();
         let nudge = self
             .transient
@@ -383,7 +383,7 @@ impl Document {
         self.transient.keyframe_nudge = None;
     }
 
-    pub(super) fn nudge_keyframe(keyframe: &mut Keyframe, new_offset: Vector2D<i32>) {
+    pub(super) fn nudge_keyframe<P: Paths>(keyframe: &mut Keyframe<P>, new_offset: Vector2D<i32>) {
         let old_offset = keyframe.offset();
         keyframe.set_offset(new_offset);
         let displacement = new_offset - old_offset;
@@ -395,7 +395,7 @@ impl Document {
     pub(super) fn begin_nudge_hitbox<T: AsRef<str>>(
         &mut self,
         hitbox_name: T,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (_, keyframe) = self.get_workbench_keyframe()?;
         self.transient.hitbox_nudge = Some(HitboxNudge {
             hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
@@ -411,7 +411,7 @@ impl Document {
         &mut self,
         mut displacement: Vector2D<i32>,
         both_axis: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let zoom = self.workbench_zoom();
         let nudge = self
             .transient
@@ -486,7 +486,7 @@ impl Document {
         &mut self,
         hitbox_name: T,
         axis: ResizeAxis,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (_, keyframe) = self.get_workbench_keyframe()?;
         self.transient.hitbox_resize = Some(HitboxResize {
             axis,
@@ -503,7 +503,7 @@ impl Document {
         &mut self,
         mouse_delta: Vector2D<i32>,
         preserve_aspect_ratio: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         use ResizeAxis::*;
 
         let resize = self

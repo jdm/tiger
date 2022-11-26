@@ -4,34 +4,28 @@ use std::time::Duration;
 use crate::document::*;
 
 impl Document {
-    pub(super) fn set_keyframe_duration(
-        &mut self,
-        duration: Duration,
-    ) -> Result<(), DocumentError> {
+    pub(super) fn set_keyframe_duration(&mut self, duration: Duration) -> DocumentResult<()> {
         for (_, _, keyframe) in self.get_selected_keyframes_mut()? {
             keyframe.set_duration_millis(duration.as_millis() as u64);
         }
         Ok(())
     }
 
-    pub(super) fn set_keyframe_offset_x(&mut self, x: i32) -> Result<(), DocumentError> {
+    pub(super) fn set_keyframe_offset_x(&mut self, x: i32) -> DocumentResult<()> {
         for (_, _, keyframe) in self.get_selected_keyframes_mut()? {
             Document::nudge_keyframe(keyframe, vec2(x, keyframe.offset().y));
         }
         Ok(())
     }
 
-    pub(super) fn set_keyframe_offset_y(&mut self, y: i32) -> Result<(), DocumentError> {
+    pub(super) fn set_keyframe_offset_y(&mut self, y: i32) -> DocumentResult<()> {
         for (_, _, keyframe) in self.get_selected_keyframes_mut()? {
             Document::nudge_keyframe(keyframe, vec2(keyframe.offset().x, y));
         }
         Ok(())
     }
 
-    pub(super) fn create_hitbox(
-        &mut self,
-        position: Option<Vector2D<i32>>,
-    ) -> Result<(), DocumentError> {
+    pub(super) fn create_hitbox(&mut self, position: Option<Vector2D<i32>>) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
@@ -47,7 +41,7 @@ impl Document {
         &mut self,
         old_name: T,
         new_name: U,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
@@ -57,13 +51,13 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn delete_hitbox<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
+    pub(super) fn delete_hitbox<T: AsRef<str>>(&mut self, name: T) -> DocumentResult<()> {
         let (_, keyframe) = self.get_workbench_keyframe_mut()?;
         keyframe.delete_hitbox(&name);
         Ok(())
     }
 
-    pub(super) fn delete_selected_hitboxes(&mut self) -> Result<(), DocumentError> {
+    pub(super) fn delete_selected_hitboxes(&mut self) -> DocumentResult<()> {
         let selected_hitboxes = self
             .view
             .selection
@@ -77,7 +71,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn set_hitbox_position_x(&mut self, x: i32) -> Result<(), DocumentError> {
+    pub(super) fn set_hitbox_position_x(&mut self, x: i32) -> DocumentResult<()> {
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
             let new_position = vec2(x, hitbox.position().y);
             hitbox.set_position(new_position)
@@ -85,7 +79,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn set_hitbox_position_y(&mut self, y: i32) -> Result<(), DocumentError> {
+    pub(super) fn set_hitbox_position_y(&mut self, y: i32) -> DocumentResult<()> {
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
             let new_position = vec2(hitbox.position().x, y);
             hitbox.set_position(new_position)
@@ -93,7 +87,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn set_hitbox_width(&mut self, new_width: u32) -> Result<(), DocumentError> {
+    pub(super) fn set_hitbox_width(&mut self, new_width: u32) -> DocumentResult<()> {
         let preserve_ar = self.persistent.preserve_aspect_ratio;
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
             let new_height = match (preserve_ar, hitbox.size().x) {
@@ -106,7 +100,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn set_hitbox_height(&mut self, new_height: u32) -> Result<(), DocumentError> {
+    pub(super) fn set_hitbox_height(&mut self, new_height: u32) -> DocumentResult<()> {
         let preserve_ar = self.persistent.preserve_aspect_ratio;
         for (_, hitbox) in self.get_selected_hitboxes_mut()? {
             let new_width = match (preserve_ar, hitbox.size().y) {

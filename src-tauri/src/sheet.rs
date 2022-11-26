@@ -36,11 +36,24 @@ enum Version {
     Tiger4,
 }
 
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Absolute;
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Relative;
+#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct Any;
+pub trait Paths: Default + Eq + PartialEq {}
+impl Paths for Absolute {}
+impl Paths for Relative {}
+impl Paths for Any {}
+
 const CURRENT_VERSION: Version = Version::Tiger4;
 pub use self::version4::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
+    #[error("Expected an absolute path but got: `{0}`")]
+    AbsolutePathExpected(PathBuf),
     #[error("Filesystem error for `{0}`: `{1}`")]
     IoError(PathBuf, std::io::Error),
     #[error(transparent)]
@@ -57,6 +70,8 @@ pub enum SheetError {
     AbsoluteToRelativePath(PathBuf, PathBuf),
     #[error("Animation is missing a keyframe at index `{0}`")]
     InvalidFrameIndex(usize),
+    #[error("Expected a relative path but got: `{0}`")]
+    RelativePathExpected(PathBuf),
 }
 
 impl From<SheetError> for String {
@@ -65,108 +80,12 @@ impl From<SheetError> for String {
     }
 }
 
-impl Sheet {
-    pub fn read<T: AsRef<Path>>(path: T) -> Result<Sheet, SheetError> {
-        #[derive(Deserialize)]
-        struct Versioned {
-            version: Version,
-        }
-
-        let version = {
-            let file = File::open(path.as_ref())
-                .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
-            let versioned: Versioned = serde_json::from_reader(BufReader::new(file))?;
-            versioned.version
-        };
-
-        let sheet = {
-            let file = File::open(path.as_ref())
-                .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
-            let reader = BufReader::new(file);
-            read_file(version, reader)?
-        };
-
-        let mut directory = path.as_ref().to_owned();
-        directory.pop();
-        Ok(sheet.with_absolute_paths(directory))
-    }
-
-    pub fn write<T: AsRef<Path>>(&self, path: T) -> Result<(), SheetError> {
-        #[derive(Serialize)]
-        struct VersionedSheet<'a> {
-            version: Version,
-            sheet: &'a Sheet,
-        }
-        let mut directory = path.as_ref().to_owned();
-        directory.pop();
-        let sheet = self.with_relative_paths(directory)?;
-        let versioned_sheet = VersionedSheet {
-            version: CURRENT_VERSION,
-            sheet: &sheet,
-        };
-
-        let file = File::create(path.as_ref())
-            .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
-        serde_json::to_writer_pretty(BufWriter::new(file), &versioned_sheet)?;
-        Ok(())
-    }
-
-    pub fn with_relative_paths<T: AsRef<Path>>(&self, relative_to: T) -> Result<Sheet, SheetError> {
-        let mut sheet = self.clone();
-        for frame in sheet.frames_iter_mut() {
-            frame.source = diff_paths(&frame.source, relative_to.as_ref()).ok_or_else(|| {
-                SheetError::AbsoluteToRelativePath(
-                    frame.source.clone(),
-                    relative_to.as_ref().to_owned(),
-                )
-            })?;
-        }
-        for (_name, animation) in sheet.animations.iter_mut() {
-            for (_direction, sequence) in animation.sequences.iter_mut() {
-                for keyframe in sequence.keyframes_iter_mut() {
-                    keyframe.frame =
-                        diff_paths(&keyframe.frame, relative_to.as_ref()).ok_or_else(|| {
-                            SheetError::AbsoluteToRelativePath(
-                                keyframe.frame.clone(),
-                                relative_to.as_ref().to_owned(),
-                            )
-                        })?;
-                }
-            }
-        }
-        if let Some(e) = sheet.export_settings {
-            sheet.export_settings = e.with_relative_paths(relative_to).ok();
-        }
-        Ok(sheet)
-    }
-
-    fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> Sheet {
-        let mut sheet = self.clone();
-        for frame in sheet.frames_iter_mut() {
-            frame.source = relative_to.as_ref().join(&frame.source).normalize();
-        }
-        for (_name, animation) in sheet.animations.iter_mut() {
-            for (_direction, sequence) in animation.sequences.iter_mut() {
-                for keyframe in sequence.keyframes_iter_mut() {
-                    keyframe.frame = relative_to.as_ref().join(&keyframe.frame).normalize();
-                }
-            }
-        }
-        if let Some(e) = sheet.export_settings {
-            sheet.export_settings = Some(e.with_absolute_paths(relative_to));
-        }
-        sheet
-    }
-
-    pub fn frames_iter(&self) -> std::slice::Iter<'_, Frame> {
+impl<P: Paths> Sheet<P> {
+    pub fn frames_iter(&self) -> std::slice::Iter<'_, Frame<P>> {
         self.frames.iter()
     }
 
-    pub fn frames_iter_mut(&mut self) -> std::slice::IterMut<'_, Frame> {
-        self.frames.iter_mut()
-    }
-
-    pub fn animations_iter(&self) -> impl Iterator<Item = (&String, &Animation)> {
+    pub fn animations_iter(&self) -> impl Iterator<Item = (&String, &Animation<P>)> {
         self.animations.iter()
     }
 
@@ -195,29 +114,29 @@ impl Sheet {
     pub fn create_animation<T: AsRef<str>>(
         &mut self,
         proposed_name: T,
-    ) -> (String, &mut Animation) {
+    ) -> (String, &mut Animation<P>) {
         let name = generate_unique_name(proposed_name.as_ref(), |n| !self.has_animation(n));
         self.animations.insert(name.clone(), Animation::new());
         (name.clone(), self.animations.get_mut(&name).unwrap())
     }
 
-    pub fn frame<T: AsRef<Path>>(&self, path: T) -> Option<&Frame> {
+    pub fn frame<T: AsRef<Path>>(&self, path: T) -> Option<&Frame<P>> {
         self.frames.iter().find(|f| f.source == path.as_ref())
     }
 
-    pub fn animation<T: AsRef<str>>(&self, name: T) -> Option<&Animation> {
+    pub fn animation<T: AsRef<str>>(&self, name: T) -> Option<&Animation<P>> {
         self.animations.get(name.as_ref())
     }
 
-    pub fn animation_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Animation> {
+    pub fn animation_mut<T: AsRef<str>>(&mut self, name: T) -> Option<&mut Animation<P>> {
         self.animations.get_mut(name.as_ref())
     }
 
-    pub fn export_settings(&self) -> &Option<ExportSettings> {
+    pub fn export_settings(&self) -> &Option<ExportSettings<P>> {
         &self.export_settings
     }
 
-    pub fn set_export_settings(&mut self, export_settings: ExportSettings) {
+    pub fn set_export_settings(&mut self, export_settings: ExportSettings<P>) {
         self.export_settings = Some(export_settings);
     }
 
@@ -257,10 +176,128 @@ impl Sheet {
     }
 }
 
-impl Frame {
-    pub fn new<T: AsRef<Path>>(path: T) -> Frame {
-        Frame {
+impl Sheet<Relative> {
+    pub fn write<T: AsRef<Path>>(&self, path: T) -> Result<(), SheetError> {
+        #[derive(Serialize)]
+        struct VersionedSheet<'a> {
+            version: Version,
+            sheet: &'a Sheet<Relative>,
+        }
+
+        let versioned_sheet = VersionedSheet {
+            version: CURRENT_VERSION,
+            sheet: self,
+        };
+
+        let file = File::create(path.as_ref())
+            .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
+        serde_json::to_writer_pretty(BufWriter::new(file), &versioned_sheet)?;
+        Ok(())
+    }
+
+    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Sheet<Absolute> {
+        Sheet {
+            frames: self
+                .frames
+                .into_iter()
+                .map(|f| f.with_absolute_paths(&relative_to))
+                .collect(),
+            animations: self
+                .animations
+                .into_iter()
+                .map(|(n, a)| (n, a.with_absolute_paths(&relative_to)))
+                .collect(),
+            export_settings: self
+                .export_settings
+                .map(|s| s.with_absolute_paths(&relative_to)),
+            paths: std::marker::PhantomData,
+        }
+    }
+}
+
+impl Sheet<Any> {
+    pub fn read<T: AsRef<Path>>(path: T) -> Result<Self, SheetError> {
+        #[derive(Deserialize)]
+        struct Versioned {
+            version: Version,
+        }
+
+        let version = {
+            let file = File::open(path.as_ref())
+                .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
+            let versioned: Versioned = serde_json::from_reader(BufReader::new(file))?;
+            versioned.version
+        };
+
+        let sheet: Self = {
+            let file = File::open(path.as_ref())
+                .map_err(|e| SheetError::IoError(path.as_ref().to_owned(), e))?;
+            let reader = BufReader::new(file);
+            read_file(version, reader)?
+        };
+
+        Ok(sheet)
+    }
+
+    pub fn with_relative_paths(self) -> Result<Sheet<Relative>, SheetError> {
+        let export_settings = match self.export_settings {
+            Some(s) => Some(s.with_relative_paths()?),
+            None => None,
+        };
+        Ok(Sheet {
+            frames: self
+                .frames
+                .into_iter()
+                .map(|f| f.with_relative_paths())
+                .collect::<Result<_, _>>()?,
+            animations: self
+                .animations
+                .into_iter()
+                .map(|(n, a)| a.with_relative_paths().map(|a| (n, a)))
+                .collect::<Result<_, _>>()?,
+            export_settings,
+            paths: std::marker::PhantomData,
+        })
+    }
+}
+
+impl Sheet<Absolute> {
+    pub fn write<T: AsRef<Path>>(self, path: T) -> Result<(), SheetError> {
+        let mut directory = path.as_ref().to_owned();
+        directory.pop();
+        self.with_relative_paths(directory)?.write(path)
+    }
+
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        self,
+        relative_to: T,
+    ) -> Result<Sheet<Relative>, SheetError> {
+        let export_settings = match self.export_settings {
+            Some(s) => Some(s.with_relative_paths(&relative_to)?),
+            None => None,
+        };
+        Ok(Sheet {
+            frames: self
+                .frames
+                .into_iter()
+                .map(|f| f.with_relative_paths(&relative_to))
+                .collect::<Result<_, _>>()?,
+            animations: self
+                .animations
+                .into_iter()
+                .map(|(n, a)| a.with_relative_paths(&relative_to).map(|a| (n, a)))
+                .collect::<Result<_, _>>()?,
+            export_settings,
+            paths: std::marker::PhantomData,
+        })
+    }
+}
+
+impl<P: Paths> Frame<P> {
+    pub fn new<T: AsRef<Path>>(path: T) -> Self {
+        Self {
             source: path.as_ref().to_owned(),
+            paths: std::marker::PhantomData,
         }
     }
 
@@ -269,21 +306,51 @@ impl Frame {
     }
 }
 
-impl Ord for Frame {
-    fn cmp(&self, other: &Frame) -> Ordering {
+impl Frame<Relative> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Frame<Absolute> {
+        Frame {
+            source: relative_to.as_ref().join(&self.source).normalize(),
+            paths: std::marker::PhantomData,
+        }
+    }
+}
+
+impl Frame<Absolute> {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        self,
+        relative_to: T,
+    ) -> Result<Frame<Relative>, SheetError> {
+        Ok(Frame {
+            source: absolute_to_relative(self.source, relative_to)?,
+            paths: std::marker::PhantomData,
+        })
+    }
+}
+
+impl Frame<Any> {
+    pub fn with_relative_paths(self) -> Result<Frame<Relative>, SheetError> {
+        Ok(Frame {
+            source: relative_or_err(self.source)?,
+            paths: std::marker::PhantomData,
+        })
+    }
+}
+
+impl<P: Paths> Ord for Frame<P> {
+    fn cmp(&self, other: &Frame<P>) -> Ordering {
         self.source
             .to_string_lossy()
             .cmp(&other.source.to_string_lossy())
     }
 }
 
-impl PartialOrd for Frame {
-    fn partial_cmp(&self, other: &Frame) -> Option<Ordering> {
+impl<P: Paths> PartialOrd for Frame<P> {
+    fn partial_cmp(&self, other: &Frame<P>) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Animation {
+impl<P: Paths> Animation<P> {
     fn new() -> Self {
         Self {
             sequences: Default::default(),
@@ -292,7 +359,7 @@ impl Animation {
         }
     }
 
-    pub fn duplicate(&self) -> Animation {
+    pub fn duplicate(&self) -> Animation<P> {
         Animation {
             sequences: self
                 .sequences
@@ -316,19 +383,19 @@ impl Animation {
         self.is_looping = new_is_looping;
     }
 
-    pub fn sequence(&self, direction: Direction) -> Option<&Sequence> {
+    pub fn sequence(&self, direction: Direction) -> Option<&Sequence<P>> {
         self.sequences.get(&direction)
     }
 
-    pub fn sequence_mut(&mut self, direction: Direction) -> Option<&mut Sequence> {
+    pub fn sequence_mut(&mut self, direction: Direction) -> Option<&mut Sequence<P>> {
         self.sequences.get_mut(&direction)
     }
 
-    pub fn sequences_iter(&self) -> impl Iterator<Item = (&Direction, &Sequence)> {
+    pub fn sequences_iter(&self) -> impl Iterator<Item = (&Direction, &Sequence<P>)> {
         self.sequences.iter()
     }
 
-    pub fn sequences_iter_mut(&mut self) -> impl Iterator<Item = (&Direction, &mut Sequence)> {
+    pub fn sequences_iter_mut(&mut self) -> impl Iterator<Item = (&Direction, &mut Sequence<P>)> {
         self.sequences.iter_mut()
     }
 
@@ -342,6 +409,51 @@ impl Animation {
         for d in directions {
             self.sequences.entry(d).or_default();
         }
+    }
+}
+
+impl Animation<Relative> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Animation<Absolute> {
+        Animation {
+            sequences: self
+                .sequences
+                .into_iter()
+                .map(|(d, s)| (d, s.with_absolute_paths(&relative_to)))
+                .collect(),
+            is_looping: self.is_looping,
+            key: self.key,
+        }
+    }
+}
+
+impl Animation<Absolute> {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        self,
+        relative_to: T,
+    ) -> Result<Animation<Relative>, SheetError> {
+        Ok(Animation {
+            sequences: self
+                .sequences
+                .into_iter()
+                .map(|(d, s)| s.with_relative_paths(&relative_to).map(|s| (d, s)))
+                .collect::<Result<_, _>>()?,
+            is_looping: self.is_looping,
+            key: self.key,
+        })
+    }
+}
+
+impl Animation<Any> {
+    pub fn with_relative_paths(self) -> Result<Animation<Relative>, SheetError> {
+        Ok(Animation {
+            sequences: self
+                .sequences
+                .into_iter()
+                .map(|(d, s)| s.with_relative_paths().map(|s| (d, s)))
+                .collect::<Result<_, _>>()?,
+            is_looping: self.is_looping,
+            key: self.key,
+        })
     }
 }
 
@@ -382,8 +494,8 @@ impl DirectionPreset {
     }
 }
 
-impl Sequence {
-    pub fn duplicate(&self) -> Sequence {
+impl<P: Paths> Sequence<P> {
+    pub fn duplicate(&self) -> Sequence<P> {
         Sequence {
             keyframes: self.keyframes.iter().map(Keyframe::duplicate).collect(),
         }
@@ -393,14 +505,14 @@ impl Sequence {
         self.keyframes.len()
     }
 
-    pub fn keyframe(&self, index: usize) -> Option<&Keyframe> {
+    pub fn keyframe(&self, index: usize) -> Option<&Keyframe<P>> {
         if index >= self.keyframes.len() {
             return None;
         }
         Some(&self.keyframes[index])
     }
 
-    pub fn keyframe_mut(&mut self, index: usize) -> Option<&mut Keyframe> {
+    pub fn keyframe_mut(&mut self, index: usize) -> Option<&mut Keyframe<P>> {
         if index >= self.keyframes.len() {
             return None;
         }
@@ -421,12 +533,12 @@ impl Sequence {
         Some(self.keyframes.len() - 1)
     }
 
-    pub fn keyframe_at(&self, time: Duration) -> Option<(usize, &Keyframe)> {
+    pub fn keyframe_at(&self, time: Duration) -> Option<(usize, &Keyframe<P>)> {
         let keyframe_index = self.keyframe_index_at(time)?;
         Some((keyframe_index, self.keyframes.get(keyframe_index)?))
     }
 
-    pub fn keyframe_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe)> {
+    pub fn keyframe_at_mut(&mut self, time: Duration) -> Option<(usize, &mut Keyframe<P>)> {
         let keyframe_index = self.keyframe_index_at(time)?;
         Some((keyframe_index, self.keyframes.get_mut(keyframe_index)?))
     }
@@ -449,7 +561,11 @@ impl Sequence {
             .collect()
     }
 
-    pub fn insert_keyframe(&mut self, keyframe: Keyframe, index: usize) -> Result<(), SheetError> {
+    pub fn insert_keyframe(
+        &mut self,
+        keyframe: Keyframe<P>,
+        index: usize,
+    ) -> Result<(), SheetError> {
         if index > self.keyframes.len() {
             return Err(SheetError::InvalidFrameIndex(index));
         }
@@ -457,18 +573,18 @@ impl Sequence {
         Ok(())
     }
 
-    pub fn delete_keyframe(&mut self, index: usize) -> Result<Keyframe, SheetError> {
+    pub fn delete_keyframe(&mut self, index: usize) -> Result<Keyframe<P>, SheetError> {
         if index >= self.keyframes.len() {
             return Err(SheetError::InvalidFrameIndex(index));
         }
         Ok(self.keyframes.remove(index))
     }
 
-    pub fn keyframes_iter(&self) -> impl Iterator<Item = &Keyframe> {
+    pub fn keyframes_iter(&self) -> impl Iterator<Item = &Keyframe<P>> {
         self.keyframes.iter()
     }
 
-    pub fn keyframes_iter_mut(&mut self) -> impl Iterator<Item = &mut Keyframe> {
+    pub fn keyframes_iter_mut(&mut self) -> impl Iterator<Item = &mut Keyframe<P>> {
         self.keyframes.iter_mut()
     }
 
@@ -484,19 +600,59 @@ impl Sequence {
     }
 }
 
-impl Keyframe {
-    pub fn new<T: AsRef<Path>>(frame: T) -> Keyframe {
-        Keyframe {
+impl Sequence<Relative> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Sequence<Absolute> {
+        Sequence {
+            keyframes: self
+                .keyframes
+                .into_iter()
+                .map(|k| k.with_absolute_paths(&relative_to))
+                .collect(),
+        }
+    }
+}
+
+impl Sequence<Absolute> {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        self,
+        relative_to: T,
+    ) -> Result<Sequence<Relative>, SheetError> {
+        Ok(Sequence {
+            keyframes: self
+                .keyframes
+                .into_iter()
+                .map(|k| k.with_relative_paths(&relative_to))
+                .collect::<Result<_, _>>()?,
+        })
+    }
+}
+
+impl Sequence<Any> {
+    pub fn with_relative_paths(self) -> Result<Sequence<Relative>, SheetError> {
+        Ok(Sequence {
+            keyframes: self
+                .keyframes
+                .into_iter()
+                .map(|k| k.with_relative_paths())
+                .collect::<Result<_, _>>()?,
+        })
+    }
+}
+
+impl<P: Paths> Keyframe<P> {
+    pub fn new<T: AsRef<Path>>(frame: T) -> Self {
+        Self {
             frame: frame.as_ref().to_owned(),
             duration_millis: 100,
             offset: (0, 0),
             hitboxes: BTreeMap::new(),
             key: Uuid::new_v4(),
+            paths: std::marker::PhantomData,
         }
     }
 
-    pub fn duplicate(&self) -> Keyframe {
-        Keyframe {
+    pub fn duplicate(&self) -> Self {
+        Self {
             frame: self.frame.clone(),
             hitboxes: self
                 .hitboxes
@@ -506,6 +662,7 @@ impl Keyframe {
             duration_millis: self.duration_millis,
             offset: self.offset,
             key: Uuid::new_v4(),
+            paths: std::marker::PhantomData,
         }
     }
 
@@ -577,6 +734,48 @@ impl Keyframe {
     }
 }
 
+impl Keyframe<Relative> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Keyframe<Absolute> {
+        Keyframe {
+            frame: relative_to.as_ref().join(&self.frame).normalize(),
+            hitboxes: self.hitboxes,
+            duration_millis: self.duration_millis,
+            offset: self.offset,
+            key: self.key,
+            paths: std::marker::PhantomData,
+        }
+    }
+}
+
+impl Keyframe<Absolute> {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        self,
+        relative_to: T,
+    ) -> Result<Keyframe<Relative>, SheetError> {
+        Ok(Keyframe {
+            frame: absolute_to_relative(self.frame, relative_to)?,
+            hitboxes: self.hitboxes,
+            duration_millis: self.duration_millis,
+            offset: self.offset,
+            key: self.key,
+            paths: std::marker::PhantomData,
+        })
+    }
+}
+
+impl Keyframe<Any> {
+    pub fn with_relative_paths(self) -> Result<Keyframe<Relative>, SheetError> {
+        Ok(Keyframe {
+            frame: relative_or_err(self.frame)?,
+            hitboxes: self.hitboxes,
+            duration_millis: self.duration_millis,
+            offset: self.offset,
+            key: self.key,
+            paths: std::marker::PhantomData,
+        })
+    }
+}
+
 impl Hitbox {
     pub fn new() -> Self {
         Hitbox {
@@ -636,23 +835,14 @@ impl Hitbox {
     }
 }
 
-impl ExportSettings {
+impl<P: Paths> ExportSettings<P> {
     pub fn new() -> Self {
-        Self::Liquid(LiquidExportSettings::default())
+        Self::Liquid(LiquidExportSettings::<P>::default())
     }
+}
 
-    pub fn with_relative_paths<T: AsRef<Path>>(
-        &self,
-        relative_to: T,
-    ) -> Result<ExportSettings, SheetError> {
-        Ok(match self {
-            ExportSettings::Liquid(settings) => {
-                ExportSettings::Liquid(settings.with_relative_paths(relative_to)?)
-            }
-        })
-    }
-
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> ExportSettings {
+impl ExportSettings<Relative> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> ExportSettings<Absolute> {
         match self {
             ExportSettings::Liquid(settings) => {
                 ExportSettings::Liquid(settings.with_absolute_paths(relative_to))
@@ -661,58 +851,44 @@ impl ExportSettings {
     }
 }
 
-impl LiquidExportSettings {
+impl ExportSettings<Absolute> {
     pub fn with_relative_paths<T: AsRef<Path>>(
-        &self,
+        self,
         relative_to: T,
-    ) -> Result<LiquidExportSettings, SheetError> {
-        Ok(LiquidExportSettings {
-            template_file: diff_paths(&self.template_file, relative_to.as_ref()).ok_or_else(
-                || {
-                    SheetError::AbsoluteToRelativePath(
-                        self.template_file.clone(),
-                        relative_to.as_ref().to_owned(),
-                    )
-                },
-            )?,
-            texture_file: diff_paths(&self.texture_file, relative_to.as_ref()).ok_or_else(
-                || {
-                    SheetError::AbsoluteToRelativePath(
-                        self.texture_file.clone(),
-                        relative_to.as_ref().to_owned(),
-                    )
-                },
-            )?,
-            metadata_file: diff_paths(&self.metadata_file, relative_to.as_ref()).ok_or_else(
-                || {
-                    SheetError::AbsoluteToRelativePath(
-                        self.metadata_file.clone(),
-                        relative_to.as_ref().to_owned(),
-                    )
-                },
-            )?,
-            metadata_paths_root: diff_paths(&self.metadata_paths_root, relative_to.as_ref())
-                .ok_or_else(|| {
-                    SheetError::AbsoluteToRelativePath(
-                        self.metadata_paths_root.clone(),
-                        relative_to.as_ref().to_owned(),
-                    )
-                })?,
+    ) -> Result<ExportSettings<Relative>, SheetError> {
+        Ok(match self {
+            ExportSettings::Liquid(settings) => {
+                ExportSettings::Liquid(settings.with_relative_paths(relative_to)?)
+            }
         })
     }
 
-    pub fn with_absolute_paths<T: AsRef<Path>>(&self, relative_to: T) -> LiquidExportSettings {
-        LiquidExportSettings {
-            template_file: relative_to.as_ref().join(&self.template_file).normalize(),
-            texture_file: relative_to.as_ref().join(&self.texture_file).normalize(),
-            metadata_file: relative_to.as_ref().join(&self.metadata_file).normalize(),
-            metadata_paths_root: relative_to
-                .as_ref()
-                .join(&self.metadata_paths_root)
-                .normalize(),
+    pub fn with_any_paths(self) -> ExportSettings<Any> {
+        match self {
+            ExportSettings::Liquid(settings) => ExportSettings::Liquid(settings.with_any_paths()),
         }
     }
+}
 
+impl ExportSettings<Any> {
+    pub fn with_absolute_paths(self) -> Result<ExportSettings<Absolute>, SheetError> {
+        Ok(match self {
+            ExportSettings::Liquid(settings) => {
+                ExportSettings::Liquid(settings.with_absolute_paths()?)
+            }
+        })
+    }
+
+    pub fn with_relative_paths(self) -> Result<ExportSettings<Relative>, SheetError> {
+        Ok(match self {
+            ExportSettings::Liquid(settings) => {
+                ExportSettings::Liquid(settings.with_relative_paths()?)
+            }
+        })
+    }
+}
+
+impl<P: Paths> LiquidExportSettings<P> {
     pub fn template_file(&self) -> &Path {
         self.template_file.as_path()
     }
@@ -728,7 +904,52 @@ impl LiquidExportSettings {
     pub fn metadata_paths_root(&self) -> &Path {
         self.metadata_paths_root.as_path()
     }
+}
 
+impl LiquidExportSettings<Absolute> {
+    pub fn with_relative_paths<T: AsRef<Path>>(
+        self,
+        relative_to: T,
+    ) -> Result<LiquidExportSettings<Relative>, SheetError> {
+        Ok(LiquidExportSettings {
+            template_file: absolute_to_relative(self.template_file, &relative_to)?,
+            texture_file: absolute_to_relative(self.texture_file, &relative_to)?,
+            metadata_file: absolute_to_relative(self.metadata_file, &relative_to)?,
+            metadata_paths_root: absolute_to_relative(self.metadata_paths_root, &relative_to)?,
+            paths: std::marker::PhantomData,
+        })
+    }
+
+    pub fn with_any_paths(self) -> LiquidExportSettings<Any> {
+        LiquidExportSettings {
+            template_file: self.template_file,
+            texture_file: self.texture_file,
+            metadata_file: self.metadata_file,
+            metadata_paths_root: self.metadata_paths_root,
+            paths: std::marker::PhantomData,
+        }
+    }
+}
+
+impl LiquidExportSettings<Relative> {
+    pub fn with_absolute_paths<T: AsRef<Path>>(
+        &self,
+        relative_to: T,
+    ) -> LiquidExportSettings<Absolute> {
+        LiquidExportSettings {
+            template_file: relative_to.as_ref().join(&self.template_file).normalize(),
+            texture_file: relative_to.as_ref().join(&self.texture_file).normalize(),
+            metadata_file: relative_to.as_ref().join(&self.metadata_file).normalize(),
+            metadata_paths_root: relative_to
+                .as_ref()
+                .join(&self.metadata_paths_root)
+                .normalize(),
+            paths: std::marker::PhantomData,
+        }
+    }
+}
+
+impl LiquidExportSettings<Any> {
     pub fn set_template_file<T: AsRef<Path>>(&mut self, path: T) {
         self.template_file = path.as_ref().to_owned();
     }
@@ -743,6 +964,26 @@ impl LiquidExportSettings {
 
     pub fn set_metadata_paths_root<T: AsRef<Path>>(&mut self, path: T) {
         self.metadata_paths_root = path.as_ref().to_owned();
+    }
+
+    pub fn with_absolute_paths(self) -> Result<LiquidExportSettings<Absolute>, SheetError> {
+        Ok(LiquidExportSettings {
+            template_file: absolute_or_err(self.template_file)?,
+            texture_file: absolute_or_err(self.texture_file)?,
+            metadata_file: absolute_or_err(self.metadata_file)?,
+            metadata_paths_root: absolute_or_err(self.metadata_paths_root)?,
+            paths: std::marker::PhantomData,
+        })
+    }
+
+    pub fn with_relative_paths(self) -> Result<LiquidExportSettings<Relative>, SheetError> {
+        Ok(LiquidExportSettings {
+            template_file: relative_or_err(self.template_file)?,
+            texture_file: relative_or_err(self.texture_file)?,
+            metadata_file: relative_or_err(self.metadata_file)?,
+            metadata_paths_root: relative_or_err(self.metadata_paths_root)?,
+            paths: std::marker::PhantomData,
+        })
     }
 }
 
@@ -771,18 +1012,54 @@ fn generate_unique_name<F: Fn(&str) -> bool>(proposed_name: &str, validate: F) -
     }
 }
 
+fn relative_or_err(path: PathBuf) -> Result<PathBuf, SheetError> {
+    if path.is_relative() {
+        Ok(path)
+    } else {
+        Err(SheetError::RelativePathExpected(path))
+    }
+}
+
+fn absolute_or_err(path: PathBuf) -> Result<PathBuf, SheetError> {
+    if path.is_absolute() {
+        Ok(path)
+    } else {
+        Err(SheetError::AbsolutePathExpected(path))
+    }
+}
+
+fn absolute_to_relative<P: AsRef<Path>, B: AsRef<Path>>(
+    path: P,
+    base: B,
+) -> Result<PathBuf, SheetError> {
+    diff_paths(&path, &base).ok_or_else(|| {
+        SheetError::AbsoluteToRelativePath(path.as_ref().to_owned(), base.as_ref().to_owned())
+    })
+}
+
 #[test]
 fn can_read_write_sheet_from_disk() {
-    let original = Sheet::read("test-data/sample_sheet_1.tiger").unwrap();
-    original.write("test-data/sample_sheet_copy.tiger").unwrap();
-    let copy = Sheet::read("test-data/sample_sheet_copy.tiger").unwrap();
+    let original = Sheet::<Any>::read("test-data/sample_sheet_1.tiger")
+        .unwrap()
+        .with_relative_paths()
+        .unwrap()
+        .with_absolute_paths("test-data");
+    original
+        .clone()
+        .write("test-data/sample_sheet_copy.tiger")
+        .unwrap();
+    let copy = Sheet::<Any>::read("test-data/sample_sheet_copy.tiger")
+        .unwrap()
+        .with_relative_paths()
+        .unwrap()
+        .with_absolute_paths("test-data");
     std::fs::remove_file("test-data/sample_sheet_copy.tiger").unwrap();
     assert_eq!(original, copy);
 }
 
 #[test]
 fn can_add_and_remove_sheet_frame() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     sheet.add_frame("frame.png");
     assert!(sheet.has_frame("frame.png"));
     assert!(sheet.frame("frame.png").is_some());
@@ -797,7 +1074,7 @@ fn can_add_and_remove_sheet_frame() {
 
 #[test]
 fn deleting_frame_remove_its_usage() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     sheet.add_test_animation(
         "Animation",
         HashMap::from([(Direction::North, vec!["frame.png"])]),
@@ -818,7 +1095,7 @@ fn deleting_frame_remove_its_usage() {
 
 #[test]
 fn cannot_add_duplicate_sheet_frame() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     sheet.add_frame("frame.png");
     sheet.add_frame("frame.png");
     assert_eq!(sheet.frames_iter().count(), 1);
@@ -826,7 +1103,7 @@ fn cannot_add_duplicate_sheet_frame() {
 
 #[test]
 fn can_add_and_remove_sheet_frames() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     assert_eq!(sheet.frames_iter().count(), 0);
     sheet.add_frames(&vec![&Path::new("foo.png"), &Path::new("bar.png")]);
     assert_eq!(sheet.frames_iter().count(), 2);
@@ -836,9 +1113,9 @@ fn can_add_and_remove_sheet_frames() {
 
 #[test]
 fn can_sort_frames() {
-    let frame_a = Frame::new(Path::new("a"));
-    let frame_b = Frame::new(Path::new("b"));
-    let frame_c = Frame::new(Path::new("c"));
+    let frame_a = Frame::<Any>::new(Path::new("a"));
+    let frame_b = Frame::<Any>::new(Path::new("b"));
+    let frame_c = Frame::<Any>::new(Path::new("c"));
     assert!(frame_a < frame_b);
     assert!(frame_a < frame_c);
     assert!(frame_b < frame_c);
@@ -846,7 +1123,7 @@ fn can_sort_frames() {
 
 #[test]
 fn can_add_and_remove_sheet_animation() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     let (name_1, _animation) = sheet.create_animation("Animation");
     assert!(sheet.has_animation(&name_1));
     assert!(sheet.animation(&name_1).is_some());
@@ -865,7 +1142,7 @@ fn can_add_and_remove_sheet_animation() {
 
 #[test]
 fn can_rename_sheet_animation() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     let (old_name, _animation) = sheet.create_animation("Animation");
     sheet.rename_animation(&old_name, "updated name").unwrap();
     assert!(sheet.animation("updated name").is_some());
@@ -874,14 +1151,14 @@ fn can_rename_sheet_animation() {
 
 #[test]
 fn can_rename_sheet_animation_to_same_name() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     let (old_name, _animation) = sheet.create_animation("Animation");
     sheet.rename_animation(&old_name, &old_name).unwrap();
 }
 
 #[test]
 fn cannot_rename_sheet_animation_to_existing_name() {
-    let mut sheet = Sheet::default();
+    let mut sheet = Sheet::<Any>::default();
     let (old_name, _animation) = sheet.create_animation("Animation");
     sheet.rename_animation(&old_name, "conflict").unwrap();
     let (old_name, _animation) = sheet.create_animation("Animation");
@@ -890,7 +1167,7 @@ fn cannot_rename_sheet_animation_to_existing_name() {
 
 #[test]
 fn can_read_write_animation_looping() {
-    let mut animation = Animation::new();
+    let mut animation = Animation::<Any>::new();
     animation.set_looping(true);
     assert!(animation.looping());
     animation.set_looping(false);
@@ -899,7 +1176,7 @@ fn can_read_write_animation_looping() {
 
 #[test]
 fn can_access_animation_sequences() {
-    let mut animation = Animation::new();
+    let mut animation = Animation::<Any>::new();
     animation.apply_direction_preset(DirectionPreset::FourDirections);
     assert!(animation.sequence(Direction::West).is_some());
     assert!(animation.sequence_mut(Direction::West).is_some());
@@ -909,7 +1186,7 @@ fn can_access_animation_sequences() {
 
 #[test]
 fn can_animation_can_apply_direction_preset() {
-    let mut animation = Animation::new();
+    let mut animation = Animation::<Any>::new();
     assert_eq!(animation.direction_preset(), None);
     for preset in all::<DirectionPreset>() {
         animation.apply_direction_preset(preset);
@@ -919,7 +1196,7 @@ fn can_animation_can_apply_direction_preset() {
 
 #[test]
 fn animation_can_recognize_direction_preset() {
-    let mut animation = Animation::new();
+    let mut animation = Animation::<Any>::new();
     animation
         .sequences
         .insert(Direction::NorthEast, Sequence::default());
@@ -941,7 +1218,7 @@ fn animation_can_recognize_direction_preset() {
 
 #[test]
 fn can_add_and_remove_sequence_keyframe() {
-    let mut sequence = Sequence::default();
+    let mut sequence = Sequence::<Any>::default();
     let keyframe_a = Keyframe::new(Path::new("a.png"));
     let keyframe_b = Keyframe::new(Path::new("b.png"));
 
@@ -967,7 +1244,7 @@ fn can_add_and_remove_sequence_keyframe() {
 
 #[test]
 fn cannot_add_sequence_keyframe_at_illegal_index() {
-    let mut sequence = Sequence::default();
+    let mut sequence = Sequence::<Any>::default();
     let frame_path = &Path::new("a.png");
     sequence
         .insert_keyframe(Keyframe::new(frame_path), 0)
@@ -982,7 +1259,7 @@ fn cannot_add_sequence_keyframe_at_illegal_index() {
 
 #[test]
 fn can_measure_sequence_duration() {
-    let mut sequence = Sequence::default();
+    let mut sequence = Sequence::<Any>::default();
     assert_eq!(sequence.duration_millis(), None);
 
     let mut keyframe_a = Keyframe::new(Path::new("a.png"));
@@ -997,12 +1274,12 @@ fn can_measure_sequence_duration() {
 
 #[test]
 fn can_query_sequence_by_time_elapsed() {
-    let mut sequence = Sequence::default();
+    let mut sequence = Sequence::<Any>::default();
     assert!(sequence.keyframe_at(Duration::default()).is_none());
 
-    let mut keyframe_a = Keyframe::new(Path::new("a.png"));
+    let mut keyframe_a = Keyframe::<Any>::new(Path::new("a.png"));
     keyframe_a.set_duration_millis(200);
-    let mut keyframe_b = Keyframe::new(Path::new("b.png"));
+    let mut keyframe_b = Keyframe::<Any>::new(Path::new("b.png"));
     keyframe_b.set_duration_millis(200);
 
     sequence.insert_keyframe(keyframe_a, 0).unwrap();
@@ -1027,27 +1304,27 @@ fn can_query_sequence_by_time_elapsed() {
 #[test]
 fn can_read_keyframe_frame() {
     let frame = Path::new("./example/directory/texture.png");
-    let keyframe = Keyframe::new(frame);
+    let keyframe = Keyframe::<Relative>::new(frame);
     assert_eq!(keyframe.frame(), frame);
 }
 
 #[test]
 fn can_read_write_keyframe_duration() {
-    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
     keyframe.set_duration_millis(200);
     assert_eq!(keyframe.duration_millis(), 200);
 }
 
 #[test]
 fn can_read_write_keyframe_offset() {
-    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
     keyframe.set_offset(vec2(30, 20));
     assert_eq!(keyframe.offset(), vec2(30, 20));
 }
 
 #[test]
 fn can_add_and_remove_keyframe_hitbox() {
-    let mut keyframe = Keyframe::new(Path::new("./example/directory/texture.png"));
+    let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
     let (name, _hitbox) = keyframe.create_hitbox("Hitbox");
     assert!(keyframe.has_hitbox(&name));
     assert_eq!(keyframe.hitboxes_iter().count(), 1);
@@ -1061,7 +1338,7 @@ fn can_add_and_remove_keyframe_hitbox() {
 #[test]
 fn can_rename_keyframe_hitbox() {
     let frame = Path::new("./example/directory/texture.png");
-    let mut keyframe = Keyframe::new(frame);
+    let mut keyframe = Keyframe::<Relative>::new(frame);
     let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
     keyframe.rename_hitbox(&old_name, "updated name").unwrap();
     assert!(keyframe.has_hitbox("updated name"));
@@ -1071,7 +1348,7 @@ fn can_rename_keyframe_hitbox() {
 #[test]
 fn can_rename_hitbox_to_existing_name() {
     let frame = Path::new("./example/directory/texture.png");
-    let mut keyframe = Keyframe::new(frame);
+    let mut keyframe = Keyframe::<Relative>::new(frame);
     let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
     keyframe.rename_hitbox(&old_name, "conflict").unwrap();
 
@@ -1121,26 +1398,27 @@ fn can_convert_hitbox_to_rectangle() {
 
 #[test]
 fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
-    let settings = LiquidExportSettings {
+    let absolute = LiquidExportSettings::<Absolute> {
         template_file: Path::new("a/b/format.liquid").to_owned(),
         texture_file: Path::new("a/b/c/sheet.png").to_owned(),
         metadata_file: Path::new("a/b/c/sheet.lua").to_owned(),
         metadata_paths_root: Path::new("a/b").to_owned(),
+        paths: std::marker::PhantomData,
     };
 
-    let relative = settings.with_relative_paths("a/b").unwrap();
+    let relative = absolute.clone().with_relative_paths("a/b").unwrap();
     assert_eq!(relative.template_file, Path::new("format.liquid"));
     assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
     assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));
     assert_eq!(&relative.metadata_paths_root, Path::new(""));
 
-    let absolute = relative.with_absolute_paths("a/b");
-    assert_eq!(settings, absolute);
+    let roundtrip = relative.with_absolute_paths("a/b");
+    assert_eq!(roundtrip, absolute);
 }
 
 #[test]
 fn liquid_export_settings_can_adjust_paths() {
-    let mut settings = LiquidExportSettings::default();
+    let mut settings = LiquidExportSettings::<Any>::default();
 
     let path = Path::new("template_file");
     settings.set_template_file(path);

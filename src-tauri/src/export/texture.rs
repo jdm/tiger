@@ -6,7 +6,7 @@ use texture_packer::importer::ImageImporter;
 use texture_packer::{TexturePacker, TexturePackerConfig};
 use thiserror::Error;
 
-use crate::sheet::Sheet;
+use crate::sheet::{Absolute, Sheet};
 
 #[derive(Error, Debug)]
 pub enum PackError {
@@ -38,7 +38,7 @@ impl PackedSheet {
     }
 }
 
-pub(super) fn pack_sheet(sheet: &Sheet) -> Result<PackedSheet, PackError> {
+pub(super) fn pack_sheet(sheet: &Sheet<Absolute>) -> Result<PackedSheet, PackError> {
     let config = TexturePackerConfig {
         max_width: 4096, // TODO configurable / dynamic based on widest frame?
         max_height: std::u32::MAX,

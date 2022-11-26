@@ -28,7 +28,7 @@ pub enum ExportError {
     TextureStorageError(#[from] ImageError),
 }
 
-pub fn export_sheet(sheet: &Sheet) -> Result<(), ExportError> {
+pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
     let export_settings = sheet
         .export_settings()
         .as_ref()

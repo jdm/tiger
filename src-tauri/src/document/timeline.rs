@@ -47,7 +47,7 @@ impl Document {
         }
     }
 
-    pub(super) fn play(&mut self) -> Result<(), DocumentError> {
+    pub(super) fn play(&mut self) -> DocumentResult<()> {
         self.persistent.timeline_is_playing = true;
         self.view.selection.hitboxes.clear();
         if self
@@ -63,7 +63,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn pause(&mut self) -> Result<(), DocumentError> {
+    pub(super) fn pause(&mut self) -> DocumentResult<()> {
         self.persistent.timeline_is_playing = false;
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
@@ -77,7 +77,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn scrub_timeline(&mut self, time: Duration) -> Result<(), DocumentError> {
+    pub(super) fn scrub_timeline(&mut self, time: Duration) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         let (direction, sequence) = self.get_workbench_sequence()?;
@@ -92,17 +92,17 @@ impl Document {
         Ok(())
     }
 
-    pub fn jump_to_animation_start(&mut self) -> Result<(), DocumentError> {
+    pub fn jump_to_animation_start(&mut self) -> DocumentResult<()> {
         self.scrub_timeline(Duration::ZERO)
     }
 
-    pub fn jump_to_animation_end(&mut self) -> Result<(), DocumentError> {
+    pub fn jump_to_animation_end(&mut self) -> DocumentResult<()> {
         let (_, sequence) = self.get_workbench_sequence()?;
         let duration = sequence.duration().unwrap_or_default();
         self.scrub_timeline(duration)
     }
 
-    pub fn jump_to_previous_frame(&mut self) -> Result<(), DocumentError> {
+    pub fn jump_to_previous_frame(&mut self) -> DocumentResult<()> {
         let (_, sequence) = self.get_workbench_sequence()?;
         let now = self.view.timeline_clock.as_millis() as u64;
         let new_time = sequence
@@ -115,7 +115,7 @@ impl Document {
         self.scrub_timeline(Duration::from_millis(new_time))
     }
 
-    pub fn jump_to_next_frame(&mut self) -> Result<(), DocumentError> {
+    pub fn jump_to_next_frame(&mut self) -> DocumentResult<()> {
         let (_, sequence) = self.get_workbench_sequence()?;
         let now = self.view.timeline_clock.as_millis() as u64;
         let new_time = sequence
@@ -127,22 +127,19 @@ impl Document {
         self.scrub_timeline(Duration::from_millis(new_time))
     }
 
-    pub(super) fn set_animation_looping(&mut self, is_looping: bool) -> Result<(), DocumentError> {
+    pub(super) fn set_animation_looping(&mut self, is_looping: bool) -> DocumentResult<()> {
         let (_, animation) = self.get_workbench_animation_mut()?;
         animation.set_looping(is_looping);
         Ok(())
     }
 
-    pub(super) fn apply_direction_preset(
-        &mut self,
-        preset: DirectionPreset,
-    ) -> Result<(), DocumentError> {
+    pub(super) fn apply_direction_preset(&mut self, preset: DirectionPreset) -> DocumentResult<()> {
         let (_, animation) = self.get_workbench_animation_mut()?;
         animation.apply_direction_preset(preset);
         Ok(())
     }
 
-    pub(super) fn select_direction(&mut self, direction: Direction) -> Result<(), DocumentError> {
+    pub(super) fn select_direction(&mut self, direction: Direction) -> DocumentResult<()> {
         self.view.current_sequence = Some(direction);
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
@@ -155,7 +152,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn delete_selected_keyframes(&mut self) -> Result<(), DocumentError> {
+    pub(super) fn delete_selected_keyframes(&mut self) -> DocumentResult<()> {
         let mut selected_keyframes = self
             .view
             .selection

@@ -56,8 +56,8 @@ struct LiquidFrame {
 }
 
 fn liquid_data_from_frame(
-    sheet: &Sheet,
-    frame: &Frame,
+    sheet: &Sheet<Absolute>,
+    frame: &Frame<Absolute>,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidFrame, MetadataError> {
     let index = sheet
@@ -87,8 +87,8 @@ struct LiquidKeyframe {
 }
 
 fn liquid_data_from_keyframe(
-    sheet: &Sheet,
-    keyframe: &Keyframe,
+    sheet: &Sheet<Absolute>,
+    keyframe: &Keyframe<Absolute>,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidKeyframe, MetadataError> {
     let packed_frame = texture_layout
@@ -124,9 +124,9 @@ struct LiquidSequence {
 }
 
 fn liquid_data_from_sequence(
-    sheet: &Sheet,
+    sheet: &Sheet<Absolute>,
     direction: Direction,
-    sequence: &Sequence,
+    sequence: &Sequence<Absolute>,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidSequence, MetadataError> {
     let mut keyframes = Vec::new();
@@ -149,9 +149,9 @@ struct LiquidAnimation {
 }
 
 fn liquid_data_from_animation(
-    sheet: &Sheet,
+    sheet: &Sheet<Absolute>,
     animation_name: String,
-    animation: &Animation,
+    animation: &Animation<Absolute>,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidAnimation, MetadataError> {
     let mut sequences = Vec::new();
@@ -175,8 +175,8 @@ struct LiquidSheet {
 }
 
 fn liquid_data_from_sheet(
-    sheet: &Sheet,
-    settings: &LiquidExportSettings,
+    sheet: &Sheet<Absolute>,
+    settings: &LiquidExportSettings<Absolute>,
     texture_layout: &TextureLayout,
 ) -> Result<LiquidSheet, MetadataError> {
     let frames = {
@@ -228,8 +228,8 @@ pub fn parse_template(template_file: &Path) -> Result<liquid::Template, Metadata
 }
 
 pub(super) fn generate_sheet_metadata(
-    sheet: &Sheet,
-    export_settings: &ExportSettings,
+    sheet: &Sheet<Absolute>,
+    export_settings: &ExportSettings<Absolute>,
     texture_layout: &TextureLayout,
 ) -> Result<String, MetadataError> {
     match export_settings {

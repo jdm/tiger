@@ -9,14 +9,14 @@ impl Document {
         }
     }
 
-    pub(super) fn create_animation(&mut self) -> Result<(), DocumentError> {
+    pub(super) fn create_animation(&mut self) -> DocumentResult<()> {
         let (animation_name, animation) = self.sheet.create_animation("New Animation");
         animation.apply_direction_preset(DirectionPreset::FourDirections);
         self.select_animation_only(animation_name.clone());
         self.edit_animation(animation_name)
     }
 
-    pub(super) fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> Result<(), DocumentError> {
+    pub(super) fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> DocumentResult<()> {
         self.view.current_animation = Some(name.as_ref().to_owned());
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
@@ -38,7 +38,7 @@ impl Document {
         &mut self,
         old_name: T,
         new_name: U,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         self.sheet.rename_animation(&old_name, &new_name)?;
         self.select_animation_only(new_name.as_ref().to_owned());
         if Some(old_name.as_ref()) == self.current_animation().as_deref() {

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use super::*;
 
-impl Sheet {
+impl<Z: Paths> Sheet<Z> {
     pub fn add_test_animation<N: AsRef<str>, P: AsRef<Path>>(
         &mut self,
         animation_name: N,
@@ -31,7 +31,7 @@ impl Sheet {
         }
     }
 
-    pub fn sequence<T: AsRef<str>>(&self, animation_name: T, direction: Direction) -> &Sequence {
+    pub fn sequence<T: AsRef<str>>(&self, animation_name: T, direction: Direction) -> &Sequence<Z> {
         let animation = self.animation(animation_name).unwrap();
         animation.sequence(direction).unwrap()
     }
@@ -41,7 +41,7 @@ impl Sheet {
         animation_name: T,
         direction: Direction,
         index: usize,
-    ) -> &Keyframe {
+    ) -> &Keyframe<Z> {
         let animation = self.animation(animation_name).unwrap();
         let sequence = animation.sequence(direction).unwrap();
         sequence.keyframe(index).unwrap()
@@ -52,7 +52,7 @@ impl Sheet {
         animation_name: T,
         direction: Direction,
         index: usize,
-    ) -> &mut Keyframe {
+    ) -> &mut Keyframe<Z> {
         let animation = self.animation_mut(animation_name).unwrap();
         let sequence = animation.sequence_mut(direction).unwrap();
         sequence.keyframe_mut(index).unwrap()

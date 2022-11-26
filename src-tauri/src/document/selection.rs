@@ -45,7 +45,7 @@ where
 }
 
 impl Document {
-    pub(super) fn delete_selection(&mut self) -> Result<(), DocumentError> {
+    pub(super) fn delete_selection(&mut self) -> DocumentResult<()> {
         self.delete_selected_frames();
         self.delete_selected_animations();
         self.delete_selected_keyframes()?;
@@ -58,7 +58,7 @@ impl Document {
         &mut self,
         direction: NudgeDirection,
         large_nudge: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let mut delta = match direction {
             NudgeDirection::Up => vec2(0, -1),
             NudgeDirection::Down => vec2(0, 1),
@@ -170,7 +170,7 @@ impl Document {
         index: usize,
         shift: bool,
         ctrl: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         self.view.selection.frames.clear();
         self.view.selection.animations.clear();
         self.view.selection.hitboxes.clear();
@@ -208,7 +208,7 @@ impl Document {
         name: T,
         shift: bool,
         ctrl: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         self.view.selection.frames.clear();
         self.view.selection.animations.clear();
         self.view.selection.keyframes.clear();
@@ -230,7 +230,7 @@ impl Document {
         &mut self,
         direction: BrowseDirection,
         shift: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let is_horizontal = direction.is_horizontal();
         if !self.view.selection.frames.is_empty()
             && (!is_horizontal || self.view.frames_list_mode != ListMode::Linear)
@@ -267,11 +267,7 @@ impl Document {
         }
     }
 
-    fn browse_hitboxes(
-        &mut self,
-        direction: BrowseDirection,
-        shift: bool,
-    ) -> Result<(), DocumentError> {
+    fn browse_hitboxes(&mut self, direction: BrowseDirection, shift: bool) -> DocumentResult<()> {
         let item_pool = self.selectable_hitboxes()?;
         let delta = direction.as_list_offset(ListMode::Linear);
         if let Some((_, _, _, hitbox_name)) =
@@ -286,7 +282,7 @@ impl Document {
         &mut self,
         browse_direction: BrowseDirection,
         shift: bool,
-    ) -> Result<(), DocumentError> {
+    ) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation = self
             .sheet
@@ -323,9 +319,7 @@ impl Document {
             .collect()
     }
 
-    fn selectable_hitboxes(
-        &self,
-    ) -> Result<Vec<(String, Direction, usize, String)>, DocumentError> {
+    fn selectable_hitboxes(&self) -> DocumentResult<Vec<(String, Direction, usize, String)>> {
         let (animation_name, _) = self.get_workbench_animation()?;
         let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
         Ok(keyframe
@@ -608,7 +602,7 @@ where
 }
 
 // Specialization for keyframe selection, where shift+select needs to select keyframes based on their durations and directions
-impl ItemPool<(String, Direction, usize)> for &Animation {
+impl<P: Paths> ItemPool<(String, Direction, usize)> for &Animation<P> {
     fn get_range(
         &self,
         from: Option<&(String, Direction, usize)>,
@@ -670,7 +664,7 @@ impl ItemPool<(String, Direction, usize)> for &Animation {
     }
 }
 
-impl ItemPoolTimeline for &Animation {
+impl<P: Paths> ItemPoolTimeline for &Animation<P> {
     fn offset_from(
         &self,
         from: Option<&(String, Direction, usize)>,
