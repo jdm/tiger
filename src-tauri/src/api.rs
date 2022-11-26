@@ -786,7 +786,7 @@ pub fn delete_selected_animations(app_state: tauri::State<'_, AppState>) -> Resu
 
 #[tauri::command]
 pub fn tick(app_state: tauri::State<'_, AppState>, delta_time_millis: f64) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
+    Ok(app_state.mutate(AppTrim::OnlyCurrentDocument, |app| {
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::Tick(Duration::from_nanos(

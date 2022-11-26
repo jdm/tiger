@@ -219,6 +219,7 @@ pub struct ExportSettingsValidation {
 #[derive(Clone, Copy)]
 pub enum AppTrim {
     Full,
+    OnlyCurrentDocument,
     OnlyWorkbench,
 }
 
@@ -269,7 +270,9 @@ impl app::App<'_> {
                     let is_current = |path| Some(path) == self.current_document().map(|d| d.path());
                     let doc_trim = match (trim, document.path()) {
                         (AppTrim::Full, _) => DocumentTrim::Full,
+                        (AppTrim::OnlyCurrentDocument, p) if is_current(p) => DocumentTrim::Full,
                         (AppTrim::OnlyWorkbench, p) if is_current(p) => DocumentTrim::OnlyWorkbench,
+                        (AppTrim::OnlyCurrentDocument, _) => DocumentTrim::Empty,
                         (AppTrim::OnlyWorkbench, _) => DocumentTrim::Empty,
                     };
                     document.to_dto(doc_trim)
