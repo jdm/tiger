@@ -4,7 +4,7 @@
 			<div class="transition-transform"
 				:style="`transform-origin: center left; transform: scale(${scale}, ${scale})`">
 				<div class="transition-transform" :style="`transform: scale(${1 / zoom}, ${1 / zoom})`">
-					<div class="absolute text-xs px-1 py-0.5" :class="palette"
+					<div class="absolute px-1" :class="palette" style="font-size: 10px; line-height: 1rem"
 						:style="`max-width: ${zoom * size[0]}px`">
 						<div class="text-ellipsis overflow-clip whitespace-nowrap">
 							{{ text }}
@@ -32,10 +32,12 @@ const app = useAppStore();
 const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
 
 const scale = computed(() => {
-	if (zoom.value * props.size[0] < 50) {
+	const w = zoom.value * props.size[0];
+	const h = zoom.value * props.size[1];
+	if (w < 32 || h < 32) {
 		return 0;
 	}
-	if (zoom.value * props.size[1] < 30) {
+	if (w * h < 64 * 64) {
 		return 0;
 	}
 	return 1;
