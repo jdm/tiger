@@ -2,7 +2,7 @@
 	<input type="text" ref="renameInput" v-model="value" @dblclick.stop @click.stop
 		@keydown.enter="onRenameInputComplete" @keydown.escape="onRenameInputCancelled"
 		@focusout="onRenameInputComplete"
-		class="w-full rounded-sm bg-plastic-100 px-2 -ml-[0.55rem] -mt-0.5 h-7 text-plastic-700">
+		class="w-full rounded-sm bg-plastic-100 px-2 -ml-[0.55rem] -mt-0.5 mb-0.5 h-8 text-plastic-700">
 </template>
 
 <script setup lang="ts">
