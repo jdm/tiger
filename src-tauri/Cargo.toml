@@ -38,6 +38,7 @@ sugar_path = "0.0.9"
 tauri = { version = "1.1", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
 texture_packer = "0.25"
 thiserror = "1.0"
+window-shadows = "0.2.0"
 
 [dependencies.uuid]
 version = "1.1.1"

@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use log::LevelFilter;
+use log::{error, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use tauri::Manager;
 
@@ -40,6 +40,7 @@ fn main() {
     tauri::Builder::default()
         .manage(app::AppState(Default::default()))
         .setup(|tauri_app| {
+            init_window_shadow(tauri_app);
             features::recent_documents::init(tauri_app);
             features::templates_hot_reload::init(tauri_app);
             features::textures_hot_reload::init(tauri_app);
@@ -180,5 +181,15 @@ fn handle_window_event(event: tauri::GlobalWindowEvent) {
                 .emit_all(EVENT_FORCE_REPLACE_STATE, new_state)
                 .unwrap();
         }
+    }
+}
+
+fn init_window_shadow(tauri_app: &mut tauri::App) {
+    let Some(window) = tauri_app.get_window("main") else {
+        error!("Could not access app window to initialize shadow");
+        return;
+    };
+    if let Err(e) = window_shadows::set_shadow(&window, true) {
+        error!("Failed to initialize window shadows: `{e}`");
     }
 }
