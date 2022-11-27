@@ -3,6 +3,7 @@
 ## Tiger 0.6
 
 - [x] Draw hitbox names in workbench
+- [x] Upgrade from Heroicons 1.0 to 2.0
 - [ ] Playback speed controls?
 - [ ] Time snapping / quantizing of animation frames
 - [x] Add button to open sheet folder in explorer
@@ -11,9 +12,10 @@
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
-- [ ] Cut and Copy menu entries are now disabled when there is no applicable selection
-- [x] Upgrade from Heroicons 1.0 to 2.0
+- [ ] Can clear selection by clicking in the dead zone of animations, hitboxes or timeline panel
 - [x] Performance improvements to animation playback and drag operations
+- [x] Cut, Copy and Paste menu entries are now disabled when there is no applicable selection
+- [ ] Fixed a bug where menus could overflow offscreen
 - [x] Fixed a bug where resize handles on hitboxes with odd-numbered dimensions were slightly misaligned
 - [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison
 - [x] Fixed a bug where disabled menu actions could be interacted with
