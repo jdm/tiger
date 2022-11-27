@@ -1,6 +1,6 @@
 <template>
 	<div ref="menuElement" class="relative py-2 rounded-md bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900 shadow-lg
-	shadow-black/25" :style="`transform: translate(${screenFit[0]}px, ${screenFit[1]}px)`" mouseenter="onMouseEnter"
+	shadow-black/25" :style="`transform: translate(${screenFit[0]}px, ${screenFit[1]}px)`" @mouseenter="onMouseEnter"
 		@mouseleave="onMouseLeave">
 		<div v-for="entry of content">
 			<MenuItem v-if="'name' in entry" :entry="entry"
