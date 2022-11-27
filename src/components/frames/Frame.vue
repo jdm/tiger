@@ -1,5 +1,5 @@
 <template>
-	<div @click="(event) => onFrameClicked(event)" @contextmenu.prevent="onOpenContextMenu" @dragstart="onDragStart"
+	<div @click.stop="onFrameClicked" @contextmenu.stop.prevent="onOpenContextMenu" @dragstart="onDragStart"
 		@dragend="onDragEnd" draggable="true">
 		<Selectable v-if="compact" :left-icon="PhotoIcon" :text="frame.name" :selected="frame.selected"
 			:actions="[{ icon: XMarkIcon, callback: onDeleteClicked }]" />

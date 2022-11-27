@@ -1,6 +1,6 @@
 <template>
 	<div>
-		<Selectable @click="onAnimationClicked" @dblclick="onAnimationDoubleClicked"
+		<Selectable @click.stop="onAnimationClicked" @dblclick.stop="onAnimationDoubleClicked"
 			@contextmenu.stop.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
 			:left-icon="FilmIcon" :actions="renaming ? [] :
 			[

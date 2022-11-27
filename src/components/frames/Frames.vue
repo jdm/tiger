@@ -6,7 +6,7 @@
 			<Button :positive="true" :icon="PhotoIcon" label="Import" @click="importFrames" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
-			<div class="p-4 overflow-y-auto h-full styled-scrollbars">
+			<div class="p-4 overflow-y-auto h-full styled-scrollbars" @click="clearSelection">
 				<div :class="listMode == ListMode.Grid4xN ? 'grid grid-cols-4 gap-4' : 'flex flex-col'">
 					<Frame v-for="frame in visibleFrames" :frame="frame" :key="frame.name"
 						:compact="listMode == ListMode.Linear" />
@@ -21,7 +21,7 @@ import { computed } from "vue"
 import { Bars4Icon, PhotoIcon, Squares2X2Icon } from "@heroicons/vue/20/solid"
 import { useAppStore } from "@/stores/app"
 import { importFrames } from "@/api/local"
-import { filterFrames, setFramesListMode } from "@/api/document"
+import { clearSelection, filterFrames, setFramesListMode } from "@/api/document"
 import Button from "@/components/basic/Button.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import MultiSwitch, { MultiSwitchItem } from "@/components/basic/MultiSwitch.vue"

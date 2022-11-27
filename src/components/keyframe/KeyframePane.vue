@@ -12,7 +12,8 @@
 				</div>
 			</div>
 			<PaneInset class="flex-1 min-h-0">
-				<div class="p-4 overflow-y-auto h-full styled-scrollbars" @contextmenu.stop.prevent="onOpenContextMenu">
+				<div class="p-4 overflow-y-auto h-full styled-scrollbars" @click="clearSelection"
+					@contextmenu.stop.prevent="onOpenContextMenu">
 					<div class="flex flex-col">
 						<Hitbox v-for="hitbox in app.currentKeyframe?.hitboxes" :hitbox="hitbox" :key="hitbox.key" />
 					</div>
@@ -26,7 +27,7 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue";
 import { LockClosedIcon, TagIcon } from "@heroicons/vue/20/solid";
-import { createHitbox, lockHitboxes, paste, unlockHitboxes } from "@/api/document";
+import { clearSelection, createHitbox, lockHitboxes, paste, unlockHitboxes } from "@/api/document";
 import { ClipboardManifest } from "@/api/dto";
 import { useAppStore } from "@/stores/app";
 import Button from "@/components/basic/Button.vue"

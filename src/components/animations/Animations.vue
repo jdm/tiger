@@ -5,7 +5,8 @@
 			<Button :positive="true" :icon="FilmIcon" label="New" @click="createAnimation" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
-			<div class="p-4 overflow-y-auto h-full styled-scrollbars" @contextmenu.stop.prevent="onOpenContextMenu">
+			<div class="p-4 overflow-y-auto h-full styled-scrollbars" @click="clearSelection"
+				@contextmenu.stop.prevent="onOpenContextMenu">
 				<div class="flex flex-col">
 					<Animation v-for="animation in visibleAnimations" :animation="animation" :key="animation.name" />
 				</div>
@@ -18,7 +19,7 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
 import { FilmIcon } from "@heroicons/vue/20/solid"
-import { createAnimation, filterAnimations, paste } from "@/api/document"
+import { clearSelection, createAnimation, filterAnimations, paste } from "@/api/document"
 import { ClipboardManifest } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
 import Animation from "@/components/animations/Animation.vue"
