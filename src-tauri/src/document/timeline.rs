@@ -5,11 +5,7 @@ use crate::document::*;
 use crate::sheet::{Direction, DirectionPreset};
 
 impl Document {
-    pub(super) fn tick(&mut self, delta: Duration) {
-        self.advance_timeline(delta);
-    }
-
-    fn advance_timeline(&mut self, delta: Duration) {
+    pub fn advance_timeline(&mut self, delta: Duration) {
         if self.is_timeline_playing() {
             self.view.timeline_clock += delta;
             if let Ok((_, animation)) = self.get_workbench_animation() {
@@ -43,8 +39,6 @@ impl Document {
     }
 
     pub(super) fn play(&mut self) -> DocumentResult<()> {
-        self.persistent.timeline_is_playing = true;
-        self.view.selection.hitboxes.clear();
         if self
             .get_workbench_sequence()?
             .1
@@ -55,6 +49,8 @@ impl Document {
         {
             self.view.skip_to_timeline_start();
         }
+        self.persistent.timeline_is_playing = true;
+        self.view.selection.hitboxes.clear();
         Ok(())
     }
 
@@ -255,6 +251,35 @@ mod test {
     }
 
     #[test]
+    fn play_from_end_of_sequence_starts_over() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.jump_to_animation_end().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 300);
+        d.play().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+    }
+
+    #[test]
+    fn scrubbing_blank_sequence_jumps_to_start() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_test_animation::<_, &str>(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec![])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.scrub_timeline(Duration::from_millis(500)).unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 0);
+    }
+
+    #[test]
     fn can_loop_animation() {
         let mut d = Document::new("tmp");
         d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
@@ -285,7 +310,8 @@ mod test {
         );
 
         d.edit_animation("walk_cycle").unwrap();
-        d.advance_timeline(Duration::from_millis(50));
+        d.scrub_timeline(Duration::from_millis(50)).unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 50);
 
         d.jump_to_animation_start().unwrap();
         assert_eq!(d.timeline_clock().as_millis(), 0);
@@ -304,7 +330,8 @@ mod test {
         );
 
         d.edit_animation("walk_cycle").unwrap();
-        d.advance_timeline(Duration::from_millis(50));
+        d.scrub_timeline(Duration::from_millis(50)).unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 50);
 
         d.jump_to_next_frame().unwrap();
         assert_eq!(d.timeline_clock().as_millis(), 100);
@@ -322,6 +349,68 @@ mod test {
         assert_eq!(d.timeline_clock().as_millis(), 0);
         d.jump_to_previous_frame().unwrap();
         assert_eq!(d.timeline_clock().as_millis(), 0);
+    }
+
+    #[test]
+    fn can_cycle_directions() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([
+                (Direction::East, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::West, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+            ]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_direction(Direction::North).unwrap();
+
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::North));
+        d.cycle_directions_forward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::West));
+        d.cycle_directions_forward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::South));
+        d.cycle_directions_forward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
+        d.cycle_directions_forward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::North));
+        d.cycle_directions_backward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
+        d.cycle_directions_backward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::South));
+        d.cycle_directions_backward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::West));
+        d.cycle_directions_backward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::North));
+    }
+
+    #[test]
+    fn can_skip_gaps_when_cycling_directions() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([
+                (Direction::East, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::North, vec!["walk_0", "walk_1"]),
+                (Direction::West, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+            ]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_direction(Direction::East).unwrap();
+        d.scrub_timeline(Duration::from_millis(250)).unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 250);
+
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
+        d.cycle_directions_forward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::West));
+        d.cycle_directions_backward().unwrap();
+        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
     }
 
     #[test]

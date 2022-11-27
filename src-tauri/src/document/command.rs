@@ -152,7 +152,7 @@ impl Document {
             }
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
             Command::DeleteSelectedAnimations => self.delete_selected_animations(),
-            Command::Tick(dt) => self.tick(dt),
+            Command::Tick(dt) => self.advance_timeline(dt),
             Command::Play => self.play()?,
             Command::Pause => self.pause()?,
             Command::ScrubTimeline(t) => self.scrub_timeline(t)?,
