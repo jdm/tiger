@@ -296,6 +296,16 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> DocumentResult<()> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+
+        if !self
+            .view
+            .selection
+            .is_keyframe_selected(animation_name, direction, index)
+        {
+            self.select_keyframe_only(animation_name.clone(), direction, index);
+        }
+
         let (_, animation) = self.get_workbench_animation()?;
         self.transient.keyframe_nudge = Some(KeyframeNudge {
             keyframe_being_dragged: (direction, index),
@@ -324,22 +334,6 @@ impl Document {
             .keyframe_nudge
             .clone()
             .ok_or(DocumentError::NotNudgingKeyframe)?;
-
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let animation_name = animation_name.clone();
-
-        // Select dragged frame
-        if !self.view.selection.is_keyframe_selected(
-            &animation_name,
-            nudge.keyframe_being_dragged.0,
-            nudge.keyframe_being_dragged.1,
-        ) {
-            self.select_keyframe_only(
-                animation_name,
-                nudge.keyframe_being_dragged.0,
-                nudge.keyframe_being_dragged.1,
-            );
-        }
 
         if !both_axis {
             if displacement.x.abs() > displacement.y.abs() {
@@ -396,6 +390,23 @@ impl Document {
         &mut self,
         hitbox_name: T,
     ) -> DocumentResult<()> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let ((direction, index), _) = self.get_workbench_keyframe()?;
+
+        if !self.view.selection.is_hitbox_selected(
+            animation_name,
+            direction,
+            index,
+            hitbox_name.as_ref(),
+        ) {
+            self.select_hitbox_only(
+                animation_name.clone(),
+                direction,
+                index,
+                hitbox_name.as_ref(),
+            );
+        }
+
         let (_, keyframe) = self.get_workbench_keyframe()?;
         self.transient.hitbox_nudge = Some(HitboxNudge {
             hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
@@ -404,6 +415,7 @@ impl Document {
                 .map(|(n, hitbox)| (n.clone(), hitbox.position()))
                 .collect(),
         });
+
         Ok(())
     }
 
@@ -418,20 +430,6 @@ impl Document {
             .hitbox_nudge
             .clone()
             .ok_or(DocumentError::NotNudgingHitbox)?;
-
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let animation_name = animation_name.clone();
-        let ((direction, index), _) = self.get_workbench_keyframe()?;
-
-        // Select dragged hitbox
-        if !self.view.selection.is_hitbox_selected(
-            &animation_name,
-            direction,
-            index,
-            &nudge.hitbox_being_dragged,
-        ) {
-            self.select_hitbox_only(animation_name, direction, index, nudge.hitbox_being_dragged);
-        }
 
         if !both_axis {
             if displacement.x.abs() > displacement.y.abs() {
