@@ -1,3 +1,4 @@
+use enum_iterator::{all, last, reverse_all};
 use std::time::Duration;
 
 use crate::document::*;
@@ -11,10 +12,8 @@ impl Document {
     fn advance_timeline(&mut self, delta: Duration) {
         if self.is_timeline_playing() {
             self.view.timeline_clock += delta;
-            if let Ok((animation_name, animation)) = self.get_workbench_animation() {
-                let animation_name = animation_name.clone();
-                if let Ok((direction, sequence)) = self.get_workbench_sequence() {
-                    let num_keyframes = sequence.num_keyframes();
+            if let Ok((_, animation)) = self.get_workbench_animation() {
+                if let Ok((_, sequence)) = self.get_workbench_sequence() {
                     match sequence.duration_millis() {
                         Some(d) if d > 0 => {
                             let clock_ms = self.timeline_clock().as_millis() as u64;
@@ -27,11 +26,7 @@ impl Document {
                                 self.persistent.timeline_is_playing = false;
                                 self.view.timeline_clock = Duration::from_millis(d);
                                 if self.view.selection.keyframes().count() <= 1 {
-                                    self.select_keyframe_only(
-                                        animation_name,
-                                        direction,
-                                        num_keyframes - 1,
-                                    );
+                                    self.select_current_keyframe().ok();
                                 }
                             }
                         }
@@ -65,66 +60,117 @@ impl Document {
 
     pub(super) fn pause(&mut self) -> DocumentResult<()> {
         self.persistent.timeline_is_playing = false;
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let animation_name = animation_name.clone();
-        let (direction, sequence) = self.get_workbench_sequence()?;
-        let keyframe_index = sequence
-            .keyframe_index_at(self.view.timeline_clock)
-            .unwrap_or_default();
         if self.view.selection.keyframes().count() <= 1 {
-            self.select_keyframe_only(animation_name, direction, keyframe_index);
+            self.select_current_keyframe().ok();
         }
         Ok(())
     }
 
     pub(super) fn scrub_timeline(&mut self, time: Duration) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let animation_name = animation_name.clone();
-        let (direction, sequence) = self.get_workbench_sequence()?;
+        let (_, sequence) = self.get_workbench_sequence()?;
         let new_time = match sequence.duration() {
             Some(d) if d < time => d,
             Some(_) => time,
             None => Duration::ZERO,
         };
-        let keyframe_index = sequence.keyframe_index_at(new_time).unwrap_or_default();
         self.view.timeline_clock = new_time;
-        self.select_keyframe_only(animation_name, direction, keyframe_index);
+        self.select_current_keyframe().ok();
         Ok(())
     }
 
-    pub fn jump_to_animation_start(&mut self) -> DocumentResult<()> {
+    pub(super) fn jump_to_animation_start(&mut self) -> DocumentResult<()> {
         self.scrub_timeline(Duration::ZERO)
     }
 
-    pub fn jump_to_animation_end(&mut self) -> DocumentResult<()> {
+    pub(super) fn jump_to_animation_end(&mut self) -> DocumentResult<()> {
         let (_, sequence) = self.get_workbench_sequence()?;
         let duration = sequence.duration().unwrap_or_default();
         self.scrub_timeline(duration)
     }
 
-    pub fn jump_to_previous_frame(&mut self) -> DocumentResult<()> {
+    pub(super) fn jump_to_previous_frame(&mut self) -> DocumentResult<()> {
         let (_, sequence) = self.get_workbench_sequence()?;
-        let now = self.view.timeline_clock.as_millis() as u64;
+        let now = self.view.timeline_clock;
         let new_time = sequence
             .keyframe_time_ranges()
             .into_iter()
             .rev()
-            .find(|range| range.end <= now)
-            .map(|range| range.start)
-            .unwrap_or_default();
-        self.scrub_timeline(Duration::from_millis(new_time))
+            .find(|range| range.end <= now.as_millis() as u64)
+            .map(|range| Duration::from_millis(range.start))
+            .unwrap_or(Duration::ZERO);
+        self.view.timeline_clock = new_time;
+        self.select_current_keyframe()?;
+        Ok(())
     }
 
-    pub fn jump_to_next_frame(&mut self) -> DocumentResult<()> {
+    pub(super) fn jump_to_next_frame(&mut self) -> DocumentResult<()> {
         let (_, sequence) = self.get_workbench_sequence()?;
-        let now = self.view.timeline_clock.as_millis() as u64;
+        let now = self.view.timeline_clock;
         let new_time = sequence
-            .keyframe_times()
+            .keyframe_time_ranges()
             .into_iter()
-            .find(|time| *time > now)
-            .or_else(|| sequence.keyframe_times().last().copied())
-            .unwrap_or_default();
-        self.scrub_timeline(Duration::from_millis(new_time))
+            .find(|range| range.start > now.as_millis() as u64)
+            .map(|range| Duration::from_millis(range.start))
+            .or_else(|| sequence.duration())
+            .unwrap_or(Duration::ZERO);
+        self.view.timeline_clock = new_time;
+        self.select_current_keyframe()?;
+        Ok(())
+    }
+
+    pub(super) fn cycle_directions_backward(&mut self) -> DocumentResult<()> {
+        let now = self.view.timeline_clock;
+        let old_direction = self
+            .view
+            .current_sequence
+            .unwrap_or_else(|| last::<Direction>().unwrap());
+
+        let (_, animation) = self.get_workbench_animation()?;
+        let new_direction = reverse_all::<Direction>()
+            .cycle()
+            .skip_while(|d| *d != old_direction)
+            .skip(1)
+            .take_while(|d| *d != old_direction)
+            .find(|d| {
+                if let Some(sequence) = animation.sequence(*d) {
+                    sequence.duration().map(|d| d >= now).unwrap_or(false)
+                } else {
+                    false
+                }
+            });
+
+        self.view.current_sequence = new_direction;
+        self.select_current_keyframe()?;
+        Ok(())
+    }
+
+    pub(super) fn cycle_directions_forward(&mut self) -> DocumentResult<()> {
+        let now = self.view.timeline_clock;
+        let old_direction = self
+            .view
+            .current_sequence
+            .unwrap_or_else(|| last::<Direction>().unwrap());
+
+        let (_, animation) = self.get_workbench_animation()?;
+        dbg!(&old_direction);
+        let new_direction = all::<Direction>()
+            .cycle()
+            .skip_while(|d| *d != old_direction)
+            .skip(1)
+            .take_while(|d| *d != old_direction)
+            .find(|d| {
+                dbg!(d);
+                if let Some(sequence) = animation.sequence(*d) {
+                    sequence.duration().map(|d| d >= now).unwrap_or(false)
+                } else {
+                    false
+                }
+            });
+        dbg!(new_direction);
+
+        self.view.current_sequence = new_direction;
+        self.select_current_keyframe()?;
+        Ok(())
     }
 
     pub(super) fn set_animation_looping(&mut self, is_looping: bool) -> DocumentResult<()> {
@@ -141,14 +187,7 @@ impl Document {
 
     pub(super) fn select_direction(&mut self, direction: Direction) -> DocumentResult<()> {
         self.view.current_sequence = Some(direction);
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let animation_name = animation_name.clone();
-        let (direction, sequence) = self.get_workbench_sequence()?;
-        if let Some(keyframe) = sequence.keyframe_index_at(self.view.timeline_clock) {
-            self.select_keyframe_only(animation_name, direction, keyframe);
-        } else {
-            self.view.selection.keyframes.clear();
-        }
+        self.select_current_keyframe().ok();
         Ok(())
     }
 
@@ -161,12 +200,13 @@ impl Document {
             .collect::<Vec<_>>();
         selected_keyframes.sort();
         selected_keyframes.reverse();
-        let (_, animation) = self.get_workbench_animation_mut()?;
-        for (direction, index) in selected_keyframes {
-            animation
-                .sequence_mut(direction)
-                .ok_or(DocumentError::SequenceNotInAnimation(direction))?
-                .delete_keyframe(index)?;
+        if let Ok((_, animation)) = self.get_workbench_animation_mut() {
+            for (direction, index) in selected_keyframes {
+                animation
+                    .sequence_mut(direction)
+                    .ok_or(DocumentError::SequenceNotInAnimation(direction))?
+                    .delete_keyframe(index)?;
+            }
         }
         Ok(())
     }
@@ -274,6 +314,10 @@ mod test {
         d.jump_to_next_frame().unwrap();
         assert_eq!(d.timeline_clock().as_millis(), 200);
         d.jump_to_next_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 300);
+        d.jump_to_next_frame().unwrap();
+        assert_eq!(d.timeline_clock().as_millis(), 300);
+        d.jump_to_previous_frame().unwrap();
         assert_eq!(d.timeline_clock().as_millis(), 200);
         d.jump_to_previous_frame().unwrap();
         assert_eq!(d.timeline_clock().as_millis(), 100);

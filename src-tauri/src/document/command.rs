@@ -127,7 +127,6 @@ impl Document {
             Command::ClearSelection => self.view.selection.clear(),
             Command::SelectFrame(ref p, shift, ctrl) => self.select_frame(p, shift, ctrl),
             Command::SelectAnimation(ref n, shift, ctrl) => self.select_animation(n, shift, ctrl),
-
             Command::SelectKeyframe(d, i, shift, ctrl) => {
                 self.select_keyframe(d, i, shift, ctrl)?
             }
@@ -214,6 +213,15 @@ impl Document {
             Command::EndExportAs => self.end_export_as()?,
         }
 
+        Ok(())
+    }
+
+    pub fn process_command(&mut self, command: Command) -> DocumentResult<()> {
+        let result = self.process_command_internal(command.clone());
+        if let Err(e) = &result {
+            error!("Error while processing document command `{command:?}`: {e}");
+        }
+
         self.sanitize_view();
 
         if !matches!(
@@ -236,14 +244,6 @@ impl Document {
             self.record_command(command);
         }
 
-        Ok(())
-    }
-
-    pub fn process_command(&mut self, command: Command) -> DocumentResult<()> {
-        let result = self.process_command_internal(command);
-        if let Err(e) = &result {
-            error!("Error while processing document command: {e}");
-        }
         result
     }
 

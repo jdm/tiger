@@ -171,11 +171,8 @@ impl Document {
         shift: bool,
         ctrl: bool,
     ) -> DocumentResult<()> {
-        self.view.selection.frames.clear();
-        self.view.selection.animations.clear();
-        self.view.selection.hitboxes.clear();
+        self.select_keyframe_internal(direction, index, shift, ctrl)?;
 
-        self.view.current_sequence = Some(direction);
         if !self.persistent.timeline_is_playing {
             let (_, sequence) = self.get_workbench_sequence()?;
             self.view.timeline_clock = Duration::from_millis(
@@ -186,6 +183,21 @@ impl Document {
                     .unwrap_or_default(),
             );
         }
+        Ok(())
+    }
+
+    pub(super) fn select_keyframe_internal(
+        &mut self,
+        direction: Direction,
+        index: usize,
+        shift: bool,
+        ctrl: bool,
+    ) -> DocumentResult<()> {
+        self.view.selection.frames.clear();
+        self.view.selection.animations.clear();
+        self.view.selection.hitboxes.clear();
+
+        self.view.current_sequence = Some(direction);
         let (animation_name, _) = self.get_workbench_animation()?;
         let animation_name = animation_name.clone();
         let animation = self
@@ -200,6 +212,14 @@ impl Document {
             ctrl,
         );
 
+        Ok(())
+    }
+
+    pub(super) fn select_current_keyframe(&mut self) -> DocumentResult<()> {
+        let (animation_name, _) = self.get_workbench_animation()?;
+        let animation_name = animation_name.clone();
+        let ((direction, keyframe_index), _) = self.get_workbench_keyframe()?;
+        self.select_keyframe_only(animation_name, direction, keyframe_index);
         Ok(())
     }
 
@@ -240,8 +260,15 @@ impl Document {
             self.browse_animations(direction, shift);
         } else if !self.view.selection.hitboxes.is_empty() && !is_horizontal {
             self.browse_hitboxes(direction, shift)?;
-        } else {
+        } else if shift {
             self.browse_keyframes(direction, shift)?;
+        } else {
+            match direction {
+                BrowseDirection::Left => self.jump_to_previous_frame()?,
+                BrowseDirection::Right => self.jump_to_next_frame()?,
+                BrowseDirection::Up => self.cycle_directions_backward()?,
+                BrowseDirection::Down => self.cycle_directions_forward()?,
+            };
         }
         Ok(())
     }
@@ -284,23 +311,20 @@ impl Document {
         shift: bool,
     ) -> DocumentResult<()> {
         let (animation_name, _) = self.get_workbench_animation()?;
-        let animation = self
-            .sheet
-            .animation(animation_name)
-            .ok_or_else(|| DocumentError::AnimationNotInDocument(animation_name.clone()))?;
+        let animation_name = animation_name.clone();
         let ((direction, index), _) = self.get_workbench_keyframe()?;
-        let current_keyframe = (animation_name.clone(), direction, index);
-        let from_keyframe = self
-            .view
-            .selection
-            .keyframes
-            .last_interacted
-            .as_ref()
-            .or(Some(&current_keyframe));
-        if let Some((_, direction, index)) =
-            animation.offset_from(from_keyframe, browse_direction, self.view.timeline_clock)
-        {
-            self.select_keyframe(direction, index, shift, false)?;
+        let from_keyframe = match self.view.selection.keyframes.last_interacted.as_ref() {
+            Some(k) => k.to_owned(),
+            None => {
+                self.select_keyframe_only(animation_name.clone(), direction, index);
+                (animation_name, direction, index)
+            }
+        };
+
+        let (_, animation) = self.get_workbench_animation()?;
+        let to_keyframe = animation.offset_from(Some(&from_keyframe), browse_direction);
+        if let Some((_, direction, index)) = to_keyframe {
+            self.select_keyframe_internal(direction, index, shift, false)?;
         }
         Ok(())
     }
@@ -530,7 +554,6 @@ trait ItemPoolTimeline {
         &self,
         from: Option<&(String, Direction, usize)>,
         direction: BrowseDirection,
-        timeline_clock: Duration,
     ) -> Option<(String, Direction, usize)>;
 }
 
@@ -652,9 +675,15 @@ impl<P: Paths> ItemPool<(String, Direction, usize)> for &Animation<P> {
             .filter_map(|(direction, index, range)| {
                 let intersection =
                     affected_times.start.max(range.start)..affected_times.end.min(range.end);
-                let in_time_range = intersection.end.saturating_sub(intersection.start)
-                    >= (range.end.saturating_sub(range.start) / 2);
-                if affected_directions.contains(&direction) && in_time_range {
+                let has_big_overlap = {
+                    let intersection_size = intersection.end.saturating_sub(intersection.start);
+                    let keyframe_size = range.end.saturating_sub(range.start);
+                    intersection_size >= keyframe_size / 2
+                };
+                let covers_whole_selection = intersection == affected_times;
+                let in_time_range = has_big_overlap || covers_whole_selection;
+                let in_direction_range = affected_directions.contains(&direction);
+                if in_direction_range && in_time_range {
                     Some((animation_name.clone(), direction, index))
                 } else {
                     None
@@ -669,10 +698,13 @@ impl<P: Paths> ItemPoolTimeline for &Animation<P> {
         &self,
         from: Option<&(String, Direction, usize)>,
         browse_direction: BrowseDirection,
-        timeline_clock: Duration,
     ) -> Option<(String, Direction, usize)> {
         let (animation_name, direction, index) = from?;
         let animation_name = animation_name.clone();
+        let sequence = self.sequence(*direction)?;
+        let range = sequence.keyframe_time_ranges().get(*index)?.clone();
+        let reference_time = Duration::from_millis((range.start + range.end) / 2);
+
         match browse_direction {
             BrowseDirection::Left => {
                 if *index > 0 {
@@ -690,26 +722,22 @@ impl<P: Paths> ItemPoolTimeline for &Animation<P> {
                 }
             }
             BrowseDirection::Up => reverse_all::<Direction>()
-                .cycle()
                 .skip_while(|d| d != direction)
                 .skip(1)
-                .take_while(|d| d != direction)
                 .find_map(|d| {
                     if let Some(sequence) = self.sequence(d) {
-                        if let Some((new_index, _)) = sequence.keyframe_at(timeline_clock) {
+                        if let Some((new_index, _)) = sequence.keyframe_at(reference_time) {
                             return Some((animation_name.clone(), d, new_index));
                         }
                     }
                     None
                 }),
             BrowseDirection::Down => all::<Direction>()
-                .cycle()
                 .skip_while(|d| d != direction)
                 .skip(1)
-                .take_while(|d| d != direction)
                 .find_map(|d| {
                     if let Some(sequence) = self.sequence(d) {
-                        if let Some((new_index, _)) = sequence.keyframe_at(timeline_clock) {
+                        if let Some((new_index, _)) = sequence.keyframe_at(reference_time) {
                             return Some((animation_name.clone(), d, new_index));
                         }
                     }

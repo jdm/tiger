@@ -64,9 +64,10 @@ impl Document {
             .hitboxes()
             .map(|(_, _, _, h)| h.clone())
             .collect::<Vec<_>>();
-        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
-        for hitbox_name in selected_hitboxes {
-            keyframe.delete_hitbox(hitbox_name);
+        if let Ok((_, keyframe)) = self.get_workbench_keyframe_mut() {
+            for hitbox_name in selected_hitboxes {
+                keyframe.delete_hitbox(hitbox_name);
+            }
         }
         Ok(())
     }

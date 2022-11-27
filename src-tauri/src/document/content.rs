@@ -27,9 +27,7 @@ impl Document {
             let any_direction = animation.sequences_iter().next().map(|(d, _s)| *d);
             self.view.current_sequence = any_direction;
         }
-        if let Some(direction) = self.view.current_sequence {
-            self.select_keyframe_only(name.as_ref().to_owned(), direction, 0);
-        }
+        self.select_current_keyframe().ok();
 
         Ok(())
     }
