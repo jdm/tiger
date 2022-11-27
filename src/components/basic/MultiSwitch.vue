@@ -4,7 +4,7 @@
 			class="absolute top-0 w-9 h-9 rounded-md transition-[left] border-y border-t-blue-600 border-b-blue-900 bg-gradient-to-b from-blue-800 to-blue-600" />
 		<div ref="itemsElement" class="flex flex-row">
 			<div v-for="item in items" class="z-10">
-				<Icon :name="item.icon" mini @click="onItemClicked(item)" class="w-9 p-2 transition"
+				<component :is="item.icon" @click="onItemClicked(item)" class="w-9 p-2 transition"
 					:class="itemClasses(item)" />
 			</div>
 		</div>
@@ -12,12 +12,11 @@
 </template>
 
 <script setup lang="ts">
+import type { Component } from "vue"
 import { computed, Ref, ref } from "vue"
-import * as mini from "@heroicons/vue/20/solid"
-import Icon from "@/components/basic/Icon.vue"
 
 export type MultiSwitchItem = {
-	icon: keyof typeof mini,
+	icon: Component,
 	value?: any,
 	active?: boolean,
 	rotate?: boolean,

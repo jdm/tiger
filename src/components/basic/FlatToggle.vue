@@ -1,18 +1,16 @@
 <template>
-	<!-- Mini icon at full size for extra chonk -->
-	<Icon @click="onClicked" :name="icon" mini class="w-9 h-9 p-1.5 cursor-pointer rounded-md border-2"
+	<component :is="icon" @click="onClicked" class="w-9 h-9 p-1.5 cursor-pointer rounded-md border-2"
 		:class="iconClass" />
 </template>
 
 <script setup lang="ts">
+import type { Component } from "vue"
 import { computed } from "vue"
-import * as solid from "@heroicons/vue/24/solid"
-import Icon from "@/components/basic/Icon.vue"
 
 export type ToggleColor = "blue" | "orange" | "pink" | "sky";
 
 const props = defineProps<{
-	icon: keyof typeof solid,
+	icon: Component,
 	color?: ToggleColor,
 	modelValue: boolean,
 }>();

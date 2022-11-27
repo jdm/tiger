@@ -1,10 +1,10 @@
 <template>
 	<div ref="el">
 		<Selectable @click="(event) => onHitboxClicked(event)" @contextmenu.prevent="onOpenContextMenu"
-			:selected="hitbox.selected" :text="hitbox.name" left-icon="TagIcon" :actions="renaming ? [] :
+			:selected="hitbox.selected" :text="hitbox.name" :left-icon="TagIcon" :actions="renaming ? [] :
 			[
-				{ icon: 'PencilSquareIcon', callback: onRenameClicked },
-				{ icon: 'XMarkIcon', callback: onDeleteClicked }
+				{ icon: PencilSquareIcon, callback: onRenameClicked },
+				{ icon: XMarkIcon, callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
 				<InputRename v-model="newName" @complete-rename="onRenameInputComplete"
@@ -16,6 +16,7 @@
 </template>
 
 <script setup lang="ts">
+import { PencilSquareIcon, TagIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { Hitbox as HitboxDTO } from "@/api/dto"
 import { copy, cut, deleteHitbox, deleteSelectedHitboxes, renameHitbox, selectHitbox } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"

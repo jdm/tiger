@@ -3,16 +3,15 @@
 		<button type="button"
 			class="w-full h-full flex flex-row items-center justify-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border-t border-b-2"
 			:disabled="disabled" :class="buttonClasses" @click="emit('click')">
-			<Icon v-if="icon" :name="icon" mini class="w-5" />
+			<component :is="icon" v-if="icon" class="w-5" />
 			<div v-if="label">{{ label }}</div>
 		</button>
 	</div>
 </template>
 
 <script setup lang="ts">
+import type { Component } from "vue"
 import { computed } from "vue"
-import Icon from "@/components/basic/Icon.vue"
-import * as solid from "@heroicons/vue/24/solid"
 
 type ButtonColor = "pink";
 
@@ -22,7 +21,7 @@ const props = defineProps<{
 	positive?: boolean,
 	danger?: boolean,
 	customColor?: ButtonColor,
-	icon?: keyof typeof solid,
+	icon?: Component,
 }>();
 
 const emit = defineEmits<{

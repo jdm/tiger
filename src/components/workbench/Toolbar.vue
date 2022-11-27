@@ -6,16 +6,17 @@
 		outline outline-4 outline-neutral-900
 	">
 		<FlatMultiSwitch :items="zoomItems" @activate="onZoomClicked" />
-		<FlatToggle icon="SunIcon" v-model="spriteDarkening" />
+		<FlatToggle :icon="SunIcon" v-model="spriteDarkening" />
 		<div class="flex flex-row items-center space-x-1">
-			<FlatToggle icon="PhotoIcon" v-model="drawSprite" color="orange" />
-			<FlatToggle icon="TagIcon" v-model="drawHitboxes" color="pink" />
-			<FlatToggle icon="PlusIcon" v-model="drawOrigin" color="sky" />
+			<FlatToggle :icon="PhotoIcon" v-model="drawSprite" color="orange" />
+			<FlatToggle :icon="TagIcon" v-model="drawHitboxes" color="pink" />
+			<FlatToggle :icon="PlusIcon" v-model="drawOrigin" color="sky" />
 		</div>
 	</div>
 </template>
 
 <script setup lang="ts">
+import { PhotoIcon, PlusIcon, SunIcon, TagIcon  } from "@heroicons/vue/20/solid";
 import { computed, WritableComputedRef } from "vue";
 import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin, hideSprite, setWorkbenchZoomFactor, showHitboxes, showOrigin, showSprite } from "@/api/document";
 import { useAppStore } from "@/stores/app"

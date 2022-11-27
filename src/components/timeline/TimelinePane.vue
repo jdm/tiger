@@ -3,8 +3,8 @@
 		<div class="w-full px-4 py-2 flex flex-row items-center">
 			<div class="flex-1 flex flex-row space-x-2">
 				<PerspectivePicker />
-				<Toggle :toggled="app.currentAnimation?.isLooping || false" icon="ArrowPathIcon"
-					@toggled="setAnimationLooping" />
+				<Toggle :toggled="app.currentAnimation?.isLooping || false" @toggled="setAnimationLooping"
+					:icon="ArrowPathIcon" />
 			</div>
 			<div class="flex-1 flex flex-row justify-center">
 				<PlaybackControls />
@@ -50,7 +50,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "@vue/reactivity"
-import { MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
+import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
 	selectDirection, setAnimationLooping, setTimelineZoomAmount

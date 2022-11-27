@@ -5,10 +5,10 @@
 		</div>
 		<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
 			<div class="w-full flex flex-row space-x-2 items-center">
-				<Toggle :toggled="!!app.currentDocument?.lockHitboxes" icon="LockClosedIcon"
-					@toggled="onToggleLockHitboxes" />
+				<Toggle :toggled="!!app.currentDocument?.lockHitboxes" @toggled="onToggleLockHitboxes"
+					:icon="LockClosedIcon" />
 				<div class="flex-1 flex flex-row justify-end">
-					<Button :positive="true" icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
+					<Button :positive="true" :icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
 				</div>
 			</div>
 			<PaneInset class="flex-1 min-h-0">
@@ -23,6 +23,7 @@
 </template>
 
 <script setup lang="ts">
+import { LockClosedIcon, TagIcon } from "@heroicons/vue/20/solid";
 import { createHitbox, lockHitboxes, unlockHitboxes } from "@/api/document";
 import { useAppStore } from "@/stores/app";
 import Button from "@/components/basic/Button.vue"

@@ -1,5 +1,5 @@
 <template>
-	<ModalDialog title="Unsaved Changes" icon="ExclamationTriangleIcon">
+	<ModalDialog title="Unsaved Changes" :icon="ExclamationTriangleIcon">
 		<template #body>
 			<p class="max-w-md"><span class="italic font-semibold text-orange-500">{{ app.currentDocument?.name
 			}}</span> has been
@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline"
 import Button from "@/components/basic/Button.vue"
 import ModalDialog from "@/components/basic/ModalDialog.vue"
 import { useAppStore } from "@/stores/app"

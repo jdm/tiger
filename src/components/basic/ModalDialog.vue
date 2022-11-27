@@ -3,7 +3,7 @@
 		<div class="flex p-6 pb-5 space-x-6 bg-plastic-900">
 			<div class="h-9 w-9 flex-shrink-0 flex items-center justify-center rounded-full"
 				:class="error ? 'bg-red-400' : 'bg-amber-300'">
-				<Icon :outline="true" :name="icon" class="h-6 w-6" :class="error ? 'text-red-900' : 'text-amber-900'" />
+				<component :is="icon" class="h-6 w-6" :class="error ? 'text-red-900' : 'text-amber-900'" />
 			</div>
 			<div>
 				<h3 class="text-lg leading-6 font-medium text-plastic-100">{{ title }}</h3>
@@ -19,12 +19,11 @@
 </template>
 
 <script setup lang="ts">
-import * as solid from "@heroicons/vue/24/solid"
-import Icon from "@/components/basic/Icon.vue"
+import type { Component } from "vue";
 
 defineProps<{
 	title: string,
-	icon: keyof typeof solid,
+	icon: Component,
 	error?: boolean,
 }>();
 </script>

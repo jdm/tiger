@@ -1,5 +1,5 @@
 <template>
-	<ModalDialog :title="error.title" icon="ExclamationTriangleIcon" :error="true">
+	<ModalDialog :title="error.title" :icon="ExclamationTriangleIcon" :error="true">
 		<template #body>
 			<p class="pb-1">{{ error.summary }}</p>
 			<div
@@ -14,6 +14,7 @@
 </template>
 
 <script setup lang="ts">
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline"
 import { UserFacingError } from "@/api/dto"
 import { acknowledgeError } from "@/api/app"
 import Button from "@/components/basic/Button.vue"

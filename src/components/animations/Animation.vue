@@ -2,10 +2,10 @@
 	<div>
 		<Selectable @click="onAnimationClicked" @dblclick="onAnimationDoubleClicked"
 			@contextmenu.stop.prevent="onOpenContextMenu" :selected="animation.selected" :text="animation.name"
-			left-icon="FilmIcon" :actions="renaming ? [] :
+			:left-icon="FilmIcon" :actions="renaming ? [] :
 			[
-				{ icon: 'PencilSquareIcon', callback: beginRename },
-				{ icon: 'XMarkIcon', callback: onDeleteClicked }
+				{ icon: PencilSquareIcon, callback: beginRename },
+				{ icon: XMarkIcon, callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
 				<InputRename v-model="newName" @complete-rename="onRenameInputComplete"
@@ -17,6 +17,7 @@
 </template>
 
 <script setup lang="ts">
+import { FilmIcon, PencilSquareIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { Animation as AnimationDTO } from "@/api/dto"
 import { copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
 import { Ref, ref } from "@vue/reactivity"

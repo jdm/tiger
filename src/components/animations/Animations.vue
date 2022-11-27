@@ -2,7 +2,7 @@
 	<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
 		<div class="w-full flex flex-row space-x-2 items-center">
 			<InputSearch class="flex-1" placeholder="Search animations" v-model="searchQuery" />
-			<Button :positive="true" icon="FilmIcon" label="New" @click="createAnimation" />
+			<Button :positive="true" :icon="FilmIcon" label="New" @click="createAnimation" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
 			<div class="p-4 overflow-y-auto h-full styled-scrollbars" @contextmenu.stop.prevent="onOpenContextMenu">
@@ -17,6 +17,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
+import { FilmIcon } from "@heroicons/vue/20/solid"
 import { createAnimation, filterAnimations, paste } from "@/api/document"
 import { ClipboardManifest } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
