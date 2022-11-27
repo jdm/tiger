@@ -152,21 +152,18 @@ impl Document {
             .unwrap_or_else(|| last::<Direction>().unwrap());
 
         let (_, animation) = self.get_workbench_animation()?;
-        dbg!(&old_direction);
         let new_direction = all::<Direction>()
             .cycle()
             .skip_while(|d| *d != old_direction)
             .skip(1)
             .take_while(|d| *d != old_direction)
             .find(|d| {
-                dbg!(d);
                 if let Some(sequence) = animation.sequence(*d) {
                     sequence.duration().map(|d| d >= now).unwrap_or(false)
                 } else {
                     false
                 }
             });
-        dbg!(new_direction);
 
         self.view.current_sequence = new_direction;
         self.select_current_keyframe()?;
