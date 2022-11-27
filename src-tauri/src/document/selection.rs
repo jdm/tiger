@@ -186,7 +186,7 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn select_keyframe_internal(
+    fn select_keyframe_internal(
         &mut self,
         direction: Direction,
         index: usize,
@@ -251,14 +251,11 @@ impl Document {
         direction: BrowseDirection,
         shift: bool,
     ) -> DocumentResult<()> {
-        let is_horizontal = direction.is_horizontal();
-        if !self.view.selection.frames.is_empty()
-            && (!is_horizontal || self.view.frames_list_mode != ListMode::Linear)
-        {
+        if !self.view.selection.frames.is_empty() {
             self.browse_frames(direction, shift);
-        } else if !self.view.selection.animations.is_empty() && !is_horizontal {
+        } else if !self.view.selection.animations.is_empty() {
             self.browse_animations(direction, shift);
-        } else if !self.view.selection.hitboxes.is_empty() && !is_horizontal {
+        } else if !self.view.selection.hitboxes.is_empty() {
             self.browse_hitboxes(direction, shift)?;
         } else if shift {
             self.browse_keyframes(direction, shift)?;
@@ -748,13 +745,6 @@ impl<P: Paths> ItemPoolTimeline for &Animation<P> {
 }
 
 impl BrowseDirection {
-    fn is_horizontal(&self) -> bool {
-        match self {
-            BrowseDirection::Up | BrowseDirection::Down => false,
-            BrowseDirection::Left | BrowseDirection::Right => true,
-        }
-    }
-
     fn as_vec2(&self) -> Vector2D<i32> {
         match self {
             BrowseDirection::Up => vec2(0, -1),
@@ -857,127 +847,215 @@ impl<'a> Borrow<dyn HitboxID + 'a> for (&'a str, Direction, usize, &'a str) {
 
 impl Eq for dyn HitboxID + '_ {}
 
-#[test]
-fn can_replace_selection() {
-    let mut selection: Selection<i32> = 0.into();
-    assert!(selection.contains(&0));
+#[cfg(test)]
+mod test {
 
-    selection.alter(0, &[0, 1, 2, 3], false, false);
-    assert!(selection.contains(&0));
+    use super::*;
+    use std::collections::HashMap;
 
-    selection.alter(2, &[0, 1, 2, 3], false, false);
-    assert!(!selection.contains(&0));
-    assert!(selection.contains(&2));
-}
+    #[test]
+    fn can_replace_selection() {
+        let mut selection: Selection<i32> = 0.into();
+        assert!(selection.contains(&0));
 
-#[test]
-fn can_toggle_individual_items() {
-    let mut selection: Selection<i32> = 0.into();
-    assert!(selection.contains(&0));
+        selection.alter(0, &[0, 1, 2, 3], false, false);
+        assert!(selection.contains(&0));
 
-    selection.alter(2, &[0, 1, 2, 3], false, true);
-    assert!(selection.contains(&0));
-    assert!(selection.contains(&2));
-
-    selection.alter(0, &[0, 1, 2, 3], false, true);
-    assert!(!selection.contains(&0));
-    assert!(selection.contains(&2));
-}
-
-#[test]
-fn can_select_a_range() {
-    let mut selection: Selection<i32> = 2.into();
-    selection.alter(5, &(0..=8).collect::<Vec<_>>(), true, false);
-    assert!(!selection.contains(&1));
-    assert!(selection.contains(&2));
-    assert!(selection.contains(&3));
-    assert!(selection.contains(&4));
-    assert!(selection.contains(&5));
-    assert!(!selection.contains(&6));
-}
-
-#[test]
-fn can_adjust_a_range() {
-    let mut selection: Selection<i32> = 10.into();
-
-    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
-    selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, false);
-    assert!(!selection.contains(&9));
-    for i in 10..=18 {
-        assert!(selection.contains(&i));
+        selection.alter(2, &[0, 1, 2, 3], false, false);
+        assert!(!selection.contains(&0));
+        assert!(selection.contains(&2));
     }
-    assert!(!selection.contains(&19));
 
-    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
-    assert!(!selection.contains(&9));
-    for i in 10..=15 {
-        assert!(selection.contains(&i));
+    #[test]
+    fn can_toggle_individual_items() {
+        let mut selection: Selection<i32> = 0.into();
+        assert!(selection.contains(&0));
+
+        selection.alter(2, &[0, 1, 2, 3], false, true);
+        assert!(selection.contains(&0));
+        assert!(selection.contains(&2));
+
+        selection.alter(0, &[0, 1, 2, 3], false, true);
+        assert!(!selection.contains(&0));
+        assert!(selection.contains(&2));
     }
-    assert!(!selection.contains(&16));
 
-    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
-    assert!(!selection.contains(&4));
-    for i in 5..=10 {
-        assert!(selection.contains(&i));
+    #[test]
+    fn can_select_a_range() {
+        let mut selection: Selection<i32> = 2.into();
+        selection.alter(5, &(0..=8).collect::<Vec<_>>(), true, false);
+        assert!(!selection.contains(&1));
+        assert!(selection.contains(&2));
+        assert!(selection.contains(&3));
+        assert!(selection.contains(&4));
+        assert!(selection.contains(&5));
+        assert!(!selection.contains(&6));
     }
-    assert!(!selection.contains(&16));
-}
 
-#[test]
-fn can_select_multiple_ranges() {
-    let mut selection: Selection<i32> = 2.into();
-    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
-    selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
-    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
-    for i in 0..=20 {
+    #[test]
+    fn can_adjust_a_range() {
+        let mut selection: Selection<i32> = 10.into();
+
+        selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
+        selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, false);
+        assert!(!selection.contains(&9));
+        for i in 10..=18 {
+            assert!(selection.contains(&i));
+        }
+        assert!(!selection.contains(&19));
+
+        selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, false);
+        assert!(!selection.contains(&9));
+        for i in 10..=15 {
+            assert!(selection.contains(&i));
+        }
+        assert!(!selection.contains(&16));
+
+        selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+        assert!(!selection.contains(&4));
+        for i in 5..=10 {
+            assert!(selection.contains(&i));
+        }
+        assert!(!selection.contains(&16));
+    }
+
+    #[test]
+    fn can_select_multiple_ranges() {
+        let mut selection: Selection<i32> = 2.into();
+        selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+        selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
+        selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
+        for i in 0..=20 {
+            assert_eq!(
+                selection.contains(&i),
+                (2..=5).contains(&i) || (10..=15).contains(&i)
+            );
+        }
+    }
+
+    #[test]
+    fn can_revert_from_multiple_to_single_range() {
+        let mut selection: Selection<i32> = 2.into();
+        selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+        selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
+        selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
+        selection.alter(12, &(0..=20).collect::<Vec<_>>(), true, false);
+        for i in 0..=20 {
+            assert_eq!(selection.contains(&i), (12..=15).contains(&i));
+        }
+    }
+
+    #[test]
+    fn can_adjust_multiple_ranges() {
+        let mut selection: Selection<i32> = 2.into();
+        selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
+        selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
+        selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
+        selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, true);
+        for i in 0..=20 {
+            assert_eq!(
+                selection.contains(&i),
+                (2..=5).contains(&i) || (10..=18).contains(&i)
+            );
+        }
+        selection.alter(16, &(0..=20).collect::<Vec<_>>(), false, true);
+        selection.alter(12, &(0..=20).collect::<Vec<_>>(), true, true);
+        for i in 0..=20 {
+            assert_eq!(
+                selection.contains(&i),
+                (2..=5).contains(&i) || (10..=11).contains(&i) || (17..=18).contains(&i)
+            );
+        }
+    }
+
+    #[test]
+    fn can_remove_individual_item() {
+        let mut selection: Selection<i32> = Selection::new(vec![3, 4, 5, 6]);
+        selection.remove(&4);
+        assert!(selection.contains(&3));
+        assert!(!selection.contains(&4));
+        assert!(selection.contains(&5));
+        assert!(selection.contains(&6));
+    }
+
+    #[test]
+    fn can_browse_animations() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation::<_, &str>("A", HashMap::new());
+        d.sheet.add_test_animation::<_, &str>("B", HashMap::new());
+        d.sheet.add_test_animation::<_, &str>("C", HashMap::new());
+        d.select_animation("A", false, false);
+        let just_a = HashSet::from(["A".to_owned()]);
+        let just_b = HashSet::from(["B".to_owned()]);
+        let b_and_c = HashSet::from(["B".to_owned(), "C".to_owned()]);
+        assert_eq!(&d.view.selection.animations.selected_items, &just_a,);
+        d.browse_selection(BrowseDirection::Down, false).unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &just_b,);
+        d.browse_selection(BrowseDirection::Down, true).unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &b_and_c);
+        d.browse_selection(BrowseDirection::Up, false).unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &just_b,);
+        d.browse_selection(BrowseDirection::Left, false).unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &just_b,);
+    }
+
+    #[test]
+    fn can_browse_frames_as_a_list() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["A", "B", "C"]);
+        d.view.frames_list_mode = ListMode::Linear;
+        d.select_frame("A", false, false);
+        let just_a = HashSet::from([PathBuf::from("A")]);
+        let just_b = HashSet::from([PathBuf::from("B")]);
+        let b_and_c = HashSet::from([PathBuf::from("B"), PathBuf::from("C")]);
+        assert_eq!(&d.view.selection.frames.selected_items, &just_a,);
+        d.browse_selection(BrowseDirection::Down, false).unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
+        d.browse_selection(BrowseDirection::Down, true).unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &b_and_c);
+        d.browse_selection(BrowseDirection::Up, false).unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
+        d.browse_selection(BrowseDirection::Left, false).unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
+    }
+
+    #[test]
+    fn can_browse_frames_as_a_4xn_grid() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec![
+            "00", "10", "20", "30", //
+            "01", "11", "21", "31", //
+            "02", "12", "22", "32",
+        ]);
+        d.view.frames_list_mode = ListMode::Grid4xN;
+        d.select_frame("00", false, false);
+        let to_set = |v: Vec<&str>| v.iter().map(PathBuf::from).collect();
+
+        d.browse_selection(BrowseDirection::Right, false).unwrap();
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["10"]));
+        d.browse_selection(BrowseDirection::Right, false).unwrap();
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["20"]));
+        d.browse_selection(BrowseDirection::Right, false).unwrap();
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["30"]));
+        d.browse_selection(BrowseDirection::Right, false).unwrap();
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["01"]));
+        d.browse_selection(BrowseDirection::Left, false).unwrap();
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["30"]));
+        d.browse_selection(BrowseDirection::Down, true).unwrap();
         assert_eq!(
-            selection.contains(&i),
-            (2..=5).contains(&i) || (10..=15).contains(&i)
+            d.view.selection.frames.selected_items,
+            to_set(vec!["30", "01", "11", "21", "31"])
+        );
+        d.browse_selection(BrowseDirection::Down, true).unwrap();
+        assert_eq!(
+            d.view.selection.frames.selected_items,
+            to_set(vec!["30", "01", "11", "21", "31", "02", "12", "22", "32"])
+        );
+        d.browse_selection(BrowseDirection::Left, true).unwrap();
+        assert_eq!(
+            d.view.selection.frames.selected_items,
+            to_set(vec!["30", "01", "11", "21", "31", "02", "12", "22"])
         );
     }
-}
-
-#[test]
-fn can_revert_from_multiple_to_single_range() {
-    let mut selection: Selection<i32> = 2.into();
-    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
-    selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
-    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
-    selection.alter(12, &(0..=20).collect::<Vec<_>>(), true, false);
-    for i in 0..=20 {
-        assert_eq!(selection.contains(&i), (12..=15).contains(&i));
-    }
-}
-
-#[test]
-fn can_adjust_multiple_ranges() {
-    let mut selection: Selection<i32> = 2.into();
-    selection.alter(5, &(0..=20).collect::<Vec<_>>(), true, false);
-    selection.alter(10, &(0..=20).collect::<Vec<_>>(), false, true);
-    selection.alter(15, &(0..=20).collect::<Vec<_>>(), true, true);
-    selection.alter(18, &(0..=20).collect::<Vec<_>>(), true, true);
-    for i in 0..=20 {
-        assert_eq!(
-            selection.contains(&i),
-            (2..=5).contains(&i) || (10..=18).contains(&i)
-        );
-    }
-    selection.alter(16, &(0..=20).collect::<Vec<_>>(), false, true);
-    selection.alter(12, &(0..=20).collect::<Vec<_>>(), true, true);
-    for i in 0..=20 {
-        assert_eq!(
-            selection.contains(&i),
-            (2..=5).contains(&i) || (10..=11).contains(&i) || (17..=18).contains(&i)
-        );
-    }
-}
-
-#[test]
-fn can_remove_individual_item() {
-    let mut selection: Selection<i32> = Selection::new(vec![3, 4, 5, 6]);
-    selection.remove(&4);
-    assert!(selection.contains(&3));
-    assert!(!selection.contains(&4));
-    assert!(selection.contains(&5));
-    assert!(selection.contains(&6));
 }
