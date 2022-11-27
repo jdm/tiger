@@ -4,7 +4,7 @@
 			<div class="transition-transform"
 				:style="`transform-origin: center left; transform: scale(${scale}, ${scale})`">
 				<div class="transition-transform" :style="`transform: scale(${1 / zoom}, ${1 / zoom})`">
-					<div class="absolute px-1 font-semibold" :class="palette" style="font-size: 10px; line-height: 1rem"
+					<div class="absolute px-1 py-px font-semibold text-[10px]" :class="palette"
 						:style="`max-width: ${zoom * size[0]}px`">
 						<div class="text-ellipsis overflow-clip whitespace-nowrap">
 							{{ text }}
