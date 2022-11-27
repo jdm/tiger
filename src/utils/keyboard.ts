@@ -50,15 +50,17 @@ function onKeyDown(event: KeyboardEvent) {
     } else if (event.key == "e") {
       doExport();
     } else if (event.key == "E") {
-      beginExportAs();
       event.preventDefault();
+      beginExportAs();
     } else if (event.key == "w") {
       closeCurrentDocument();
     } else if (event.key == "W") {
       closeAllDocuments();
     } else if (event.key == "z") {
+      event.preventDefault();
       undo();
     } else if (event.key == "Z") {
+      event.preventDefault();
       redo();
     } else if (event.key == "x") {
       cut();
