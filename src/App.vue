@@ -4,7 +4,7 @@
       <AppBar v-model:debugMode="allowContextMenu" />
       <div class="flex-1 relative">
         <div class="absolute inset-0 min-h-0 flex flex-row space-x-5 p-5">
-          <div class="basis-[28rem] min-w-0 flex flex-col space-y-5">
+          <div class="basis-[27.375rem] min-w-0 flex flex-col space-y-5">
             <AnimationsPane class="flex-1" />
             <FramesPane class="flex-1" />
           </div>
