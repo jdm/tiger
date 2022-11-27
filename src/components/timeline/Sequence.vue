@@ -1,6 +1,7 @@
 <template>
 	<div ref="el" @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver"
-		@drop="onDrop" @contextmenu.stop.prevent="onOpenContextMenu"
+		@drop="onDrop" @click="onDeadZoneClicked" @dblclick="jumpToAnimationEnd"
+		@contextmenu.stop.prevent="onOpenContextMenu"
 		class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
 		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
 		<div ref="keyframesElement" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
@@ -20,7 +21,7 @@ import { useAppStore } from "@/stores/app"
 import { ClipboardManifest, Direction, Sequence as SequenceDTO } from "@/api/dto"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Keyframe from "@/components/timeline/Keyframe.vue"
-import { dropFrameOnTimeline, dropKeyframeOnTimeline, paste, selectDirection } from "@/api/document"
+import { dropFrameOnTimeline, dropKeyframeOnTimeline, jumpToAnimationEnd, paste, selectDirection } from "@/api/document"
 
 const app = useAppStore();
 
@@ -162,6 +163,10 @@ function onDrop() {
 		dropKeyframeOnTimeline(props.direction, insertionIndex.value);
 	}
 	receivingDragAndDrop.value = false;
+}
+
+function onDeadZoneClicked() {
+	selectDirection(props.direction);
 }
 
 function onOpenContextMenu(event: MouseEvent) {
