@@ -1,6 +1,6 @@
 <template>
 	<div ref="el">
-		<Selectable @click="(event) => onHitboxClicked(event)" @contextmenu.prevent="onOpenContextMenu"
+		<Selectable @click="(event) => onHitboxClicked(event)" @contextmenu.stop.prevent="onOpenContextMenu"
 			:selected="hitbox.selected" :text="hitbox.name" :left-icon="TagIcon" :actions="renaming ? [] :
 			[
 				{ icon: PencilSquareIcon, callback: onRenameClicked },
