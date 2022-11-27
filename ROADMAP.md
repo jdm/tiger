@@ -21,8 +21,8 @@
 - [x] Fixed a bug where disabled menu actions could be interacted with
 - [x] Fixed a bug where app window could be restored/maximized by double clicking inside menus
 - [x] Fixed a bug where hitboxes panel could grow when there are long hitbox names
-- [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
 - [x] Fixed a bug where animations could or frames could incorrectly appear as selected
+- [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
 
 ## Tiger 0.7
 
