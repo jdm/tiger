@@ -12,7 +12,9 @@
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
-- [ ] Can clear selection by clicking in the dead zone of animations, hitboxes or timeline panel
+- [x] Can clear selection by clicking in the dead zone of animations, hitboxes
+- [x] Can change active direction by clicking in deadzone of timeline
+- [x] Can jump to end of animation by double clicking in deadzone of timeline
 - [x] Performance improvements to animation playback and drag operations
 - [x] Cut, Copy and Paste menu entries are now disabled when there is no applicable selection
 - [x] Fixed a bug where context menus could overflow offscreen
