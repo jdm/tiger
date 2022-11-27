@@ -1,6 +1,7 @@
 <template>
-	<div class="relative py-2 rounded-md bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900 shadow-lg
-	shadow-black/25" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave">
+	<div ref="menuElement" class="relative py-2 rounded-md bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900 shadow-lg
+	shadow-black/25" :style="`transform: translate(${screenFit[0]}px, ${screenFit[1]}px)`" mouseenter="onMouseEnter"
+		@mouseleave="onMouseLeave">
 		<div v-for="entry of content">
 			<MenuItem v-if="'name' in entry" :entry="entry"
 				:highlighted="(entry.key || entry.name) == (highlightEntry?.key || highlightEntry?.name)"
@@ -21,6 +22,8 @@ import { MenuEntry, Separator } from "@/components/basic/MenuBar.vue";
 import MenuItem from "@/components/basic/MenuItem.vue"
 import MenuSeparator from "@/components/basic/MenuSeparator.vue"
 
+const menuElement: Ref<HTMLElement | null> = ref(null);
+const screenFit = ref([0, 0] as [number, number]);
 const highlightEntry: Ref<MenuEntry | null> = ref(null);
 const submenuEntry: Ref<MenuEntry | null> = ref(null);
 const submenuElement: Ref<HTMLElement | null> = ref(null);
@@ -49,6 +52,18 @@ watch(() => props.content, () => {
 
 watch(submenuEntry, () => {
 	didHoverSubmenu.value = false;
+});
+
+watch(menuElement, () => {
+	if (!menuElement.value) {
+		return;
+	}
+	const boundingBox = menuElement.value.getBoundingClientRect();
+	const padding = 8;
+	screenFit.value = [
+		Math.min(0, window.innerWidth - padding - boundingBox.right),
+		Math.min(0, window.innerHeight - padding - boundingBox.bottom),
+	];
 });
 
 function onItemHovered(element: HTMLElement, entry: MenuEntry) {

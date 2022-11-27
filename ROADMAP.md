@@ -15,7 +15,7 @@
 - [ ] Can clear selection by clicking in the dead zone of animations, hitboxes or timeline panel
 - [x] Performance improvements to animation playback and drag operations
 - [x] Cut, Copy and Paste menu entries are now disabled when there is no applicable selection
-- [ ] Fixed a bug where menus could overflow offscreen
+- [x] Fixed a bug where context menus could overflow offscreen
 - [x] Fixed a bug where resize handles on hitboxes with odd-numbered dimensions were slightly misaligned
 - [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison
 - [x] Fixed a bug where disabled menu actions could be interacted with
