@@ -12,6 +12,7 @@
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
+- [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
 - [x] Can change active direction by clicking in deadzone of timeline
 - [x] Can jump to end of animation by double clicking in deadzone of timeline
