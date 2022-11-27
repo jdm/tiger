@@ -37,8 +37,8 @@
 - [ ] Can zoom workbench with mousewheel
 - [ ] Can zoom timeline with mousewheel
 - [ ] Can scroll timeline with mousewheel
-- [ ] Frames pane scroll position in undo stack
-- [ ] Animations pane scroll position in undo stack
+- [ ] Frame, hitbox and animation panes auto-scroll when browsing with keyboard controls
+- [ ] Frame, hitbox and animation panes have their scroll position in undo stack
 - [ ] Timeline scroll position in undo stack
 
 ## Tiger 0.8

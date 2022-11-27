@@ -107,12 +107,16 @@ function onKeyDown(event: KeyboardEvent) {
     } else if (event.key == "Delete") {
       deleteSelection();
     } else if (event.key == "ArrowUp") {
+      event.preventDefault();
       browseSelection(BrowseDirection.Up, event.shiftKey);
     } else if (event.key == "ArrowDown") {
+      event.preventDefault();
       browseSelection(BrowseDirection.Down, event.shiftKey);
     } else if (event.key == "ArrowLeft") {
+      event.preventDefault();
       browseSelection(BrowseDirection.Left, event.shiftKey);
     } else if (event.key == "ArrowRight") {
+      event.preventDefault();
       browseSelection(BrowseDirection.Right, event.shiftKey);
     } else if (event.key == "Home") {
       jumpToAnimationStart();
