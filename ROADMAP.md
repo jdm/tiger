@@ -8,7 +8,7 @@
 - [ ] Time snapping / quantizing of animation frames
 - [x] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer
-- [ ] Add context menu entries to paste animations/keyframes/hitboxes
+- [x] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera

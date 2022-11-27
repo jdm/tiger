@@ -72,10 +72,15 @@ impl Document {
     }
 
     fn paste_keyframes(&mut self, keyframes: Vec<Keyframe<Absolute>>) -> DocumentResult<()> {
-        let index = self
-            .get_workbench_keyframe()
-            .map(|((_, index), _)| index)
-            .unwrap_or_default();
+        let (_, sequence) = self.get_workbench_sequence()?;
+        let at_sequence_end = self.timeline_clock() >= sequence.duration().unwrap_or_default();
+        let index = if at_sequence_end {
+            sequence.num_keyframes()
+        } else {
+            self.get_workbench_keyframe()
+                .map(|((_, index), _)| index)
+                .unwrap_or_default()
+        };
         let (animation_name, _) = self.get_workbench_animation_mut()?;
         let num_keyframes = keyframes.len();
         let (direction, sequence) = self.get_workbench_sequence_mut()?;

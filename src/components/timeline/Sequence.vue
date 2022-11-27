@@ -1,6 +1,7 @@
 <template>
 	<div ref="el" @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver"
-		@drop="onDrop" class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
+		@drop="onDrop" @contextmenu.stop.prevent="onOpenContextMenu"
+		class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
 		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
 		<div ref="keyframesElement" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
 			<Keyframe v-for="entry in sequenceEntries" :name="entry.name" :selected="entry.selected"
@@ -9,15 +10,17 @@
 				:index="entry.index" :key="entry.key" class="absolute h-full transition top-1/2 -translate-y-1/2"
 				:style="entryStyle(entry)" />
 		</div>
+		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
 import { useAppStore } from "@/stores/app"
-import { Direction, Sequence as SequenceDTO } from "@/api/dto"
+import { ClipboardManifest, Direction, Sequence as SequenceDTO } from "@/api/dto"
+import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Keyframe from "@/components/timeline/Keyframe.vue"
-import { dropFrameOnTimeline, dropKeyframeOnTimeline } from "@/api/document"
+import { dropFrameOnTimeline, dropKeyframeOnTimeline, paste, selectDirection } from "@/api/document"
 
 const app = useAppStore();
 
@@ -40,8 +43,13 @@ type SequenceEntry = {
 
 const el: Ref<HTMLElement | null> = ref(null);
 const keyframesElement: Ref<HTMLElement | null> = ref(null);
+const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 const receivingDragAndDrop = ref(false);
 const timeHovered = ref(0);
+
+const contextMenuEntries = computed(() => [
+	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: app.clipboardManifest != ClipboardManifest.Keyframes },
+]);
 
 const insertionIndex = computed(() => {
 	for (let entry of sequenceEntries.value) {
@@ -154,5 +162,12 @@ function onDrop() {
 		dropKeyframeOnTimeline(props.direction, insertionIndex.value);
 	}
 	receivingDragAndDrop.value = false;
+}
+
+function onOpenContextMenu(event: MouseEvent) {
+	selectDirection(props.direction);
+	if (contextMenu.value) {
+		contextMenu.value.show(event);
+	}
 }
 </script>
