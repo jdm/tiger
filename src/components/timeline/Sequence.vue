@@ -1,8 +1,6 @@
 <template>
 	<div ref="el" @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver"
-		@drop="onDrop" @click="onDeadZoneClicked" @dblclick="jumpToAnimationEnd"
-		@contextmenu.stop.prevent="onOpenContextMenu"
-		class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
+		@drop="onDrop" class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
 		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
 		<div ref="keyframesElement" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
 			<Keyframe v-for="entry in sequenceEntries" :name="entry.name" :selected="entry.selected"
@@ -10,6 +8,8 @@
 				:duration-millis="entry.durationMillis" :is-preview="entry.isPreview" :direction="direction"
 				:index="entry.index" :key="entry.key" class="absolute h-full transition top-1/2 -translate-y-1/2"
 				:style="entryStyle(entry)" />
+			<div class="grow-1 h-full" @click="onDeadZoneClicked" @dblclick="jumpToAnimationEnd"
+				@contextmenu.stop.prevent="onOpenContextMenu" />
 		</div>
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
@@ -165,7 +165,8 @@ function onDrop() {
 	receivingDragAndDrop.value = false;
 }
 
-function onDeadZoneClicked() {
+function onDeadZoneClicked(event: MouseEvent) {
+	console.log(event);
 	selectDirection(props.direction);
 }
 
