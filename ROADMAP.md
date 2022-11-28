@@ -59,6 +59,8 @@
 - [ ] Export complete notification
 - [ ] Auto-updates
 - [ ] Splash screen
+- [ ] Add a a help menu with links to issues/discussions/documentation
+- [ ] Add About dialog with version number / license info
 - [ ] .tiger file association
 
 ## Tiger 1.0
