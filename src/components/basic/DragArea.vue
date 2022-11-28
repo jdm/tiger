@@ -1,5 +1,5 @@
 <template>
-  <div ref="el" @mousedown="onMouseDown" :class="activeDrag != null ? activeCursor : inactiveCursor">
+  <div ref="el" @mousedown="onMouseDown" :class="inactiveCursor">
     <slot />
   </div>
 </template>
@@ -19,6 +19,7 @@ export type DragAreaEvent = {
   didMove: boolean,
 }
 
+const styleOverrideID = "drag-area-global-style";
 const el: Ref<HTMLElement | null> = ref(null)
 const activeDrag: Ref<DragButton | null> = ref(null);
 let initialMouseEvent: MouseEvent | null = null;
@@ -56,7 +57,7 @@ function indexToButton(index: number): DragButton {
 }
 
 onUnmounted(() => {
-  if (activeDrag != null) {
+  if (activeDrag.value != null) {
     cleanup();
   }
 });
@@ -64,6 +65,11 @@ onUnmounted(() => {
 function cleanup() {
   window.removeEventListener("mouseup", onMouseUp);
   window.removeEventListener("mousemove", onMouseMove);
+  if (props.activeCursor) {
+    document.getElementById(styleOverrideID)?.remove();
+    document.body.classList.remove(props.activeCursor);
+  }
+
 }
 
 function onMouseDown(e: MouseEvent) {
@@ -73,6 +79,15 @@ function onMouseDown(e: MouseEvent) {
   window.addEventListener("mouseup", onMouseUp);
   window.addEventListener("mousemove", onMouseMove);
   activeDrag.value = indexToButton(e.button);
+
+  if (props.activeCursor) {
+    const cursorStyle = document.createElement('style');
+    cursorStyle.id = styleOverrideID;
+    cursorStyle.innerHTML = `body * { cursor: inherit !important; }`;
+    document.head.appendChild(cursorStyle);
+    document.body.classList.add(props.activeCursor);
+  }
+
   initialMouseEvent = e;
   didMove = false;
   emit("dragStart", {
