@@ -1,16 +1,18 @@
 <template>
 	<Pane>
-		<div class="w-full px-4 py-2 flex flex-row items-center">
-			<div class="flex-1 flex flex-row space-x-2">
+		<div class="w-full px-4 py-2 flex items-center">
+			<div class="flex-1 flex space-x-2">
 				<PerspectivePicker />
-				<Toggle :toggled="app.currentAnimation?.isLooping || false" @toggled="setAnimationLooping"
+				<Toggle :toggled="!!app.currentAnimation?.isLooping" @toggled="setAnimationLooping"
 					:icon="ArrowPathIcon" />
 			</div>
-			<div class="flex-1 flex flex-row justify-center">
+			<div class="flex-1 flex justify-center">
 				<PlaybackControls />
 			</div>
-			<div class="flex-1 flex flex-row justify-end items-center">
-				<div class="flex flex-row items-center space-x-3">
+			<div class="flex-1 flex space-x-4 justify-end items-center">
+				<Toggle :toggled="!!app.currentDocument?.snapKeyframeDurations" @toggled="setSnapKeyframeDurations"
+					:icon="AdjustmentsHorizontalIcon" />
+				<div class="flex flex-row items-center space-x-2">
 					<MagnifyingGlassIcon class="w-5 text-plastic-400" />
 					<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
 				</div>
@@ -50,10 +52,10 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "@vue/reactivity"
-import { ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
+import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
-	selectDirection, setAnimationLooping, setTimelineZoomAmount
+	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { debounceAnimation } from "@/utils/animation"

@@ -28,6 +28,7 @@ pub struct View {
     pub(super) hide_hitboxes: bool,
     pub(super) hide_origin: bool,
     pub(super) lock_hitboxes: bool,
+    pub(super) snap_keyframe_durations: bool,
 }
 
 impl Default for View {
@@ -48,6 +49,7 @@ impl Default for View {
             hide_hitboxes: false,
             hide_origin: false,
             lock_hitboxes: false,
+            snap_keyframe_durations: true,
         }
     }
 }
@@ -147,6 +149,10 @@ impl Document {
 
     pub fn timeline_clock(&self) -> Duration {
         self.view.timeline_clock
+    }
+
+    pub fn should_snap_keyframe_durations(&self) -> bool {
+        self.view.snap_keyframe_durations
     }
 
     pub fn should_darken_sprites(&self) -> bool {

@@ -1,6 +1,7 @@
 use euclid::default::{Rect, Vector2D};
 use euclid::{point2, vec2};
 use std::collections::{HashMap, HashSet};
+use std::ops::Range;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -10,7 +11,7 @@ use crate::sheet::{Direction, Keyframe};
 #[derive(Clone, Debug, PartialEq)]
 pub(super) struct KeyframeDurationDrag {
     pub(super) frame_being_dragged: (Direction, usize),
-    pub(super) original_durations: HashMap<(Direction, usize), u64>,
+    pub(super) original_ranges: HashMap<(Direction, usize), Range<u64>>,
 }
 
 #[derive(Clone, Debug, PartialEq)]
@@ -231,17 +232,26 @@ impl Document {
             .selection
             .is_keyframe_selected(&animation_name, direction, index)
         {
-            self.select_keyframe_only(animation_name, direction, index);
+            self.select_keyframe_only(animation_name.clone(), direction, index);
             self.view.current_sequence = Some(direction);
         }
+
+        let (_, animation) = self.get_workbench_animation()?;
+
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
             frame_being_dragged: (direction, index),
-            original_durations: self
-                .get_selected_keyframes()?
-                .into_iter()
-                .map(|(d, i, k)| ((d, i), k.duration_millis()))
+            original_ranges: animation
+                .sequences_iter()
+                .map(|(d, s)| (*d, s.keyframe_time_ranges()))
+                .flat_map(|(d, r)| r.into_iter().enumerate().map(move |(i, r)| ((d, i), r)))
+                .filter(|((d, i), _)| {
+                    self.view
+                        .selection
+                        .is_keyframe_selected(&animation_name, *d, *i)
+                })
                 .collect(),
         });
+
         Ok(())
     }
 
@@ -254,33 +264,75 @@ impl Document {
             .keyframe_duration_drag
             .clone()
             .ok_or(DocumentError::NotDraggingKeyframeDuration)?;
+        let (_, animation) = self.get_workbench_animation()?;
+        let direction = drag_state.frame_being_dragged.0;
+        let index = drag_state.frame_being_dragged.1;
+        let zoom = self.timeline_zoom_factor();
+        let apply_delta = |from: u64, delta: i64| {
+            if delta > 0 {
+                from.saturating_add(delta as u64)
+            } else {
+                from.saturating_sub(delta.unsigned_abs())
+            }
+        };
+
+        let num_prior_frames_affected = self
+            .get_selected_keyframes()?
+            .iter()
+            .filter(|(d, i, _k)| direction == *d && index >= *i)
+            .count()
+            .max(1);
+
+        let mut duration_delta_per_frame = delta_millis / num_prior_frames_affected as i64;
+
+        let original_end = drag_state
+            .original_ranges
+            .get(&(direction, index))
+            .map(|r| r.end)
+            .ok_or(DocumentError::MissingKeyframeDragData)?;
+
+        if self.view.snap_keyframe_durations {
+            let new_end = apply_delta(original_end, delta_millis);
+            let (snap_to, snapping_distance) = Self::snap_keyframe(animation, &drag_state, new_end);
+            if (snapping_distance as f32) < (20.0 / zoom) {
+                let snapped_delta_millis = snap_to as i64 - original_end as i64;
+                duration_delta_per_frame = snapped_delta_millis / num_prior_frames_affected as i64;
+            }
+        }
 
         let minimum_duration = 20.0 as u64;
-        let duration_delta_per_frame = delta_millis
-            / self
-                .get_selected_keyframes()?
-                .iter()
-                .filter(|(d, i, _k)| {
-                    drag_state.frame_being_dragged.0 == *d && drag_state.frame_being_dragged.1 >= *i
-                })
-                .count()
-                .max(1) as i64;
-
         for (d, i, keyframe) in self.get_selected_keyframes_mut()? {
             let old_duration = drag_state
-                .original_durations
+                .original_ranges
                 .get(&(d, i))
+                .map(|r| r.to_owned().count() as u64)
                 .ok_or(DocumentError::MissingKeyframeDragData)?;
-            let new_duration = if duration_delta_per_frame > 0 {
-                old_duration.saturating_add(duration_delta_per_frame as u64)
-            } else {
-                old_duration.saturating_sub(duration_delta_per_frame.unsigned_abs())
-            }
-            .max(minimum_duration);
+            let new_duration =
+                apply_delta(old_duration, duration_delta_per_frame).max(minimum_duration);
             keyframe.set_duration_millis(new_duration);
         }
 
         Ok(())
+    }
+
+    fn snap_keyframe(
+        animation: &Animation<Absolute>,
+        drag_state: &KeyframeDurationDrag,
+        proposed_time: u64,
+    ) -> (u64, u64) {
+        let (snap_to, snap_distance) = animation
+            .sequences_iter()
+            .flat_map(|(d, s)| {
+                s.keyframe_time_ranges()
+                    .into_iter()
+                    .enumerate()
+                    .filter(|(i, _)| !drag_state.original_ranges.contains_key(&(*d, *i)))
+                    .map(|(_, r)| r.end)
+            })
+            .map(|t| (t, proposed_time.abs_diff(t)))
+            .min_by_key(|(_, d)| *d)
+            .unwrap_or((0, u64::MAX));
+        (snap_to, snap_distance)
     }
 
     pub(super) fn end_drag_keyframe_duration(&mut self) {
@@ -830,21 +882,40 @@ fn can_drag_keyframe_duration() {
         HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
     );
 
-    let old_duration = d
-        .sheet
-        .keyframe("walk_cycle", Direction::North, 0)
-        .duration_millis();
-
     d.edit_animation("walk_cycle").unwrap();
     d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
     d.update_drag_keyframe_duration(50).unwrap();
+    d.end_drag_keyframe_duration();
+
+    let new_duration = d
+        .sheet
+        .keyframe("walk_cycle", Direction::North, 1)
+        .duration_millis();
+    assert_eq!(new_duration, 150);
+}
+
+#[test]
+fn drag_keyframe_duration_can_snap() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([
+            (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+            (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+        ]),
+    );
+
+    d.edit_animation("walk_cycle").unwrap();
+    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+    d.update_drag_keyframe_duration(99).unwrap();
     d.end_drag_keyframe_duration();
     let new_duration = d
         .sheet
         .keyframe("walk_cycle", Direction::North, 1)
         .duration_millis();
 
-    assert_eq!(new_duration, old_duration + 50);
+    assert_eq!(new_duration, 200);
 }
 
 #[test]
@@ -855,11 +926,6 @@ fn can_drag_multiple_keyframe_durations() {
         "walk_cycle",
         HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
     );
-
-    let old_duration = d
-        .sheet
-        .keyframe("walk_cycle", Direction::North, 0)
-        .duration_millis();
 
     d.edit_animation("walk_cycle").unwrap();
     d.select_keyframes_only([
@@ -874,14 +940,14 @@ fn can_drag_multiple_keyframe_durations() {
         d.sheet
             .keyframe("walk_cycle", Direction::North, 0)
             .duration_millis(),
-        old_duration + 25
+        125
     );
 
     assert_eq!(
         d.sheet
             .keyframe("walk_cycle", Direction::North, 1)
             .duration_millis(),
-        old_duration + 25
+        125
     );
 }
 

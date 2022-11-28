@@ -49,6 +49,7 @@ export type Document = {
   timelineIsPlaying: boolean;
   timelineZoomFactor: number;
   timelineZoomAmount: number;
+  snapKeyframeDurations: boolean;
   darkenSprites: boolean;
   hideSprite: boolean;
   hideHitboxes: boolean;

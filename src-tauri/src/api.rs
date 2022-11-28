@@ -870,6 +870,20 @@ pub fn jump_to_next_frame(app_state: tauri::State<'_, AppState>) -> Result<Patch
 }
 
 #[tauri::command]
+pub fn set_snap_keyframe_durations(
+    app_state: tauri::State<'_, AppState>,
+    snap: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetSnapKeyframeDurations(snap))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {

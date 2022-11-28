@@ -326,6 +326,11 @@ export async function jumpToNextFrame(): Promise<void> {
   appStore.patch(await invoke("jump_to_next_frame"));
 }
 
+export async function setSnapKeyframeDurations(snap: boolean): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_snap_keyframe_durations", { snap: snap }));
+}
+
 export async function zoomInTimeline(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("zoom_in_timeline"));
