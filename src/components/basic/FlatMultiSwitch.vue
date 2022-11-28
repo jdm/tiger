@@ -2,7 +2,7 @@
 	<div class="relative">
 		<div v-if="activeItemElement" :style="knobStyle"
 			class="absolute top-0 w-11 h-9 rounded-md transition-[left] border-2 border-blue-600" />
-		<div ref="itemsElement" class="flex flex-row items-center font-xs font-semibold">
+		<div ref="itemsElement" class="flex items-center font-xs font-semibold">
 			<div v-for="item in items" @click="onItemClicked(item)"
 				class="w-11 h-9 inline-flex items-center justify-center z-10" :class="itemClass(item)">
 				{{ item.text }}

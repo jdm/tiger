@@ -3,7 +3,7 @@
 		<ScreenCover :visible="settings != null" />
 		<Transition name="pane-slide" @after-leave="onHidden" @after-enter="onVisible">
 			<div v-if="settings" class="absolute inset-0 pointer-events-auto ">
-				<div class="w-full h-full flex flex-row justify-end">
+				<div class="w-full h-full flex justify-end">
 					<div class="h-full w-[40rem] p-10 flex flex-col space-y-16 bg-plastic-700">
 						<div class="flex flex-col space-y-4">
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>

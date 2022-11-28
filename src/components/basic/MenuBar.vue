@@ -1,6 +1,6 @@
 <template>
 	<div class="relative text-lg">
-		<div class="h-full flex flex-row items-stretch">
+		<div class="h-full flex items-stretch">
 			<MenuBarItem v-for="entry in entries" :entry="entry" :active="entry.name == currentEntry?.name"
 				@click="onItemClicked($event, entry)" @mouseover="onItemHovered($event, entry)" />
 		</div>

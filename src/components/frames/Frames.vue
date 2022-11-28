@@ -1,6 +1,6 @@
 <template>
 	<div class="flex-1 flex flex-col items-stretch min-h-0 p-4 space-y-4">
-		<div class="w-full flex flex-row space-x-2 items-center">
+		<div class="w-full flex space-x-2 items-center">
 			<MultiSwitch :items="listModes" @activate="switchListMode" />
 			<InputSearch placeholder="Search frames" v-model="searchQuery" />
 			<Button :positive="true" :icon="PhotoIcon" label="Import" @click="importFrames" />

@@ -1,12 +1,12 @@
 <template>
 	<div ref="titleBarElement" data-tauri-drag-region @dblclick="handleDoubleClick"
-		class="h-11 flex flex-row justify-between bg-plastic-800 shadow-lg shadow-black/15">
+		class="h-11 flex justify-between bg-plastic-800 shadow-lg shadow-black/15">
 		<div class="self-stretch">
 			<slot name="left" />
 		</div>
-		<div class="flex flex-row space-x-4">
+		<div class="flex space-x-4">
 			<slot name="right" />
-			<div class="flex-1 flex flex-row items-stretch">
+			<div class="flex-1 flex items-stretch">
 				<button @click="appWindow.minimize" class="w-12 py-2 px-4 hover:bg-plastic-500">
 					<div class="w-2.5 h-0 mx-auto border-t border-zinc-400" />
 				</button>

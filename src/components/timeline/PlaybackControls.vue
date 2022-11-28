@@ -1,5 +1,5 @@
 <template>
-	<div class="flex flex-row items-center my-2
+	<div class="flex items-center my-2
 		cursor-pointer
 		bg-plastic-900 rounded-md
 		outline outline-offset-2 outline-plastic-900

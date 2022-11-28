@@ -12,7 +12,7 @@
 				</div>
 			</div>
 		</div>
-		<div class="bg-plastic-800 px-6 py-3 flex flex-row justify-end space-x-3">
+		<div class="bg-plastic-800 px-6 py-3 flex justify-end space-x-3">
 			<slot name="actions"></slot>
 		</div>
 	</div>

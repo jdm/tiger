@@ -1,13 +1,13 @@
 <template>
 	<Pane>
-		<div class="flex flex-row bg-plastic-900">
+		<div class="flex bg-plastic-900">
 			<PaneTab :selected="true">Hitboxes</PaneTab>
 		</div>
 		<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
-			<div class="w-full flex flex-row space-x-2 items-center">
+			<div class="w-full flex space-x-2 items-center">
 				<Toggle :toggled="!!app.currentDocument?.lockHitboxes" @toggled="onToggleLockHitboxes"
 					:icon="LockClosedIcon" />
-				<div class="flex-1 flex flex-row justify-end">
+				<div class="flex-1 flex justify-end">
 					<Button :positive="true" :icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
 				</div>
 			</div>

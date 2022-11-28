@@ -2,7 +2,7 @@
 	<div class="relative rounded-md bg-plastic-800 border-2 border-plastic-900">
 		<div v-if="activeItemElement" :style="knobStyle"
 			class="absolute top-0 w-9 h-9 rounded-md transition-[left] border-y border-t-blue-600 border-b-blue-900 bg-gradient-to-b from-blue-800 to-blue-600" />
-		<div ref="itemsElement" class="flex flex-row">
+		<div ref="itemsElement" class="flex">
 			<div v-for="item in items" class="z-10">
 				<component :is="item.icon" @click="onItemClicked(item)" class="w-9 p-2 transition"
 					:class="itemClasses(item)" />

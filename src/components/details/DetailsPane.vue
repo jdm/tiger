@@ -1,6 +1,6 @@
 <template>
 	<Pane>
-		<div class="flex flex-row bg-plastic-900">
+		<div class="flex bg-plastic-900">
 			<PaneTab :selected="true">Details</PaneTab>
 		</div>
 		<HitboxDetails v-if="app.selectedHitboxes?.length" />

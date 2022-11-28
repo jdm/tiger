@@ -1,5 +1,5 @@
 <template>
-	<div class="self-center flex flex-row bg-plastic-900 outline outline-1 outline-plastic-700 rounded-sm">
+	<div class="self-center flex bg-plastic-900 outline outline-1 outline-plastic-700 rounded-sm">
 		<input ref="inputElement" v-model.lazy="value" @keydown.enter="onInputConfirmed"
 			@keydown.escape="onInputCancelled"
 			class="w-full text-xs bg-transparent text-plastic-300 rounded-sm border-0 focus:ring-0"
