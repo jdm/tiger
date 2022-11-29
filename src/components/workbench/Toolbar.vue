@@ -77,7 +77,6 @@ const drawHitboxes: WritableComputedRef<boolean> = computed({
 	},
 });
 
-
 const drawOrigin: WritableComputedRef<boolean> = computed({
 	get: () => !app.currentDocument?.hideOrigin,
 	set: (toggled) => {
