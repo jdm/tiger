@@ -4,19 +4,17 @@
 
 - [x] Draw hitbox names in workbench
 - [x] Upgrade from Heroicons 1.0 to 2.0
-- [ ] Playback speed controls?
 - [ ] Can snap to nearby frames
 - [ ] Can snap to frame duration multiples of x
 - [ ] Can control snapping strength
+- [ ] Hover states in timeline
 - [x] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer
 - [x] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
-- [ ] Hover states in timeline
 - [ ] Evaluate typeshare to auto-generate typescript DTOs
-- [ ] Selectable hover color?
 - [ ] Mutable trait on app handle
 - [ ] Command trait
 - [x] Add shadow around application window
