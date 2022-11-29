@@ -18,11 +18,9 @@ const emit = defineEmits<{
 const values = computed(() => props.values.map(v => v.toString()));
 
 function onUpdate(newValue: string) {
-
 	const numberValue = Number(newValue);
 	if (numberValue != null) {
 		emit("update", numberValue);
 	}
 }
-
 </script>
