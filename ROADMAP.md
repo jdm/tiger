@@ -5,13 +5,20 @@
 - [x] Draw hitbox names in workbench
 - [x] Upgrade from Heroicons 1.0 to 2.0
 - [ ] Playback speed controls?
-- [ ] Time snapping / quantizing of animation frames
+- [ ] Can snap to nearby frames
+- [ ] Can snap to frame duration multiples of x
+- [ ] Can control snapping strength
 - [x] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer
 - [x] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
+- [ ] Hover states in timeline
+- [ ] Evaluate typeshare to auto-generate typescript DTOs
+- [ ] Selectable hover color?
+- [ ] Mutable trait on app handle
+- [ ] Command trait
 - [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
 - [x] Can change active direction by clicking in deadzone of timeline
@@ -56,11 +63,13 @@
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Document keyboard shortcuts
 - [ ] Fix jank spacing in exported metadata files
+- [ ] Can preview export image and metadata output
 - [ ] Export complete notification
 - [ ] Auto-updates
 - [ ] Splash screen
 - [ ] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
+- [ ] Can open log from help menu
 - [ ] .tiger file association
 
 ## Tiger 1.0
@@ -69,6 +78,8 @@
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Readme logo
+- [ ] Branding in installer
+- [ ] Github social media preview image (in repo settings)
 - [ ] About dialog
 - [ ] App icon (file explorer, taskbar, add/remove programers, installer, title bar)
 - [ ] Itch.io or other distribution method
