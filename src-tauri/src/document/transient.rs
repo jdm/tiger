@@ -276,27 +276,39 @@ impl Document {
             }
         };
 
-        let num_prior_frames_affected = self
+        let num_frames_affected = self
             .get_selected_keyframes()?
             .iter()
             .filter(|(d, i, _k)| direction == *d && index >= *i)
             .count()
             .max(1);
 
-        let mut duration_delta_per_frame = delta_millis / num_prior_frames_affected as i64;
+        let mut duration_delta_per_frame = delta_millis / num_frames_affected as i64;
 
-        let original_end = drag_state
+        let original_range = drag_state
             .original_ranges
             .get(&(direction, index))
-            .map(|r| r.end)
             .ok_or(DocumentError::MissingKeyframeDragData)?;
 
         if self.view.snap_keyframe_durations {
-            let new_end = apply_delta(original_end, delta_millis);
-            let (snap_to, snapping_distance) = Self::snap_keyframe(animation, &drag_state, new_end);
+            let proposed_range = apply_delta(
+                original_range.start,
+                duration_delta_per_frame * (num_frames_affected as i64 - 1),
+            )..apply_delta(original_range.end, delta_millis);
+            let (snap_to, snapping_distance) = Self::snap_keyframe(
+                animation,
+                &drag_state,
+                num_frames_affected,
+                original_range,
+                &proposed_range,
+                self.view.snap_keyframes_to_other_keyframes,
+                self.view
+                    .snap_keyframes_to_multiples_of_duration
+                    .then_some(self.view.keyframe_snapping_base_duration),
+            );
             if (snapping_distance as f32) < (20.0 / zoom) {
-                let snapped_delta_millis = snap_to as i64 - original_end as i64;
-                duration_delta_per_frame = snapped_delta_millis / num_prior_frames_affected as i64;
+                let snapped_delta_millis = snap_to as i64 - original_range.end as i64;
+                duration_delta_per_frame = snapped_delta_millis / num_frames_affected as i64;
             }
         }
 
@@ -318,21 +330,47 @@ impl Document {
     fn snap_keyframe(
         animation: &Animation<Absolute>,
         drag_state: &KeyframeDurationDrag,
-        proposed_time: u64,
+        num_frames_affected: usize,
+        original_range: &Range<u64>,
+        proposed_range: &Range<u64>,
+        snap_to_other_keyframes: bool,
+        snap_to_multiples_of: Option<Duration>,
     ) -> (u64, u64) {
-        let (snap_to, snap_distance) = animation
-            .sequences_iter()
-            .flat_map(|(d, s)| {
-                s.keyframe_time_ranges()
-                    .into_iter()
-                    .enumerate()
-                    .filter(|(i, _)| !drag_state.original_ranges.contains_key(&(*d, *i)))
-                    .map(|(_, r)| r.end)
-            })
-            .map(|t| (t, proposed_time.abs_diff(t)))
-            .min_by_key(|(_, d)| *d)
-            .unwrap_or((0, u64::MAX));
-        (snap_to, snap_distance)
+        let mut candidates = vec![];
+
+        if snap_to_other_keyframes {
+            let snap = animation
+                .sequences_iter()
+                .flat_map(|(d, s)| {
+                    s.keyframe_time_ranges()
+                        .into_iter()
+                        .enumerate()
+                        .filter(|(i, _)| !drag_state.original_ranges.contains_key(&(*d, *i)))
+                        .map(|(_, r)| r.end)
+                })
+                .map(|t| (t, proposed_range.end.abs_diff(t)))
+                .min_by_key(|(_, d)| *d);
+            if let Some(snap) = snap {
+                candidates.push(snap);
+            }
+        };
+
+        if let Some(duration) = snap_to_multiples_of {
+            let base = duration.as_millis().max(1) as u64;
+            let original_duration = original_range.clone().count() as u64;
+            let new_duration = proposed_range.clone().count() as u64;
+            let snapped_duration = ((new_duration + base / 2) / base) * base;
+            let snap_to = original_range.end as i64
+                + num_frames_affected as i64 * (snapped_duration as i64 - original_duration as i64);
+            let snap_to = snap_to.max(0) as u64;
+            let snap_distance = snap_to.abs_diff(proposed_range.end);
+            candidates.push((snap_to, snap_distance));
+        }
+
+        candidates
+            .into_iter()
+            .min_by(|(_, a), (_, b)| a.cmp(b))
+            .unwrap_or((0, u64::MAX))
     }
 
     pub(super) fn end_drag_keyframe_duration(&mut self) {
@@ -895,7 +933,7 @@ fn can_drag_keyframe_duration() {
 }
 
 #[test]
-fn drag_keyframe_duration_can_snap() {
+fn drag_keyframe_duration_can_snap_to_other_keyframe() {
     let mut d = Document::new("tmp");
     d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
     d.sheet.add_test_animation(
@@ -916,6 +954,29 @@ fn drag_keyframe_duration_can_snap() {
         .duration_millis();
 
     assert_eq!(new_duration, 200);
+}
+
+#[test]
+fn drag_keyframe_duration_can_snap_to_duration() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+
+    d.view.snap_keyframes_to_multiples_of_duration = true;
+    d.view.keyframe_snapping_base_duration = Duration::from_millis(50);
+    d.edit_animation("walk_cycle").unwrap();
+    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+    d.update_drag_keyframe_duration(49).unwrap();
+    d.end_drag_keyframe_duration();
+    let new_duration = d
+        .sheet
+        .keyframe("walk_cycle", Direction::North, 1)
+        .duration_millis();
+
+    assert_eq!(new_duration, 150);
 }
 
 #[test]

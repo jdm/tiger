@@ -29,6 +29,9 @@ pub struct View {
     pub(super) hide_origin: bool,
     pub(super) lock_hitboxes: bool,
     pub(super) snap_keyframe_durations: bool,
+    pub(super) snap_keyframes_to_other_keyframes: bool,
+    pub(super) snap_keyframes_to_multiples_of_duration: bool,
+    pub(super) keyframe_snapping_base_duration: Duration,
 }
 
 impl Default for View {
@@ -50,6 +53,9 @@ impl Default for View {
             hide_origin: false,
             lock_hitboxes: false,
             snap_keyframe_durations: true,
+            snap_keyframes_to_other_keyframes: true,
+            snap_keyframes_to_multiples_of_duration: false,
+            keyframe_snapping_base_duration: Duration::from_millis(100),
         }
     }
 }
@@ -153,6 +159,18 @@ impl Document {
 
     pub fn should_snap_keyframe_durations(&self) -> bool {
         self.view.snap_keyframe_durations
+    }
+
+    pub fn should_snap_keyframes_to_other_keyframes(&self) -> bool {
+        self.view.snap_keyframes_to_other_keyframes
+    }
+
+    pub fn should_snap_keyframes_to_multiples_of_duration(&self) -> bool {
+        self.view.snap_keyframes_to_multiples_of_duration
+    }
+
+    pub fn keyframe_snapping_base_duration(&self) -> Duration {
+        self.view.keyframe_snapping_base_duration
     }
 
     pub fn should_darken_sprites(&self) -> bool {

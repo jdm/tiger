@@ -67,6 +67,9 @@ pub struct Document {
     timeline_zoom_factor: f32,
     timeline_zoom_amount: f32,
     snap_keyframe_durations: bool,
+    snap_keyframes_to_other_keyframes: bool,
+    snap_keyframes_to_multiples_of_duration: bool,
+    keyframe_snapping_base_duration_millis: u64,
     darken_sprites: bool,
     hide_sprite: bool,
     hide_hitboxes: bool,
@@ -391,6 +394,12 @@ impl document::Document {
             timeline_zoom_factor: self.timeline_zoom_factor(),
             timeline_zoom_amount: self.timeline_zoom_amount(),
             snap_keyframe_durations: self.should_snap_keyframe_durations(),
+            snap_keyframes_to_other_keyframes: self.should_snap_keyframes_to_other_keyframes(),
+            snap_keyframes_to_multiples_of_duration: self
+                .should_snap_keyframes_to_multiples_of_duration(),
+            keyframe_snapping_base_duration_millis: self
+                .keyframe_snapping_base_duration()
+                .as_millis() as u64,
             darken_sprites: self.should_darken_sprites(),
             hide_sprite: self.is_hiding_sprite(),
             hide_hitboxes: self.is_hiding_hitboxes(),

@@ -53,6 +53,9 @@ pub enum Command {
     JumpToPreviousFrame,
     JumpToNextFrame,
     SetSnapKeyframeDurations(bool),
+    SetSnapKeyframeToOtherKeyframes(bool),
+    SetSnapKeyframeToMultiplesOfDuration(bool),
+    SetKeyframeSnappingBaseDuration(Duration),
     ZoomInTimeline,
     ZoomOutTimeline,
     SetTimelineZoomAmount(f32),
@@ -162,6 +165,17 @@ impl Document {
             Command::JumpToPreviousFrame => self.jump_to_previous_frame()?,
             Command::JumpToNextFrame => self.jump_to_next_frame()?,
             Command::SetSnapKeyframeDurations(s) => self.view.snap_keyframe_durations = s,
+            Command::SetSnapKeyframeToOtherKeyframes(s) => {
+                self.view.snap_keyframes_to_other_keyframes = s
+            }
+            Command::SetSnapKeyframeToMultiplesOfDuration(s) => {
+                self.view.snap_keyframes_to_multiples_of_duration = s
+            }
+            Command::SetKeyframeSnappingBaseDuration(d) => {
+                self.view.keyframe_snapping_base_duration = d
+                    .min(Duration::from_millis(1_000))
+                    .max(Duration::from_millis(1))
+            }
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::SetTimelineZoomAmount(a) => self.view.set_timeline_zoom_amount(a),
@@ -423,8 +437,14 @@ impl Display for Command {
             Command::SetHitboxWidth(_) => f.write_str("Set Hitbox Width"),
             Command::SetHitboxHeight(_) => f.write_str("Set Hitbox Height"),
             Command::TogglePreserveAspectRatio => f.write_str("Toggle Preserve Aspect Ratio"),
-            Command::SetSnapKeyframeDurations(true) => f.write_str("Enable Snapping"),
-            Command::SetSnapKeyframeDurations(false) => f.write_str("Disable Snapping"),
+            Command::SetSnapKeyframeDurations(true) => f.write_str("Enable Keyframe Snapping"),
+            Command::SetSnapKeyframeDurations(false) => f.write_str("Disable Keyframe Snapping"),
+
+            Command::SetSnapKeyframeToOtherKeyframes(_)
+            | Command::SetSnapKeyframeToMultiplesOfDuration(_)
+            | Command::SetKeyframeSnappingBaseDuration(_) => {
+                f.write_str("Adjust Snapping Settings")
+            }
 
             Command::BeginDragAndDropFrame(_)
             | Command::DropFrameOnTimeline(_, _)

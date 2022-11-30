@@ -884,6 +884,50 @@ pub fn set_snap_keyframe_durations(
 }
 
 #[tauri::command]
+pub fn set_snap_keyframes_to_other_keyframes(
+    app_state: tauri::State<'_, AppState>,
+    snap: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_snap_keyframes_to_multiples_of_duration(
+    app_state: tauri::State<'_, AppState>,
+    snap: bool,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetSnapKeyframeToMultiplesOfDuration(snap))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_keyframe_snapping_base_duration(
+    app_state: tauri::State<'_, AppState>,
+    duration_millis: u64,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetKeyframeSnappingBaseDuration(
+                    Duration::from_millis(duration_millis),
+                ))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn zoom_in_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {
