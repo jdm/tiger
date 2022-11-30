@@ -183,6 +183,7 @@ impl<'a> App<'a> {
         self.recent_documents.mutate(|d| {
             d.retain(|p| p.as_path() != path.as_ref());
             d.insert(0, path.as_ref().to_owned());
+            d.truncate(10);
         });
     }
 
@@ -319,6 +320,23 @@ mod test {
                 PathBuf::from("test-data/sample_sheet_1.tiger"),
                 PathBuf::from("test-data/sample_sheet_2.tiger"),
             ]
+        );
+    }
+
+    #[test]
+    fn limits_list_of_recent_documents() {
+        let mut app = App::default();
+
+        for i in 0..100 {
+            app.add_recent_document(PathBuf::from(format!("doc_{i}")));
+        }
+
+        assert_eq!(
+            *app.recent_documents,
+            (90..=99)
+                .rev()
+                .map(|i| PathBuf::from(format!("doc_{i}")))
+                .collect::<Vec<_>>()
         );
     }
 }

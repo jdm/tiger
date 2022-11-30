@@ -17,14 +17,13 @@
 - [ ] Mutable trait on app handle
 - [ ] Command trait
 - [ ] After deleting keyframes, keyframe at current time (if any) is selected
-- [ ] Cap recent document list length
-- [ ] Don't do recent documents list IO on main thread
 - [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
 - [x] Can change active direction by clicking in deadzone of timeline
 - [x] Can jump to end of animation by double clicking in deadzone of timeline
 - [x] Performance improvements to animation playback and drag operations
 - [x] Cut, Copy and Paste menu entries are now disabled when there is no applicable selection
+- [x] List of recent documents is now limited to ten documents
 - [x] Fixed a bug where context menus could overflow offscreen
 - [x] Fixed a bug where resize handles on hitboxes with odd-numbered dimensions were slightly misaligned
 - [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison

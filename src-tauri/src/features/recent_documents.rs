@@ -1,6 +1,7 @@
 use log::error;
 use std::fs::File;
 use std::path::PathBuf;
+use std::sync::mpsc::channel;
 use tauri::Manager;
 
 use crate::app::AppState;
@@ -19,17 +20,18 @@ pub fn init(tauri_app: &tauri::App) {
         Err(e) => error!("Error while reading list of recently opened documents: {e}"),
     };
 
-    let tauri_app_handle = tauri_app.handle();
-    std::thread::spawn(move || {
-        let app_state = tauri_app_handle.state::<AppState>();
-        let app = app_state.0.lock();
-        app.recent_documents_delegate()
-            .subscribe(|recent_documents| {
-                if let Err(e) = write_to_disk(recent_documents) {
-                    error!("Error while saving list of recently opened documents: {e}");
-                }
-                Observer::StaySubscribed
-            });
+    let (tx, rx) = channel();
+    app.recent_documents_delegate()
+        .subscribe(move |recent_documents| {
+            tx.send(recent_documents.clone()).ok();
+            Observer::StaySubscribed
+        });
+
+    std::thread::spawn(move || loop {
+        let Ok(recent_documents) = rx.recv() else { break };
+        if let Err(e) = write_to_disk(&recent_documents) {
+            error!("Error while saving list of recently opened documents: {e}");
+        }
     });
 }
 
