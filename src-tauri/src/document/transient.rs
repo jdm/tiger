@@ -76,7 +76,7 @@ impl Document {
         };
 
         let timeline_is_playing = self.persistent.timeline_is_playing;
-        let (animation_name, animation) = self.get_workbench_animation_mut()?;
+        let (animation_name, animation) = self.workbench_animation_mut()?;
         let sequence = animation
             .sequence_mut(direction)
             .ok_or(DocumentError::SequenceNotInAnimation(direction))?;
@@ -113,7 +113,7 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
         if !self
             .view
@@ -135,7 +135,7 @@ impl Document {
 
         // Sort affected keyframes
         let selection = {
-            let (_, animation) = self.get_workbench_animation()?;
+            let (_, animation) = self.workbench_animation()?;
             let mut selection: Vec<(Direction, usize)> = self
                 .view
                 .selection
@@ -160,7 +160,7 @@ impl Document {
             selection
         };
 
-        let (animation_name, animation) = self.get_workbench_animation_mut()?;
+        let (animation_name, animation) = self.workbench_animation_mut()?;
 
         // Remove keyframes from their current sequence
         let mut keyframes = Vec::with_capacity(selection.len());
@@ -225,7 +225,7 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
         if !self
             .view
@@ -236,7 +236,7 @@ impl Document {
             self.view.current_sequence = Some(direction);
         }
 
-        let (_, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.workbench_animation()?;
 
         self.transient.keyframe_duration_drag = Some(KeyframeDurationDrag {
             frame_being_dragged: (direction, index),
@@ -264,7 +264,7 @@ impl Document {
             .keyframe_duration_drag
             .clone()
             .ok_or(DocumentError::NotDraggingKeyframeDuration)?;
-        let (_, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.workbench_animation()?;
         let direction = drag_state.frame_being_dragged.0;
         let index = drag_state.frame_being_dragged.1;
         let zoom = self.timeline_zoom_factor();
@@ -277,7 +277,7 @@ impl Document {
         };
 
         let num_frames_affected = self
-            .get_selected_keyframes()?
+            .selected_keyframes()?
             .iter()
             .filter(|(d, i, _k)| direction == *d && index >= *i)
             .count()
@@ -313,7 +313,7 @@ impl Document {
         }
 
         let minimum_duration = 20.0 as u64;
-        for (d, i, keyframe) in self.get_selected_keyframes_mut()? {
+        for (d, i, keyframe) in self.selected_keyframes_mut()? {
             let old_duration = drag_state
                 .original_ranges
                 .get(&(d, i))
@@ -386,7 +386,7 @@ impl Document {
         direction: Direction,
         index: usize,
     ) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
 
         if !self
             .view
@@ -396,7 +396,7 @@ impl Document {
             self.select_keyframe_only(animation_name.clone(), direction, index);
         }
 
-        let (_, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.workbench_animation()?;
         self.transient.keyframe_nudge = Some(KeyframeNudge {
             keyframe_being_dragged: (direction, index),
             original_positions: animation
@@ -446,7 +446,7 @@ impl Document {
                 .get(&(direction, index))
                 .ok_or(DocumentError::MissingKeyframePositionData)?;
 
-            let (_, animation) = self.get_workbench_animation_mut()?;
+            let (_, animation) = self.workbench_animation_mut()?;
             let keyframe = animation
                 .sequence_mut(direction)
                 .ok_or(DocumentError::SequenceNotInAnimation(direction))?
@@ -480,8 +480,8 @@ impl Document {
         &mut self,
         hitbox_name: T,
     ) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let ((direction, index), _) = self.get_workbench_keyframe()?;
+        let (animation_name, _) = self.workbench_animation()?;
+        let ((direction, index), _) = self.workbench_keyframe()?;
 
         if !self.view.selection.is_hitbox_selected(
             animation_name,
@@ -497,7 +497,7 @@ impl Document {
             );
         }
 
-        let (_, keyframe) = self.get_workbench_keyframe()?;
+        let (_, keyframe) = self.workbench_keyframe()?;
         self.transient.hitbox_nudge = Some(HitboxNudge {
             hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
             original_positions: keyframe
@@ -536,7 +536,7 @@ impl Document {
             .map(|(_, _, _, hitbox_name)| hitbox_name.clone())
             .collect::<HashSet<_>>();
 
-        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        let (_, keyframe) = self.workbench_keyframe_mut()?;
         for (hitbox_name, hitbox) in keyframe
             .hitboxes_iter_mut()
             .filter(|(hitbox_name, _)| selected_hitboxes.contains(*hitbox_name))
@@ -575,7 +575,7 @@ impl Document {
         hitbox_name: T,
         axis: ResizeAxis,
     ) -> DocumentResult<()> {
-        let (_, keyframe) = self.get_workbench_keyframe()?;
+        let (_, keyframe) = self.workbench_keyframe()?;
         self.transient.hitbox_resize = Some(HitboxResize {
             axis,
             hitbox_being_dragged: hitbox_name.as_ref().to_owned(),
@@ -608,7 +608,7 @@ impl Document {
             .collect::<HashSet<_>>();
 
         let zoom = self.workbench_zoom();
-        let (_, keyframe) = self.get_workbench_keyframe_mut()?;
+        let (_, keyframe) = self.workbench_keyframe_mut()?;
 
         for (hitbox_name, hitbox) in keyframe
             .hitboxes_iter_mut()

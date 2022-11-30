@@ -37,8 +37,7 @@ pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
     match export_settings {
         ExportSettings::Liquid(liquid_settings) => {
             let packed_sheet = pack_sheet(sheet)?;
-            let metadata =
-                generate_sheet_metadata(sheet, export_settings, packed_sheet.get_layout())?;
+            let metadata = generate_sheet_metadata(sheet, export_settings, packed_sheet.layout())?;
 
             {
                 let path = liquid_settings.metadata_file();
@@ -57,7 +56,7 @@ pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
                 }
                 let mut file = create_file(path)?;
                 packed_sheet
-                    .get_texture()
+                    .texture()
                     .write_to(&mut file, image::ImageFormat::Png)?;
             }
         }

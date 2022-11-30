@@ -69,11 +69,11 @@ impl Document {
             delta *= 10;
         }
 
-        for (_, _, keyframe) in self.get_selected_keyframes_mut()? {
+        for (_, _, keyframe) in self.selected_keyframes_mut()? {
             Document::nudge_keyframe(keyframe, keyframe.offset() + delta);
         }
 
-        for (_, hitbox) in self.get_selected_hitboxes_mut()? {
+        for (_, hitbox) in self.selected_hitboxes_mut()? {
             hitbox.set_position(hitbox.position() + delta);
         }
 
@@ -174,7 +174,7 @@ impl Document {
         self.select_keyframe_internal(direction, index, shift, ctrl)?;
 
         if !self.persistent.timeline_is_playing {
-            let (_, sequence) = self.get_workbench_sequence()?;
+            let (_, sequence) = self.workbench_sequence()?;
             self.view.timeline_clock = Duration::from_millis(
                 sequence
                     .keyframe_times()
@@ -198,7 +198,7 @@ impl Document {
         self.view.selection.hitboxes.clear();
 
         self.view.current_sequence = Some(direction);
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
         let animation = self
             .sheet
@@ -216,9 +216,9 @@ impl Document {
     }
 
     pub(super) fn select_current_keyframe(&mut self) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
-        let ((direction, keyframe_index), _) = self.get_workbench_keyframe()?;
+        let ((direction, keyframe_index), _) = self.workbench_keyframe()?;
         self.select_keyframe_only(animation_name, direction, keyframe_index);
         Ok(())
     }
@@ -233,9 +233,9 @@ impl Document {
         self.view.selection.animations.clear();
         self.view.selection.keyframes.clear();
 
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
-        let ((direction, index), _) = self.get_workbench_keyframe()?;
+        let ((direction, index), _) = self.workbench_keyframe()?;
         self.view.selection.hitboxes.alter(
             (animation_name, direction, index, name.as_ref().to_owned()),
             &self.selectable_hitboxes()?,
@@ -307,9 +307,9 @@ impl Document {
         browse_direction: BrowseDirection,
         shift: bool,
     ) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation()?;
+        let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
-        let ((direction, index), _) = self.get_workbench_keyframe()?;
+        let ((direction, index), _) = self.workbench_keyframe()?;
         let from_keyframe = match self.view.selection.keyframes.last_interacted.as_ref() {
             Some(k) => k.to_owned(),
             None => {
@@ -318,7 +318,7 @@ impl Document {
             }
         };
 
-        let (_, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.workbench_animation()?;
         let to_keyframe = animation.offset_from(Some(&from_keyframe), browse_direction);
         if let Some((_, direction, index)) = to_keyframe {
             self.select_keyframe_internal(direction, index, shift, false)?;
@@ -341,8 +341,8 @@ impl Document {
     }
 
     fn selectable_hitboxes(&self) -> DocumentResult<Vec<(String, Direction, usize, String)>> {
-        let (animation_name, _) = self.get_workbench_animation()?;
-        let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
+        let (animation_name, _) = self.workbench_animation()?;
+        let ((direction, index), keyframe) = self.workbench_keyframe()?;
         Ok(keyframe
             .hitboxes_iter()
             .map(|(n, _)| (animation_name.clone(), direction, index, n.clone()))
@@ -473,7 +473,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> Sele
         U: ItemPool<T>,
     {
         if shift {
-            let affected_items = all_items.get_range(self.pivot.as_ref(), &interacted_item);
+            let affected_items = all_items.range(self.pivot.as_ref(), &interacted_item);
             if ctrl {
                 let contains_pivot = self
                     .pivot
@@ -539,7 +539,7 @@ impl<T: std::cmp::Eq + std::hash::Hash + std::clone::Clone + std::cmp::Ord> From
 }
 
 trait ItemPool<T> {
-    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T>;
+    fn range(&self, from: Option<&T>, to: &T) -> Vec<T>;
 }
 
 trait ItemPool1D<T> {
@@ -559,7 +559,7 @@ impl<T> ItemPool<T> for &[T]
 where
     T: Eq + Clone,
 {
-    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
+    fn range(&self, from: Option<&T>, to: &T) -> Vec<T> {
         let from_index = from
             .and_then(|f| self.iter().position(|item| item == f))
             .unwrap_or_default();
@@ -589,8 +589,8 @@ impl<T> ItemPool<T> for &Vec<T>
 where
     T: Eq + Clone,
 {
-    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
-        (&self[..]).get_range(from, to)
+    fn range(&self, from: Option<&T>, to: &T) -> Vec<T> {
+        (&self[..]).range(from, to)
     }
 }
 
@@ -607,8 +607,8 @@ impl<T, const N: usize> ItemPool<T> for &[T; N]
 where
     T: Eq + Clone,
 {
-    fn get_range(&self, from: Option<&T>, to: &T) -> Vec<T> {
-        (&self[..]).get_range(from, to)
+    fn range(&self, from: Option<&T>, to: &T) -> Vec<T> {
+        (&self[..]).range(from, to)
     }
 }
 
@@ -623,7 +623,7 @@ where
 
 // Specialization for keyframe selection, where shift+select needs to select keyframes based on their durations and directions
 impl<P: Paths> ItemPool<(String, Direction, usize)> for &Animation<P> {
-    fn get_range(
+    fn range(
         &self,
         from: Option<&(String, Direction, usize)>,
         to: &(String, Direction, usize),

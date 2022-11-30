@@ -8,8 +8,8 @@ impl Document {
     pub fn advance_timeline(&mut self, delta: Duration) {
         if self.is_timeline_playing() {
             self.view.timeline_clock += delta;
-            if let Ok((_, animation)) = self.get_workbench_animation() {
-                if let Ok((_, sequence)) = self.get_workbench_sequence() {
+            if let Ok((_, animation)) = self.workbench_animation() {
+                if let Ok((_, sequence)) = self.workbench_sequence() {
                     match sequence.duration_millis() {
                         Some(d) if d > 0 => {
                             let clock_ms = self.timeline_clock().as_millis() as u64;
@@ -40,7 +40,7 @@ impl Document {
 
     pub(super) fn play(&mut self) -> DocumentResult<()> {
         if self
-            .get_workbench_sequence()?
+            .workbench_sequence()?
             .1
             .duration_millis()
             .map(Duration::from_millis)
@@ -63,7 +63,7 @@ impl Document {
     }
 
     pub(super) fn scrub_timeline(&mut self, time: Duration) -> DocumentResult<()> {
-        let (_, sequence) = self.get_workbench_sequence()?;
+        let (_, sequence) = self.workbench_sequence()?;
         let new_time = match sequence.duration() {
             Some(d) if d < time => d,
             Some(_) => time,
@@ -79,13 +79,13 @@ impl Document {
     }
 
     pub(super) fn jump_to_animation_end(&mut self) -> DocumentResult<()> {
-        let (_, sequence) = self.get_workbench_sequence()?;
+        let (_, sequence) = self.workbench_sequence()?;
         let duration = sequence.duration().unwrap_or_default();
         self.scrub_timeline(duration)
     }
 
     pub(super) fn jump_to_previous_frame(&mut self) -> DocumentResult<()> {
-        let (_, sequence) = self.get_workbench_sequence()?;
+        let (_, sequence) = self.workbench_sequence()?;
         let now = self.view.timeline_clock;
         let new_time = sequence
             .keyframe_time_ranges()
@@ -100,7 +100,7 @@ impl Document {
     }
 
     pub(super) fn jump_to_next_frame(&mut self) -> DocumentResult<()> {
-        let (_, sequence) = self.get_workbench_sequence()?;
+        let (_, sequence) = self.workbench_sequence()?;
         let now = self.view.timeline_clock;
         let new_time = sequence
             .keyframe_time_ranges()
@@ -121,7 +121,7 @@ impl Document {
             .current_sequence
             .unwrap_or_else(|| last::<Direction>().unwrap());
 
-        let (_, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.workbench_animation()?;
         let new_direction = reverse_all::<Direction>()
             .cycle()
             .skip_while(|d| *d != old_direction)
@@ -147,7 +147,7 @@ impl Document {
             .current_sequence
             .unwrap_or_else(|| last::<Direction>().unwrap());
 
-        let (_, animation) = self.get_workbench_animation()?;
+        let (_, animation) = self.workbench_animation()?;
         let new_direction = all::<Direction>()
             .cycle()
             .skip_while(|d| *d != old_direction)
@@ -167,13 +167,13 @@ impl Document {
     }
 
     pub(super) fn set_animation_looping(&mut self, is_looping: bool) -> DocumentResult<()> {
-        let (_, animation) = self.get_workbench_animation_mut()?;
+        let (_, animation) = self.workbench_animation_mut()?;
         animation.set_looping(is_looping);
         Ok(())
     }
 
     pub(super) fn apply_direction_preset(&mut self, preset: DirectionPreset) -> DocumentResult<()> {
-        let (_, animation) = self.get_workbench_animation_mut()?;
+        let (_, animation) = self.workbench_animation_mut()?;
         animation.apply_direction_preset(preset);
         Ok(())
     }
@@ -193,7 +193,7 @@ impl Document {
             .collect::<Vec<_>>();
         selected_keyframes.sort();
         selected_keyframes.reverse();
-        if let Ok((_, animation)) = self.get_workbench_animation_mut() {
+        if let Ok((_, animation)) = self.workbench_animation_mut() {
             for (direction, index) in selected_keyframes {
                 animation
                     .sequence_mut(direction)

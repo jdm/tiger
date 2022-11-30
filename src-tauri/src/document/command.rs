@@ -334,11 +334,11 @@ impl Document {
         Ok(())
     }
 
-    fn get_undo_command(&self) -> Option<&Command> {
+    fn undo_command(&self) -> Option<&Command> {
         self.history[self.history_index].last_command.as_ref()
     }
 
-    fn get_redo_command(&self) -> Option<&Command> {
+    fn redo_command(&self) -> Option<&Command> {
         if self.history_index < self.history.len() - 1 {
             self.history[self.history_index + 1].last_command.as_ref()
         } else {
@@ -346,12 +346,12 @@ impl Document {
         }
     }
 
-    pub fn get_undo_effect(&self) -> Option<String> {
-        self.get_undo_command().map(|c| c.to_string())
+    pub fn undo_effect(&self) -> Option<String> {
+        self.undo_command().map(|c| c.to_string())
     }
 
-    pub fn get_redo_effect(&self) -> Option<String> {
-        self.get_redo_command().map(|c| c.to_string())
+    pub fn redo_effect(&self) -> Option<String> {
+        self.redo_command().map(|c| c.to_string())
     }
 }
 

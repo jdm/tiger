@@ -22,8 +22,8 @@ impl Document {
         self.view.skip_to_timeline_start();
         self.persistent.timeline_is_playing = false;
 
-        let (_, animation) = self.get_workbench_animation()?;
-        if self.get_workbench_sequence().is_err() {
+        let (_, animation) = self.workbench_animation()?;
+        if self.workbench_sequence().is_err() {
             let any_direction = animation.sequences_iter().next().map(|(d, _s)| *d);
             self.view.current_sequence = any_direction;
         }

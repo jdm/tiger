@@ -29,11 +29,11 @@ pub(super) struct PackedSheet {
 }
 
 impl PackedSheet {
-    pub fn get_texture(&self) -> &DynamicImage {
+    pub fn texture(&self) -> &DynamicImage {
         &self.texture
     }
 
-    pub fn get_layout(&self) -> &HashMap<PathBuf, PackedFrame> {
+    pub fn layout(&self) -> &HashMap<PathBuf, PackedFrame> {
         &self.layout
     }
 }

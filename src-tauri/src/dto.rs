@@ -374,8 +374,8 @@ impl document::Document {
             path: self.path().to_owned(),
             name: self.path().to_file_name(),
             has_unsaved_changes: !self.is_saved(),
-            undo_effect: self.get_undo_effect(),
-            redo_effect: self.get_redo_effect(),
+            undo_effect: self.undo_effect(),
+            redo_effect: self.redo_effect(),
             was_close_requested: self.close_requested(),
             sheet,
             frames_list_mode: self.frames_list_mode().into(),
@@ -386,7 +386,7 @@ impl document::Document {
             current_animation_name: self.current_animation().to_owned(),
             current_sequence_direction: self.current_sequence().map(|d| d.into()),
             current_keyframe_index: self
-                .get_workbench_sequence()
+                .workbench_sequence()
                 .ok()
                 .and_then(|(_, s)| s.keyframe_index_at(self.timeline_clock())),
             timeline_clock_millis: self.timeline_clock().as_millis() as u64,

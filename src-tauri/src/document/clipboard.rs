@@ -40,7 +40,7 @@ impl Document {
 
     fn copy_animations(&self) -> Option<Clipboard> {
         let animations = self
-            .get_selected_animations()
+            .selected_animations()
             .into_iter()
             .map(|(name, animation)| (name.clone(), animation.clone()))
             .collect::<HashMap<String, Animation<Absolute>>>();
@@ -63,7 +63,7 @@ impl Document {
 
     fn copy_keyframes(&self) -> Option<Clipboard> {
         let keyframes = self
-            .get_selected_keyframes()
+            .selected_keyframes()
             .ok()?
             .into_iter()
             .map(|(_, _, keyframe)| keyframe.clone())
@@ -72,18 +72,18 @@ impl Document {
     }
 
     fn paste_keyframes(&mut self, keyframes: Vec<Keyframe<Absolute>>) -> DocumentResult<()> {
-        let (_, sequence) = self.get_workbench_sequence()?;
+        let (_, sequence) = self.workbench_sequence()?;
         let at_sequence_end = self.timeline_clock() >= sequence.duration().unwrap_or_default();
         let index = if at_sequence_end {
             sequence.num_keyframes()
         } else {
-            self.get_workbench_keyframe()
+            self.workbench_keyframe()
                 .map(|((_, index), _)| index)
                 .unwrap_or_default()
         };
-        let (animation_name, _) = self.get_workbench_animation_mut()?;
+        let (animation_name, _) = self.workbench_animation_mut()?;
         let num_keyframes = keyframes.len();
-        let (direction, sequence) = self.get_workbench_sequence_mut()?;
+        let (direction, sequence) = self.workbench_sequence_mut()?;
         for keyframe in keyframes.into_iter().rev() {
             let new_keyframe = keyframe.duplicate();
             sequence.insert_keyframe(new_keyframe, index)?;
@@ -96,7 +96,7 @@ impl Document {
 
     fn copy_hitboxes(&self) -> Option<Clipboard> {
         let hitboxes = self
-            .get_selected_hitboxes()
+            .selected_hitboxes()
             .ok()?
             .into_iter()
             .map(|(name, hitbox)| (name.clone(), hitbox.clone()))
@@ -105,8 +105,8 @@ impl Document {
     }
 
     fn paste_hitboxes(&mut self, hitboxes: HashMap<String, Hitbox>) -> DocumentResult<()> {
-        let (animation_name, _) = self.get_workbench_animation_mut()?;
-        let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
+        let (animation_name, _) = self.workbench_animation_mut()?;
+        let ((direction, index), keyframe) = self.workbench_keyframe_mut()?;
         let mut new_hitbox_names = vec![];
         for (name, hitbox) in hitboxes {
             let (new_hitbox_name, new_hitbox) = keyframe.create_hitbox(name);

@@ -160,9 +160,9 @@ impl Document {
     }
 
     fn sanitize_view(&mut self) {
-        match self.get_workbench_animation() {
+        match self.workbench_animation() {
             Ok((_, animation)) => {
-                if self.get_workbench_sequence().is_err() {
+                if self.workbench_sequence().is_err() {
                     let any_direction = animation.sequences_iter().next().map(|(d, _s)| *d);
                     self.view.current_sequence = any_direction;
                 }
@@ -174,7 +174,7 @@ impl Document {
         };
 
         let timeline_cap = self
-            .get_workbench_sequence()
+            .workbench_sequence()
             .ok()
             .and_then(|(_, s)| s.duration())
             .unwrap_or_default();
@@ -208,7 +208,7 @@ impl Document {
         }
 
         let current_keyframe_index = self
-            .get_workbench_sequence()
+            .workbench_sequence()
             .ok()
             .and_then(|(_, s)| s.keyframe_at(self.view.timeline_clock))
             .map(|(i, _)| i);
@@ -229,7 +229,7 @@ impl Document {
             });
     }
 
-    pub fn get_workbench_animation(&self) -> DocumentResult<(&String, &Animation<Absolute>)> {
+    pub fn workbench_animation(&self) -> DocumentResult<(&String, &Animation<Absolute>)> {
         let animation_name = self
             .current_animation()
             .as_ref()
@@ -241,7 +241,7 @@ impl Document {
         Ok((animation_name, animation))
     }
 
-    pub fn get_workbench_animation_mut(
+    pub fn workbench_animation_mut(
         &mut self,
     ) -> DocumentResult<(String, &mut Animation<Absolute>)> {
         let animation_name = self
@@ -255,8 +255,8 @@ impl Document {
         Ok((animation_name, animation))
     }
 
-    pub fn get_workbench_sequence(&self) -> DocumentResult<(Direction, &Sequence<Absolute>)> {
-        let (_, animation) = self.get_workbench_animation()?;
+    pub fn workbench_sequence(&self) -> DocumentResult<(Direction, &Sequence<Absolute>)> {
+        let (_, animation) = self.workbench_animation()?;
         let direction = self
             .current_sequence()
             .ok_or(DocumentError::NotEditingAnySequence)?;
@@ -268,13 +268,13 @@ impl Document {
         ))
     }
 
-    pub fn get_workbench_sequence_mut(
+    pub fn workbench_sequence_mut(
         &mut self,
     ) -> DocumentResult<(Direction, &mut Sequence<Absolute>)> {
         let direction = self
             .current_sequence()
             .ok_or(DocumentError::NotEditingAnySequence)?;
-        let (_, animation) = self.get_workbench_animation_mut()?;
+        let (_, animation) = self.workbench_animation_mut()?;
         Ok((
             direction,
             animation
@@ -283,38 +283,36 @@ impl Document {
         ))
     }
 
-    pub fn get_workbench_keyframe(
-        &self,
-    ) -> DocumentResult<((Direction, usize), &Keyframe<Absolute>)> {
-        let (direction, sequence) = self.get_workbench_sequence()?;
+    pub fn workbench_keyframe(&self) -> DocumentResult<((Direction, usize), &Keyframe<Absolute>)> {
+        let (direction, sequence) = self.workbench_sequence()?;
         let (index, keyframe) = sequence
             .keyframe_at(self.view.timeline_clock)
             .ok_or(DocumentError::NoKeyframeAtTime(self.view.timeline_clock))?;
         Ok(((direction, index), keyframe))
     }
 
-    pub fn get_workbench_keyframe_mut(
+    pub fn workbench_keyframe_mut(
         &mut self,
     ) -> DocumentResult<((Direction, usize), &mut Keyframe<Absolute>)> {
         let timeline_clock = self.view.timeline_clock;
-        let (direction, sequence) = self.get_workbench_sequence_mut()?;
+        let (direction, sequence) = self.workbench_sequence_mut()?;
         let (index, keyframe) = sequence
             .keyframe_at_mut(timeline_clock)
             .ok_or(DocumentError::NoKeyframeAtTime(timeline_clock))?;
         Ok(((direction, index), keyframe))
     }
 
-    pub fn get_selected_animations(&self) -> Vec<(&String, &Animation<Absolute>)> {
+    pub fn selected_animations(&self) -> Vec<(&String, &Animation<Absolute>)> {
         self.sheet
             .animations_iter()
             .filter(|(name, _)| self.view.selection.is_animation_selected(name))
             .collect()
     }
 
-    pub fn get_selected_keyframes(
+    pub fn selected_keyframes(
         &self,
     ) -> DocumentResult<Vec<(Direction, usize, &Keyframe<Absolute>)>> {
-        let (animation_name, animation) = self.get_workbench_animation()?;
+        let (animation_name, animation) = self.workbench_animation()?;
         Ok(animation
             .sequences_iter()
             .flat_map(|(direction, sequence)| {
@@ -335,11 +333,11 @@ impl Document {
             .collect())
     }
 
-    pub fn get_selected_keyframes_mut(
+    pub fn selected_keyframes_mut(
         &mut self,
     ) -> DocumentResult<Vec<(Direction, usize, &mut Keyframe<Absolute>)>> {
         let selection = self.view.selection.clone();
-        let (animation_name, animation) = self.get_workbench_animation_mut()?;
+        let (animation_name, animation) = self.workbench_animation_mut()?;
         Ok(animation
             .sequences_iter_mut()
             .flat_map(|(direction, sequence)| {
@@ -357,10 +355,10 @@ impl Document {
             .collect())
     }
 
-    pub fn get_selected_hitboxes(&self) -> DocumentResult<Vec<(&String, &Hitbox)>> {
-        let (animation_name, _) = self.get_workbench_animation()?;
+    pub fn selected_hitboxes(&self) -> DocumentResult<Vec<(&String, &Hitbox)>> {
+        let (animation_name, _) = self.workbench_animation()?;
         let selection = self.view.selection.clone();
-        let ((direction, index), keyframe) = self.get_workbench_keyframe()?;
+        let ((direction, index), keyframe) = self.workbench_keyframe()?;
         Ok(keyframe
             .hitboxes_iter()
             .filter_map(|(hitbox_name, hitbox)| {
@@ -378,10 +376,10 @@ impl Document {
             .collect())
     }
 
-    pub fn get_selected_hitboxes_mut(&mut self) -> DocumentResult<Vec<(String, &mut Hitbox)>> {
-        let (animation_name, _) = self.get_workbench_animation_mut()?;
+    pub fn selected_hitboxes_mut(&mut self) -> DocumentResult<Vec<(String, &mut Hitbox)>> {
+        let (animation_name, _) = self.workbench_animation_mut()?;
         let selection = self.view.selection.clone();
-        let ((direction, index), keyframe) = self.get_workbench_keyframe_mut()?;
+        let ((direction, index), keyframe) = self.workbench_keyframe_mut()?;
         Ok(keyframe
             .hitboxes_iter_mut()
             .filter_map(|(hitbox_name, hitbox)| {
