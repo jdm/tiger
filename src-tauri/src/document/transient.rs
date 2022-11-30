@@ -345,7 +345,12 @@ impl Document {
                     s.keyframe_time_ranges()
                         .into_iter()
                         .enumerate()
-                        .filter(|(i, _)| !drag_state.original_ranges.contains_key(&(*d, *i)))
+                        .filter(|(i, _)| {
+                            !drag_state
+                                .original_ranges
+                                .keys()
+                                .any(|(od, oi)| *d == *od && oi <= i)
+                        })
                         .map(|(_, r)| r.end)
                 })
                 .map(|t| (t, proposed_range.end.abs_diff(t)))
@@ -954,6 +959,35 @@ fn drag_keyframe_duration_can_snap_to_other_keyframe() {
         .duration_millis();
 
     assert_eq!(new_duration, 200);
+}
+
+#[test]
+fn drag_keyframe_duration_does_not_snap_to_moving_keyframes() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([
+            (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+            (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+        ]),
+    );
+
+    d.edit_animation("walk_cycle").unwrap();
+    d.select_keyframes_only(vec![
+        ("walk_cycle".to_owned(), Direction::North, 0),
+        ("walk_cycle".to_owned(), Direction::South, 2),
+    ]);
+    d.begin_drag_keyframe_duration(Direction::South, 2).unwrap();
+    d.update_drag_keyframe_duration(49).unwrap();
+    d.update_drag_keyframe_duration(50).unwrap();
+    d.end_drag_keyframe_duration();
+    let new_duration = d
+        .sheet
+        .keyframe("walk_cycle", Direction::South, 2)
+        .duration_millis();
+
+    assert_eq!(new_duration, 150);
 }
 
 #[test]
