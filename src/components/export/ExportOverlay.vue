@@ -4,8 +4,8 @@
 		<Transition name="pane-slide" @after-leave="onHidden" @after-enter="onVisible">
 			<div v-if="settings" class="absolute inset-0 pointer-events-auto ">
 				<div class="w-full h-full flex justify-end">
-					<div class="h-full w-[40rem] p-10 flex flex-col space-y-16 bg-plastic-700">
-						<div class="flex flex-col space-y-4">
+					<div class="h-full w-[40rem] p-10 flex flex-col gap-16 bg-plastic-700">
+						<div class="flex flex-col gap-4">
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>
 							<InputField label="Texture File">
 								<template #content>
@@ -34,7 +34,7 @@
 							</InputField>
 						</div>
 
-						<div class="flex flex-col space-y-4">
+						<div class="flex flex-col gap-4">
 							<h1 class="text-plastic-200 text-xl">Metadata Format</h1>
 							<InputField label="Metadata Template File">
 								<template #content>
@@ -65,7 +65,7 @@
 							</InputField>
 						</div>
 
-						<div class="flex space-x-4 justify-end">
+						<div class="flex gap-4 justify-end">
 							<Button label="Export" :positive="true" @click="endExportAs"
 								:disabled="!validation?.validSettings" />
 							<Button label="Cancel" @click="cancelExportAs" />

@@ -1,7 +1,7 @@
 <template>
 	<div class="h-11 rounded-md" :class="containerClasses">
 		<button type="button"
-			class="w-full h-full flex items-center justify-center space-x-2 px-3 py-1.5 rounded-md text-sm font-medium border-t border-b-2"
+			class="w-full h-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border-t border-b-2"
 			:disabled="disabled" :class="buttonClasses" @click="emit('click')">
 			<component :is="icon" v-if="icon" class="w-5" />
 			<div v-if="label">{{ label }}</div>

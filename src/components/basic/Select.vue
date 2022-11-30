@@ -1,7 +1,7 @@
 <template>
 	<div ref="el" class="relative">
 		<div @click="onOpen" class="h-11 rounded-md border-2 border-plastic-900">
-			<div class="h-full flex items-center space-x-2 pl-4 pr-2 rounded-md
+			<div class="h-full flex items-center gap-2 pl-4 pr-2 rounded-md
 				border-y  border-t-zinc-300 border-b-zinc-700 bg-zinc-400">
 				<div class="flex-1 grid pr-8">
 					<div v-for="option in options"

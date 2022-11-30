@@ -1,13 +1,13 @@
 <template>
 	<div class="p-2
-		flex space-x-4 items-center
+		flex gap-4 items-center
 		rounded-md bg-neutral-900
 		border-2 border-neutral-800
 		outline outline-4 outline-neutral-900
 	">
 		<FlatMultiSwitch :items="zoomItems" @activate="onZoomClicked" />
 		<FlatToggle :icon="SunIcon" v-model="spriteDarkening" />
-		<div class="flex items-center space-x-1">
+		<div class="flex items-center gap-1">
 			<FlatToggle :icon="PhotoIcon" v-model="drawSprite" color="orange" />
 			<FlatToggle :icon="TagIcon" v-model="drawHitboxes" color="pink" />
 			<FlatToggle :icon="PlusIcon" v-model="drawOrigin" color="sky" />

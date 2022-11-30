@@ -7,7 +7,7 @@
 					:highlighted="(entry.key || entry.name) == (highlightEntry?.key || highlightEntry?.name)"
 					@executed="onItemExecuted" @hovered="onItemHovered($event, entry)"
 					@unhovered="onItemUnhovered($event, entry)" />
-				<MenuSeparator v-else class="mx-7" />
+				<MenuSeparator v-else class="mx-7 my-2" />
 			</div>
 			<div class="absolute" :style="submenuPosition">
 				<Menu v-if="submenuEntry?.submenus?.length" :content="submenuEntry?.submenus"

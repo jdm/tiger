@@ -1,6 +1,6 @@
 <template>
 	<div ref="el" class="h-11 relative box-border rounded-md border-2 border-plastic-900">
-		<div @click="onClicked" class="h-full pl-2 space-x-1 flex items-center rounded-md border-2 cursor-pointer"
+		<div @click="onClicked" class="h-full pl-2 flex gap-1 items-center rounded-md border-2 cursor-pointer"
 			:class="dynamicClasses">
 			<component :is="icon" class="w-6" />
 			<ChevronDownIcon v-if="canExpand" @click.stop="expand" class="w-8 h-8 p-1.5 -mb-0.5 rounded-lg "

@@ -1,20 +1,20 @@
 <template>
 	<MenuBackground class="mt-2 -translate-x-1/2 whitespace-nowrap">
-		<div class="flex flex-col space-y-4 p-2 text-sm text-zinc-300">
-			<div class="flex space-x-3 items-center">
+		<div class="flex flex-col gap-4 p-2 text-sm text-zinc-300">
+			<div class="flex gap-3 items-center">
 				<Checkbox id="snappingEnabled" v-model="snappingEnabled" />
 				<label for="snappingEnabled" class="cursor-pointer">Enable snapping</label>
 			</div>
 			<MenuSeparator />
-			<div class="flex flex-col space-y-2"
+			<div class="flex flex-col gap-2"
 				:class="snappingEnabled ? [] : ['pointer-events-none', 'opacity-20', 'saturate-0']">
-				<div class="flex space-x-3 items-center">
+				<div class="flex gap-3 items-center">
 					<Checkbox id="snapToKeyframes" v-model="snapToKeyframes" />
 					<label for="snapToKeyframes" class="cursor-pointer">Snap to other keyframes</label>
 				</div>
-				<div class="flex space-x-3 items-center">
+				<div class="flex gap-3 items-center">
 					<Checkbox id="snapToMultiplesOf" v-model="snapToMultiplesOf" />
-					<div class="flex space-x-2 items-center">
+					<div class="flex gap-2 items-center">
 						<label for="snapToMultiplesOf" class="cursor-pointer">Snap to multiples of</label>
 						<input type="text" v-model="snappingBaseDuration"
 							class="border-0 rounded-md p-0 px-1 w-9 h-6 text-xs text-right bg-plastic-700 focus:ring-0" />

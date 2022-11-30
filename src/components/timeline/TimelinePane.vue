@@ -1,7 +1,7 @@
 <template>
 	<Pane>
 		<div class="w-full px-4 py-2 flex items-center">
-			<div class="flex-1 flex space-x-2">
+			<div class="flex-1 flex gap-2">
 				<PerspectivePicker />
 				<Toggle :toggled="!!app.currentAnimation?.isLooping" @toggled="setAnimationLooping"
 					:icon="ArrowPathIcon" />
@@ -9,7 +9,7 @@
 			<div class="flex-1 flex justify-center">
 				<PlaybackControls />
 			</div>
-			<div class="flex-1 flex space-x-2 justify-end items-center">
+			<div class="flex-1 flex gap-2 justify-end items-center">
 				<Toggle :toggled="!!app.currentDocument?.snapKeyframeDurations" @toggled="setSnapKeyframeDurations"
 					:icon="AdjustmentsHorizontalIcon" :canExpand="true">
 					<template #expanded>
@@ -25,7 +25,7 @@
 				<div class="flex flex-col">
 					<div class="h-6 bg-plastic-600" />
 					<div
-						class="w-36 flex flex-col py-2 space-y-1 text-plastic-400 text-xs uppercase font-semibold text-right">
+						class="w-36 flex flex-col py-2 gap-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="entry in sequenceEntries" @click="selectDirection(entry.direction)"
 							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="entry.sequence == app.currentSequence ?
 							'text-plastic-200 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
@@ -37,7 +37,7 @@
 					class="flex-1 relative overflow-x-scroll styled-scrollbars">
 					<div class="min-w-full flex flex-col" :style="timelineStyle">
 						<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
-						<div class="flex flex-col py-2 space-y-1">
+						<div class="flex flex-col py-2 gap-1">
 							<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
 								:direction="entry.direction" :animate="animateSequences" />
 							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"

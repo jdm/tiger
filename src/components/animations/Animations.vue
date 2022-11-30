@@ -1,6 +1,6 @@
 <template>
-	<div class="flex-1 flex flex-col min-h-0 p-4 space-y-4">
-		<div class="w-full flex space-x-2 items-center">
+	<div class="flex-1 flex flex-col min-h-0 p-4 gap-4">
+		<div class="w-full flex gap-2 items-center">
 			<InputSearch class="flex-1" placeholder="Search animations" v-model="searchQuery" />
 			<Button :positive="true" :icon="FilmIcon" label="New" @click="createAnimation" />
 		</div>

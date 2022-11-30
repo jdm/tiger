@@ -1,6 +1,6 @@
 <template>
 	<div class="m-4 h-full flex flex-col items-center justify-center stripes rounded-md">
-		<div class="flex items-center py-2 p-4 space-x-2 bg-plastic-700 rounded-sm text-plastic-400">
+		<div class="flex items-center py-2 p-4 gap-2 bg-plastic-700 rounded-sm text-plastic-400">
 			<ExclamationTriangleIcon class="w-6 h-6" />
 			<div class="font-semibold">N/A</div>
 		</div>

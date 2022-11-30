@@ -4,7 +4,7 @@
 		<div class="self-stretch">
 			<slot name="left" />
 		</div>
-		<div class="flex space-x-4">
+		<div class="flex gap-4">
 			<slot name="right" />
 			<div class="flex-1 flex items-stretch">
 				<button @click="appWindow.minimize" class="w-12 py-2 px-4 hover:bg-plastic-500">
