@@ -135,8 +135,15 @@ const animateSequences = debounceAnimation(
 );
 
 const animatePlayhead = debounceAnimation(
-	[() => app.currentDocument?.timelineIsPlaying, scrubbing, draggingScale],
-	() => !app.currentDocument?.timelineIsPlaying && !scrubbing.value && !draggingScale.value
+	[ () => app.currentDocument?.timelineIsPlaying
+	, () => app.currentDocument?.isDraggingKeyframeDuration
+	, scrubbing
+	, draggingScale
+	],
+	() => !app.currentDocument?.timelineIsPlaying
+	&& !app.currentDocument?.isDraggingKeyframeDuration
+	&& !scrubbing.value
+	&& !draggingScale.value
 );
 
 const playheadStyle = computed(() => {
