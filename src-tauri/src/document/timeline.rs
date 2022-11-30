@@ -191,16 +191,35 @@ impl Document {
             .keyframes()
             .map(|(_, d, i)| (*d, *i))
             .collect::<Vec<_>>();
+
+        if selected_keyframes.is_empty() {
+            return Ok(());
+        }
+
         selected_keyframes.sort();
         selected_keyframes.reverse();
+        let (direction, sequence) = self.workbench_sequence()?;
+        let mut new_clock = self.view.timeline_clock.as_millis() as u64;
+
+        let keyframes_ranges = sequence.keyframe_time_ranges();
         if let Ok((_, animation)) = self.workbench_animation_mut() {
-            for (direction, index) in selected_keyframes {
+            for (d, i) in selected_keyframes {
                 animation
-                    .sequence_mut(direction)
-                    .ok_or(DocumentError::SequenceNotInAnimation(direction))?
-                    .delete_keyframe(index)?;
+                    .sequence_mut(d)
+                    .ok_or(DocumentError::SequenceNotInAnimation(d))?
+                    .delete_keyframe(i)?;
+                if d == direction {
+                    let Some(range) = keyframes_ranges.get(i) else { continue };
+                    if range.start <= new_clock {
+                        let delta = range.end.min(new_clock) - range.start;
+                        new_clock = new_clock.saturating_sub(delta);
+                    }
+                }
             }
         }
+
+        self.view.timeline_clock = Duration::from_millis(new_clock);
+        self.select_current_keyframe().ok();
         Ok(())
     }
 }
@@ -457,6 +476,15 @@ mod test {
             d.sheet
                 .sequence("walk_cycle", Direction::North)
                 .num_keyframes()
+        );
+
+        assert_eq!(
+            d.selected_keyframes()
+                .unwrap()
+                .iter()
+                .map(|(d, i, _)| (*d, *i))
+                .collect::<Vec<_>>(),
+            vec![(Direction::North, 0)]
         );
     }
 }

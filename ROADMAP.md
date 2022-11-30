@@ -16,7 +16,7 @@
 - [ ] Evaluate typeshare to auto-generate typescript DTOs
 - [ ] Mutable trait on app handle
 - [ ] Command trait
-- [ ] After deleting keyframes, keyframe at current time (if any) is selected
+- [x] After deleting keyframes, another keyframe is automatically selected
 - [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
 - [x] Can change active direction by clicking in deadzone of timeline
