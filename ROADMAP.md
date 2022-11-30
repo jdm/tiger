@@ -12,7 +12,6 @@
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
-- [ ] Evaluate typeshare to auto-generate typescript DTOs
 - [ ] Command trait
 - [x] After deleting keyframes, another keyframe is automatically selected
 - [x] Add shadow around application window
@@ -72,6 +71,7 @@
 ## Tiger 1.0
 
 - [ ] Review all TODO
+- [ ] Re-evaluate https://github.com/1Password/typeshare to auto-generate typescript DTOs
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Readme logo
