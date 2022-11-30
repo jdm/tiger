@@ -18,6 +18,9 @@
 - [ ] Mutable trait on app handle
 - [ ] Command trait
 - [ ] After deleting keyframes, keyframe at current time (if any) is selected
+- [ ] Cap recent document list length
+- [ ] Don't do recent documents list IO on main thread
+- Clean up usage of space-x/y utilities (use gap in flex containers)
 - [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
 - [x] Can change active direction by clicking in deadzone of timeline
