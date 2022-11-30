@@ -1,7 +1,7 @@
-use std::path::PathBuf;
 use std::{collections::HashSet, time::Duration};
 use tauri::Manager;
 
+use crate::api::Stateful;
 use crate::app::AppState;
 use crate::sheet;
 use crate::utils::file_watcher::FileWatcher;
@@ -26,16 +26,8 @@ pub fn init(tauri_app: &tauri::App) {
 
     let tauri_app_handle = tauri_app.handle();
     std::thread::spawn(move || loop {
-        if let Ok(Ok(events)) = events_receiver.recv() {
-            #[derive(Clone, serde::Serialize)]
-            struct TemplateEvent {
-                path: PathBuf,
-            }
-            for event in events {
-                tauri_app_handle
-                    .emit_all("invalidate-template", TemplateEvent { path: event.path })
-                    .unwrap();
-            }
+        if let Ok(Ok(_)) = events_receiver.recv() {
+            tauri_app_handle.replace_state();
         }
     });
 }

@@ -170,18 +170,16 @@ fn main() {
 }
 
 fn handle_window_event(event: tauri::GlobalWindowEvent) {
-    let tauri_app_handle = event.window().app_handle();
     if let tauri::WindowEvent::CloseRequested { api, .. } = event.event() {
-        let app_state = tauri_app_handle.state::<app::AppState>();
-        let should_exit = {
-            let mut app = app_state.0.lock();
-            app.request_exit();
-            app.should_exit()
-        };
-        if !should_exit {
-            api.prevent_close();
-            event.window().app_handle().replace_state();
-        }
+        event
+            .window()
+            .app_handle()
+            .patch_state(dto::AppTrim::Full, |app| {
+                app.request_exit();
+                if !app.should_exit() {
+                    api.prevent_close();
+                }
+            });
     }
 }
 

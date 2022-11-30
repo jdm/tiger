@@ -62,9 +62,6 @@ onMounted(() => {
     const invalidationEvent = event.payload as TextureInvalidationEvent;
     sprite.invalidate(invalidationEvent.path);
   });
-  listen("invalidate-template", event => {
-    getState();
-  });
   registerKeyboardShortcuts();
 });
 
