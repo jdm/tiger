@@ -6,7 +6,6 @@
 - [x] Upgrade from Heroicons 1.0 to 2.0
 - [x] Can snap to nearby frames
 - [x] Can snap to frame duration multiples of n milliseconds
-- [ ] Hover states in timeline
 - [x] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer
 - [x] Add context menu entries to paste animations/keyframes/hitboxes
