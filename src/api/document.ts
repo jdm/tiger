@@ -331,6 +331,35 @@ export async function setSnapKeyframeDurations(snap: boolean): Promise<void> {
   appStore.patch(await invoke("set_snap_keyframe_durations", { snap: snap }));
 }
 
+export async function setSnapKeyframesToOtherKeyframes(
+  snap: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_snap_keyframes_to_other_keyframes", { snap: snap })
+  );
+}
+
+export async function setSnapKeyframesToMultiplesOfDuration(
+  snap: boolean
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_snap_keyframes_to_multiples_of_duration", { snap: snap })
+  );
+}
+
+export async function setKeyframeSnappingBaseDuration(
+  durationMillis: number
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_keyframe_snapping_base_duration", {
+      durationMillis: durationMillis,
+    })
+  );
+}
+
 export async function zoomInTimeline(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("zoom_in_timeline"));

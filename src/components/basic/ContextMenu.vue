@@ -1,10 +1,13 @@
 <template>
-	<MenuTree :content="content" :open="open" :position="position" @executed="onExecuted" @dismissed="onDismissed" />
+	<FloatingWidget :open="open" :position="position" @dismissed="onDismissed">
+		<Menu :content="content" @executed="onExecuted" />
+	</FloatingWidget>
 </template>
 
 <script setup lang="ts">
 import { Ref, ref } from "vue";
-import MenuTree from "@/components/basic/MenuTree.vue";
+import FloatingWidget from "@/components/basic/FloatingWidget.vue";
+import Menu from "@/components/basic/Menu.vue";
 import { MenuEntry, Separator } from "@/components/basic/MenuBar.vue";
 
 defineProps<{

@@ -4,15 +4,17 @@
 			<MenuBarItem v-for="entry in entries" :entry="entry" :active="entry.name == currentEntry?.name"
 				@click="onItemClicked($event, entry)" @mouseover="onItemHovered($event, entry)" />
 		</div>
-		<MenuTree :open="!!currentEntry" :content="currentEntry?.content || []" @executed="onExecuted"
-			@dismissed="onDismissed" :position="menuPosition" />
+		<FloatingWidget :open="!!currentEntry" :position="menuPosition" @dismissed="onDismissed">
+			<Menu :content="currentEntry?.content || []" @executed="onExecuted" />
+		</FloatingWidget>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed, ref, Ref } from "vue"
+import FloatingWidget from "@/components/basic/FloatingWidget.vue"
+import Menu from "@/components/basic/Menu.vue"
 import MenuBarItem from "@/components/basic/MenuBarItem.vue"
-import MenuTree from "@/components/basic/MenuTree.vue"
 
 export type MenuBarEntry = {
 	name: string,
@@ -42,6 +44,13 @@ const menuPosition = computed((): [number, number] => {
 	}
 	const rect = currentItem.value.getBoundingClientRect();
 	return [rect.left, rect.bottom - 2];
+});
+
+const menuPositionStyle = computed(() => {
+	return {
+		left: `${menuPosition.value[0]}px`,
+		top: `${menuPosition.value[1]}px`,
+	};
 });
 
 function onItemClicked(event: MouseEvent, entry: MenuBarEntry) {

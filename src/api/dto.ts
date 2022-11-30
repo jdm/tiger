@@ -50,6 +50,9 @@ export type Document = {
   timelineZoomFactor: number;
   timelineZoomAmount: number;
   snapKeyframeDurations: boolean;
+  snapKeyframesToOtherKeyframes: boolean;
+  snapKeyframesToMultiplesOfDuration: boolean;
+  keyframeSnappingBaseDurationMillis: number;
   darkenSprites: boolean;
   hideSprite: boolean;
   hideHitboxes: boolean;

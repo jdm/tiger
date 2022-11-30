@@ -9,13 +9,15 @@
 			<div class="flex-1 flex justify-center">
 				<PlaybackControls />
 			</div>
-			<div class="flex-1 flex space-x-4 justify-end items-center">
+			<div class="flex-1 flex space-x-2 justify-end items-center">
 				<Toggle :toggled="!!app.currentDocument?.snapKeyframeDurations" @toggled="setSnapKeyframeDurations"
-					:icon="AdjustmentsHorizontalIcon" />
-				<div class="flex items-center space-x-2">
-					<MagnifyingGlassIcon class="w-5 text-plastic-400" />
-					<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
-				</div>
+					:icon="AdjustmentsHorizontalIcon" :canExpand="true">
+					<template #expanded>
+						<SnappingOptions />
+					</template>
+				</Toggle>
+				<MagnifyingGlassIcon class="w-5 text-plastic-400" />
+				<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
 			</div>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-0 ">
@@ -52,7 +54,7 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "@vue/reactivity"
-import { AdjustmentsHorizontalIcon, ArrowPathIcon,ChevronDownIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
+import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
 	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount
@@ -67,6 +69,7 @@ import PerspectivePicker from "@/components/timeline/PerspectivePicker.vue"
 import PlaybackControls from "@/components/timeline/PlaybackControls.vue"
 import Ruler from "@/components/timeline/Ruler.vue"
 import Sequence from "@/components/timeline/Sequence.vue"
+import SnappingOptions from "@/components/timeline/SnappingOptions.vue"
 
 const app = useAppStore();
 

@@ -13,23 +13,25 @@
 				<ChevronDownIcon class="w-5 -mb-0.5 text-plastic-600" />
 			</div>
 		</div>
-		<Transition>
-			<div v-if="open" class="absolute mt-2 z-50 w-full shadow-lg shadow-black/30 origin-top">
-				<div
-					class="flex flex-col p-2 rounded-md mx-0.5 bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900">
+
+		<FloatingWidget :open="open" :position="listPosition" @dismissed="close">
+			<MenuBackground class="mt-2 shadow-black/30" :style="`width: ${listWidth}px`">
+				<div class="flex flex-col">
 					<div v-for="option in options" @click="onOptionSelected(option)"
 						class="px-4 py-1 rounded-sm font-semibold text-zinc-400 hover:bg-blue-600 hover:text-blue-100">
 						{{ option.name }}
 					</div>
 				</div>
-			</div>
-		</Transition>
+			</MenuBackground>
+		</FloatingWidget>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref, watch } from "vue"
-import { ChevronDownIcon } from "@heroicons/vue/20/solid"
+import { computed, Ref, ref, watch } from "vue";
+import { ChevronDownIcon } from "@heroicons/vue/20/solid";
+import FloatingWidget from "@/components/basic/FloatingWidget.vue";
+import MenuBackground from "@/components/basic/MenuBackground.vue";
 
 export type SelectOption = {
 	name: string,
@@ -47,12 +49,24 @@ const emit = defineEmits<{
 
 const el: Ref<HTMLElement | null> = ref(null);
 const open = ref(false);
+const listPosition = ref([0, 0] as [number, number]);
 
 const selectedOption = computed(() => {
 	return props.options.find((o) => o.value == props.selected);
 });
 
+const listWidth = computed(() => {
+	if (!el.value) {
+		return 0;
+	}
+	return el.value.clientWidth;
+});
+
 function onOpen() {
+	if (el.value) {
+		const boundingBox = el.value.getBoundingClientRect();
+		listPosition.value = [boundingBox.left, boundingBox.bottom];
+	}
 	open.value = !open.value;
 }
 
@@ -61,29 +75,7 @@ function onOptionSelected(option: SelectOption) {
 	open.value = false;
 }
 
-function onClickedAnywhere(event: MouseEvent) {
-	if (!el.value?.contains(event.target as HTMLElement)) {
-		open.value = false;
-	}
+function close() {
+	open.value = false;
 }
-
-watch(open, (isOpen, wasOpen) => {
-	if (isOpen && !wasOpen) {
-		window.addEventListener("mousedown", onClickedAnywhere);
-	}
-	if (!isOpen && wasOpen) {
-		window.removeEventListener("mousedown", onClickedAnywhere);
-	}
-});
 </script>
-
-<style scoped>
-.v-leave-active {
-	transition: 0.1s ease-in;
-}
-
-.v-leave-to,
-.v-enter-from {
-	opacity: 0;
-}
-</style>

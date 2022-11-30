@@ -4,9 +4,8 @@
 
 - [x] Draw hitbox names in workbench
 - [x] Upgrade from Heroicons 1.0 to 2.0
-- [ ] Can snap to nearby frames
-- [ ] Can snap to frame duration multiples of n milliseconds
-- [ ] Can control snapping strength
+- [x] Can snap to nearby frames
+- [x] Can snap to frame duration multiples of n milliseconds
 - [ ] Hover states in timeline
 - [x] Add button to open sheet folder in explorer
 - [x] Add context menu entry to open frame in explorer

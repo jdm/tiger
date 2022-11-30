@@ -23,7 +23,7 @@
       </div>
     </div>
     <ModalLayer class="absolute inset-0 z-[9998]" />
-    <ContextMenuLayer class="absolute inset-0 z-[9999]" />
+    <FloatingLayer class="absolute inset-0 z-[9999]" />
   </div>
 </template>
 
@@ -38,7 +38,7 @@ import { useSpriteStore } from "@/stores/sprite"
 import { registerKeyboardShortcuts, unregisterKeyboardShortcuts } from "@/utils/keyboard"
 import AppBar from "@/components/AppBar.vue"
 import AnimationsPane from "@/components/animations/AnimationsPane.vue"
-import ContextMenuLayer from "@/components/basic/MenuLayer.vue"
+import FloatingLayer from "@/components/basic/FloatingLayer.vue"
 import DetailsPane from "@/components/details/DetailsPane.vue"
 import ExportOverlay from "@/components/export/ExportOverlay.vue"
 import FramesPane from "@/components/frames/FramesPane.vue"

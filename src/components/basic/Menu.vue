@@ -1,23 +1,25 @@
 <template>
-	<div ref="menuElement" class="relative py-2 rounded-md bg-zinc-900 border-2 border-zinc-700 outline outline-zinc-900 shadow-lg
-	shadow-black/25" :style="`transform: translate(${screenFit[0]}px, ${screenFit[1]}px)`" @mouseenter="onMouseEnter"
-		@mouseleave="onMouseLeave">
-		<div v-for="entry of content">
-			<MenuItem v-if="'name' in entry" :entry="entry"
-				:highlighted="(entry.key || entry.name) == (highlightEntry?.key || highlightEntry?.name)"
-				@executed="onItemExecuted" @hovered="onItemHovered($event, entry)"
-				@unhovered="onItemUnhovered($event, entry)" />
-			<MenuSeparator v-else />
-		</div>
-		<div class="absolute" :style="submenuPosition">
-			<Menu v-if="submenuEntry?.submenus?.length" :content="submenuEntry?.submenus" @executed="emit('executed')"
-				@hovered="onSubmenuHovered($event, submenuEntry!)" />
-		</div>
+	<div ref="menuElement" class="relative">
+		<MenuBackground :style="`transform: translate(${screenFit[0]}px, ${screenFit[1]}px)`" @mouseenter="onMouseEnter"
+			@mouseleave="onMouseLeave">
+			<div v-for="entry of content">
+				<MenuItem v-if="'name' in entry" :entry="entry"
+					:highlighted="(entry.key || entry.name) == (highlightEntry?.key || highlightEntry?.name)"
+					@executed="onItemExecuted" @hovered="onItemHovered($event, entry)"
+					@unhovered="onItemUnhovered($event, entry)" />
+				<MenuSeparator v-else class="mx-7" />
+			</div>
+			<div class="absolute" :style="submenuPosition">
+				<Menu v-if="submenuEntry?.submenus?.length" :content="submenuEntry?.submenus"
+					@executed="emit('executed')" @hovered="onSubmenuHovered($event, submenuEntry!)" />
+			</div>
+		</MenuBackground>
 	</div>
 </template>
 
 <script setup lang="ts">
 import { computed, Ref, ref, watch } from "vue"
+import MenuBackground from "@/components/basic/MenuBackground.vue"
 import { MenuEntry, Separator } from "@/components/basic/MenuBar.vue";
 import MenuItem from "@/components/basic/MenuItem.vue"
 import MenuSeparator from "@/components/basic/MenuSeparator.vue"
