@@ -7,6 +7,8 @@ use log::{error, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use tauri::Manager;
 
+use api::Stateful;
+
 mod api;
 mod app;
 mod document;
@@ -15,9 +17,6 @@ mod export;
 mod features;
 mod sheet;
 mod utils;
-
-static EVENT_FORCE_PATCH_STATE: &str = "force-patch-state";
-static EVENT_FORCE_REPLACE_STATE: &str = "force-replace-state";
 
 fn main() {
     utils::paths::init();
@@ -178,12 +177,7 @@ fn handle_window_event(event: tauri::GlobalWindowEvent) {
         app.request_exit();
         if !app.should_exit() {
             api.prevent_close();
-            let new_state = app.to_dto(dto::AppTrim::Full);
-            event
-                .window()
-                .app_handle()
-                .emit_all(EVENT_FORCE_REPLACE_STATE, new_state)
-                .unwrap();
+            event.window().app_handle().replace_state();
         }
     }
 }

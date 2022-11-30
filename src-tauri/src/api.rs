@@ -1,14 +1,18 @@
 use euclid::vec2;
 use json_patch::Patch;
+use log::error;
 use std::path::PathBuf;
 use std::time::Duration;
-use tauri::ClipboardManager;
+use tauri::{ClipboardManager, Manager};
 
 use crate::app::{App, AppState};
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, AppTrim, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet::{Absolute, Sheet};
+
+static EVENT_PATCH_STATE: &str = "patch-state";
+static EVENT_REPLACE_STATE: &str = "replace-state";
 
 impl AppState<'_> {
     pub fn mutate<F>(&self, app_trim: AppTrim, operation: F) -> Patch
@@ -27,9 +31,38 @@ impl AppState<'_> {
         match (old_json, new_json) {
             (Ok(o), Ok(n)) => json_patch::diff(&o, &n),
             _ => {
-                println!("Patch serialization error");
+                error!("App state serialization error");
                 Patch(Vec::new())
             }
+        }
+    }
+}
+
+pub trait Stateful {
+    fn patch_state<F: FnOnce(&mut App)>(&self, app_trim: AppTrim, operation: F);
+    fn replace_state(&self);
+}
+
+impl Stateful for tauri::AppHandle {
+    fn patch_state<F>(&self, app_trim: AppTrim, operation: F)
+    where
+        F: FnOnce(&mut App),
+    {
+        let app_state = self.state::<AppState>();
+        let patch = app_state.mutate(app_trim, operation);
+        if !patch.0.is_empty() {
+            if let Err(e) = self.emit_all(EVENT_PATCH_STATE, patch) {
+                error!("Error while pushing state patch: {e}");
+            }
+        }
+    }
+
+    fn replace_state(&self) {
+        let app_state = self.state::<AppState>();
+        let app = app_state.0.lock();
+        let new_state = app.to_dto(dto::AppTrim::Full);
+        if let Err(e) = self.emit_all(EVENT_REPLACE_STATE, new_state) {
+            error!("Error while replacing state: {e}");
         }
     }
 }

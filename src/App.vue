@@ -52,10 +52,10 @@ const sprite = useSpriteStore();
 const allowContextMenu = ref(false);
 
 onMounted(() => {
-  listen("force-patch-state", event => {
+  listen("patch-state", event => {
     app.patch(event.payload as Patch);
   });
-  listen("force-replace-state", event => {
+  listen("replace-state", event => {
     app.$state = event.payload as AppState;
   });
   listen("invalidate-texture", event => {

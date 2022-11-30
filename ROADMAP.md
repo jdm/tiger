@@ -14,7 +14,6 @@
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [ ] Evaluate https://github.com/Keats/tera
 - [ ] Evaluate typeshare to auto-generate typescript DTOs
-- [ ] Mutable trait on app handle
 - [ ] Command trait
 - [x] After deleting keyframes, another keyframe is automatically selected
 - [x] Add shadow around application window
