@@ -12,7 +12,6 @@
 - [x] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
-- [ ] Command trait
 - [x] After deleting keyframes, another keyframe is automatically selected
 - [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
