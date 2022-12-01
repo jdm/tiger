@@ -39,7 +39,7 @@
 							<InputField label="Metadata Template File">
 								<template #content>
 									<InputPath v-model="templateFile" class="mt-1"
-										placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.liquid" />
+										placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.template" />
 								</template>
 								<template #error>
 									<Transition name="error-slide">
@@ -143,7 +143,7 @@ function shortErrorText(error: ExportSettingsError): string {
 		case "ExpectedFile": return "This path should be a file, not a directory.";
 		case "FileNotFound": return "This file does not exist.";
 	}
-	if (error.templateParseError) {
+	if (error.templateError) {
 		return "This template file has invalid syntax.";
 	}
 	return "Unknown Error";
@@ -157,8 +157,8 @@ function longErrorText(error: ExportSettingsError): string | null {
 		case "ExpectedFile": return null;
 		case "FileNotFound": return null;
 	}
-	if (error.templateParseError) {
-		return error.templateParseError;
+	if (error.templateError) {
+		return error.templateError;
 	}
 	return null;
 }

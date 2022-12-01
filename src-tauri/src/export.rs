@@ -35,12 +35,12 @@ pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
         .ok_or(ExportError::NoExportSettings)?;
 
     match export_settings {
-        ExportSettings::Liquid(liquid_settings) => {
+        ExportSettings::Template(template_settings) => {
             let packed_sheet = pack_sheet(sheet)?;
             let metadata = generate_sheet_metadata(sheet, export_settings, packed_sheet.layout())?;
 
             {
-                let path = liquid_settings.metadata_file();
+                let path = template_settings.metadata_file();
                 if let Some(directory) = path.parent() {
                     create_dir(directory)?;
                 }
@@ -50,7 +50,7 @@ pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
             }
 
             {
-                let path = liquid_settings.texture_file();
+                let path = template_settings.texture_file();
                 if let Some(directory) = path.parent() {
                     create_dir(directory)?;
                 }

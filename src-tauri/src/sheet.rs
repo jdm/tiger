@@ -849,15 +849,15 @@ impl Hitbox {
 
 impl Default for ExportSettings<Any> {
     fn default() -> Self {
-        Self::Liquid(LiquidExportSettings::<Any>::default())
+        Self::Template(TemplateExportSettings::<Any>::default())
     }
 }
 
 impl ExportSettings<Relative> {
     pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> ExportSettings<Absolute> {
         match self {
-            ExportSettings::Liquid(settings) => {
-                ExportSettings::Liquid(settings.with_absolute_paths(relative_to))
+            ExportSettings::Template(settings) => {
+                ExportSettings::Template(settings.with_absolute_paths(relative_to))
             }
         }
     }
@@ -869,15 +869,17 @@ impl ExportSettings<Absolute> {
         relative_to: T,
     ) -> Result<ExportSettings<Relative>, SheetError> {
         Ok(match self {
-            ExportSettings::Liquid(settings) => {
-                ExportSettings::Liquid(settings.with_relative_paths(relative_to)?)
+            ExportSettings::Template(settings) => {
+                ExportSettings::Template(settings.with_relative_paths(relative_to)?)
             }
         })
     }
 
     pub fn with_any_paths(self) -> ExportSettings<Any> {
         match self {
-            ExportSettings::Liquid(settings) => ExportSettings::Liquid(settings.with_any_paths()),
+            ExportSettings::Template(settings) => {
+                ExportSettings::Template(settings.with_any_paths())
+            }
         }
     }
 }
@@ -885,22 +887,22 @@ impl ExportSettings<Absolute> {
 impl ExportSettings<Any> {
     pub fn with_absolute_paths(self) -> Result<ExportSettings<Absolute>, SheetError> {
         Ok(match self {
-            ExportSettings::Liquid(settings) => {
-                ExportSettings::Liquid(settings.with_absolute_paths()?)
+            ExportSettings::Template(settings) => {
+                ExportSettings::Template(settings.with_absolute_paths()?)
             }
         })
     }
 
     pub fn with_relative_paths(self) -> Result<ExportSettings<Relative>, SheetError> {
         Ok(match self {
-            ExportSettings::Liquid(settings) => {
-                ExportSettings::Liquid(settings.with_relative_paths()?)
+            ExportSettings::Template(settings) => {
+                ExportSettings::Template(settings.with_relative_paths()?)
             }
         })
     }
 }
 
-impl<P: Paths> LiquidExportSettings<P> {
+impl<P: Paths> TemplateExportSettings<P> {
     pub fn template_file(&self) -> &Path {
         self.template_file.as_path()
     }
@@ -918,12 +920,12 @@ impl<P: Paths> LiquidExportSettings<P> {
     }
 }
 
-impl LiquidExportSettings<Absolute> {
+impl TemplateExportSettings<Absolute> {
     pub fn with_relative_paths<T: AsRef<Path>>(
         self,
         relative_to: T,
-    ) -> Result<LiquidExportSettings<Relative>, SheetError> {
-        Ok(LiquidExportSettings {
+    ) -> Result<TemplateExportSettings<Relative>, SheetError> {
+        Ok(TemplateExportSettings {
             template_file: absolute_to_relative(self.template_file, &relative_to)?,
             texture_file: absolute_to_relative(self.texture_file, &relative_to)?,
             metadata_file: absolute_to_relative(self.metadata_file, &relative_to)?,
@@ -932,8 +934,8 @@ impl LiquidExportSettings<Absolute> {
         })
     }
 
-    pub fn with_any_paths(self) -> LiquidExportSettings<Any> {
-        LiquidExportSettings {
+    pub fn with_any_paths(self) -> TemplateExportSettings<Any> {
+        TemplateExportSettings {
             template_file: self.template_file,
             texture_file: self.texture_file,
             metadata_file: self.metadata_file,
@@ -943,12 +945,12 @@ impl LiquidExportSettings<Absolute> {
     }
 }
 
-impl LiquidExportSettings<Relative> {
+impl TemplateExportSettings<Relative> {
     pub fn with_absolute_paths<T: AsRef<Path>>(
         &self,
         relative_to: T,
-    ) -> LiquidExportSettings<Absolute> {
-        LiquidExportSettings {
+    ) -> TemplateExportSettings<Absolute> {
+        TemplateExportSettings {
             template_file: relative_to.as_ref().join(&self.template_file).resolve(),
             texture_file: relative_to.as_ref().join(&self.texture_file).resolve(),
             metadata_file: relative_to.as_ref().join(&self.metadata_file).resolve(),
@@ -961,7 +963,7 @@ impl LiquidExportSettings<Relative> {
     }
 }
 
-impl LiquidExportSettings<Any> {
+impl TemplateExportSettings<Any> {
     pub fn set_template_file<T: AsRef<Path>>(&mut self, path: T) {
         self.template_file = path.as_ref().to_owned();
     }
@@ -978,8 +980,8 @@ impl LiquidExportSettings<Any> {
         self.metadata_paths_root = path.as_ref().to_owned();
     }
 
-    pub fn with_absolute_paths(self) -> Result<LiquidExportSettings<Absolute>, SheetError> {
-        Ok(LiquidExportSettings {
+    pub fn with_absolute_paths(self) -> Result<TemplateExportSettings<Absolute>, SheetError> {
+        Ok(TemplateExportSettings {
             template_file: absolute_or_err(self.template_file)?,
             texture_file: absolute_or_err(self.texture_file)?,
             metadata_file: absolute_or_err(self.metadata_file)?,
@@ -988,8 +990,8 @@ impl LiquidExportSettings<Any> {
         })
     }
 
-    pub fn with_relative_paths(self) -> Result<LiquidExportSettings<Relative>, SheetError> {
-        Ok(LiquidExportSettings {
+    pub fn with_relative_paths(self) -> Result<TemplateExportSettings<Relative>, SheetError> {
+        Ok(TemplateExportSettings {
             template_file: relative_or_err(self.template_file)?,
             texture_file: relative_or_err(self.texture_file)?,
             metadata_file: relative_or_err(self.metadata_file)?,
@@ -1409,9 +1411,9 @@ fn can_convert_hitbox_to_rectangle() {
 }
 
 #[test]
-fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
-    let absolute = LiquidExportSettings::<Any> {
-        template_file: PathBuf::from("a/b/format.liquid").resolve(),
+fn template_export_settings_can_convert_relative_and_absolute_paths() {
+    let absolute = TemplateExportSettings::<Any> {
+        template_file: PathBuf::from("a/b/format.template").resolve(),
         texture_file: PathBuf::from("a/b/c/sheet.png").resolve(),
         metadata_file: PathBuf::from("a/b/c/sheet.lua").resolve(),
         metadata_paths_root: PathBuf::from("a/b").resolve(),
@@ -1424,7 +1426,7 @@ fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
         .clone()
         .with_relative_paths(PathBuf::from("a/b").resolve())
         .unwrap();
-    assert_eq!(relative.template_file, Path::new("format.liquid"));
+    assert_eq!(relative.template_file, Path::new("format.template"));
     assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
     assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));
     assert_eq!(&relative.metadata_paths_root, Path::new(""));
@@ -1434,8 +1436,8 @@ fn liquid_export_settings_can_convert_relative_and_absolute_paths() {
 }
 
 #[test]
-fn liquid_export_settings_can_adjust_paths() {
-    let mut settings = LiquidExportSettings::<Any>::default();
+fn template_export_settings_can_adjust_paths() {
+    let mut settings = TemplateExportSettings::<Any>::default();
 
     let path = Path::new("template_file");
     settings.set_template_file(path);

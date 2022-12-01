@@ -2,6 +2,7 @@
 
 ## Tiger 0.6
 
+- [x] Template syntax now uses Handlebars instead of Liquid
 - [x] Draw hitbox names in workbench
 - [x] Upgrade from Heroicons 1.0 to 2.0
 - [x] Can snap to nearby frames
@@ -11,7 +12,6 @@
 - [x] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
 - [ ] Evaluate https://github.com/ChevyRay/crunch-rs
-- [ ] Evaluate https://github.com/Keats/tera
 - [ ] Command trait
 - [x] After deleting keyframes, another keyframe is automatically selected
 - [x] Add shadow around application window
@@ -58,7 +58,6 @@
 - [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Document keyboard shortcuts
-- [ ] Fix jank spacing in exported metadata files
 - [ ] Can preview export image and metadata output
 - [ ] Export complete notification
 - [ ] Auto-updates

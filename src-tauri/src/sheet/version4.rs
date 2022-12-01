@@ -115,11 +115,11 @@ pub enum Shape {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub enum ExportSettings<P: Paths> {
-    Liquid(LiquidExportSettings<P>),
+    Template(TemplateExportSettings<P>),
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
-pub struct LiquidExportSettings<P: Paths> {
+pub struct TemplateExportSettings<P: Paths> {
     pub(in crate::sheet) template_file: PathBuf,
     pub(in crate::sheet) texture_file: PathBuf,
     pub(in crate::sheet) metadata_file: PathBuf,
@@ -231,7 +231,7 @@ impl From<previous_version::Rectangle> for Rectangle {
 
 impl From<previous_version::ExportSettings> for ExportSettings<Any> {
     fn from(old: previous_version::ExportSettings) -> ExportSettings<Any> {
-        ExportSettings::Liquid(LiquidExportSettings {
+        ExportSettings::Template(TemplateExportSettings {
             template_file: match old.format {
                 previous_version::ExportFormat::Template(p) => p,
             },

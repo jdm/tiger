@@ -214,8 +214,8 @@ pub enum ExportSettingsError {
     ExpectedDirectory,
     ExpectedFile,
     FileNotFound,
-    #[serde(rename = "templateParseError")]
-    TemplateParseError(String),
+    #[serde(rename = "templateError")]
+    TemplateError(String),
 }
 
 #[derive(Clone, Serialize)]
@@ -634,11 +634,11 @@ impl From<BrowseDirection> for document::BrowseDirection {
 impl<P: Paths> From<&sheet::ExportSettings<P>> for ExportSettings {
     fn from(settings: &sheet::ExportSettings<P>) -> Self {
         match settings {
-            sheet::ExportSettings::Liquid(liquid_settings) => Self {
-                template_file: liquid_settings.template_file().to_owned(),
-                texture_file: liquid_settings.texture_file().to_owned(),
-                metadata_file: liquid_settings.metadata_file().to_owned(),
-                metadata_paths_root: liquid_settings.metadata_paths_root().to_owned(),
+            sheet::ExportSettings::Template(template_settings) => Self {
+                template_file: template_settings.template_file().to_owned(),
+                texture_file: template_settings.texture_file().to_owned(),
+                metadata_file: template_settings.metadata_file().to_owned(),
+                metadata_paths_root: template_settings.metadata_paths_root().to_owned(),
             },
         }
     }
@@ -647,12 +647,12 @@ impl<P: Paths> From<&sheet::ExportSettings<P>> for ExportSettings {
 impl From<&document::ExportSettingsValidation> for ExportSettingsValidation {
     fn from(validation: &document::ExportSettingsValidation) -> Self {
         match validation {
-            document::ExportSettingsValidation::Liquid(l) => Self {
-                valid_settings: *l == document::LiquidExportSettingsValidation::default(),
-                template_file_error: l.template_file_error().map(|e| e.into()),
-                texture_file_error: l.texture_file_error().map(|e| e.into()),
-                metadata_file_error: l.metadata_file_error().map(|e| e.into()),
-                metadata_paths_root_error: l.metadata_paths_root_error().map(|e| e.into()),
+            document::ExportSettingsValidation::Template(s) => Self {
+                valid_settings: *s == document::TemplateExportSettingsValidation::default(),
+                template_file_error: s.template_file_error().map(|e| e.into()),
+                texture_file_error: s.texture_file_error().map(|e| e.into()),
+                metadata_file_error: s.metadata_file_error().map(|e| e.into()),
+                metadata_paths_root_error: s.metadata_paths_root_error().map(|e| e.into()),
             },
         }
     }
@@ -669,8 +669,8 @@ impl From<&document::ExportSettingsError> for ExportSettingsError {
             }
             document::ExportSettingsError::ExpectedFile => ExportSettingsError::ExpectedFile,
             document::ExportSettingsError::FileNotFound => ExportSettingsError::FileNotFound,
-            document::ExportSettingsError::TemplateParseError(details) => {
-                ExportSettingsError::TemplateParseError(details.clone())
+            document::ExportSettingsError::TemplateError(details) => {
+                ExportSettingsError::TemplateError(details.clone())
             }
         }
     }

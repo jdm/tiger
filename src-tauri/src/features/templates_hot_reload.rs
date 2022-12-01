@@ -14,7 +14,7 @@ pub fn init(tauri_app: &tauri::App) {
         app.documents_iter()
             .flat_map(|d| d.export_settings_edit())
             .map(|s| match s {
-                sheet::ExportSettings::Liquid(l) => l.template_file().to_owned(),
+                sheet::ExportSettings::Template(s) => s.template_file().to_owned(),
             })
             .collect::<HashSet<_>>()
     });

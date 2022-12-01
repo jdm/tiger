@@ -1,11 +1,11 @@
 use std::path::Path;
 
 use crate::document::*;
-use crate::export::parse_template;
+use crate::export::Template;
 
 #[derive(Clone, Debug)]
 pub enum ExportSettingsValidation {
-    Liquid(LiquidExportSettingsValidation),
+    Template(TemplateExportSettingsValidation),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -14,11 +14,11 @@ pub enum ExportSettingsError {
     ExpectedDirectory,
     ExpectedFile,
     FileNotFound,
-    TemplateParseError(String),
+    TemplateError(String),
 }
 
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
-pub struct LiquidExportSettingsValidation {
+pub struct TemplateExportSettingsValidation {
     template_file_error: Option<ExportSettingsError>,
     texture_file_error: Option<ExportSettingsError>,
     metadata_file_error: Option<ExportSettingsError>,
@@ -40,11 +40,11 @@ impl Document {
             .ok_or(DocumentError::NotEditingExportSettings)
     }
 
-    pub(super) fn liquid_export_settings_mut(
+    pub(super) fn template_export_settings_mut(
         &mut self,
-    ) -> DocumentResult<&mut LiquidExportSettings<Any>> {
+    ) -> DocumentResult<&mut TemplateExportSettings<Any>> {
         match self.export_settings_edit_mut()? {
-            ExportSettings::Liquid(settings) => Ok(settings),
+            ExportSettings::Template(settings) => Ok(settings),
         }
     }
 
@@ -66,7 +66,7 @@ impl Document {
         &mut self,
         file: T,
     ) -> DocumentResult<()> {
-        self.liquid_export_settings_mut()?.set_template_file(file);
+        self.template_export_settings_mut()?.set_template_file(file);
         Ok(())
     }
 
@@ -74,7 +74,7 @@ impl Document {
         &mut self,
         file: T,
     ) -> DocumentResult<()> {
-        self.liquid_export_settings_mut()?.set_texture_file(file);
+        self.template_export_settings_mut()?.set_texture_file(file);
         Ok(())
     }
 
@@ -82,7 +82,7 @@ impl Document {
         &mut self,
         file: T,
     ) -> DocumentResult<()> {
-        self.liquid_export_settings_mut()?.set_metadata_file(file);
+        self.template_export_settings_mut()?.set_metadata_file(file);
         Ok(())
     }
 
@@ -90,25 +90,25 @@ impl Document {
         &mut self,
         directory: T,
     ) -> DocumentResult<()> {
-        self.liquid_export_settings_mut()?
+        self.template_export_settings_mut()?
             .set_metadata_paths_root(directory);
         Ok(())
     }
 
     pub fn validate_export_settings(&self) -> DocumentResult<ExportSettingsValidation> {
         let validation = match self.export_settings_edit()? {
-            ExportSettings::Liquid(l) => {
-                ExportSettingsValidation::Liquid(self.validate_liquid_export_settings(l))
+            ExportSettings::Template(s) => {
+                ExportSettingsValidation::Template(self.validate_template_export_settings(s))
             }
         };
         Ok(validation)
     }
 
-    fn validate_liquid_export_settings(
+    fn validate_template_export_settings(
         &self,
-        settings: &LiquidExportSettings<Any>,
-    ) -> LiquidExportSettingsValidation {
-        LiquidExportSettingsValidation {
+        settings: &TemplateExportSettings<Any>,
+    ) -> TemplateExportSettingsValidation {
+        TemplateExportSettingsValidation {
             template_file_error: validate_template_path(settings.template_file()),
             texture_file_error: validate_output_file_path(settings.texture_file()),
             metadata_file_error: validate_output_file_path(settings.metadata_file()),
@@ -129,7 +129,7 @@ impl Document {
     }
 }
 
-impl LiquidExportSettingsValidation {
+impl TemplateExportSettingsValidation {
     pub fn template_file_error(&self) -> Option<&ExportSettingsError> {
         self.template_file_error.as_ref()
     }
@@ -155,9 +155,9 @@ fn validate_template_path(path: &Path) -> Option<ExportSettingsError> {
     } else if !path.exists() {
         Some(ExportSettingsError::FileNotFound)
     } else {
-        parse_template(path)
+        Template::new(path)
             .err()
-            .map(|e| ExportSettingsError::TemplateParseError(e.to_string()))
+            .map(|e| ExportSettingsError::TemplateError(e.to_string()))
     }
 }
 

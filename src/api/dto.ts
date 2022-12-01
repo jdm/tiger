@@ -170,8 +170,8 @@ export type ExportSettings = {
   metadataPathsRoot: string;
 };
 
-export type TemplateParseError = {
-  templateParseError: string;
+export type TemplateError = {
+  templateError: string;
 };
 
 export type ExportSettingsError =
@@ -179,7 +179,7 @@ export type ExportSettingsError =
   | "ExpectedDirectory"
   | "ExpectedFile"
   | "FileNotFound"
-  | TemplateParseError;
+  | TemplateError;
 
 export type ExportSettingsValidation = {
   validSettings: boolean;

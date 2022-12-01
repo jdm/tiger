@@ -969,7 +969,7 @@
     ],
     "export_settings": {
       "format": {
-        "Template": "..\\..\\..\\crystal.liquid"
+        "Template": "..\\..\\..\\crystal.template"
       },
       "texture_destination": "..\\..\\..\\..\\game\\arpg\\assets\\texture\\sprite\\sahagin.png",
       "metadata_destination": "..\\..\\..\\..\\game\\arpg\\assets\\spritesheet\\sahagin.lua"

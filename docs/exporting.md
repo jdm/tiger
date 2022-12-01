@@ -24,11 +24,11 @@ Here is an example of a simple template file which could be used to generate XML
 
 {% raw %}
 
-```liquid
+```handlebars
 <sprite>
-	{% for frame in frames %}
-	<frame id="{{frame.index}}" x="{{frame.x}}" y="{{frame.y}}" width="{{frame.width}}" height="{{frame.height}}" />
-	{% endfor %}
+	{{ #each frames as |frame| }}
+	<frame id="{{ frame.index }}" x="{{ frame.x }}" y="{{ frame.y }}" width="{{ frame.width }}" height="{{ frame.height }}" />
+	{{ /each }}
 </sprite>
 ```
 
@@ -48,11 +48,41 @@ When used, this template would generate metadata files like the following:
 
 ## Metadata Template Syntax
 
-Tiger template files are based on the general-purpose `liquid` template format, which has its [own documentation](https://shopify.github.io/liquid). This documentation describes how to do loops, branches and basic arithmetic in your templates.
+Tiger template files are based on the general-purpose `handlebars` template format, which has its [own documentation](https://handlebarsjs.com/guide/).
 
-The spritesheet data that can be referenced in the template is described in the following tables:
+### Additional helpers
+
+In addition to standard Handlebars, additional helpers are available:
+
+| Name     | Example                                                   | Description                                                          |
+| :------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
+| add      | `{{ add keyframe.x 5 }}`                                  | Addition of two numbers.                                             |
+| divide   | `{{ divide keyframe.duration 5 }}`                        | Division of two numbers. Attempting to divide by zero will return 0. |
+| multiply | `{{ multiply keyframe.x -1 }}`                            | Multiplication of two numbers.                                       |
+| subtract | `{{ subtract keyframe.x 5 }}`                             | Subtraction of two numbers.                                          |
+| eq       | `{{ #if eq hitbox.name "damage" }}`                       | Equals operator.                                                     |
+| ne       | `{{ #if ne hitbox.name "damage" }}`                       | Not-equals operator.                                                 |
+| gt       | `{{ #if gt frame.width 10 }}`                             | Greater than operator.                                               |
+| gte      | `{{ #if gte frame.width 10 }}`                            | Greater than or equal operator.                                      |
+| lt       | `{{ #if lt frame.width 10 }}`                             | Less than operator.                                                  |
+| lte      | `{{ #if lte frame.width 10 }}`                            | Less than or equal operator.                                         |
+| and      | `{{ #if and (lte frame.width 10) (lte frame.width 10) }}` | Boolean `and` operator.                                              |
+| or       | `{{ #if or (lte frame.width 10) (lte frame.width 10) }}`  | Boolean `or` operator.                                               |
+| not      | `{{ #if not (eq frame.x 10) }}`                           | Boolean `not` operator.                                              |
+| len      | `{{ len keyframe.hitboxes }}`                             | Number of items in an array or object                                |
+
+In the context of boolean operators, the following operands evaluate as `false`:
+
+- `false` boolean
+- Empty string
+- Empty array
+- Empty object
+
+[String manipulation helpers](https://github.com/davidB/handlebars_misc_helpers#string-transformation) are also available.
 
 ### Global Variables
+
+The spritesheet data that can be referenced in the template is described in the following tables:
 
 | Field       | Type                      | Description                                                                                                                                                                             |
 | :---------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
