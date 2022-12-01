@@ -3,8 +3,8 @@
 		<template #body>
 			<p class="pb-1">{{ error.summary }}</p>
 			<div
-				class="py-2 pl-4 pr-32 max-w-xl select-text bg-plastic-700 border-4 border-plastic-700 rounded-md text-xs text-plastic-300 overflow-y-scroll styled-scrollbars">
-				<p class="whitespace-pre-wrap font-mono">{{ error.details }}</p>
+				class="p-4 max-w-2xl max-h-80 select-text bg-plastic-700 border-4 border-plastic-700 rounded-md text-xs text-plastic-300 overflow-scroll styled-scrollbars">
+				<div class="w-fit min-w-[400px] whitespace-pre font-mono">{{ error.details }}</div>
 			</div>
 		</template>
 		<template #actions>

@@ -16,6 +16,10 @@ body {
   scrollbar-color: var(--scrollbar-foreground) var(--scrollbar-background);
 }
 
+.styled-scrollbars::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .styled-scrollbars::-webkit-scrollbar {
   width: 6px;
   height: 6px;
