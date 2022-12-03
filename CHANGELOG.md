@@ -1,5 +1,35 @@
 # Changelog
 
+## Tiger 0.6
+
+- [x] Template syntax now uses Handlebars instead of Liquid
+- [x] Exported textures are now power-of-2 squares
+- [x] Hitbox names appear in workbench when there is enough space
+- [x] Upgraded from Heroicons 1.0 to 2.0
+- [x] Keyframe durations can snap to nearby keyframes
+- [x] Keyframe durations can snap to multiples of n milliseconds
+- [x] Added button to open sheet folder in explorer
+- [x] Added context menu entry to open frame in explorer
+- [x] Added context menu entries to paste animations/keyframes/hitboxes
+- [x] Can press Home/End to snap to first/last keyframe in sequence
+- [x] After deleting keyframes, another keyframe is automatically selected
+- [x] Added shadow around application window
+- [x] Can clear selection by clicking in the dead zone of animations, hitboxes or frames panels
+- [x] Can change active direction by clicking in deadzone of timeline
+- [x] Can jump to end of sequence by double clicking in deadzone of timeline
+- [x] Performance improvements to animation playback and drag operations
+- [x] Performance improvements to Export operations
+- [x] Cut, Copy and Paste menu entries are now disabled when there is no applicable selection
+- [x] List of recent documents is now limited to ten documents
+- [x] Fixed a bug where context menus could overflow offscreen
+- [x] Fixed a bug where resize handles on hitboxes with odd-numbered dimensions were slightly misaligned
+- [x] Fixed a bug where in the list of recently opened files, files with identical names would highlight in unison
+- [x] Fixed a bug where disabled menu actions could be interacted with
+- [x] Fixed a bug where app window could be restored/maximized by double clicking inside menus
+- [x] Fixed a bug where hitboxes panel could grow when there are long hitbox names
+- [x] Fixed a bug where animations keyframes or sheet frames could incorrectly appear as selected
+- [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
+
 ## Tiger 0.5
 
 - [x] Document template format
