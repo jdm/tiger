@@ -1,16 +1,18 @@
 <template>
 	<div ref="el" @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver"
-		@drop="onDrop" class="h-10 p-1.5 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
+		@drop="onDrop"
+		class="flex items-center h-10 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
 		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
-		<div ref="keyframesElement" class="relative h-full" :class="isDraggingContent ? 'pointer-events-none' : ''">
+		<div ref="keyframesElement" class="relative h-7" :style="sequenceWidth"
+			:class="isDraggingContent ? 'pointer-events-none' : ''">
 			<Keyframe v-for="entry in sequenceEntries" :name="entry.name" :selected="entry.selected"
 				:dragged="entry.dragged" :start-time-millis="entry.startTimeMillis"
 				:duration-millis="entry.durationMillis" :is-preview="entry.isPreview" :direction="direction"
 				:index="entry.index" :key="entry.key" class="absolute h-full transition top-1/2 -translate-y-1/2"
 				:style="entryStyle(entry)" />
-			<div class="grow-1 h-full" @click="onDeadZoneClicked" @dblclick="jumpToAnimationEnd"
-				@contextmenu.stop.prevent="onOpenContextMenu" />
 		</div>
+		<div class="flex-grow h-full" @click="onDeadZoneClicked" @dblclick="jumpToAnimationEnd"
+			@contextmenu.stop.prevent="onOpenContextMenu" />
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
@@ -128,6 +130,13 @@ function entryStyle(entry: SequenceEntry) {
 	};
 }
 
+const sequenceWidth = computed(() => {
+	const zoom = app.currentDocument?.timelineZoomFactor || 1;
+	return {
+		width: `${zoom * (props.sequence.durationMillis || 0)}px`
+	};
+});
+
 function mouseEventToTime(event: MouseEvent) {
 	if (!keyframesElement.value) {
 		return 0;
@@ -165,8 +174,7 @@ function onDrop() {
 	receivingDragAndDrop.value = false;
 }
 
-function onDeadZoneClicked(event: MouseEvent) {
-	console.log(event);
+function onDeadZoneClicked() {
 	selectDirection(props.direction);
 }
 
