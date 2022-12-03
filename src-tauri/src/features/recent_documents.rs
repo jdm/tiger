@@ -5,7 +5,7 @@ use std::sync::mpsc::channel;
 use tauri::Manager;
 
 use crate::app::AppState;
-use crate::utils::observable::Observer;
+use crate::utils::observable::Response;
 use crate::utils::paths;
 
 pub fn init(tauri_app: &tauri::App) {
@@ -24,7 +24,7 @@ pub fn init(tauri_app: &tauri::App) {
     app.recent_documents_delegate()
         .subscribe(move |recent_documents| {
             tx.send(recent_documents.clone()).ok();
-            Observer::StaySubscribed
+            Response::StaySubscribed
         });
 
     std::thread::spawn(move || loop {

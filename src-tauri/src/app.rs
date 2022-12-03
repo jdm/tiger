@@ -197,7 +197,7 @@ impl<'a> App<'a> {
         });
     }
 
-    pub fn recent_documents_delegate<'b>(&'b self) -> Delegate<'b, 'a, Vec<PathBuf>> {
+    pub fn recent_documents_delegate(&self) -> &Delegate<'a, Vec<PathBuf>> {
         self.recent_documents.delegate()
     }
 
