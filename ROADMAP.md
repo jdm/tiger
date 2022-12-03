@@ -3,7 +3,8 @@
 ## Tiger 0.6
 
 - [x] Template syntax now uses Handlebars instead of Liquid
-- [x] Draw hitbox names in workbench
+- [x] Exported textures are power-of-2 squares
+- [x] Hitbox names appear in workbench when there is space
 - [x] Upgrade from Heroicons 1.0 to 2.0
 - [x] Can snap to nearby frames
 - [x] Can snap to frame duration multiples of n milliseconds
@@ -11,7 +12,6 @@
 - [x] Add context menu entry to open frame in explorer
 - [x] Add context menu entries to paste animations/keyframes/hitboxes
 - [x] Can press Home/End to snap to first/last keyframe
-- [ ] Evaluate https://github.com/ChevyRay/crunch-rs
 - [x] After deleting keyframes, another keyframe is automatically selected
 - [x] Add shadow around application window
 - [x] Can clear selection by clicking in the dead zone of animations, hitboxes
@@ -28,11 +28,11 @@
 - [x] Fixed a bug where hitboxes panel could grow when there are long hitbox names
 - [x] Fixed a bug where animations keyframes or sheet frames could incorrectly appear as selected
 - [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
+- [ ] Export perf improvements
 
 ## Tiger 0.7
 
 - [ ] Tooltips everywhere
-- [ ] Export perf improvements
 - [ ] Can press F2 to rename animations or hitboxes
 - [ ] Workbench zoom keeps screen center (mouse cursor when applicable) invariant (not origin)
 - [ ] Timeline zoom keeps current position invariant

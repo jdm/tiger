@@ -1,9 +1,6 @@
-use image::DynamicImage;
+use image::{DynamicImage, GenericImage};
 use std::collections::HashMap;
 use std::path::PathBuf;
-use texture_packer::exporter::ImageExporter;
-use texture_packer::importer::ImageImporter;
-use texture_packer::{TexturePacker, TexturePackerConfig};
 use thiserror::Error;
 
 use crate::sheet::{Absolute, Sheet};
@@ -14,8 +11,6 @@ pub enum PackError {
     FrameRead,
     #[error("Error while packing textures")]
     Packing,
-    #[error("Error while exporting texture from packing data")]
-    PackerExport,
 }
 
 pub(super) struct PackedFrame {
@@ -39,43 +34,40 @@ impl PackedSheet {
 }
 
 pub(super) fn pack_sheet(sheet: &Sheet<Absolute>) -> Result<PackedSheet, PackError> {
-    let config = TexturePackerConfig {
-        max_width: 4096, // TODO configurable / dynamic based on widest frame?
-        max_height: std::u32::MAX,
-        allow_rotation: false,
-        border_padding: 0,  // TODO configurable?
-        texture_padding: 0, // TODO configurable?
-        trim: false,        // TODO support trimming?
-        texture_outlines: false,
-        texture_extrusion: 0, // TODO configurable?
-    };
-
-    let mut packer = TexturePacker::new_skyline(config);
-
+    let mut bitmaps = HashMap::new();
     for frame in sheet.frames_iter() {
-        let source = frame.source();
-        let texture = ImageImporter::import_from_file(source).map_err(|_| PackError::FrameRead)?;
-
-        let name = source.to_string_lossy();
-        packer
-            .pack_own(name.to_string(), texture)
-            .map_err(|_| PackError::Packing)?;
+        bitmaps.insert(
+            frame.source(),
+            image::open(frame.source()).map_err(|_| PackError::FrameRead)?,
+        );
     }
 
-    let texture = ImageExporter::export(&packer).map_err(|_| PackError::PackerExport)?;
-    let layout = packer
-        .get_frames()
-        .iter()
-        .map(|(k, v)| {
+    let items = bitmaps.iter().map(|(path, bitmap)| crunch::Item {
+        data: path,
+        w: bitmap.width() as usize,
+        h: bitmap.height() as usize,
+        rot: crunch::Rotation::None,
+    });
+    let (size, _, layout) = crunch::pack_into_po2(8_192, items).map_err(|_| PackError::Packing)?;
+    let layout = layout
+        .into_iter()
+        .map(|(r, p)| {
             (
-                PathBuf::from(k),
+                p.to_path_buf(),
                 PackedFrame {
-                    position_in_sheet: (v.frame.x, v.frame.y),
-                    size_in_sheet: (v.frame.w, v.frame.h),
+                    position_in_sheet: (r.x as u32, r.y as u32),
+                    size_in_sheet: (r.w as u32, r.h as u32),
                 },
             )
         })
-        .collect();
+        .collect::<HashMap<_, _>>();
+
+    let mut texture = DynamicImage::new_rgba8(size as u32, size as u32);
+    layout.iter().for_each(|(path, frame)| {
+        let bitmap = bitmaps.get(path.as_path()).unwrap();
+        let (x, y) = (frame.position_in_sheet.0, frame.position_in_sheet.1);
+        texture.copy_from(bitmap, x, y).unwrap();
+    });
 
     Ok(PackedSheet { texture, layout })
 }

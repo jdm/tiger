@@ -422,6 +422,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "crunch"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1ec1ceeb2c7de0839185c61e990ea3416be50cb55930d421402ef891db0eef76"
+
+[[package]]
 name = "crunchy"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3263,15 +3269,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "texture_packer"
-version = "0.25.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "28afa0d0b184ff1ba02bf420a4d096e880f4566ded90198cbc4b7f32ba17fa9b"
-dependencies = [
- "image",
-]
-
-[[package]]
 name = "thin-slice"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3330,6 +3327,7 @@ dependencies = [
 name = "tiger"
 version = "0.0.0-development"
 dependencies = [
+ "crunch",
  "derivative",
  "directories",
  "enum-iterator",
@@ -3351,7 +3349,6 @@ dependencies = [
  "sugar_path",
  "tauri",
  "tauri-build",
- "texture_packer",
  "thiserror",
  "uuid 1.2.2",
  "window-shadows",
