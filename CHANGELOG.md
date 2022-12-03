@@ -1,9 +1,13 @@
 # Changelog
 
-## Tiger 0.6
+## Tiger 0.6.1
+
+- [x] Fixed a bug where exported textures were incorrectly sized
+
+## Tiger 0.6.0
 
 - [x] Template syntax now uses Handlebars instead of Liquid
-- [x] Exported textures are now power-of-2 squares
+- [x] Exported texture dimensions are now power-of-2
 - [x] Hitbox names appear in workbench when there is enough space
 - [x] Upgraded from Heroicons 1.0 to 2.0
 - [x] Keyframe durations can snap to nearby keyframes
@@ -30,7 +34,7 @@
 - [x] Fixed a bug where animations keyframes or sheet frames could incorrectly appear as selected
 - [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
 
-## Tiger 0.5
+## Tiger 0.5.0
 
 - [x] Document template format
   - [x] Switch documentation Github Pages to `release` branch
@@ -50,7 +54,7 @@
 - [x] Fixed a bug where changes caused by mouse clicks would not appear immediately
 - [x] Major performance improvements to panning/dragging actions
 
-## Tiger 0.4
+## Tiger 0.4.0
 
 - [x] UI rewrite (prettier)
 - [x] In-place rename UX
@@ -76,7 +80,7 @@
 - [x] Replace powershell release script with Github action
 - [x] Unit test sheet module
 
-## Tiger 0.3
+## Tiger 0.3.0
 
 - [x] Cap undo history at 100 entries
 - [x] Offer to save when closing individual documents
@@ -103,7 +107,7 @@
 - [x] Auto reload images on frame edit
 - ~~[ ] Visible handles for adjusting frame durations (instead of invisible buttons)~~
 
-## Tiger 0.2
+## Tiger 0.2.0
 
 - [x] Unsaved file marker
 - [x] Offer to save on exit if needed
@@ -144,7 +148,7 @@
 - [x] Pass in mouse drag deltas to drag/resize logic instead of mouse positions. See GetMouseDragDelta in imgui
 - [x] Handle scenario when using "Save as" onto a file that is already open
 
-## Tiger 0.1
+## Tiger 0.1.0
 
 - [x] Don't store absolute paths in tiger files
 - [x] Show frame names in timeline
