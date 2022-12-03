@@ -59,7 +59,8 @@ pub(super) fn pack_sheet(
         h: bitmap.height() as usize,
         rot: crunch::Rotation::None,
     });
-    let (size, _, layout) = crunch::pack_into_po2(8_192, items).map_err(|_| PackError::Packing)?;
+    let (width, height, layout) =
+        crunch::pack_into_po2(8_192, items).map_err(|_| PackError::Packing)?;
     let layout = layout
         .into_iter()
         .map(|(r, p)| {
@@ -73,7 +74,7 @@ pub(super) fn pack_sheet(
         })
         .collect::<HashMap<_, _>>();
 
-    let mut texture = DynamicImage::new_rgba8(size as u32, size as u32);
+    let mut texture = DynamicImage::new_rgba8(width as u32, height as u32);
     layout.iter().for_each(|(path, frame)| {
         let bitmap = bitmaps.get(path.as_path()).unwrap();
         let (x, y) = (frame.position_in_sheet.0, frame.position_in_sheet.1);
