@@ -34,14 +34,16 @@
 - [ ] Tooltips everywhere
 - [ ] Export perf improvements
 - [ ] Can press F2 to rename animations or hitboxes
-- [ ] Workbench zoom keeps screen center invariant (not origin)
+- [ ] Workbench zoom keeps screen center (mouse cursor when applicable) invariant (not origin)
 - [ ] Timeline zoom keeps current position invariant
 - [ ] Can zoom workbench with mousewheel
 - [ ] Can zoom timeline with mousewheel
 - [ ] Can scroll timeline with mousewheel
 - [ ] Frame, hitbox and animation panes auto-scroll when browsing with keyboard controls
 - [ ] Frame, hitbox and animation panes have their scroll position in undo stack
+- [ ] Timeline scrolling follows playback
 - [ ] Timeline scroll position in undo stack
+- [ ] Timeline scrolling follows frame selection (or double click?)
 
 ## Tiger 0.8
 
@@ -51,14 +53,12 @@
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Reach satisfying test coverage
+- [ ] Export complete notification
 
 ## Tiger 0.9
 
-- [ ] Timeline scrolling follows playback
-- [ ] Timeline scrolling follows frame selection (or double click?)
 - [ ] Document keyboard shortcuts
 - [ ] Can preview export image and metadata output
-- [ ] Export complete notification
 - [ ] Auto-updates
 - [ ] Splash screen
 - [ ] Add a a help menu with links to issues/discussions/documentation
