@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use thiserror::Error;
 
+use crate::features::texture_cache;
 use crate::sheet::{Absolute, Sheet};
 
 #[derive(Error, Debug)]
@@ -33,13 +34,23 @@ impl PackedSheet {
     }
 }
 
-pub(super) fn pack_sheet(sheet: &Sheet<Absolute>) -> Result<PackedSheet, PackError> {
+pub(super) fn pack_sheet(
+    sheet: &Sheet<Absolute>,
+    texture_cache: texture_cache::CacheHandle,
+) -> Result<PackedSheet, PackError> {
     let mut bitmaps = HashMap::new();
-    for frame in sheet.frames_iter() {
-        bitmaps.insert(
-            frame.source(),
-            image::open(frame.source()).map_err(|_| PackError::FrameRead)?,
-        );
+    {
+        let cache = texture_cache.lock();
+        for frame in sheet.frames_iter() {
+            bitmaps.insert(
+                frame.source(),
+                cache
+                    .get(frame.source())
+                    .cloned()
+                    .or_else(|| image::open(frame.source()).ok())
+                    .ok_or(PackError::FrameRead)?,
+            );
+        }
     }
 
     let items = bitmaps.iter().map(|(path, bitmap)| crunch::Item {

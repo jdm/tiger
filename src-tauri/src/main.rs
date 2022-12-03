@@ -38,11 +38,15 @@ fn main() {
 
     tauri::Builder::default()
         .manage(app::AppState(Default::default()))
+        .manage(features::texture_cache::TextureCache::default())
         .setup(|tauri_app| {
             init_window_shadow(tauri_app);
+            tauri_app
+                .state::<features::texture_cache::TextureCache>()
+                .init(tauri_app);
             features::recent_documents::init(tauri_app);
-            features::templates_hot_reload::init(tauri_app);
-            features::textures_hot_reload::init(tauri_app);
+            features::template_hot_reload::init(tauri_app);
+            features::texture_hot_reload::init(tauri_app);
             features::clipboard_analysis::init(tauri_app);
             Ok(())
         })

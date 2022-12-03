@@ -9,6 +9,7 @@ use crate::app::{App, AppState};
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, AppTrim, ToFileName};
 use crate::export::export_sheet;
+use crate::features::texture_cache::{self, TextureCache};
 use crate::sheet::{Absolute, Sheet};
 
 static EVENT_PATCH_STATE: &str = "patch-state";
@@ -1453,7 +1454,10 @@ pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
-pub async fn export(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
+pub async fn export(
+    app_state: tauri::State<'_, AppState<'_>>,
+    texture_cache: tauri::State<'_, TextureCache>,
+) -> Result<Patch, ()> {
     let (sheet, document_name) = {
         let app = app_state.0.lock();
         match app.current_document() {
@@ -1462,7 +1466,8 @@ pub async fn export(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, 
         }
     };
 
-    match tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet))
+    let texture_cache: texture_cache::CacheHandle = texture_cache.handle();
+    match tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet, texture_cache))
         .await
         .unwrap()
     {
@@ -1555,7 +1560,10 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 }
 
 #[tauri::command]
-pub async fn end_export_as(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
+pub async fn end_export_as(
+    app_state: tauri::State<'_, AppState<'_>>,
+    texture_cache: tauri::State<'_, TextureCache>,
+) -> Result<Patch, ()> {
     let mut patch = app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::EndExportAs).ok();
@@ -1570,7 +1578,8 @@ pub async fn end_export_as(app_state: tauri::State<'_, AppState<'_>>) -> Result<
         }
     };
 
-    let result = tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet))
+    let texture_cache: texture_cache::CacheHandle = texture_cache.handle();
+    let result = tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet, texture_cache))
         .await
         .unwrap();
 

@@ -6,6 +6,7 @@ use std::{
 };
 use thiserror::Error;
 
+use crate::features::texture_cache;
 use crate::sheet::*;
 
 mod metadata;
@@ -28,7 +29,10 @@ pub enum ExportError {
     TextureStorageError(#[from] ImageError),
 }
 
-pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
+pub fn export_sheet(
+    sheet: &Sheet<Absolute>,
+    texture_cache: texture_cache::CacheHandle,
+) -> Result<(), ExportError> {
     let export_settings = sheet
         .export_settings()
         .as_ref()
@@ -36,7 +40,7 @@ pub fn export_sheet(sheet: &Sheet<Absolute>) -> Result<(), ExportError> {
 
     match export_settings {
         ExportSettings::Template(template_settings) => {
-            let packed_sheet = pack_sheet(sheet)?;
+            let packed_sheet = pack_sheet(sheet, texture_cache)?;
             let metadata = generate_sheet_metadata(sheet, export_settings, packed_sheet.layout())?;
 
             {

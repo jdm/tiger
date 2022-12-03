@@ -18,6 +18,7 @@
 - [x] Can change active direction by clicking in deadzone of timeline
 - [x] Can jump to end of animation by double clicking in deadzone of timeline
 - [x] Performance improvements to animation playback and drag operations
+- [x] Performance improvements to Export operations
 - [x] Cut, Copy and Paste menu entries are now disabled when there is no applicable selection
 - [x] List of recent documents is now limited to ten documents
 - [x] Fixed a bug where context menus could overflow offscreen
@@ -28,7 +29,6 @@
 - [x] Fixed a bug where hitboxes panel could grow when there are long hitbox names
 - [x] Fixed a bug where animations keyframes or sheet frames could incorrectly appear as selected
 - [x] Fixed minor bugs related to using the Undo command immediately after opening a spritesheet
-- [ ] Export perf improvements
 
 ## Tiger 0.7
 
