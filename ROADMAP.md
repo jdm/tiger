@@ -59,6 +59,8 @@
 
 - [ ] Document keyboard shortcuts
 - [ ] Can preview export image and metadata output
+- [ ] More template file examples in documentation
+- [ ] Documentation about use of file paths in .tiger files
 - [ ] Auto-updates
 - [ ] Splash screen
 - [ ] Add a a help menu with links to issues/discussions/documentation
