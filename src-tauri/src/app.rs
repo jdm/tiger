@@ -1,4 +1,5 @@
 use parking_lot::Mutex;
+use squeak::{Delegate, Observable};
 use std::{
     path::{Path, PathBuf},
     sync::Arc,
@@ -6,7 +7,6 @@ use std::{
 use thiserror::Error;
 
 use crate::document::{ClipboardManifest, Document, DocumentError};
-use crate::utils::observable::{Delegate, Observable};
 
 #[derive(Error, Debug)]
 pub enum AppError {

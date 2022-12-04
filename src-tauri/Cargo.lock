@@ -2913,6 +2913,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "squeak"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8877cd452161d4defa7ba365915854438f7c6ce97745a72ec415846e7b9a173e"
+
+[[package]]
 name = "stable_deref_trait"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3346,6 +3352,7 @@ dependencies = [
  "serde",
  "serde_json",
  "simplelog",
+ "squeak",
  "sugar_path",
  "tauri",
  "tauri-build",
