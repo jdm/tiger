@@ -28,7 +28,6 @@
 ## Tiger 0.9
 
 - [ ] Document keyboard shortcuts
-- [ ] Can preview export image and metadata output
 - [ ] More template file examples in documentation
 - [ ] Documentation about use of file paths in .tiger files
 - [ ] Auto-updates
@@ -57,6 +56,7 @@
 - [ ] Root motion
 - [ ] Onion skin?
 - [ ] Hitbox colors
+- [ ] Can preview export image and metadata output
 - [ ] Interop with specific game engines (TBD)
 - [ ] Import frames from single sheet image
 - [ ] Import animation data from other software (Asesprite, TBD)
