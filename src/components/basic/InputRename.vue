@@ -9,7 +9,7 @@
 import { computed, Ref, ref } from "@vue/reactivity"
 import { onMounted } from "vue"
 
-type RenameState = "active" | "cancelled";
+type RenameState = "active" | "cancelled" | "complete";
 
 const props = defineProps(["modelValue"])
 const emit = defineEmits(["update:modelValue", "completeRename", "cancelRename"])
@@ -33,7 +33,8 @@ onMounted(() => {
 });
 
 function onRenameInputComplete() {
-	if (state.value != "cancelled") {
+	if (state.value == "active") {
+		state.value = "complete";
 		emit("completeRename", { newName: props.modelValue });
 	}
 }
