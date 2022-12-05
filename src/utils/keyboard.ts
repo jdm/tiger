@@ -1,7 +1,8 @@
 import { newDocument, openDocuments, saveAs } from "@/api/local";
 import {
-  browseSelection,
   beginExportAs,
+  beginRenameSelection,
+  browseSelection,
   centerWorkbench,
   copy,
   cut,
@@ -122,6 +123,8 @@ function onKeyDown(event: KeyboardEvent) {
       jumpToAnimationStart();
     } else if (event.key == "End") {
       jumpToAnimationEnd();
+    } else if (event.key == "F2") {
+      beginRenameSelection();
     }
   }
 }

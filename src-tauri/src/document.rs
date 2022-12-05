@@ -57,6 +57,10 @@ pub enum DocumentError {
     NoKeyframeAtTime(Duration),
     #[error("Sequence does not have a keyframe at index `{0}`")]
     NoKeyframeAtIndex(usize),
+    #[error("Not currently renaming an animation")]
+    NotRenamingAnyAnimation,
+    #[error("Not currently renaming a hitbox")]
+    NotRenamingAnyHitbox,
     #[error("Not currently editing an animation")]
     NotEditingAnyAnimation,
     #[error("Not currently editing a sequence")]

@@ -45,8 +45,15 @@ pub(super) struct HitboxResize {
     pub(super) original_positions: HashMap<String, Rect<i32>>,
 }
 
+#[derive(Clone, Debug)]
+pub(super) enum Rename {
+    Animation(String),
+    Hitbox(String),
+}
+
 #[derive(Debug, Default)]
 pub struct Transient {
+    pub(super) rename: Option<Rename>,
     pub(super) frame_drag_and_drop: Option<PathBuf>,
     pub(super) keyframe_duration_drag: Option<KeyframeDurationDrag>,
     pub(super) keyframe_drag_and_drop: Option<(Direction, usize)>,
@@ -56,6 +63,50 @@ pub struct Transient {
 }
 
 impl Document {
+    pub(super) fn begin_rename_animation(&mut self, animation_name: String) {
+        self.transient.rename = Some(Rename::Animation(animation_name));
+    }
+
+    pub(super) fn end_rename_animation(&mut self, new_name: String) -> DocumentResult<()> {
+        if let Some(Rename::Animation(old_name)) = self.transient.rename.clone() {
+            self.transient.rename = None;
+            self.rename_animation(old_name, new_name)
+        } else {
+            Err(DocumentError::NotRenamingAnyAnimation)
+        }
+    }
+
+    pub(super) fn begin_rename_hitbox(&mut self, hitbox_name: String) {
+        self.transient.rename = Some(Rename::Hitbox(hitbox_name));
+    }
+
+    pub(super) fn end_rename_hitbox(&mut self, new_name: String) -> DocumentResult<()> {
+        if let Some(Rename::Hitbox(old_name)) = self.transient.rename.clone() {
+            self.transient.rename = None;
+            self.rename_hitbox(old_name, new_name)
+        } else {
+            Err(DocumentError::NotRenamingAnyHitbox)
+        }
+    }
+
+    pub(super) fn cancel_rename(&mut self) {
+        self.transient.rename = None;
+    }
+
+    pub fn animation_being_renamed(&self) -> Option<&String> {
+        match self.transient.rename {
+            Some(Rename::Animation(ref n)) => Some(n),
+            _ => None,
+        }
+    }
+
+    pub fn hitbox_being_renamed(&self) -> Option<&String> {
+        match self.transient.rename {
+            Some(Rename::Hitbox(ref n)) => Some(n),
+            _ => None,
+        }
+    }
+
     pub(super) fn begin_drag_and_drop_frame(&mut self, frame: PathBuf) {
         if !self.view.selection.is_frame_selected(&frame) {
             self.select_frame_only(frame.clone());
@@ -704,6 +755,51 @@ impl ResizeAxis {
         use ResizeAxis::*;
         self == NW || self == NE || self == SW || self == SE
     }
+}
+
+#[test]
+fn can_rename_animations() {
+    use std::path::Path;
+
+    let mut d = Document::new("tmp");
+    d.sheet
+        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+    d.select_animation("walk_cycle", false, false);
+    d.begin_rename_selection();
+    assert_eq!("walk_cycle", d.animation_being_renamed().unwrap().as_str());
+    d.end_rename_animation("renamed".to_owned()).unwrap();
+    assert_eq!(None, d.animation_being_renamed());
+
+    assert!(d.sheet().animation("renamed").is_some());
+}
+
+#[test]
+fn can_rename_hitboxes() {
+    let mut d = Document::new("tmp");
+    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+    d.sheet.add_test_animation(
+        "walk_cycle",
+        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    );
+    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+    keyframe.create_hitbox("my_hitbox");
+
+    d.edit_animation("walk_cycle").unwrap();
+    d.select_hitbox("my_hitbox", false, false).unwrap();
+    d.begin_rename_selection();
+    assert_eq!("my_hitbox", d.hitbox_being_renamed().unwrap().as_str());
+    d.end_rename_hitbox("renamed".to_owned()).unwrap();
+    assert_eq!(None, d.hitbox_being_renamed());
+
+    assert!(d
+        .sheet()
+        .animation("walk_cycle")
+        .unwrap()
+        .sequence(Direction::North)
+        .unwrap()
+        .keyframe(0)
+        .unwrap()
+        .has_hitbox("renamed"));
 }
 
 #[test]

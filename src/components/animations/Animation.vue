@@ -8,8 +8,7 @@
 				{ icon: XMarkIcon, callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
-				<InputRename v-model="newName" @complete-rename="onRenameInputComplete"
-					@cancel-rename="onRenameInputCancelled" />
+				<InputRename v-model="newName" @complete-rename="onRenameInputComplete" @cancel-rename="cancelRename" />
 			</template>
 		</Selectable>
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
@@ -17,10 +16,11 @@
 </template>
 
 <script setup lang="ts">
+import { watch, computed, Ref, ref } from "vue"
 import { FilmIcon, PencilSquareIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { Animation as AnimationDTO } from "@/api/dto"
-import { copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, renameAnimation, selectAnimation } from "@/api/document"
-import { Ref, ref } from "@vue/reactivity"
+import { beginRenameAnimation, cancelRename, copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, endRenameAnimation, selectAnimation } from "@/api/document"
+import { useAppStore } from "@/stores/app"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
@@ -29,7 +29,6 @@ const props = defineProps<{
 	animation: AnimationDTO
 }>();
 
-const renaming = ref(false);
 const newName = ref("");
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
@@ -40,6 +39,14 @@ const contextMenuEntries = [
 	{ name: "Rename", action: beginRename },
 	{ name: "Delete", shortcut: "Del", action: deleteSelectedAnimations },
 ];
+
+const app = useAppStore();
+const renaming = computed(() => app.currentDocument?.animationBeingRenamed == props.animation.name);
+watch(renaming, (to, from) => {
+	if (to) {
+		newName.value = props.animation.name;
+	}
+});
 
 function onOpenContextMenu(event: MouseEvent) {
 	if (contextMenu.value) {
@@ -59,17 +66,11 @@ function onAnimationDoubleClicked() {
 }
 
 function beginRename() {
-	newName.value = props.animation.name;
-	renaming.value = true;
+	beginRenameAnimation(props.animation.name);
 }
 
 function onRenameInputComplete() {
-	renameAnimation(props.animation.name, newName.value);
-	renaming.value = false;
-}
-
-function onRenameInputCancelled() {
-	renaming.value = false;
+	endRenameAnimation(newName.value);
 }
 
 function onDeleteClicked() {

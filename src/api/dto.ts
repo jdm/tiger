@@ -60,6 +60,8 @@ export type Document = {
   lockHitboxes: boolean;
   preserveAspectRatio: boolean;
   isDraggingKeyframeDuration: boolean;
+  animationBeingRenamed: string | null;
+  hitboxBeingRenamed: string | null;
   framesBeingDragged: string[];
   keyframesBeingDragged: [Direction, number][];
   hitboxesBeingNudged: string[];

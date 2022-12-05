@@ -786,15 +786,74 @@ pub fn edit_animation(app_state: tauri::State<'_, AppState>, name: String) -> Re
 }
 
 #[tauri::command]
-pub fn rename_animation(
+pub fn begin_rename_animation(
     app_state: tauri::State<'_, AppState>,
-    old_name: String,
+    animation_name: String,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginRenameAnimation(animation_name))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn begin_rename_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    hitbox_name: String,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::BeginRenameHitbox(hitbox_name))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn begin_rename_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::BeginRenameSelection).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn cancel_rename(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::CancelRename).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_rename_animation(
+    app_state: tauri::State<'_, AppState>,
     new_name: String,
 ) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document
-                .process_command(Command::RenameAnimation(old_name, new_name))
+                .process_command(Command::EndRenameAnimation(new_name))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_rename_hitbox(
+    app_state: tauri::State<'_, AppState>,
+    new_name: String,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::EndRenameHitbox(new_name))
                 .ok();
         }
     }))
@@ -1260,21 +1319,6 @@ pub fn create_hitbox(
         if let Some(document) = app.current_document_mut() {
             document
                 .process_command(Command::CreateHitbox(position.map(|p| p.into())))
-                .ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn rename_hitbox(
-    app_state: tauri::State<'_, AppState>,
-    old_name: String,
-    new_name: String,
-) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::Full, |app| {
-        if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::RenameHitbox(old_name, new_name))
                 .ok();
         }
     }))

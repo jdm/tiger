@@ -41,7 +41,12 @@ pub enum Command {
     ShowOrigin,
     CreateAnimation,
     EditAnimation(String),
-    RenameAnimation(String, String),
+    BeginRenameSelection,
+    BeginRenameAnimation(String),
+    BeginRenameHitbox(String),
+    CancelRename,
+    EndRenameAnimation(String),
+    EndRenameHitbox(String),
     DeleteAnimation(String),
     DeleteSelectedAnimations,
     Tick(Duration),
@@ -80,7 +85,6 @@ pub enum Command {
     UpdateNudgeKeyframe(Vector2D<i32>, bool),
     EndNudgeKeyframe(),
     CreateHitbox(Option<Vector2D<i32>>),
-    RenameHitbox(String, String),
     DeleteHitbox(String),
     DeleteSelectedHitboxes,
     LockHitboxes,
@@ -151,9 +155,12 @@ impl Document {
             Command::ShowOrigin => self.view.hide_origin = false,
             Command::CreateAnimation => self.create_animation()?,
             Command::EditAnimation(ref name) => self.edit_animation(name)?,
-            Command::RenameAnimation(ref old_name, ref new_name) => {
-                self.rename_animation(old_name, new_name)?
-            }
+            Command::BeginRenameSelection => self.begin_rename_selection(),
+            Command::BeginRenameAnimation(ref n) => self.begin_rename_animation(n.clone()),
+            Command::BeginRenameHitbox(ref n) => self.begin_rename_hitbox(n.clone()),
+            Command::CancelRename => self.cancel_rename(),
+            Command::EndRenameAnimation(ref n) => self.end_rename_animation(n.clone())?,
+            Command::EndRenameHitbox(ref n) => self.end_rename_hitbox(n.clone())?,
             Command::DeleteAnimation(ref name) => self.delete_animation(name),
             Command::DeleteSelectedAnimations => self.delete_selected_animations(),
             Command::Tick(dt) => self.advance_timeline(dt),
@@ -200,9 +207,6 @@ impl Document {
             Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
             Command::EndNudgeKeyframe() => self.end_nudge_keyframe(),
             Command::CreateHitbox(p) => self.create_hitbox(p)?,
-            Command::RenameHitbox(ref old_name, ref new_name) => {
-                self.rename_hitbox(old_name, new_name)?
-            }
             Command::DeleteHitbox(ref name) => self.delete_hitbox(name)?,
             Command::DeleteSelectedHitboxes => self.delete_selected_hitboxes()?,
             Command::LockHitboxes => self.view.lock_hitboxes = true,
@@ -245,6 +249,10 @@ impl Document {
             Command::Tick(_)
                 | Command::Undo
                 | Command::Redo
+                | Command::BeginRenameAnimation(_)
+                | Command::BeginRenameHitbox(_)
+                | Command::BeginRenameSelection
+                | Command::CancelRename
                 | Command::BeginDragAndDropFrame(_)
                 | Command::BeginDragAndDropKeyframe(_, _)
                 | Command::BeginDragKeyframeDuration(_, _)
@@ -413,7 +421,6 @@ impl Display for Command {
             Command::NudgeSelection(_, _) => f.write_str("Nudge"),
             Command::CreateAnimation => f.write_str("Create Animation"),
             Command::EditAnimation(_) => f.write_str("Open Animation"),
-            Command::RenameAnimation(_, _) => f.write_str("Rename Animation"),
             Command::DeleteAnimation(_) => f.write_str("Delete Animation"),
             Command::DeleteSelectedAnimations => f.write_str("Delete Animations"),
             Command::Tick(_) => f.write_str("Tick"),
@@ -427,7 +434,6 @@ impl Display for Command {
             Command::SetKeyframeOffsetX(_) => f.write_str("Start Keyframe X Offset"),
             Command::SetKeyframeOffsetY(_) => f.write_str("Start Keyframe Y Offset"),
             Command::CreateHitbox(_) => f.write_str("Create Hitbox"),
-            Command::RenameHitbox(_, _) => f.write_str("Rename Hitbox"),
             Command::DeleteHitbox(_) => f.write_str("Delete Hitbox"),
             Command::DeleteSelectedHitboxes => f.write_str("Delete Hitboxes"),
             Command::LockHitboxes => f.write_str("Lock Hitboxes"),
@@ -469,6 +475,14 @@ impl Display for Command {
             Command::BeginResizeHitbox(_, _)
             | Command::UpdateResizeHitbox(_, _)
             | Command::EndResizeHitbox => f.write_str("Resize Hitbox"),
+
+            Command::BeginRenameSelection
+            | Command::BeginRenameAnimation(_)
+            | Command::BeginRenameHitbox(_)
+            | Command::CancelRename => f.write_str("Rename"),
+
+            Command::EndRenameAnimation(_) => f.write_str("Rename Animation"),
+            Command::EndRenameHitbox(_) => f.write_str("Rename Hitbox"),
         }
     }
 }

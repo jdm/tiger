@@ -76,6 +76,8 @@ pub struct Document {
     hide_origin: bool,
     lock_hitboxes: bool,
     preserve_aspect_ratio: bool,
+    animation_being_renamed: Option<String>,
+    hitbox_being_renamed: Option<String>,
     is_dragging_keyframe_duration: bool,
     frames_being_dragged: HashSet<PathBuf>,
     keyframes_being_dragged: HashSet<(Direction, usize)>,
@@ -406,6 +408,8 @@ impl document::Document {
             hide_origin: self.is_hiding_origin(),
             lock_hitboxes: self.are_hitboxes_locked(),
             preserve_aspect_ratio: self.preserves_aspect_ratio(),
+            animation_being_renamed: self.animation_being_renamed().cloned(),
+            hitbox_being_renamed: self.hitbox_being_renamed().cloned(),
             is_dragging_keyframe_duration: self.is_dragging_keyframe_duration(),
             frames_being_dragged: self.frames_being_dragged(),
             keyframes_being_dragged: self

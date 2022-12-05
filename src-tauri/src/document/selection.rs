@@ -53,6 +53,14 @@ impl Document {
         Ok(())
     }
 
+    pub(super) fn begin_rename_selection(&mut self) {
+        if let Some(ref name) = self.view.selection.animations.last_interacted {
+            self.begin_rename_animation(name.clone());
+        } else if let Some((_, _, _, ref name)) = self.view.selection.hitboxes.last_interacted {
+            self.begin_rename_hitbox(name.clone());
+        }
+    }
+
     pub(super) fn nudge_selection(
         &mut self,
         direction: NudgeDirection,

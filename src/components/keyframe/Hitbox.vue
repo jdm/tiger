@@ -7,8 +7,7 @@
 				{ icon: XMarkIcon, callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
-				<InputRename v-model="newName" @complete-rename="onRenameInputComplete"
-					@cancel-rename="onRenameInputCancelled" />
+				<InputRename v-model="newName" @complete-rename="onRenameInputComplete" @cancel-rename="cancelRename" />
 			</template>
 		</Selectable>
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
@@ -16,10 +15,11 @@
 </template>
 
 <script setup lang="ts">
+import { computed, Ref, ref, watch } from "vue"
 import { PencilSquareIcon, TagIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { Hitbox as HitboxDTO } from "@/api/dto"
-import { copy, cut, deleteHitbox, deleteSelectedHitboxes, renameHitbox, selectHitbox } from "@/api/document"
-import { Ref, ref } from "@vue/reactivity"
+import { beginRenameHitbox, cancelRename, copy, cut, deleteHitbox, deleteSelectedHitboxes, endRenameHitbox, selectHitbox } from "@/api/document"
+import { useAppStore } from "@/stores/app"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
@@ -28,7 +28,6 @@ const props = defineProps<{
 	hitbox: HitboxDTO
 }>();
 
-const renaming = ref(false);
 const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
@@ -39,6 +38,14 @@ const contextMenuEntries = [
 	{},
 	{ name: "Delete", shortcut: "Del", action: deleteSelectedHitboxes },
 ];
+
+const app = useAppStore();
+const renaming = computed(() => app.currentDocument?.hitboxBeingRenamed == props.hitbox.name);
+watch(renaming, (to, from) => {
+	if (to) {
+		newName.value = props.hitbox.name;
+	}
+});
 
 function onOpenContextMenu(event: MouseEvent) {
 	if (contextMenu.value) {
@@ -54,17 +61,11 @@ function onHitboxClicked(event: MouseEvent) {
 }
 
 function onRenameClicked() {
-	newName.value = props.hitbox.name;
-	renaming.value = true;
+	beginRenameHitbox(props.hitbox.name);
 }
 
 function onRenameInputComplete() {
-	renameHitbox(props.hitbox.name, newName.value);
-	renaming.value = false;
-}
-
-function onRenameInputCancelled() {
-	renaming.value = false;
+	endRenameHitbox(newName.value);
 }
 
 function onDeleteClicked() {

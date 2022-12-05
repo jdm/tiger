@@ -86,6 +86,42 @@ export async function deleteSelection(): Promise<void> {
   appStore.patch(await invoke("delete_selection"));
 }
 
+export async function beginRenameSelection(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("begin_rename_selection"));
+}
+
+export async function beginRenameAnimation(
+  animationName: String
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("begin_rename_animation", { animationName: animationName })
+  );
+}
+
+export async function beginRenameHitbox(hitboxName: String): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("begin_rename_hitbox", { hitboxName: hitboxName })
+  );
+}
+
+export async function endRenameAnimation(newName: String): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_rename_animation", { newName: newName }));
+}
+
+export async function endRenameHitbox(newName: String): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_rename_hitbox", { newName: newName }));
+}
+
+export async function cancelRename(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("cancel_rename"));
+}
+
 export async function nudgeSelection(
   direction: NudgeDirection,
   largeNudge: boolean
@@ -261,19 +297,6 @@ export async function createAnimation(): Promise<void> {
 export async function editAnimation(name: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("edit_animation", { name: name }));
-}
-
-export async function renameAnimation(
-  oldName: string,
-  newName: string
-): Promise<void> {
-  const appStore = useAppStore();
-  appStore.patch(
-    await invoke("rename_animation", {
-      oldName: oldName,
-      newName: newName,
-    })
-  );
 }
 
 export async function deleteAnimation(name: string): Promise<void> {
@@ -540,19 +563,6 @@ export async function createHitbox(
 ): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("create_hitbox", { position: position }));
-}
-
-export async function renameHitbox(
-  oldName: string,
-  newName: string
-): Promise<void> {
-  const appStore = useAppStore();
-  appStore.patch(
-    await invoke("rename_hitbox", {
-      oldName: oldName,
-      newName: newName,
-    })
-  );
 }
 
 export async function deleteHitbox(name: string): Promise<void> {
