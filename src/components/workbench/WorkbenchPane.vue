@@ -118,8 +118,8 @@ const zoomTransform = computed(() => {
 });
 
 const panningTransform = computed(() => {
-	const x = drawingAreaHalfSize.value[0] + workbenchOffset.value[0];
-	const y = drawingAreaHalfSize.value[1] + workbenchOffset.value[1];
+	const x = drawingAreaHalfSize.value[0] + Math.floor(workbenchOffset.value[0] * zoom.value) / zoom.value;
+	const y = drawingAreaHalfSize.value[1] + Math.floor(workbenchOffset.value[1] * zoom.value) / zoom.value;
 	return {
 		transform: `translate(${x}px, ${y}px)`,
 	};
