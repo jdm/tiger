@@ -11,8 +11,8 @@
 				:index="entry.index" :key="entry.key" class="absolute h-full transition top-1/2 -translate-y-1/2"
 				:style="entryStyle(entry)" />
 		</div>
-		<div class="flex-grow h-full" @click="onDeadZoneClicked" @dblclick="jumpToAnimationEnd"
-			@contextmenu.stop.prevent="onOpenContextMenu" />
+		<div class="flex-grow h-full" :class="isDraggingContent ? 'pointer-events-none' : ''" @click="onDeadZoneClicked"
+			@dblclick="jumpToAnimationEnd" @contextmenu.stop.prevent="onOpenContextMenu" />
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 	</div>
 </template>
