@@ -28,7 +28,9 @@ pub enum Command {
     Pan(Vector2D<f32>),
     CenterWorkbench,
     ZoomInWorkbench,
+    ZoomInWorkbenchAround(Vector2D<f32>),
     ZoomOutWorkbench,
+    ZoomOutWorkbenchAround(Vector2D<f32>),
     SetWorkbenchZoomFactor(u32),
     ResetWorkbenchZoom,
     EnableSpriteDarkening,
@@ -142,7 +144,9 @@ impl Document {
             Command::Pan(delta) => self.view.pan(delta),
             Command::CenterWorkbench => self.view.center_workbench(),
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
+            Command::ZoomInWorkbenchAround(ref p) => self.view.zoom_in_workbench_around(p),
             Command::ZoomOutWorkbench => self.view.zoom_out_workbench(),
+            Command::ZoomOutWorkbenchAround(ref p) => self.view.zoom_out_workbench_around(p),
             Command::SetWorkbenchZoomFactor(f) => self.view.set_workbench_zoom_factor(f),
             Command::ResetWorkbenchZoom => self.view.reset_workbench_zoom(),
             Command::EnableSpriteDarkening => self.view.darken_sprites = true,
@@ -378,7 +382,9 @@ impl Display for Command {
             | Command::Pan(_)
             | Command::CenterWorkbench
             | Command::ZoomInWorkbench
+            | Command::ZoomInWorkbenchAround(_)
             | Command::ZoomOutWorkbench
+            | Command::ZoomOutWorkbenchAround(_)
             | Command::SetWorkbenchZoomFactor(_)
             | Command::ResetWorkbenchZoom
             | Command::EnableSpriteDarkening

@@ -235,6 +235,24 @@ export async function zoomOutWorkbench(): Promise<void> {
   appStore.patch(await invoke("zoom_out_workbench"));
 }
 
+export async function zoomInWorkbenchAround(
+  fixedPoint: [number, number]
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("zoom_in_workbench_around", { fixedPoint: fixedPoint })
+  );
+}
+
+export async function zoomOutWorkbenchAround(
+  fixedPoint: [number, number]
+): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("zoom_out_workbench_around", { fixedPoint: fixedPoint })
+  );
+}
+
 export async function setWorkbenchZoomFactor(
   zoomFactor: number
 ): Promise<void> {

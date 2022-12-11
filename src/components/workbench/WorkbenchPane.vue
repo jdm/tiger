@@ -26,13 +26,11 @@
 
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
 				class="flex-1 graph-paper h-full pointer-events-auto transition-all" :style="graphPaperStyle" />
-			<div class="absolute inset-0 transition-transform" :style="zoomTransform">
-				<div class="absolute inset-0" :style="panningTransform">
-					<Frame v-if="!app.currentDocument?.hideSprite" v-for="k in allAnimationKeyframes"
-						:key="k.keyframe.key" :keyframe="k.keyframe" :direction="k.direction" :index="k.index" />
-					<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="hitbox in sortedHitboxes" :key="hitbox.key"
-						:hitbox="hitbox" />
-				</div>
+			<div class="absolute inset-0 transition-transform" :style="contentTransform">
+				<Frame v-if="!app.currentDocument?.hideSprite" v-for="k in allAnimationKeyframes" :key="k.keyframe.key"
+					:keyframe="k.keyframe" :direction="k.direction" :index="k.index" />
+				<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="hitbox in sortedHitboxes" :key="hitbox.key"
+					:hitbox="hitbox" />
 			</div>
 			<Origin v-if="!app.currentDocument?.hideOrigin" class="absolute inset-0 z-30 transition-all"
 				:style="originTransform" />
@@ -50,7 +48,7 @@ import { onUnmounted, watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
 import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/api/dto"
 import { closeDocument, focusDocument } from "@/api/app"
-import { clearSelection, pan } from "@/api/document"
+import { clearSelection, pan, zoomInWorkbenchAround, zoomOutWorkbenchAround } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
@@ -110,18 +108,13 @@ const originTransform = computed(() => {
 	};
 });
 
-const zoomTransform = computed(() => {
+const contentTransform = computed(() => {
+	const x = drawingAreaHalfSize.value[0] + Math.floor(workbenchOffset.value[0] * zoom.value);
+	const y = drawingAreaHalfSize.value[1] + Math.floor(workbenchOffset.value[1] * zoom.value);
 	return {
-		transform: `scale(${zoom.value}, ${zoom.value})`,
-		transformOrigin: `${drawingAreaHalfSize.value[0]}px ${drawingAreaHalfSize.value[1]}px`,
-	};
-});
-
-const panningTransform = computed(() => {
-	const x = drawingAreaHalfSize.value[0] + Math.floor(workbenchOffset.value[0] * zoom.value) / zoom.value;
-	const y = drawingAreaHalfSize.value[1] + Math.floor(workbenchOffset.value[1] * zoom.value) / zoom.value;
-	return {
-		transform: `translate(${x}px, ${y}px)`,
+		transform: `translate(${x}px, ${y}px) scale(${zoom.value}, ${zoom.value})`,
+		transformOrigin: "0 0",
+		transitionProperty: isZoomStable.value ? "none" : "transform",
 	};
 });
 
@@ -167,10 +160,20 @@ function updatePanning(event: DragAreaEvent) {
 }
 
 function onWheel(event: WheelEvent) {
-	if (!event.ctrlKey) {
+	if (!event.ctrlKey || !drawingArea.value) {
 		return;
 	}
-	// TODO
+	const drawingAreaRect = drawingArea.value.getBoundingClientRect();
+	const mouseCoordinates = [event.clientX - drawingAreaRect.left, event.clientY - drawingAreaRect.top];
+	const fixedPoint: [number, number] = [
+		(mouseCoordinates[0] - (drawingAreaHalfSize.value[0] + workbenchOffset.value[0] * zoom.value)) / zoom.value,
+		(mouseCoordinates[1] - (drawingAreaHalfSize.value[1] + workbenchOffset.value[1] * zoom.value)) / zoom.value,
+	];
+	if (event.deltaY < 0) {
+		zoomInWorkbenchAround(fixedPoint);
+	} else {
+		zoomOutWorkbenchAround(fixedPoint);
+	}
 }
 </script>
 

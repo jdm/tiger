@@ -69,6 +69,24 @@ impl View {
         self.set_workbench_zoom_factor(self.workbench_zoom_factor / 2);
     }
 
+    pub(super) fn zoom_in_workbench_around(&mut self, fixed_point: &Vector2D<f32>) {
+        let old_zoom_factor = self.workbench_zoom_factor as f32;
+        self.zoom_in_workbench();
+        let new_zoom_factor = self.workbench_zoom_factor as f32;
+        self.workbench_offset += ((*fixed_point + self.workbench_offset)
+            * (old_zoom_factor - new_zoom_factor))
+            / new_zoom_factor;
+    }
+
+    pub(super) fn zoom_out_workbench_around(&mut self, fixed_point: &Vector2D<f32>) {
+        let old_zoom_factor = self.workbench_zoom_factor as f32;
+        self.zoom_out_workbench();
+        let new_zoom_factor = self.workbench_zoom_factor as f32;
+        self.workbench_offset += (*fixed_point + self.workbench_offset)
+            * (old_zoom_factor - new_zoom_factor)
+            / new_zoom_factor;
+    }
+
     pub(super) fn set_workbench_zoom_factor(&mut self, zoom_factor: u32) {
         const MIN_WORKBENCH_ZOOM: u32 = 1;
         const MAX_WORKBENCH_ZOOM: u32 = 32;

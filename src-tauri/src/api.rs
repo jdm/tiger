@@ -666,6 +666,34 @@ pub fn zoom_out_workbench(app_state: tauri::State<'_, AppState>) -> Result<Patch
 }
 
 #[tauri::command]
+pub fn zoom_in_workbench_around(
+    app_state: tauri::State<'_, AppState>,
+    fixed_point: (f32, f32),
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn zoom_out_workbench_around(
+    app_state: tauri::State<'_, AppState>,
+    fixed_point: (f32, f32),
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn set_workbench_zoom_factor(
     app_state: tauri::State<'_, AppState>,
     zoom_factor: u32,
