@@ -11,7 +11,7 @@ rust-version = "1.63"
 opt-level = 3
 
 [build-dependencies]
-tauri-build = { version = "1.1", features = [] }
+tauri-build = { version = "1.2", features = [] }
 
 [profile.release]
 debug = true
@@ -38,7 +38,7 @@ serde = { version = "1.0", features = ["derive"] }
 simplelog = "0.12.0"
 squeak = "0.1.0"
 sugar_path = "0.0.9"
-tauri = { version = "1.1", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
+tauri = { version = "1.2", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
 thiserror = "1.0"
 window-shadows = "0.2.0"
 
