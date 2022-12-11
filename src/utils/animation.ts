@@ -20,3 +20,18 @@ export function debounceAnimation<T extends MultiWatchSources>(
   });
   return value;
 }
+
+export function isStable<T extends MultiWatchSources>(
+  sources: [...T]
+): Ref<boolean> {
+  const value = ref(true);
+  let timerHandle: number;
+  watch(sources, () => {
+    value.value = false;
+    window.clearTimeout(timerHandle);
+    timerHandle = window.setTimeout(() => {
+      value.value = true;
+    }, 300);
+  });
+  return value;
+}

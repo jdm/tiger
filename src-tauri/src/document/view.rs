@@ -68,6 +68,7 @@ impl View {
     pub(super) fn zoom_out_workbench(&mut self) {
         self.set_workbench_zoom_factor(self.workbench_zoom_factor / 2);
     }
+
     pub(super) fn set_workbench_zoom_factor(&mut self, zoom_factor: u32) {
         const MIN_WORKBENCH_ZOOM: u32 = 1;
         const MAX_WORKBENCH_ZOOM: u32 = 32;
@@ -99,7 +100,7 @@ impl View {
     }
 
     pub(super) fn pan(&mut self, delta: Vector2D<f32>) {
-        self.workbench_offset += delta
+        self.workbench_offset += delta / self.workbench_zoom_factor as f32;
     }
 
     pub(super) fn skip_to_timeline_start(&mut self) {

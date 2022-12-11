@@ -25,7 +25,7 @@
 			-->
 
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
-				class="flex-1 graph-paper h-full pointer-events-auto" :style="graphPaperStyle" />
+				class="flex-1 graph-paper h-full pointer-events-auto transition-all" :style="graphPaperStyle" />
 			<div class="absolute inset-0 transition-transform" :style="zoomTransform">
 				<div class="absolute inset-0" :style="panningTransform">
 					<Frame v-if="!app.currentDocument?.hideSprite" v-for="k in allAnimationKeyframes"
@@ -34,7 +34,8 @@
 						:hitbox="hitbox" />
 				</div>
 			</div>
-			<Origin v-if="!app.currentDocument?.hideOrigin" class="absolute inset-0 z-30" :style="panningTransform" />
+			<Origin v-if="!app.currentDocument?.hideOrigin" class="absolute inset-0 z-30 transition-all"
+				:style="originTransform" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
 				{{ app.currentAnimation?.name }}
 			</div>
@@ -49,8 +50,9 @@ import { onUnmounted, watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
 import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/api/dto"
 import { closeDocument, focusDocument } from "@/api/app"
-import { clearSelection, disableSpriteDarkening, enableSpriteDarkening, pan, zoomInWorkbench, zoomOutWorkbench } from "@/api/document"
+import { clearSelection, pan } from "@/api/document"
 import { useAppStore } from "@/stores/app"
+import { isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneTab from "@/components/basic/PaneTab.vue"
@@ -62,12 +64,15 @@ import Toolbar from "@/components/workbench/Toolbar.vue"
 
 const app = useAppStore();
 const drawingArea: Ref<HTMLElement | null> = ref(null);
-const drawingAreaSize = ref([0, 0]);
+const drawingAreaHalfSize = ref([0, 0]);
+const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
+const workbenchOffset = computed(() => app.currentDocument?.workbenchOffset || [0, 0]);
+const isZoomStable = isStable([zoom]);
 
 const resizeObserver = new ResizeObserver(entries => {
 	for (let entry of entries) {
 		if (entry.target === drawingArea.value) {
-			drawingAreaSize.value = [entry.contentRect.width, entry.contentRect.height];
+			drawingAreaHalfSize.value = [entry.contentRect.width / 2, entry.contentRect.height / 2];
 		}
 	}
 });
@@ -75,9 +80,11 @@ const resizeObserver = new ResizeObserver(entries => {
 watch(drawingArea, (newArea, oldArea) => {
 	if (oldArea) {
 		resizeObserver.unobserve(oldArea);
+		oldArea.removeEventListener("wheel", onWheel);
 	}
 	if (newArea) {
 		resizeObserver.observe(newArea);
+		newArea.addEventListener("wheel", onWheel);
 	}
 });
 
@@ -86,30 +93,35 @@ onUnmounted(() => {
 });
 
 const graphPaperStyle = computed(() => {
+	const x = drawingAreaHalfSize.value[0] + workbenchOffset.value[0] * zoom.value;
+	const y = drawingAreaHalfSize.value[1] + workbenchOffset.value[1] * zoom.value;
 	return {
-		"background-position": `${origin.value[0]}px ${origin.value[1]}px`,
+		backgroundPosition: `${x}px ${y}px`,
+		transitionProperty: isZoomStable.value ? "none" : "background-position",
 	}
 });
 
-const origin = computed((): [number, number] => {
-	const workbenchOffset = app.currentDocument?.workbenchOffset || [0, 0];
-	return [
-		Math.floor(drawingAreaSize.value[0] / 2) + workbenchOffset[0],
-		Math.floor(drawingAreaSize.value[1] / 2) + workbenchOffset[1],
-	];
+const originTransform = computed(() => {
+	const x = drawingAreaHalfSize.value[0] + workbenchOffset.value[0] * zoom.value;
+	const y = drawingAreaHalfSize.value[1] + workbenchOffset.value[1] * zoom.value;
+	return {
+		transform: `translate(${x}px, ${y}px)`,
+		transitionProperty: isZoomStable.value ? "none" : "transform",
+	};
 });
 
 const zoomTransform = computed(() => {
-	const zoom = app.currentDocument?.workbenchZoom || 1;
 	return {
-		transform: `scale(${zoom}, ${zoom})`,
-		transformOrigin: `${origin.value[0]}px ${origin.value[1]}px`,
+		transform: `scale(${zoom.value}, ${zoom.value})`,
+		transformOrigin: `${drawingAreaHalfSize.value[0]}px ${drawingAreaHalfSize.value[1]}px`,
 	};
 });
 
 const panningTransform = computed(() => {
+	const x = drawingAreaHalfSize.value[0] + workbenchOffset.value[0];
+	const y = drawingAreaHalfSize.value[1] + workbenchOffset.value[1];
 	return {
-		transform: `translate(${origin.value[0]}px, ${origin.value[1]}px)`,
+		transform: `translate(${x}px, ${y}px)`,
 	};
 });
 
@@ -126,7 +138,6 @@ const allAnimationKeyframes = computed((): { direction: Direction, index: number
 	}
 	return keyframes;
 });
-
 
 const sortedHitboxes = computed((): HitboxDTO[] => {
 	if (!app.currentKeyframe) {
@@ -153,6 +164,13 @@ function onClick() {
 
 function updatePanning(event: DragAreaEvent) {
 	pan([event.mouseEvent.movementX, event.mouseEvent.movementY]);
+}
+
+function onWheel(event: WheelEvent) {
+	if (!event.ctrlKey) {
+		return;
+	}
+	// TODO
 }
 </script>
 

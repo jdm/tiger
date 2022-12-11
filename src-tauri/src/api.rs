@@ -1,4 +1,3 @@
-use euclid::vec2;
 use json_patch::Patch;
 use log::error;
 use std::path::PathBuf;
@@ -631,12 +630,10 @@ pub fn select_hitbox(
 }
 
 #[tauri::command]
-pub fn pan(app_state: tauri::State<'_, AppState>, delta: (i32, i32)) -> Result<Patch, ()> {
+pub fn pan(app_state: tauri::State<'_, AppState>, delta: (f32, f32)) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::Pan(vec2(delta.0 as f32, delta.1 as f32)))
-                .ok();
+            document.process_command(Command::Pan(delta.into())).ok();
         }
     }))
 }

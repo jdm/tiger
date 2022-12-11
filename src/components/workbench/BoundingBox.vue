@@ -5,7 +5,7 @@
 		when zoomed in.
 	-->
 	<div class="absolute">
-		<svg class="absolute" :style="style" :viewBox="`0 0 ${size[0] + 1} ${size[1] + 1}`">
+		<svg class="absolute" :style="style" :viewBox="`0 0 ${size[0] + 2} ${size[1] + 2}`">
 			<rect :x="1" :y="1" :width="Math.max(1, size[0])" :height="Math.max(1, size[1])"
 				shape-rendering="crispEdges" :stroke-width="scale" :class="colorClasses"
 				class="ease-in-out duration-150" style="transitionProperty: stroke-width" />
@@ -31,8 +31,8 @@ const scale = computed(() => 1 / zoom.value);
 const style = computed(() => {
 	return {
 		transform: `translate(${props.position[0] - 1}px, ${props.position[1] - 1}px)`,
-		width: `${props.size[0] + 1}px`,
-		height: `${props.size[1] + 1}px`,
+		width: `${props.size[0] + 2}px`,
+		height: `${props.size[1] + 2}px`,
 	};
 });
 </script>

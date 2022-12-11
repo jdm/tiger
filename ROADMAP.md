@@ -4,7 +4,7 @@
 
 - [ ] Tooltips everywhere
 - [x] Can press F2 to rename animations or hitboxes
-- [ ] Workbench zoom keeps screen center (mouse cursor when applicable) invariant (not origin)
+- [x] Workbench zoom keeps screen center invariant (not origin)
 - [ ] Timeline zoom keeps current position invariant
 - [ ] Can zoom workbench with mousewheel
 - [ ] Can zoom timeline with mousewheel
