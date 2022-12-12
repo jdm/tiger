@@ -69,7 +69,7 @@ pub struct Document {
 
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
-    timeline_offset_millis: u64,
+    timeline_offset_millis: f32,
     timeline_zoom_factor: f32,
     timeline_zoom_amount: f32,
 
@@ -403,7 +403,7 @@ impl document::Document {
                 .and_then(|(_, s)| s.keyframe_index_at(self.timeline_clock())),
             timeline_clock_millis: self.timeline_clock().as_millis() as u64,
             timeline_is_playing: self.is_timeline_playing(),
-            timeline_offset_millis: self.timeline_offset().as_millis() as u64,
+            timeline_offset_millis: self.timeline_offset().as_secs_f32() * 1_000.0,
             timeline_zoom_factor: self.timeline_zoom_factor(),
             timeline_zoom_amount: self.timeline_zoom_amount(),
             snap_keyframe_durations: self.should_snap_keyframe_durations(),

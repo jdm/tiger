@@ -1,10 +1,13 @@
 <template>
   <div ref="el" @mousedown="onMouseDown" :class="inactiveCursor">
-    <slot />
+    <div @contextmenu.capture="onContextMenu">
+      <slot />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { debounceAnimation } from "@/utils/animation";
 import { computed, onUnmounted, Ref, ref } from "vue"
 
 export type DragButton = "left" | "middle" | "right";
@@ -23,7 +26,7 @@ const styleOverrideID = "drag-area-global-style";
 const el: Ref<HTMLElement | null> = ref(null)
 const activeDrag: Ref<DragButton | null> = ref(null);
 let initialMouseEvent: MouseEvent | null = null;
-let didMove: boolean = false;
+const didMove = ref(false);
 
 const props = defineProps<{
   buttons?: DragButton[],
@@ -56,6 +59,8 @@ function indexToButton(index: number): DragButton {
   }
 }
 
+const allowContextMenu = debounceAnimation([activeDrag, didMove], () => activeDrag.value == null || !didMove.value, 50);
+
 onUnmounted(() => {
   if (activeDrag.value != null) {
     cleanup();
@@ -69,7 +74,6 @@ function cleanup() {
     document.getElementById(styleOverrideID)?.remove();
     document.body.classList.remove(props.activeCursor);
   }
-
 }
 
 function onMouseDown(e: MouseEvent) {
@@ -89,13 +93,13 @@ function onMouseDown(e: MouseEvent) {
   }
 
   initialMouseEvent = e;
-  didMove = false;
+  didMove.value = false;
   emit("dragStart", {
     mouseEvent: e,
     htmlElement: el.value,
     button: activeDrag.value,
     initialMouseEvent: initialMouseEvent,
-    didMove: didMove,
+    didMove: didMove.value,
   });
 }
 
@@ -111,7 +115,7 @@ function onMouseUp(e: MouseEvent) {
     htmlElement: el.value,
     button: button,
     initialMouseEvent: initialMouseEvent,
-    didMove: didMove,
+    didMove: didMove.value,
   });
 }
 
@@ -119,13 +123,22 @@ function onMouseMove(e: MouseEvent) {
   if (!activeDrag.value || !el.value || !initialMouseEvent) {
     return;
   }
-  didMove = true;
+  didMove.value = true;
   emit("dragUpdate", {
     mouseEvent: e,
     htmlElement: el.value,
     button: activeDrag.value,
     initialMouseEvent: initialMouseEvent,
-    didMove: didMove,
+    didMove: didMove.value,
   });
+}
+
+
+function onContextMenu(e: Event) {
+  if (allowContextMenu.value || !buttonIndexes.value.includes(2)) {
+    return;
+  }
+  e.preventDefault();
+  e.stopPropagation();
 }
 </script>

@@ -1064,15 +1064,10 @@ pub fn zoom_out_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
-pub fn set_timeline_offset(
-    app_state: tauri::State<'_, AppState>,
-    millis: u64,
-) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::Full, |app| {
+pub fn pan_timeline(app_state: tauri::State<'_, AppState>, delta: f32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {
-            document
-                .process_command(Command::SetTimelineOffset(Duration::from_millis(millis)))
-                .ok();
+            document.process_command(Command::PanTimeline(delta)).ok();
         }
     }))
 }

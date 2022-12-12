@@ -112,25 +112,16 @@ impl View {
     }
 
     fn adjust_timeline_zoom_amount(&mut self, zoom_delta: f32) {
-        let old_zoom_factor = self.timeline_zoom_factor();
+        let old_zoom = self.timeline_zoom_factor();
         self.set_timeline_zoom_amount(self.timeline_zoom_amount + zoom_delta);
-        let new_zoom_factor = self.timeline_zoom_factor();
-
-        let clock = self.timeline_clock.as_millis() as f32;
-        let offset = self.timeline_offset.as_millis() as f32;
+        let new_zoom = self.timeline_zoom_factor();
 
         // Nudge timeline offset to keep current playhead position fixed
-        let delta_seconds =
-            (offset - clock) * (old_zoom_factor - new_zoom_factor) / new_zoom_factor / 1_000.0;
-        if delta_seconds >= 0.0 {
-            self.timeline_offset = self
-                .timeline_offset
-                .saturating_add(Duration::from_secs_f32(delta_seconds.abs()));
-        } else {
-            self.timeline_offset = self
-                .timeline_offset
-                .saturating_sub(Duration::from_secs_f32(delta_seconds.abs()));
-        }
+        let clock = self.timeline_clock.as_secs_f32() * 1_000.0;
+        let old_offset = self.timeline_offset.as_secs_f32() * 1_000.0;
+        let new_offset =
+            ((clock * (new_zoom - old_zoom) + old_offset * old_zoom) / new_zoom).max(0.0);
+        self.timeline_offset = Duration::from_secs_f32(new_offset / 1_000.0);
     }
 
     pub(super) fn set_timeline_zoom_amount(&mut self, amount: f32) {
@@ -151,8 +142,17 @@ impl View {
         (factor * 10.0).round() / 10.0
     }
 
-    pub(super) fn set_timeline_offset(&mut self, offset: Duration) {
-        self.timeline_offset = offset;
+    pub(super) fn pan_timeline(&mut self, delta: f32) {
+        let delta_seconds = -delta / self.timeline_zoom_factor() / 1_000.0;
+        if delta_seconds >= 0.0 {
+            self.timeline_offset = self
+                .timeline_offset
+                .saturating_add(Duration::from_secs_f32(delta_seconds.abs()));
+        } else {
+            self.timeline_offset = self
+                .timeline_offset
+                .saturating_sub(Duration::from_secs_f32(delta_seconds.abs()));
+        }
     }
 
     pub(super) fn reset_timeline_offset(&mut self) {

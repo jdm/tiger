@@ -25,7 +25,7 @@
 				<div class="flex flex-col">
 					<div class="h-6 bg-plastic-600" />
 					<div
-						class="w-36 flex flex-col pt-2 pb-3 gap-1 text-plastic-400 text-xs uppercase font-semibold text-right">
+						class="w-36 flex flex-col py-2 gap-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="entry in sequenceEntries" @click="selectDirection(entry.direction)"
 							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="entry.sequence == app.currentSequence ?
 							'text-plastic-200 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
@@ -33,26 +33,23 @@
 						</div>
 					</div>
 				</div>
-				<div class="w-full flex">
-					<div class="absolute top-0 w-full h-full overflow-clip">
-						<div class="relative">
-							<div class="absolute overflow-hidden flex flex-col transition" :style="timelineStyle">
-								<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
-								<div class="flex flex-col py-2 gap-1">
-									<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
-										:direction="entry.direction" :animate="animateSequences" />
-									<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
-										class="h-10" />
-								</div>
-								<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
-									:style="playheadStyle" />
+				<div class="flex-grow relative">
+					<div ref="scrollableElement"
+						class="absolute top-0 min-w-full h-full overflow-clip flex flex-col transition"
+						:style="timelineStyle">
+						<DragArea :buttons="['right']" activeCursor="cursor-move" @drag-update="updatePanning"
+							@dragStart="onDragStart" @dragEnd="onDragEnd">
+							<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
+							<div class="flex flex-col py-2 gap-1">
+								<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
+									:direction="entry.direction" :animate="animateSequences" />
+								<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
+									class="h-10" />
 							</div>
-						</div>
+						</DragArea>
 					</div>
-					<div ref="scrollableElement" @scroll="onScroll"
-						class="z-10 self-end overflow-x-scroll styled-scrollbars">
-						<div class="h-1" :style="`width: ${timelineSize}px`" />
-					</div>
+					<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
+						:style="playheadStyle" />
 				</div>
 			</div>
 		</PaneInset>
@@ -60,14 +57,16 @@
 </template>
 
 <script setup lang="ts">
-import { computed, nextTick, Ref, ref, watch } from "vue"
+import { computed, Ref, ref } from "vue"
 import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
-	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineOffset, setTimelineZoomAmount
+panTimeline,
+	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { debounceAnimation, isStable } from "@/utils/animation"
+import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Slider from "@/components/basic/Slider.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
@@ -82,13 +81,10 @@ const app = useAppStore();
 
 const scrollableElement: Ref<HTMLElement | null> = ref(null);
 const scrubbing = ref(false);
+const panning = ref(false);
 const draggingScale = ref(false);
-let pendingScrollUpdates = 0;
 
-const offset = computed({
-	get: () => app.currentDocument?.timelineOffsetMillis || 0,
-	set: setTimelineOffset,
-});
+const offset = computed(() => app.currentDocument?.timelineOffsetMillis || 0);
 
 const zoomAmount = computed({
 	get: () => app.currentDocument ? app.currentDocument?.timelineZoomAmount : 0.5,
@@ -96,32 +92,6 @@ const zoomAmount = computed({
 });
 
 const zoomFactor = computed(() => app.currentDocument?.timelineZoomFactor || 1);
-const isZoomStable = isStable([zoomFactor]);
-const isScrollStable = computed(() => isZoomStable.value || offset.value == 0 );
-
-async function onScroll() {
-	if (!scrollableElement.value) {
-		return;
-	}
-	pendingScrollUpdates += 1;
-	await setTimelineOffset(scrollableElement.value.scrollLeft / zoomFactor.value);
-	pendingScrollUpdates -= 1;
-}
-
-watch([zoomAmount, () => app.currentDocument?.timelineOffsetMillis], () => {
-	if (pendingScrollUpdates > 0) {
-		return;
-	}
-	nextTick(() => {
-		if (!scrollableElement.value) {
-			return;
-		}
-		if (pendingScrollUpdates > 0) {
-			return;
-		}
-		scrollableElement.value.scrollLeft = Math.round(zoomFactor.value * offset.value);
-	});
-});
 
 type SequenceEntry = {
 	direction: Direction,
@@ -152,12 +122,11 @@ const timelineSize = computed(() => {
 	return zoomFactor.value * Math.max(visibleDuration, animationDuration.value + bonusDuration);
 });
 
-const debouncedNotDraggingScale = debounceAnimation(
-	[draggingScale],
-	() => !draggingScale.value
+const animateScrolling = debounceAnimation(
+	[draggingScale, panning],
+	() => !draggingScale.value && !panning.value
 );
 
-const animateScrolling = computed(() => debouncedNotDraggingScale.value && !isZoomStable.value);
 const timelineStyle = computed(() => {
 	return {
 		width: `${timelineSize.value}px`,
@@ -166,7 +135,10 @@ const timelineStyle = computed(() => {
 	}
 });
 
-const animateRuler = computed(() => debouncedNotDraggingScale.value);
+const animateRuler = debounceAnimation(
+	[draggingScale],
+	() => !draggingScale.value
+);
 
 const animateSequences = debounceAnimation(
 	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale],
@@ -177,11 +149,13 @@ const animatePlayhead = debounceAnimation(
 	[ () => app.currentDocument?.timelineIsPlaying
 	, () => app.currentDocument?.isDraggingKeyframeDuration
 	, scrubbing
+	, panning
 	, draggingScale
 	],
 	() => !app.currentDocument?.timelineIsPlaying
 	&& !app.currentDocument?.isDraggingKeyframeDuration
 	&& !scrubbing.value
+	&& !panning.value
 	&& !draggingScale.value
 );
 
@@ -189,8 +163,20 @@ const playheadStyle = computed(() => {
 	const time = app.currentDocument?.timelineClockMillis || 0;
 	return {
 		transitionProperty: animatePlayhead.value ? "left" : "none",
-		left: `${Math.floor(zoomFactor.value * time)}px`,
+		left: `${Math.round(zoomFactor.value * (time - offset.value))}px`,
 	};
 });
+
+function onDragStart(event: DragAreaEvent) {
+	panning.value = true;
+}
+
+function onDragEnd(event: DragAreaEvent) {
+	panning.value = false;
+}
+
+function updatePanning(event: DragAreaEvent) {
+	panTimeline(event.mouseEvent.movementX);
+}
 
 </script>

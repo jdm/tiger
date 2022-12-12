@@ -4,20 +4,19 @@ type MultiWatchSources = (WatchSource<unknown> | object)[];
 
 export function debounceAnimation<T extends MultiWatchSources>(
   sources: [...T],
-  evaluate: () => boolean
+  evaluate: () => boolean,
+  delay?: number
 ): Ref<boolean> {
   const value = ref(true);
-  let timerHandle: number;
   watch(sources, () => {
     if (!evaluate()) {
       value.value = false;
     } else {
-      window.clearTimeout(timerHandle);
-      timerHandle = window.setTimeout(() => {
+      window.setTimeout(() => {
         if (evaluate()) {
           value.value = true;
         }
-      }, 800);
+      }, delay || 800);
     }
   });
   return value;

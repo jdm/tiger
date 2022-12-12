@@ -421,11 +421,9 @@ export async function resetTimelineZoom(): Promise<void> {
   appStore.patch(await invoke("reset_timeline_zoom"));
 }
 
-export async function setTimelineOffset(millis: number): Promise<void> {
+export async function panTimeline(delta: number): Promise<void> {
   const appStore = useAppStore();
-  appStore.patch(
-    await invoke("set_timeline_offset", { millis: Math.round(millis) })
-  );
+  appStore.patch(await invoke("pan_timeline", { delta: delta }));
 }
 
 export async function setAnimationLooping(isLooping: boolean): Promise<void> {
