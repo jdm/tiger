@@ -34,22 +34,22 @@
 					</div>
 				</div>
 				<div class="flex-grow relative">
-					<div ref="scrollableElement"
-						class="absolute top-0 min-w-full h-full overflow-clip flex flex-col transition"
-						:style="timelineStyle">
+					<div ref="scrollableElement" class="absolute top-0 min-w-full h-full overflow-clip flex flex-col">
 						<DragArea :buttons="['right']" activeCursor="cursor-move" @drag-update="updatePanning"
 							@dragStart="onDragStart" @dragEnd="onDragEnd">
-							<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
-							<div class="flex flex-col py-2 gap-1">
-								<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
-									:direction="entry.direction" :animate="animateSequences" />
-								<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
-									class="h-10" />
+							<div class="absolute top-0 transition" :style="timelineStyle">
+								<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
+								<div class="flex flex-col py-2 gap-1">
+									<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
+										:direction="entry.direction" :animate="animateSequences" />
+									<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
+										class="h-10" />
+								</div>
 							</div>
 						</DragArea>
+						<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
+							:style="playheadStyle" />
 					</div>
-					<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
-						:style="playheadStyle" />
 				</div>
 			</div>
 		</PaneInset>
