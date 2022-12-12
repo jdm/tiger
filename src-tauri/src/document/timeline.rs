@@ -75,7 +75,9 @@ impl Document {
     }
 
     pub(super) fn jump_to_animation_start(&mut self) -> DocumentResult<()> {
-        self.scrub_timeline(Duration::ZERO)
+        self.scrub_timeline(Duration::ZERO)?;
+        self.view.reset_timeline_offset();
+        Ok(())
     }
 
     pub(super) fn jump_to_animation_end(&mut self) -> DocumentResult<()> {
