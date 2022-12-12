@@ -23,12 +23,13 @@ const app = useAppStore();
 
 const rulerStyle = computed(() => {
 	const zoom = app.currentDocument?.timelineZoomFactor || 1;
-	const secondTicks = `${1000 * zoom}px 100%`;
-	const hundredMsTicks = `${100 * zoom}px 10px`;
-	const msTicks = `${10 * zoom}px 4px`;
+	const tenMsSize = Math.round(10 * zoom);
+	const tenMsTicks = `${tenMsSize}px 4px`;
+	const hundredMsTicks = `${10 * tenMsSize}px 10px`;
+	const secondTicks = `${100 * tenMsSize}px 100%`;
 	return {
 		transformProperty: props.animate ? "background-size" : "none",
-		backgroundSize: [secondTicks, hundredMsTicks, msTicks].join()
+		backgroundSize: [secondTicks, hundredMsTicks, tenMsTicks].join()
 	};
 });
 
