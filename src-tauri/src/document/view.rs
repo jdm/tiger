@@ -104,11 +104,33 @@ impl View {
     }
 
     pub(super) fn zoom_in_timeline(&mut self) {
-        self.timeline_zoom_amount = (self.timeline_zoom_amount + 0.2).min(1.0);
+        self.adjust_timeline_zoom_amount(0.2);
     }
 
     pub(super) fn zoom_out_timeline(&mut self) {
-        self.timeline_zoom_amount = (self.timeline_zoom_amount - 0.2).max(0.0);
+        self.adjust_timeline_zoom_amount(-0.2);
+    }
+
+    fn adjust_timeline_zoom_amount(&mut self, zoom_delta: f32) {
+        let old_zoom_factor = self.timeline_zoom_factor();
+        self.set_timeline_zoom_amount(self.timeline_zoom_amount + zoom_delta);
+        let new_zoom_factor = self.timeline_zoom_factor();
+
+        let clock = self.timeline_clock.as_millis() as f32;
+        let offset = self.timeline_offset.as_millis() as f32;
+
+        // Nudge timeline offset to keep current playhead position fixed
+        let delta_seconds =
+            (offset - clock) * (old_zoom_factor - new_zoom_factor) / new_zoom_factor / 1_000.0;
+        if delta_seconds >= 0.0 {
+            self.timeline_offset = self
+                .timeline_offset
+                .saturating_add(Duration::from_secs_f32(delta_seconds.abs()));
+        } else {
+            self.timeline_offset = self
+                .timeline_offset
+                .saturating_sub(Duration::from_secs_f32(delta_seconds.abs()));
+        }
     }
 
     pub(super) fn set_timeline_zoom_amount(&mut self, amount: f32) {
@@ -119,8 +141,21 @@ impl View {
         self.timeline_zoom_amount = 0.5;
     }
 
+    pub(super) fn timeline_zoom_factor(&self) -> f32 {
+        const MIN_TIMELINE_ZOOM: f32 = 0.5;
+        const MAX_TIMELINE_ZOOM: f32 = 3.0;
+        let min_log = MIN_TIMELINE_ZOOM.log2();
+        let max_log = MAX_TIMELINE_ZOOM.log2();
+        let scale = max_log - min_log;
+        (min_log + scale * self.timeline_zoom_amount).exp2()
+    }
+
     pub(super) fn set_timeline_offset(&mut self, offset: Duration) {
         self.timeline_offset = offset;
+    }
+
+    pub(super) fn reset_timeline_offset(&mut self) {
+        self.timeline_offset = Duration::ZERO;
     }
 
     pub(super) fn pan(&mut self, delta: Vector2D<f32>) {
@@ -165,17 +200,12 @@ impl Document {
         self.view.workbench_zoom_factor as f32
     }
 
-    pub fn timeline_zoom_factor(&self) -> f32 {
-        const MIN_TIMELINE_ZOOM: f32 = 0.5;
-        const MAX_TIMELINE_ZOOM: f32 = 3.0;
-        let min_log = MIN_TIMELINE_ZOOM.log2();
-        let max_log = MAX_TIMELINE_ZOOM.log2();
-        let scale = max_log - min_log;
-        (min_log + scale * self.view.timeline_zoom_amount).exp2()
-    }
-
     pub fn timeline_zoom_amount(&self) -> f32 {
         self.view.timeline_zoom_amount
+    }
+
+    pub fn timeline_zoom_factor(&self) -> f32 {
+        self.view.timeline_zoom_factor()
     }
 
     pub fn timeline_offset(&self) -> Duration {

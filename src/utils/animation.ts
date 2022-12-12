@@ -7,15 +7,17 @@ export function debounceAnimation<T extends MultiWatchSources>(
   evaluate: () => boolean
 ): Ref<boolean> {
   const value = ref(true);
+  let timerHandle: number;
   watch(sources, () => {
     if (!evaluate()) {
       value.value = false;
     } else {
-      setTimeout(() => {
+      window.clearTimeout(timerHandle);
+      timerHandle = window.setTimeout(() => {
         if (evaluate()) {
           value.value = true;
         }
-      }, 300);
+      }, 800);
     }
   });
   return value;

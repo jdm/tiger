@@ -20,6 +20,7 @@ impl Document {
         self.view.current_animation = Some(name.as_ref().to_owned());
         self.view.center_workbench();
         self.view.skip_to_timeline_start();
+        self.view.reset_timeline_offset();
         self.persistent.timeline_is_playing = false;
 
         let (_, animation) = self.workbench_animation()?;

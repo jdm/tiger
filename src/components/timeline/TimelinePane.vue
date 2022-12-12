@@ -21,11 +21,11 @@
 			</div>
 		</div>
 		<PaneInset class="flex-1 m-4 mt-0 ">
-			<div class="relative flex h-full bg-plastic-700">
+			<div class="flex items-stretch bg-plastic-700">
 				<div class="flex flex-col">
 					<div class="h-6 bg-plastic-600" />
 					<div
-						class="w-36 flex flex-col py-2 gap-1 text-plastic-400 text-xs uppercase font-semibold text-right">
+						class="w-36 flex flex-col pt-2 pb-3 gap-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="entry in sequenceEntries" @click="selectDirection(entry.direction)"
 							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="entry.sequence == app.currentSequence ?
 							'text-plastic-200 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
@@ -33,18 +33,25 @@
 						</div>
 					</div>
 				</div>
-				<div ref="scrollableElement" @scroll="onScroll"
-					class="flex-1 relative overflow-x-scroll styled-scrollbars">
-					<div class="min-w-full flex flex-col" :style="timelineStyle">
-						<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
-						<div class="flex flex-col py-2 gap-1">
-							<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
-								:direction="entry.direction" :animate="animateSequences" />
-							<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
-								class="h-10" />
+				<div class="w-full flex">
+					<div class="absolute top-0 w-full h-full overflow-clip">
+						<div class="relative">
+							<div class="absolute overflow-hidden flex flex-col transition" :style="timelineStyle">
+								<Ruler v-model:scrubbing="scrubbing" :animate="animateRuler" />
+								<div class="flex flex-col py-2 gap-1">
+									<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
+										:direction="entry.direction" :animate="animateSequences" />
+									<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
+										class="h-10" />
+								</div>
+								<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
+									:style="playheadStyle" />
+							</div>
 						</div>
-						<div class="absolute top-0 mx-2 h-full w-px bg-white transition pointer-events-none"
-							:style="playheadStyle" />
+					</div>
+					<div ref="scrollableElement" @scroll="onScroll"
+						class="z-10 self-end overflow-x-scroll styled-scrollbars">
+						<div class="h-1" :style="`width: ${timelineSize}px`" />
 					</div>
 				</div>
 			</div>
@@ -145,20 +152,25 @@ const timelineSize = computed(() => {
 	return zoomFactor.value * Math.max(visibleDuration, animationDuration.value + bonusDuration);
 });
 
+const debouncedNotDraggingScale = debounceAnimation(
+	[draggingScale],
+	() => !draggingScale.value
+);
+
+const animateScrolling = computed(() => debouncedNotDraggingScale.value && !isZoomStable.value);
 const timelineStyle = computed(() => {
 	return {
-		width: `${timelineSize.value}px`
+		width: `${timelineSize.value}px`,
+		left: `-${Math.round(offset.value * zoomFactor.value)}px`,
+		transitionProperty: animateScrolling.value ? "left, width" : "none",
 	}
 });
 
-const animateRuler = debounceAnimation(
-	[draggingScale, isScrollStable],
-	() => !draggingScale.value && isScrollStable.value
-);
+const animateRuler = computed(() => debouncedNotDraggingScale.value);
 
 const animateSequences = debounceAnimation(
-	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale, isScrollStable],
-	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value && isScrollStable.value
+	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale],
+	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value
 );
 
 const animatePlayhead = debounceAnimation(
@@ -166,13 +178,11 @@ const animatePlayhead = debounceAnimation(
 	, () => app.currentDocument?.isDraggingKeyframeDuration
 	, scrubbing
 	, draggingScale
-	, isScrollStable
 	],
 	() => !app.currentDocument?.timelineIsPlaying
 	&& !app.currentDocument?.isDraggingKeyframeDuration
 	&& !scrubbing.value
 	&& !draggingScale.value
-	&& isScrollStable.value
 );
 
 const playheadStyle = computed(() => {
