@@ -147,7 +147,8 @@ impl View {
         let min_log = MIN_TIMELINE_ZOOM.log2();
         let max_log = MAX_TIMELINE_ZOOM.log2();
         let scale = max_log - min_log;
-        (min_log + scale * self.timeline_zoom_amount).exp2()
+        let factor = (min_log + scale * self.timeline_zoom_amount).exp2();
+        (factor * 10.0).round() / 10.0
     }
 
     pub(super) fn set_timeline_offset(&mut self, offset: Duration) {

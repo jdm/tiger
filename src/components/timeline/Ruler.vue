@@ -23,10 +23,9 @@ const app = useAppStore();
 
 const rulerStyle = computed(() => {
 	const zoom = app.currentDocument?.timelineZoomFactor || 1;
-	const tenMsSize = Math.round(10 * zoom);
-	const tenMsTicks = `${tenMsSize}px 4px`;
-	const hundredMsTicks = `${10 * tenMsSize}px 10px`;
-	const secondTicks = `${100 * tenMsSize}px 100%`;
+	const tenMsTicks = `${10 * zoom}px 4px`;
+	const hundredMsTicks = `${100 * zoom}px 10px`;
+	const secondTicks = `${1000 * zoom}px 100%`;
 	return {
 		transitionProperty: props.animate ? "background-size" : "none",
 		backgroundSize: [secondTicks, hundredMsTicks, tenMsTicks].join()
