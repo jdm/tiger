@@ -10,7 +10,7 @@ pub enum Clipboard {
     Hitboxes(HashMap<String, Hitbox>),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub enum ClipboardManifest {
     Animations,
     Keyframes,
