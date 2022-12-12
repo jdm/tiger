@@ -66,6 +66,7 @@ pub enum Command {
     ZoomInTimeline,
     ZoomOutTimeline,
     SetTimelineZoomAmount(f32),
+    SetTimelineOffset(Duration),
     ResetTimelineZoom,
     SetAnimationLooping(bool),
     ApplyDirectionPreset(DirectionPreset),
@@ -191,6 +192,7 @@ impl Document {
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
             Command::SetTimelineZoomAmount(a) => self.view.set_timeline_zoom_amount(a),
             Command::ResetTimelineZoom => self.view.reset_timeline_zoom(),
+            Command::SetTimelineOffset(d) => self.view.set_timeline_offset(d),
             Command::SetAnimationLooping(l) => self.set_animation_looping(l)?,
             Command::ApplyDirectionPreset(p) => self.apply_direction_preset(p)?,
             Command::SelectDirection(d) => self.select_direction(d)?,
@@ -403,6 +405,7 @@ impl Display for Command {
             | Command::ZoomInTimeline
             | Command::ZoomOutTimeline
             | Command::SetTimelineZoomAmount(_)
+            | Command::SetTimelineOffset(_)
             | Command::ResetTimelineZoom => f.write_str("Navigation"),
 
             Command::BeginExportAs

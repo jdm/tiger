@@ -155,6 +155,7 @@ fn main() {
             api::set_snap_keyframe_durations,
             api::set_snap_keyframes_to_multiples_of_duration,
             api::set_snap_keyframes_to_other_keyframes,
+            api::set_timeline_offset,
             api::set_timeline_zoom_amount,
             api::set_workbench_zoom_factor,
             api::show_hitboxes,

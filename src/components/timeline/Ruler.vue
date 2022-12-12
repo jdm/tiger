@@ -1,7 +1,7 @@
 <template>
 	<div class="h-6 px-2 bg-plastic-600">
 		<DragArea button="left" inactive-cursor="cursor-pointer" active-cursor="cursor-pointer"
-			class="h-full ruler transition" :style="rulerStyle" @drag-start="startScrub" @drag-end="endScrub"
+			class="h-full ruler transition-all" :style="rulerStyle" @drag-start="startScrub" @drag-end="endScrub"
 			@drag-update="updateScrub" />
 	</div>
 </template>
@@ -28,7 +28,7 @@ const rulerStyle = computed(() => {
 	const hundredMsTicks = `${10 * tenMsSize}px 10px`;
 	const secondTicks = `${100 * tenMsSize}px 100%`;
 	return {
-		transformProperty: props.animate ? "background-size" : "none",
+		transitionProperty: props.animate ? "background-size" : "none",
 		backgroundSize: [secondTicks, hundredMsTicks, tenMsTicks].join()
 	};
 });

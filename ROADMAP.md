@@ -12,8 +12,9 @@
 - [ ] Frame, hitbox and animation panes auto-scroll when browsing with keyboard controls
 - [ ] Frame, hitbox and animation panes have their scroll position in undo stack
 - [ ] Timeline scrolling follows playback
-- [ ] Timeline scroll position in undo stack
+- [x] Timeline scroll position in undo stack
 - [ ] Timeline scrolling follows frame selection (or double click?)
+- [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
 
 ## Tiger 0.8
 

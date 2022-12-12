@@ -13,49 +13,51 @@ pub enum ListMode {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
-    pub(super) frames_list_mode: ListMode,
-    pub(super) selection: SelectionState,
-    pub(super) frames_filter: String,
     pub(super) animations_filter: String,
     pub(super) current_animation: Option<String>,
     pub(super) current_sequence: Option<Direction>,
-    pub(super) workbench_offset: Vector2D<f32>,
-    pub(super) timeline_clock: Duration,
-    pub(super) workbench_zoom_factor: u32,
-    pub(super) timeline_zoom_amount: f32,
     pub(super) darken_sprites: bool,
-    pub(super) hide_sprite: bool,
+    pub(super) frames_filter: String,
+    pub(super) frames_list_mode: ListMode,
     pub(super) hide_hitboxes: bool,
     pub(super) hide_origin: bool,
-    pub(super) lock_hitboxes: bool,
-    pub(super) snap_keyframe_durations: bool,
-    pub(super) snap_keyframes_to_other_keyframes: bool,
-    pub(super) snap_keyframes_to_multiples_of_duration: bool,
+    pub(super) hide_sprite: bool,
     pub(super) keyframe_snapping_base_duration: Duration,
+    pub(super) lock_hitboxes: bool,
+    pub(super) selection: SelectionState,
+    pub(super) snap_keyframe_durations: bool,
+    pub(super) snap_keyframes_to_multiples_of_duration: bool,
+    pub(super) snap_keyframes_to_other_keyframes: bool,
+    pub(super) timeline_clock: Duration,
+    pub(super) timeline_offset: Duration,
+    pub(super) timeline_zoom_amount: f32,
+    pub(super) workbench_offset: Vector2D<f32>,
+    pub(super) workbench_zoom_factor: u32,
 }
 
 impl Default for View {
     fn default() -> View {
         View {
-            frames_list_mode: ListMode::Grid4xN,
-            selection: Default::default(),
-            frames_filter: Default::default(),
             animations_filter: Default::default(),
             current_animation: None,
             current_sequence: None,
-            workbench_offset: Vector2D::<f32>::zero(), // Should this be an integer?
-            workbench_zoom_factor: 8,
-            timeline_zoom_amount: 0.5,
-            timeline_clock: Default::default(),
             darken_sprites: true,
-            hide_sprite: false,
+            frames_filter: Default::default(),
+            frames_list_mode: ListMode::Grid4xN,
             hide_hitboxes: false,
             hide_origin: false,
-            lock_hitboxes: false,
-            snap_keyframe_durations: true,
-            snap_keyframes_to_other_keyframes: true,
-            snap_keyframes_to_multiples_of_duration: false,
+            hide_sprite: false,
             keyframe_snapping_base_duration: Duration::from_millis(100),
+            lock_hitboxes: false,
+            selection: Default::default(),
+            snap_keyframe_durations: true,
+            snap_keyframes_to_multiples_of_duration: false,
+            snap_keyframes_to_other_keyframes: true,
+            timeline_clock: Default::default(),
+            timeline_offset: Default::default(),
+            timeline_zoom_amount: 0.5,
+            workbench_offset: Vector2D::<f32>::zero(),
+            workbench_zoom_factor: 8,
         }
     }
 }
@@ -117,6 +119,10 @@ impl View {
         self.timeline_zoom_amount = 0.5;
     }
 
+    pub(super) fn set_timeline_offset(&mut self, offset: Duration) {
+        self.timeline_offset = offset;
+    }
+
     pub(super) fn pan(&mut self, delta: Vector2D<f32>) {
         self.workbench_offset += delta / self.workbench_zoom_factor as f32;
     }
@@ -170,6 +176,10 @@ impl Document {
 
     pub fn timeline_zoom_amount(&self) -> f32 {
         self.view.timeline_zoom_amount
+    }
+
+    pub fn timeline_offset(&self) -> Duration {
+        self.view.timeline_offset
     }
 
     pub fn timeline_clock(&self) -> Duration {

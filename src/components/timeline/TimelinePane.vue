@@ -53,14 +53,14 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from "@vue/reactivity"
+import { computed, nextTick, Ref, ref, watch } from "vue"
 import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
-	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount
+	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineOffset, setTimelineZoomAmount
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
-import { debounceAnimation } from "@/utils/animation"
+import { debounceAnimation, isStable } from "@/utils/animation"
 import Slider from "@/components/basic/Slider.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
@@ -76,16 +76,45 @@ const app = useAppStore();
 const scrollableElement: Ref<HTMLElement | null> = ref(null);
 const scrubbing = ref(false);
 const draggingScale = ref(false);
-const scrollLeft = ref(0);
+let pendingScrollUpdates = 0;
+
+const offset = computed({
+	get: () => app.currentDocument?.timelineOffsetMillis || 0,
+	set: setTimelineOffset,
+});
 
 const zoomAmount = computed({
 	get: () => app.currentDocument ? app.currentDocument?.timelineZoomAmount : 0.5,
 	set: setTimelineZoomAmount,
 });
 
-function onScroll() {
-	scrollLeft.value = scrollableElement.value?.scrollLeft || 0;
+const zoomFactor = computed(() => app.currentDocument?.timelineZoomFactor || 1);
+const isZoomStable = isStable([zoomFactor]);
+const isScrollStable = computed(() => isZoomStable.value || offset.value == 0 );
+
+async function onScroll() {
+	if (!scrollableElement.value) {
+		return;
+	}
+	pendingScrollUpdates += 1;
+	await setTimelineOffset(scrollableElement.value.scrollLeft / zoomFactor.value);
+	pendingScrollUpdates -= 1;
 }
+
+watch([zoomAmount, () => app.currentDocument?.timelineOffsetMillis], () => {
+	if (pendingScrollUpdates > 0) {
+		return;
+	}
+	nextTick(() => {
+		if (!scrollableElement.value) {
+			return;
+		}
+		if (pendingScrollUpdates > 0) {
+			return;
+		}
+		scrollableElement.value.scrollLeft = Math.round(zoomFactor.value * offset.value);
+	});
+});
 
 type SequenceEntry = {
 	direction: Direction,
@@ -111,11 +140,9 @@ const animationDuration = computed(() => {
 });
 
 const timelineSize = computed(() => {
-	const zoom = app.currentDocument?.timelineZoomFactor || 1;
-	const visibleSize = scrollLeft.value + (scrollableElement.value?.clientWidth || 0);
-	const visibleDuration = visibleSize / zoom;
-	const bonusDuration = 500 / zoom;
-	return zoom * Math.max(visibleDuration, animationDuration.value + bonusDuration);
+	const visibleDuration = offset.value + (scrollableElement.value?.clientWidth || 0) / zoomFactor.value;
+	const bonusDuration = 500 / zoomFactor.value;
+	return zoomFactor.value * Math.max(visibleDuration, animationDuration.value + bonusDuration);
 });
 
 const timelineStyle = computed(() => {
@@ -125,13 +152,13 @@ const timelineStyle = computed(() => {
 });
 
 const animateRuler = debounceAnimation(
-	[draggingScale],
-	() => !draggingScale.value
+	[draggingScale, isScrollStable],
+	() => !draggingScale.value && isScrollStable.value
 );
 
 const animateSequences = debounceAnimation(
-	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale],
-	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value
+	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale, isScrollStable],
+	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value && isScrollStable.value
 );
 
 const animatePlayhead = debounceAnimation(
@@ -139,19 +166,20 @@ const animatePlayhead = debounceAnimation(
 	, () => app.currentDocument?.isDraggingKeyframeDuration
 	, scrubbing
 	, draggingScale
+	, isScrollStable
 	],
 	() => !app.currentDocument?.timelineIsPlaying
 	&& !app.currentDocument?.isDraggingKeyframeDuration
 	&& !scrubbing.value
 	&& !draggingScale.value
+	&& isScrollStable.value
 );
 
 const playheadStyle = computed(() => {
-	const zoom = app.currentDocument?.timelineZoomFactor || 1;
 	const time = app.currentDocument?.timelineClockMillis || 0;
 	return {
 		transitionProperty: animatePlayhead.value ? "left" : "none",
-		left: `${Math.floor(zoom * time)}px`,
+		left: `${Math.floor(zoomFactor.value * time)}px`,
 	};
 });
 

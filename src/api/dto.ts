@@ -47,6 +47,7 @@ export type Document = {
   currentKeyframeIndex: number | null;
   timelineClockMillis: number;
   timelineIsPlaying: boolean;
+  timelineOffsetMillis: number;
   timelineZoomFactor: number;
   timelineZoomAmount: number;
   snapKeyframeDurations: boolean;

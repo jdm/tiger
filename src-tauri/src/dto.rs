@@ -47,34 +47,43 @@ pub struct UserFacingError {
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
-    path: PathBuf,
     name: String,
-    has_unsaved_changes: bool,
-    undo_effect: Option<String>,
-    redo_effect: Option<String>,
-    was_close_requested: bool,
+    path: PathBuf,
     sheet: Sheet,
+
+    has_unsaved_changes: bool,
+    redo_effect: Option<String>,
+    undo_effect: Option<String>,
+    was_close_requested: bool,
+
     frames_list_mode: ListMode,
     frames_filter: String,
     animations_filter: String,
+
     workbench_offset: (f32, f32),
     workbench_zoom: f32,
+
     current_animation_name: Option<String>,
     current_sequence_direction: Option<Direction>,
     current_keyframe_index: Option<usize>,
+
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
+    timeline_offset_millis: u64,
     timeline_zoom_factor: f32,
     timeline_zoom_amount: f32,
+
     snap_keyframe_durations: bool,
     snap_keyframes_to_other_keyframes: bool,
     snap_keyframes_to_multiples_of_duration: bool,
     keyframe_snapping_base_duration_millis: u64,
+
     darken_sprites: bool,
     hide_sprite: bool,
     hide_hitboxes: bool,
     hide_origin: bool,
     lock_hitboxes: bool,
+
     preserve_aspect_ratio: bool,
     animation_being_renamed: Option<String>,
     hitbox_being_renamed: Option<String>,
@@ -83,6 +92,7 @@ pub struct Document {
     keyframes_being_dragged: HashSet<(Direction, usize)>,
     hitboxes_being_nudged: HashSet<String>,
     hitboxes_being_resized: HashSet<String>,
+
     export_settings_being_edited: Option<ExportSettings>,
     export_settings_validation: Option<ExportSettingsValidation>,
 }
@@ -393,6 +403,7 @@ impl document::Document {
                 .and_then(|(_, s)| s.keyframe_index_at(self.timeline_clock())),
             timeline_clock_millis: self.timeline_clock().as_millis() as u64,
             timeline_is_playing: self.is_timeline_playing(),
+            timeline_offset_millis: self.timeline_offset().as_millis() as u64,
             timeline_zoom_factor: self.timeline_zoom_factor(),
             timeline_zoom_amount: self.timeline_zoom_amount(),
             snap_keyframe_durations: self.should_snap_keyframe_durations(),

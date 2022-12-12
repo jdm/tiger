@@ -421,6 +421,13 @@ export async function resetTimelineZoom(): Promise<void> {
   appStore.patch(await invoke("reset_timeline_zoom"));
 }
 
+export async function setTimelineOffset(millis: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_timeline_offset", { millis: Math.round(millis) })
+  );
+}
+
 export async function setAnimationLooping(isLooping: boolean): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(
