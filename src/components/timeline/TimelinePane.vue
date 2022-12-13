@@ -173,6 +173,8 @@ function onMouseWheel(event: WheelEvent) {
 			return;
 		}
 		const boundingBox = scrollableElement.value.getBoundingClientRect();
+		// 8px offset is for the padding between start of scrollable element
+		// and beginning of timeline content
 		const cursorTime = (event.clientX - 8 - boundingBox.left) / zoomFactor.value + offset.value;
 		if (event.deltaY < 0) {
 			zoomInTimelineAround(cursorTime);

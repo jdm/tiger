@@ -5,14 +5,15 @@
 - [ ] Tooltips everywhere
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)
-- [x] Timeline zoom keeps current position invariant
 - [x] Can zoom workbench with mousewheel
-- [ ] Can zoom timeline with mousewheel
-- [ ] Can scroll timeline with mousewheel
 - [ ] Frame, hitbox and animation panes auto-scroll when browsing with keyboard controls
 - [ ] Frame, hitbox and animation panes have their scroll position in undo stack
-- [ ] Timeline scrolling follows playback
 - [x] Timeline scroll position in undo stack
+- [x] Timeline zoom keeps current position invariant
+- [x] Can zoom timeline with mousewheel
+- [x] Can scroll timeline with mousewheel or right-click drag
+- [x] Removed timeline scrollbar
+- [ ] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
 
