@@ -170,9 +170,11 @@ fn main() {
             api::update_nudge_keyframe,
             api::update_resize_hitbox,
             api::zoom_in_timeline,
+            api::zoom_in_timeline_around,
             api::zoom_in_workbench,
             api::zoom_in_workbench_around,
             api::zoom_out_timeline,
+            api::zoom_out_timeline_around,
             api::zoom_out_workbench,
             api::zoom_out_workbench_around,
         ])

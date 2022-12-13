@@ -1064,6 +1064,38 @@ pub fn zoom_out_timeline(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
+pub fn zoom_in_timeline_around(
+    app_state: tauri::State<'_, AppState>,
+    fixed_point: f32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::ZoomInTimelineAround(Duration::from_secs_f32(
+                    fixed_point.max(0.0) / 1_000.0,
+                )))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn zoom_out_timeline_around(
+    app_state: tauri::State<'_, AppState>,
+    fixed_point: f32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::ZoomOutTimelineAround(Duration::from_secs_f32(
+                    fixed_point.max(0.0) / 1_000.0,
+                )))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn pan_timeline(app_state: tauri::State<'_, AppState>, delta: f32) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
         if let Some(document) = app.current_document_mut() {

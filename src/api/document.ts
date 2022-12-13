@@ -411,6 +411,20 @@ export async function zoomOutTimeline(): Promise<void> {
   appStore.patch(await invoke("zoom_out_timeline"));
 }
 
+export async function zoomInTimelineAround(fixedPoint: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("zoom_in_timeline_around", { fixedPoint: fixedPoint })
+  );
+}
+
+export async function zoomOutTimelineAround(fixedPoint: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("zoom_out_timeline_around", { fixedPoint: fixedPoint })
+  );
+}
+
 export async function setTimelineZoomAmount(amount: number): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("set_timeline_zoom_amount", { amount: amount }));

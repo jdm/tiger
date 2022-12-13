@@ -34,7 +34,8 @@
 					</div>
 				</div>
 				<div class="flex-grow relative min-h-[212px]">
-					<div ref="scrollableElement" class="absolute min-w-full h-full overflow-clip flex flex-col">
+					<div ref="scrollableElement" class="absolute min-w-full h-full overflow-clip flex flex-col"
+						@wheel="onMouseWheel">
 						<DragArea :buttons="['right']" activeCursor="cursor-move" @drag-update="updatePanning"
 							@dragStart="onDragStart" @dragEnd="onDragEnd">
 							<div class="absolute top-0 transition" :style="timelineStyle">
@@ -60,7 +61,7 @@ import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
 panTimeline,
-	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount
+	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount, zoomInTimelineAround, zoomOutTimelineAround
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { debounceAnimation, isStable } from "@/utils/animation"
@@ -122,7 +123,8 @@ const timelineSize = computed(() => {
 
 const animateScrolling = debounceAnimation(
 	[draggingScale, panning],
-	() => !draggingScale.value && !panning.value
+	() => !draggingScale.value && !panning.value,
+	50
 );
 
 const timelineStyle = computed(() => {
@@ -164,6 +166,23 @@ const playheadStyle = computed(() => {
 		left: `${Math.round(zoomFactor.value * (time - offset.value))}px`,
 	};
 });
+
+function onMouseWheel(event: WheelEvent) {
+	if (event.ctrlKey) {
+		if (!scrollableElement.value) {
+			return;
+		}
+		const boundingBox = scrollableElement.value.getBoundingClientRect();
+		const cursorTime = (event.clientX - 8 - boundingBox.left) / zoomFactor.value + offset.value;
+		if (event.deltaY < 0) {
+			zoomInTimelineAround(cursorTime);
+		} else {
+			zoomOutTimelineAround(cursorTime);
+		}
+	} else {
+		panTimeline(-event.deltaY);
+	}
+}
 
 function onDragStart(event: DragAreaEvent) {
 	panning.value = true;

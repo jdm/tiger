@@ -104,20 +104,28 @@ impl View {
     }
 
     pub(super) fn zoom_in_timeline(&mut self) {
-        self.adjust_timeline_zoom_amount(0.2);
+        self.adjust_timeline_zoom_amount(0.2, self.timeline_clock);
     }
 
     pub(super) fn zoom_out_timeline(&mut self) {
-        self.adjust_timeline_zoom_amount(-0.2);
+        self.adjust_timeline_zoom_amount(-0.2, self.timeline_clock);
     }
 
-    fn adjust_timeline_zoom_amount(&mut self, zoom_delta: f32) {
+    pub(super) fn zoom_in_timeline_around(&mut self, fixed_point: Duration) {
+        self.adjust_timeline_zoom_amount(0.2, fixed_point);
+    }
+
+    pub(super) fn zoom_out_timeline_around(&mut self, fixed_point: Duration) {
+        self.adjust_timeline_zoom_amount(-0.2, fixed_point);
+    }
+
+    fn adjust_timeline_zoom_amount(&mut self, zoom_delta: f32, fixed_point: Duration) {
         let old_zoom = self.timeline_zoom_factor();
         self.set_timeline_zoom_amount(self.timeline_zoom_amount + zoom_delta);
         let new_zoom = self.timeline_zoom_factor();
 
-        // Nudge timeline offset to keep current playhead position fixed
-        let clock = self.timeline_clock.as_secs_f32() * 1_000.0;
+        // Nudge timeline offset to keep fixed_point visually in the same place
+        let clock = fixed_point.as_secs_f32() * 1_000.0;
         let old_offset = self.timeline_offset.as_secs_f32() * 1_000.0;
         let new_offset =
             ((clock * (new_zoom - old_zoom) + old_offset * old_zoom) / new_zoom).max(0.0);

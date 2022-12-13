@@ -64,7 +64,9 @@ pub enum Command {
     SetSnapKeyframeToMultiplesOfDuration(bool),
     SetKeyframeSnappingBaseDuration(Duration),
     ZoomInTimeline,
+    ZoomInTimelineAround(Duration),
     ZoomOutTimeline,
+    ZoomOutTimelineAround(Duration),
     SetTimelineZoomAmount(f32),
     PanTimeline(f32),
     ResetTimelineZoom,
@@ -189,7 +191,9 @@ impl Document {
                     .max(Duration::from_millis(1))
             }
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
+            Command::ZoomInTimelineAround(t) => self.view.zoom_in_timeline_around(t),
             Command::ZoomOutTimeline => self.view.zoom_out_timeline(),
+            Command::ZoomOutTimelineAround(t) => self.view.zoom_out_timeline_around(t),
             Command::SetTimelineZoomAmount(a) => self.view.set_timeline_zoom_amount(a),
             Command::ResetTimelineZoom => self.view.reset_timeline_zoom(),
             Command::PanTimeline(d) => self.view.pan_timeline(d),
@@ -403,7 +407,9 @@ impl Display for Command {
             | Command::JumpToPreviousFrame
             | Command::JumpToNextFrame
             | Command::ZoomInTimeline
+            | Command::ZoomInTimelineAround(_)
             | Command::ZoomOutTimeline
+            | Command::ZoomOutTimelineAround(_)
             | Command::SetTimelineZoomAmount(_)
             | Command::PanTimeline(_)
             | Command::ResetTimelineZoom => f.write_str("Navigation"),
