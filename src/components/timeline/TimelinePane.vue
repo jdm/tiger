@@ -34,7 +34,7 @@
 					</div>
 				</div>
 				<div class="flex-grow relative">
-					<div ref="scrollableElement" class="absolute top-0 min-w-full h-full overflow-clip flex flex-col">
+					<div ref="scrollableElement" class="min-w-full h-full overflow-clip flex flex-col">
 						<DragArea :buttons="['right']" activeCursor="cursor-move" @drag-update="updatePanning"
 							@dragStart="onDragStart" @dragEnd="onDragEnd">
 							<div class="absolute top-0 transition" :style="timelineStyle">
