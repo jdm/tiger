@@ -1,14 +1,12 @@
 <template>
   <div ref="el" @mousedown="onMouseDown" :class="inactiveCursor">
-    <div @contextmenu.capture="onContextMenu">
-      <slot />
-    </div>
+    <slot />
   </div>
 </template>
 
 <script setup lang="ts">
 import { debounceAnimation } from "@/utils/animation";
-import { computed, onUnmounted, Ref, ref } from "vue"
+import { computed, onMounted, onUnmounted, Ref, ref } from "vue"
 
 export type DragButton = "left" | "middle" | "right";
 export type Cursor = "cursor-move" | "cursor-pointer"
@@ -61,7 +59,12 @@ function indexToButton(index: number): DragButton {
 
 const allowContextMenu = debounceAnimation([activeDrag, didMove], () => activeDrag.value == null || !didMove.value, 50);
 
+onMounted(() => {
+  document.addEventListener("contextmenu", onContextMenu, { capture: true });
+});
+
 onUnmounted(() => {
+  document.removeEventListener("contextmenu", onContextMenu);
   if (activeDrag.value != null) {
     cleanup();
   }
