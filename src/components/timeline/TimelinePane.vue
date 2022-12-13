@@ -33,8 +33,8 @@
 						</div>
 					</div>
 				</div>
-				<div class="flex-grow relative">
-					<div ref="scrollableElement" class="min-w-full h-full overflow-clip flex flex-col">
+				<div class="flex-grow relative min-h-[212px]">
+					<div ref="scrollableElement" class="absolute min-w-full h-full overflow-clip flex flex-col">
 						<DragArea :buttons="['right']" activeCursor="cursor-move" @drag-update="updatePanning"
 							@dragStart="onDragStart" @dragEnd="onDragEnd">
 							<div class="absolute top-0 transition" :style="timelineStyle">
@@ -42,8 +42,6 @@
 								<div class="flex flex-col py-2 gap-1">
 									<Sequence v-for="entry in sequenceEntries" :sequence="entry.sequence"
 										:direction="entry.direction" :animate="animateSequences" />
-									<div v-for="_ in Math.max(0, (4 - Object.keys(app.currentAnimation?.sequences || []).length))"
-										class="h-10" />
 								</div>
 							</div>
 						</DragArea>
