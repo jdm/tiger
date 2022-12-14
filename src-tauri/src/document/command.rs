@@ -10,6 +10,7 @@ use crate::sheet::{Direction, DirectionPreset, Sheet};
 pub enum Command {
     Undo,
     Redo,
+    DetachedNavigation,
     Paste(Clipboard),
     SetFramesListMode(ListMode),
     FilterFrames(String),
@@ -128,6 +129,7 @@ impl Document {
         match command {
             Command::Undo => self.undo()?,
             Command::Redo => self.redo()?,
+            Command::DetachedNavigation => (),
             Command::Paste(ref c) => self.paste(c.clone())?,
             Command::SetFramesListMode(m) => self.view.frames_list_mode = m,
             Command::FilterFrames(ref q) => self.view.frames_filter = q.clone(),
@@ -258,8 +260,7 @@ impl Document {
 
         if !matches!(
             command,
-            Command::Tick(_)
-                | Command::Undo
+            Command::Undo
                 | Command::Redo
                 | Command::BeginRenameAnimation(_)
                 | Command::BeginRenameHitbox(_)
@@ -307,31 +308,64 @@ impl Document {
     }
 
     fn record_command(&mut self, command: Command) {
-        let has_sheet_changes = self.history[self.history_index].sheet != self.sheet;
+        let current_history_entry = &self.history[self.history_index];
+        let has_sheet_changes = current_history_entry.sheet != self.sheet;
+        let has_view_changes = current_history_entry.view != self.view;
+        let is_at_head = self.history_index == self.history.len() - 1;
 
         if has_sheet_changes {
-            self.next_version += 1;
-        }
-
-        let new_undo_state = HistoryEntry {
-            sheet: self.sheet.clone(),
-            view: self.view.clone(),
-            last_command: Some(command),
-            version: self.next_version,
-        };
-
-        if has_sheet_changes {
-            self.push_undo_state(new_undo_state);
-        } else if self.history[self.history_index].view != new_undo_state.view {
-            let merge = self.history_index > 0
-                && self.history[self.history_index - 1].sheet
-                    == self.history[self.history_index].sheet;
-            if merge {
-                self.history[self.history_index].view = new_undo_state.view;
+            // Record view changes that were done while browsing
+            // document at an older point in history
+            if !is_at_head {
+                match &self.detached_view {
+                    Some(detached_view) if detached_view != &current_history_entry.view => {
+                        if self.can_merge_view() {
+                            self.history[self.history_index].view = detached_view.clone();
+                        } else {
+                            self.latest_version += 1;
+                            self.push_undo_state(HistoryEntry {
+                                sheet: current_history_entry.sheet.clone(),
+                                view: detached_view.clone(),
+                                last_command: Some(Command::DetachedNavigation),
+                                version: self.latest_version,
+                            });
+                        }
+                    }
+                    _ => (),
+                };
+            }
+            // Record change that was just done
+            self.latest_version += 1;
+            self.push_undo_state(HistoryEntry {
+                sheet: self.sheet.clone(),
+                view: self.view.clone(),
+                last_command: Some(command),
+                version: self.latest_version,
+            });
+        } else if has_view_changes && is_at_head {
+            if self.can_merge_view() {
+                self.history[self.history_index].view = self.view.clone();
             } else {
-                self.push_undo_state(new_undo_state);
+                self.latest_version += 1;
+                self.push_undo_state(HistoryEntry {
+                    sheet: self.sheet.clone(),
+                    view: self.view.clone(),
+                    last_command: Some(command),
+                    version: self.latest_version,
+                });
             }
         }
+
+        if is_at_head {
+            self.detached_view = None;
+        } else {
+            self.detached_view = Some(self.view.clone());
+        }
+    }
+
+    fn can_merge_view(&self) -> bool {
+        self.history_index > 0
+            && self.history[self.history_index - 1].sheet == self.history[self.history_index].sheet
     }
 
     pub fn undo(&mut self) -> DocumentResult<()> {
@@ -378,7 +412,8 @@ impl Document {
 impl Display for Command {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            Command::SetFramesListMode(_)
+            Command::DetachedNavigation
+            | Command::SetFramesListMode(_)
             | Command::FilterFrames(_)
             | Command::FilterAnimations(_)
             | Command::BrowseSelection(_, _)
@@ -415,6 +450,8 @@ impl Display for Command {
             | Command::SetTimelineZoomAmount(_)
             | Command::SetTimelineOffset(_)
             | Command::PanTimeline(_)
+            | Command::Play
+            | Command::Pause
             | Command::ResetTimelineZoom => f.write_str("Navigation"),
 
             Command::BeginExportAs
@@ -442,8 +479,6 @@ impl Display for Command {
             Command::DeleteAnimation(_) => f.write_str("Delete Animation"),
             Command::DeleteSelectedAnimations => f.write_str("Delete Animations"),
             Command::Tick(_) => f.write_str("Tick"),
-            Command::Play => f.write_str("Start Playback"),
-            Command::Pause => f.write_str("Pause Playback"),
             Command::SetAnimationLooping(_) => f.write_str("Toggle Looping"),
             Command::ApplyDirectionPreset(_) => f.write_str("Set Perspective"),
             Command::SelectDirection(_) => f.write_str("Select Directions"),

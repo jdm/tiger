@@ -16,6 +16,8 @@
 - [x] Timeline scrolling follows playback
 - [x] Timeline scrolling follows frame selection
 - [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
+- [x] Navigation while backtracked in undo stack no longer truncate the undo stack
+- [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
 
 ## Tiger 0.8
 

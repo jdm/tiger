@@ -29,9 +29,10 @@ pub struct Document {
     path: PathBuf,
     sheet: Sheet<Absolute>, // Sheet being edited, fully recorded in history
     view: View, // View state, recorded in history but consecutive changes while the sheet stays unchanged are merged
+    detached_view: Option<View>, // Copy of view state while browsing at an older point in history (may differ from view state in history)
     transient: Transient, // State preventing undo actions when not default, not recorded in history
     persistent: Persistent, // Other state not recorded in history
-    next_version: i32,
+    latest_version: i32,
     history: Vec<HistoryEntry>,
     history_index: usize,
 }
@@ -88,15 +89,16 @@ pub type DocumentResult<T> = Result<T, DocumentError>;
 impl Document {
     pub fn new<T: AsRef<Path>>(path: T) -> Document {
         let history_entry: HistoryEntry = Default::default();
-        let next_version = history_entry.version;
+        let latest_version = history_entry.version;
         Document {
             path: path.as_ref().to_owned(),
             history: vec![history_entry],
             sheet: Default::default(),
             view: Default::default(),
+            detached_view: Default::default(),
             transient: Default::default(),
             persistent: Default::default(),
-            next_version,
+            latest_version,
             history_index: 0,
         }
     }
