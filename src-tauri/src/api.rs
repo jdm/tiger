@@ -1096,15 +1096,6 @@ pub fn zoom_out_timeline_around(
 }
 
 #[tauri::command]
-pub fn pan_timeline(app_state: tauri::State<'_, AppState>, delta: f32) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
-        if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::PanTimeline(delta)).ok();
-        }
-    }))
-}
-
-#[tauri::command]
 pub fn set_timeline_zoom_amount(
     app_state: tauri::State<'_, AppState>,
     amount: f32,
@@ -1123,6 +1114,31 @@ pub fn reset_timeline_zoom(app_state: tauri::State<'_, AppState>) -> Result<Patc
     Ok(app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {
             document.process_command(Command::ResetTimelineZoom).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_timeline_offset(
+    app_state: tauri::State<'_, AppState>,
+    offset_millis: f32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetTimelineOffset(Duration::from_secs_f32(
+                    offset_millis.max(0.0) / 1_000.0,
+                )))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn pan_timeline(app_state: tauri::State<'_, AppState>, delta: f32) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::OnlyWorkbench, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::PanTimeline(delta)).ok();
         }
     }))
 }

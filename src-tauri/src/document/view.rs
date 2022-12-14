@@ -150,6 +150,10 @@ impl View {
         (factor * 10.0).round() / 10.0
     }
 
+    pub(super) fn set_timeline_offset(&mut self, offset: Duration) {
+        self.timeline_offset = offset;
+    }
+
     pub(super) fn pan_timeline(&mut self, delta: f32) {
         let delta_seconds = -delta / self.timeline_zoom_factor() / 1_000.0;
         if delta_seconds >= 0.0 {

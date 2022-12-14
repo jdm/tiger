@@ -13,7 +13,7 @@
 - [x] Can zoom timeline with mousewheel
 - [x] Can scroll timeline with mousewheel or right-click drag
 - [x] Removed timeline scrollbar
-- [ ] Timeline scrolling follows playback
+- [x] Timeline scrolling follows playback
 - [ ] Timeline scrolling follows frame selection (or double click?)
 - [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
 

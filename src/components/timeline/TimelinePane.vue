@@ -56,12 +56,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from "vue"
+import { computed, Ref, ref, watch } from "vue"
 import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
 import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
 panTimeline,
-	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineZoomAmount, zoomInTimelineAround, zoomOutTimelineAround
+	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineOffset, setTimelineZoomAmount, zoomInTimeline, zoomInTimelineAround, zoomOutTimeline, zoomOutTimelineAround
 } from "@/api/document"
 import { useAppStore } from "@/stores/app"
 import { debounceAnimation, isStable } from "@/utils/animation"
@@ -84,6 +84,7 @@ const panning = ref(false);
 const draggingScale = ref(false);
 
 const offset = computed(() => app.currentDocument?.timelineOffsetMillis || 0);
+const isPlaying = computed(() => app.currentDocument?.timelineIsPlaying);
 
 const zoomAmount = computed({
 	get: () => app.currentDocument ? app.currentDocument?.timelineZoomAmount : 0.5,
@@ -91,6 +92,7 @@ const zoomAmount = computed({
 });
 
 const zoomFactor = computed(() => app.currentDocument?.timelineZoomFactor || 1);
+const isZoomStable = isStable([zoomFactor]);
 
 type SequenceEntry = {
 	direction: Direction,
@@ -121,11 +123,12 @@ const timelineSize = computed(() => {
 	return zoomFactor.value * Math.max(visibleDuration, animationDuration.value + bonusDuration);
 });
 
-const animateScrolling = debounceAnimation(
-	[draggingScale, panning],
-	() => !draggingScale.value && !panning.value,
+const scrollingCanAnimate = debounceAnimation(
+	[draggingScale, panning, isPlaying],
+	() => !draggingScale.value && !panning.value && !isPlaying.value,
 	50
 );
+const animateScrolling = computed(() => scrollingCanAnimate.value || !isZoomStable.value);
 
 const timelineStyle = computed(() => {
 	return {
@@ -148,13 +151,13 @@ const animateSequences = debounceAnimation(
 );
 
 const animatePlayhead = debounceAnimation(
-	[ () => app.currentDocument?.timelineIsPlaying
+	[ isPlaying
 	, () => app.currentDocument?.isDraggingKeyframeDuration
 	, scrubbing
 	, panning
 	, draggingScale
 	],
-	() => !app.currentDocument?.timelineIsPlaying
+	() => !isPlaying.value
 	&& !app.currentDocument?.isDraggingKeyframeDuration
 	&& !scrubbing.value
 	&& !panning.value
@@ -170,19 +173,39 @@ const playheadStyle = computed(() => {
 	};
 });
 
+watch(() => app.currentDocument?.timelineClockMillis || 0, (clock) => {
+	if (!scrollableElement.value) {
+		return;
+	}
+	const boundingBox = scrollableElement.value.getBoundingClientRect();
+	const minVisible = offset.value;
+	const maxVisible = offset.value + (boundingBox.right - boundingBox.left) / zoomFactor.value;
+	if (clock < minVisible || clock > maxVisible) {
+		setTimelineOffset(clock - 10);
+	}
+});
+
 function onMouseWheel(event: WheelEvent) {
 	if (event.ctrlKey) {
 		if (!scrollableElement.value) {
 			return;
 		}
-		const boundingBox = scrollableElement.value.getBoundingClientRect();
-		// 8px offset is for the padding between start of scrollable element
-		// and beginning of timeline content
-		const cursorTime = (event.clientX - 8 - boundingBox.left) / zoomFactor.value + offset.value;
-		if (event.deltaY < 0) {
-			zoomInTimelineAround(cursorTime);
+		if (isPlaying.value) {
+			if (event.deltaY < 0) {
+				zoomInTimeline();
+			} else {
+				zoomOutTimeline();
+			}
 		} else {
-			zoomOutTimelineAround(cursorTime);
+			const boundingBox = scrollableElement.value.getBoundingClientRect();
+			// 8px offset is for the padding between start of scrollable element
+			// and beginning of timeline content
+			const cursorTime = (event.clientX - 8 - boundingBox.left) / zoomFactor.value + offset.value;
+			if (event.deltaY < 0) {
+				zoomInTimelineAround(cursorTime);
+			} else {
+				zoomOutTimelineAround(cursorTime);
+			}
 		}
 	} else {
 		panTimeline(-event.deltaY);
