@@ -137,12 +137,14 @@ const timelineStyle = computed(() => {
 
 const animateRuler = debounceAnimation(
 	[draggingScale],
-	() => !draggingScale.value
+	() => !draggingScale.value,
+	50
 );
 
 const animateSequences = debounceAnimation(
 	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale],
-	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value
+	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value,
+	50
 );
 
 const animatePlayhead = debounceAnimation(
@@ -156,7 +158,8 @@ const animatePlayhead = debounceAnimation(
 	&& !app.currentDocument?.isDraggingKeyframeDuration
 	&& !scrubbing.value
 	&& !panning.value
-	&& !draggingScale.value
+	&& !draggingScale.value,
+	50
 );
 
 const playheadStyle = computed(() => {
