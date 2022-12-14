@@ -181,7 +181,8 @@ watch(() => app.currentDocument?.timelineClockMillis || 0, (clock) => {
 	const minVisible = offset.value;
 	const maxVisible = offset.value + (boundingBox.right - boundingBox.left) / zoomFactor.value;
 	if (clock < minVisible || clock > maxVisible) {
-		setTimelineOffset(clock - 10);
+		const padding = isPlaying.value ? 0 : -100 / zoomFactor.value;
+		setTimelineOffset(clock + padding);
 	}
 });
 

@@ -14,7 +14,7 @@
 - [x] Can scroll timeline with mousewheel or right-click drag
 - [x] Removed timeline scrollbar
 - [x] Timeline scrolling follows playback
-- [ ] Timeline scrolling follows frame selection (or double click?)
+- [x] Timeline scrolling follows frame selection
 - [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
 
 ## Tiger 0.8

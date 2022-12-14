@@ -2,7 +2,7 @@ use enum_iterator::{all, reverse_all};
 use euclid::default::Vector2D;
 use euclid::vec2;
 use std::borrow::Borrow;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::hash::{Hash, Hasher};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -314,22 +314,60 @@ impl Document {
         browse_direction: BrowseDirection,
         shift: bool,
     ) -> DocumentResult<()> {
-        let (animation_name, _) = self.workbench_animation()?;
-        let animation_name = animation_name.clone();
-        let ((direction, index), _) = self.workbench_keyframe()?;
-        let from_keyframe = match self.view.selection.keyframes.last_interacted.as_ref() {
-            Some(k) => k.to_owned(),
-            None => {
-                self.select_keyframe_only(animation_name.clone(), direction, index);
-                (animation_name, direction, index)
+        let from_keyframe = {
+            let (animation_name, _) = self.workbench_animation()?;
+            let animation_name = animation_name.clone();
+            let ((direction, index), _) = self.workbench_keyframe()?;
+            match self.view.selection.keyframes.last_interacted.as_ref() {
+                Some(k) => k.to_owned(),
+                None => {
+                    self.select_keyframe_only(animation_name.clone(), direction, index);
+                    (animation_name, direction, index)
+                }
             }
         };
+
+        let (_, pivot_direction, pivot_index) = self
+            .view
+            .selection
+            .keyframes
+            .pivot
+            .clone()
+            .unwrap_or_else(|| from_keyframe.clone());
+
+        let keyframe_ranges = self
+            .workbench_animation()?
+            .1
+            .sequences_iter()
+            .map(|(d, s)| (*d, s.keyframe_time_ranges()))
+            .collect::<HashMap<_, _>>();
 
         let (_, animation) = self.workbench_animation()?;
         let to_keyframe = animation.offset_from(Some(&from_keyframe), browse_direction);
         if let Some((_, direction, index)) = to_keyframe {
             self.select_keyframe_internal(direction, index, shift, false)?;
+
+            let pivot_range = keyframe_ranges
+                .get(&pivot_direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(pivot_direction))?
+                .get(pivot_index)
+                .ok_or(DocumentError::NoKeyframeAtIndex(pivot_index))?;
+
+            let to_keyframe_range = keyframe_ranges
+                .get(&direction)
+                .ok_or(DocumentError::SequenceNotInAnimation(direction))?
+                .get(index)
+                .ok_or(DocumentError::NoKeyframeAtIndex(index))?;
+
+            let new_clock = if to_keyframe_range.start <= pivot_range.start {
+                to_keyframe_range.start
+            } else {
+                to_keyframe_range.end - 1
+            };
+
+            self.view.timeline_clock = Duration::from_millis(new_clock);
         }
+
         Ok(())
     }
 
