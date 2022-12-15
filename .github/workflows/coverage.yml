@@ -18,6 +18,11 @@ jobs:
           toolchain: stable
           profile: minimal
           default: true
+      - uses: actions/cache@v3
+        with:
+          path: src-tauri/target/
+          key: ${{ runner.os }}-cargo-${{ github.ref }}-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-cargo-${{ github.ref }}
       - name: Install Tauri Dependencies
         run: sudo apt update && sudo apt install libwebkit2gtk-4.0-dev build-essential curl wget libssl-dev libgtk-3-dev libappindicator3-dev librsvg2-dev
       - name: Build Frontend
