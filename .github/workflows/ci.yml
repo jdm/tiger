@@ -17,6 +17,11 @@ jobs:
           toolchain: stable
           profile: minimal
           default: true
+      - uses: actions/cache@v3
+          with:
+            path: src-tauri/target/
+            key: ${{ runner.os }}-cargo-${{ github.ref }}-${{ github.sha }}
+            restore-keys: ${{ runner.os }}-cargo-${{ github.ref }}
       - name: Install frontend dependencies
         run: npm install
       - name: Build complete app
