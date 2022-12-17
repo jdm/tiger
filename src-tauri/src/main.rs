@@ -140,6 +140,7 @@ fn main() {
             api::select_hitbox,
             api::select_keyframe,
             api::set_animation_looping,
+            api::set_animations_list_offset,
             api::set_export_metadata_file,
             api::set_export_metadata_paths_root,
             api::set_export_template_file,

@@ -482,6 +482,20 @@ pub fn filter_animations(
 }
 
 #[tauri::command]
+pub fn set_animations_list_offset(
+    app_state: tauri::State<'_, AppState>,
+    offset: u32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetAnimationsListOffset(offset))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn import_frames(
     app_state: tauri::State<'_, AppState>,
     paths: Vec<PathBuf>,

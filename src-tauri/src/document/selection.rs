@@ -436,6 +436,10 @@ impl SelectionState {
             .contains((animation_name.as_ref(), direction, index).borrow() as &dyn KeyframeID)
     }
 
+    pub fn last_interacted_animation(&self) -> &Option<String> {
+        &self.animations.last_interacted
+    }
+
     pub fn frames(&self) -> impl Iterator<Item = &PathBuf> {
         self.frames.iter()
     }

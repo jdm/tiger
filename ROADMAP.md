@@ -6,8 +6,24 @@
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)
 - [x] Can zoom workbench with mousewheel
-- [ ] Frame, hitbox and animation panes auto-scroll when browsing with keyboard controls
-- [ ] Frame, hitbox and animation panes have their scroll position in undo stack
+- [ ] Frames pane auto-scrolls when browsing with keyboard controls
+- [x] Animations pane auto-scrolls when browsing with keyboard controls
+- [ ] Hitboxes pane auto-scrolls when browsing with keyboard controls
+- [x] Autoscroll to newly created animations
+- [ ] Autoscroll to newly created hitboxes
+- [ ] Autoscroll to newly imported frames
+- [x] Autoscroll to newly renamed animations
+- [ ] Autoscroll to newly renamed hitboxes
+- [ ] Frames pane saves scroll position in undo stack
+- [x] Animations pane saves scroll position in undo stack
+- [ ] Hitboxes pane saves scroll position in undo stack
+- [ ] Can press Home/End to select first/last frame
+- [ ] Can press Home/End to select first/last animation
+- [ ] Can press Home/End to select first/last hitbox
+- [ ] Can press Ctrl+A to select all frames
+- [ ] Can press Ctrl+A to select all animations
+- [ ] Can press Ctrl+A to select all hitboxes
+- [ ] Can press Ctrl+A to select all keyframes
 - [x] Timeline scroll position in undo stack
 - [x] Timeline zoom keeps current position invariant
 - [x] Can zoom timeline with mousewheel
@@ -18,6 +34,8 @@
 - [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
 - [x] Navigation while backtracked in undo stack no longer truncates the undo stack
 - [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
+- [ ] Fixed a bug where up/down arrows selected animations in case-sensitive order
+- [ ] Fixed a bug where hitboxes were ordered in case-sensitive order
 
 ## Tiger 0.8
 

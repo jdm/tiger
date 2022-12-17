@@ -40,6 +40,8 @@ export type Document = {
   framesListMode: ListMode;
   framesFilter: string;
   animationsFilter: string;
+  animationsListOffset: number;
+  lastInteractedAnimation: string | null;
   workbenchOffset: [number, number];
   workbenchZoom: number;
   currentAnimationName: string | null;

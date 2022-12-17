@@ -5,21 +5,23 @@
 			<Button :positive="true" :icon="FilmIcon" label="New" @click="createAnimation" />
 		</div>
 		<PaneInset class="flex-1 min-h-0">
-			<div class="p-4 overflow-y-auto h-full styled-scrollbars" @click="clearSelection"
+			<StatefulScroll ref="scrollableElement" v-model:scroll-top="scrollPosition"
+				class="p-4 h-full styled-scrollbars" @click="clearSelection"
 				@contextmenu.stop.prevent="onOpenContextMenu">
 				<div class="flex flex-col">
-					<Animation v-for="animation in visibleAnimations" :animation="animation" :key="animation.name" />
+					<Animation ref="animationElements" v-for="animation in visibleAnimations" :animation="animation"
+						:key="animation.name" />
 				</div>
 				<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
-			</div>
+			</StatefulScroll>
 		</PaneInset>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from "vue"
+import { computed, nextTick, Ref, ref, watch } from "vue"
 import { FilmIcon } from "@heroicons/vue/20/solid"
-import { clearSelection, createAnimation, filterAnimations, paste } from "@/api/document"
+import { clearSelection, createAnimation, filterAnimations, paste, setAnimationsListOffset } from "@/api/document"
 import { ClipboardManifest } from "@/api/dto"
 import { useAppStore } from "@/stores/app"
 import Animation from "@/components/animations/Animation.vue"
@@ -27,13 +29,34 @@ import Button from "@/components/basic/Button.vue"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
+import StatefulScroll from "@/components/basic/StatefulScroll.vue"
 
 const app = useAppStore();
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
+const scrollableElement: Ref<typeof StatefulScroll | null> = ref(null);
+const animationElements: Ref<(typeof Animation)[]> = ref([]);
 
 const contextMenuEntries = computed(() => [
 	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: app.clipboardManifest != ClipboardManifest.Animations },
 ]);
+
+const scrollPosition =  computed({
+	get: () => app.currentDocument?.animationsListOffset || 0,
+	set: (offset) => setAnimationsListOffset(offset),
+});
+
+watch(() => app.currentDocument?.lastInteractedAnimation, (animation) => {
+	if (!animation) {
+		return;
+	}
+	nextTick(() => {
+		const animationElement = animationElements.value.find((el) => el.animation.name == animation);
+		if (!animationElement || !scrollableElement.value) {
+			return;
+		}
+		scrollableElement.value.scrollToElement(animationElement.$el);
+	});
+});
 
 const visibleAnimations = computed(() => {
 	return app.sortedAnimations?.filter((a) => !a.filteredOut);

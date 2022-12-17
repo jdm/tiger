@@ -14,6 +14,7 @@ pub enum ListMode {
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
     pub(super) animations_filter: String,
+    pub(super) animations_list_offset: u32,
     pub(super) current_animation: Option<String>,
     pub(super) current_sequence: Option<Direction>,
     pub(super) darken_sprites: bool,
@@ -39,6 +40,7 @@ impl Default for View {
     fn default() -> View {
         View {
             animations_filter: Default::default(),
+            animations_list_offset: 0,
             current_animation: None,
             current_sequence: None,
             darken_sprites: true,
@@ -191,6 +193,10 @@ impl Document {
 
     pub fn animations_filter(&self) -> &String {
         &self.view.animations_filter
+    }
+
+    pub fn animations_list_offset(&self) -> u32 {
+        self.view.animations_list_offset
     }
 
     pub fn selection(&self) -> &SelectionState {

@@ -66,6 +66,13 @@ export async function filterAnimations(searchQuery: string): Promise<void> {
   );
 }
 
+export async function setAnimationsListOffset(offset: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(
+    await invoke("set_animations_list_offset", { offset: offset })
+  );
+}
+
 export async function importFrames(paths: string[]): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("import_frames", { paths: paths }));

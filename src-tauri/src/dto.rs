@@ -59,6 +59,8 @@ pub struct Document {
     frames_list_mode: ListMode,
     frames_filter: String,
     animations_filter: String,
+    animations_list_offset: u32,
+    last_interacted_animation: Option<String>,
 
     workbench_offset: (f32, f32),
     workbench_zoom: f32,
@@ -393,6 +395,8 @@ impl document::Document {
             frames_list_mode: self.frames_list_mode().into(),
             frames_filter: self.frames_filter().to_owned(),
             animations_filter: self.animations_filter().to_owned(),
+            animations_list_offset: self.animations_list_offset(),
+            last_interacted_animation: self.selection().last_interacted_animation().to_owned(),
             workbench_offset: self.workbench_offset().to_tuple(),
             workbench_zoom: self.workbench_zoom(),
             current_animation_name: self.current_animation().to_owned(),
