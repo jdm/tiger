@@ -2,6 +2,11 @@ use crate::document::*;
 use crate::sheet::DirectionPreset;
 
 impl Document {
+    pub(super) fn import_frames(&mut self, frames: &Vec<PathBuf>) {
+        self.sheet.add_frames(frames);
+        self.select_frames_only(frames.clone());
+    }
+
     pub(super) fn delete_selected_frames(&mut self) {
         let selected_frames = self.view.selection.frames().collect::<Vec<_>>();
         for frame in selected_frames {

@@ -92,6 +92,14 @@ impl Document {
         self.view.selection.frames.only(vec![frame]);
     }
 
+    pub fn select_frames_only<T>(&mut self, frames: T)
+    where
+        T: IntoIterator<Item = PathBuf>,
+    {
+        self.view.selection.clear();
+        self.view.selection.frames.only(frames);
+    }
+
     pub fn select_animation_only(&mut self, animation: String) {
         self.view.selection.clear();
         self.view.selection.animations.only(vec![animation]);

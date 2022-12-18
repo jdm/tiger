@@ -11,7 +11,7 @@
 - [x] Hitboxes pane auto-scrolls when browsing with keyboard controls
 - [x] Autoscroll to newly created animations
 - [x] Autoscroll to newly created hitboxes
-- [ ] Autoscroll to newly imported frames
+- [x] Autoscroll to newly imported frames
 - [x] Autoscroll to newly renamed animations
 - [x] Autoscroll to newly renamed hitboxes
 - [x] Frames pane saves scroll position in undo stack

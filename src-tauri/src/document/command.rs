@@ -140,7 +140,7 @@ impl Document {
             Command::SetAnimationsListOffset(o) => self.view.animations_list_offset = o,
             Command::SetFramesListOffset(o) => self.view.set_frames_list_offset(o),
             Command::SetHitboxesListOffset(o) => self.view.hitboxes_list_offset = o,
-            Command::ImportFrames(ref p) => self.sheet.add_frames(p),
+            Command::ImportFrames(ref p) => self.import_frames(p),
             Command::DeleteFrame(ref p) => self.sheet.delete_frame(p),
             Command::DeleteSelectedFrames => self.delete_selected_frames(),
             Command::DeleteSelection => self.delete_selection()?,
