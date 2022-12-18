@@ -45,16 +45,16 @@ const scrollPosition =  computed({
 	set: (offset) => setAnimationsListOffset(offset),
 });
 
-watch(() => app.currentDocument?.lastInteractedAnimation, (animation) => {
-	if (!animation) {
+watch(() => app.currentDocument?.lastInteractedAnimation, (name) => {
+	if (!name) {
 		return;
 	}
 	nextTick(() => {
-		const animationElement = animationElements.value.find((el) => el.animation.name == animation);
-		if (!animationElement || !scrollableElement.value) {
+		const target = animationElements.value.find((el) => el.animationName == name);
+		if (!target || !scrollableElement.value) {
 			return;
 		}
-		scrollableElement.value.scrollToElement(animationElement.$el);
+		scrollableElement.value.scrollToElement(target.$el);
 	});
 });
 

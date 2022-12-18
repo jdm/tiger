@@ -454,6 +454,34 @@ pub fn set_frames_list_mode(
 }
 
 #[tauri::command]
+pub fn set_frames_list_offset(
+    app_state: tauri::State<'_, AppState>,
+    offset: u32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetFramesListOffset(offset))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn set_hitboxes_list_offset(
+    app_state: tauri::State<'_, AppState>,
+    offset: u32,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::SetHitboxesListOffset(offset))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn filter_frames(
     app_state: tauri::State<'_, AppState>,
     search_query: String,

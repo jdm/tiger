@@ -47,56 +47,51 @@ pub struct UserFacingError {
 #[derive(Clone, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
-    name: String,
-    path: PathBuf,
-    sheet: Sheet,
-
-    has_unsaved_changes: bool,
-    redo_effect: Option<String>,
-    undo_effect: Option<String>,
-    was_close_requested: bool,
-
-    frames_list_mode: ListMode,
-    frames_filter: String,
+    animation_being_renamed: Option<String>,
     animations_filter: String,
     animations_list_offset: u32,
-    last_interacted_animation: Option<String>,
-
-    workbench_offset: (f32, f32),
-    workbench_zoom: f32,
-
     current_animation_name: Option<String>,
-    current_sequence_direction: Option<Direction>,
     current_keyframe_index: Option<usize>,
-
+    current_sequence_direction: Option<Direction>,
+    darken_sprites: bool,
+    export_settings_being_edited: Option<ExportSettings>,
+    export_settings_validation: Option<ExportSettingsValidation>,
+    frames_being_dragged: HashSet<PathBuf>,
+    frames_filter: String,
+    frames_list_mode: ListMode,
+    frames_list_offset: u32,
+    has_unsaved_changes: bool,
+    hide_hitboxes: bool,
+    hide_origin: bool,
+    hide_sprite: bool,
+    hitbox_being_renamed: Option<String>,
+    hitboxes_being_nudged: HashSet<String>,
+    hitboxes_being_resized: HashSet<String>,
+    hitboxes_list_offset: u32,
+    is_dragging_keyframe_duration: bool,
+    keyframe_snapping_base_duration_millis: u64,
+    keyframes_being_dragged: HashSet<(Direction, usize)>,
+    last_interacted_animation: Option<String>,
+    last_interacted_frame: Option<PathBuf>,
+    last_interacted_hitbox: Option<String>,
+    lock_hitboxes: bool,
+    name: String,
+    path: PathBuf,
+    preserve_aspect_ratio: bool,
+    redo_effect: Option<String>,
+    sheet: Sheet,
+    snap_keyframe_durations: bool,
+    snap_keyframes_to_multiples_of_duration: bool,
+    snap_keyframes_to_other_keyframes: bool,
     timeline_clock_millis: u64,
     timeline_is_playing: bool,
     timeline_offset_millis: f32,
-    timeline_zoom_factor: f32,
     timeline_zoom_amount: f32,
-
-    snap_keyframe_durations: bool,
-    snap_keyframes_to_other_keyframes: bool,
-    snap_keyframes_to_multiples_of_duration: bool,
-    keyframe_snapping_base_duration_millis: u64,
-
-    darken_sprites: bool,
-    hide_sprite: bool,
-    hide_hitboxes: bool,
-    hide_origin: bool,
-    lock_hitboxes: bool,
-
-    preserve_aspect_ratio: bool,
-    animation_being_renamed: Option<String>,
-    hitbox_being_renamed: Option<String>,
-    is_dragging_keyframe_duration: bool,
-    frames_being_dragged: HashSet<PathBuf>,
-    keyframes_being_dragged: HashSet<(Direction, usize)>,
-    hitboxes_being_nudged: HashSet<String>,
-    hitboxes_being_resized: HashSet<String>,
-
-    export_settings_being_edited: Option<ExportSettings>,
-    export_settings_validation: Option<ExportSettingsValidation>,
+    timeline_zoom_factor: f32,
+    undo_effect: Option<String>,
+    was_close_requested: bool,
+    workbench_offset: (f32, f32),
+    workbench_zoom: f32,
 }
 
 #[derive(Clone, Serialize)]
@@ -385,53 +380,27 @@ impl document::Document {
         }
 
         Document {
-            path: self.path().to_owned(),
-            name: self.path().to_file_name(),
-            has_unsaved_changes: !self.is_saved(),
-            undo_effect: self.undo_effect(),
-            redo_effect: self.redo_effect(),
-            was_close_requested: self.close_requested(),
-            sheet,
-            frames_list_mode: self.frames_list_mode().into(),
-            frames_filter: self.frames_filter().to_owned(),
+            animation_being_renamed: self.animation_being_renamed().cloned(),
             animations_filter: self.animations_filter().to_owned(),
             animations_list_offset: self.animations_list_offset(),
-            last_interacted_animation: self.selection().last_interacted_animation().to_owned(),
-            workbench_offset: self.workbench_offset().to_tuple(),
-            workbench_zoom: self.workbench_zoom(),
             current_animation_name: self.current_animation().to_owned(),
-            current_sequence_direction: self.current_sequence().map(|d| d.into()),
             current_keyframe_index: self
                 .workbench_sequence()
                 .ok()
                 .and_then(|(_, s)| s.keyframe_index_at(self.timeline_clock())),
-            timeline_clock_millis: self.timeline_clock().as_millis() as u64,
-            timeline_is_playing: self.is_timeline_playing(),
-            timeline_offset_millis: self.timeline_offset().as_secs_f32() * 1_000.0,
-            timeline_zoom_factor: self.timeline_zoom_factor(),
-            timeline_zoom_amount: self.timeline_zoom_amount(),
-            snap_keyframe_durations: self.should_snap_keyframe_durations(),
-            snap_keyframes_to_other_keyframes: self.should_snap_keyframes_to_other_keyframes(),
-            snap_keyframes_to_multiples_of_duration: self
-                .should_snap_keyframes_to_multiples_of_duration(),
-            keyframe_snapping_base_duration_millis: self
-                .keyframe_snapping_base_duration()
-                .as_millis() as u64,
+            current_sequence_direction: self.current_sequence().map(|d| d.into()),
             darken_sprites: self.should_darken_sprites(),
-            hide_sprite: self.is_hiding_sprite(),
+            export_settings_being_edited: self.export_settings_edit().ok().map(|s| s.into()),
+            export_settings_validation: self.validate_export_settings().ok().map(|s| (&s).into()),
+            frames_being_dragged: self.frames_being_dragged(),
+            frames_filter: self.frames_filter().to_owned(),
+            frames_list_mode: self.frames_list_mode().into(),
+            frames_list_offset: self.frames_list_offset(),
+            has_unsaved_changes: !self.is_saved(),
             hide_hitboxes: self.is_hiding_hitboxes(),
             hide_origin: self.is_hiding_origin(),
-            lock_hitboxes: self.are_hitboxes_locked(),
-            preserve_aspect_ratio: self.preserves_aspect_ratio(),
-            animation_being_renamed: self.animation_being_renamed().cloned(),
+            hide_sprite: self.is_hiding_sprite(),
             hitbox_being_renamed: self.hitbox_being_renamed().cloned(),
-            is_dragging_keyframe_duration: self.is_dragging_keyframe_duration(),
-            frames_being_dragged: self.frames_being_dragged(),
-            keyframes_being_dragged: self
-                .keyframes_being_dragged()
-                .into_iter()
-                .map(|(d, i)| (d.into(), i))
-                .collect(),
             hitboxes_being_nudged: self
                 .hitboxes_being_nudged()
                 .into_iter()
@@ -442,8 +411,42 @@ impl document::Document {
                 .into_iter()
                 .map(String::from)
                 .collect(),
-            export_settings_being_edited: self.export_settings_edit().ok().map(|s| s.into()),
-            export_settings_validation: self.validate_export_settings().ok().map(|s| (&s).into()),
+            hitboxes_list_offset: self.hitboxes_list_offset(),
+            is_dragging_keyframe_duration: self.is_dragging_keyframe_duration(),
+            keyframe_snapping_base_duration_millis: self
+                .keyframe_snapping_base_duration()
+                .as_millis() as u64,
+            keyframes_being_dragged: self
+                .keyframes_being_dragged()
+                .into_iter()
+                .map(|(d, i)| (d.into(), i))
+                .collect(),
+            last_interacted_animation: self.selection().last_interacted_animation().to_owned(),
+            last_interacted_frame: self.selection().last_interacted_frame().to_owned(),
+            last_interacted_hitbox: self
+                .selection()
+                .last_interacted_hitbox()
+                .as_ref()
+                .map(|(_, _, _, h)| h.to_owned()),
+            lock_hitboxes: self.are_hitboxes_locked(),
+            name: self.path().to_file_name(),
+            path: self.path().to_owned(),
+            preserve_aspect_ratio: self.preserves_aspect_ratio(),
+            redo_effect: self.redo_effect(),
+            sheet,
+            snap_keyframe_durations: self.should_snap_keyframe_durations(),
+            snap_keyframes_to_multiples_of_duration: self
+                .should_snap_keyframes_to_multiples_of_duration(),
+            snap_keyframes_to_other_keyframes: self.should_snap_keyframes_to_other_keyframes(),
+            timeline_clock_millis: self.timeline_clock().as_millis() as u64,
+            timeline_is_playing: self.is_timeline_playing(),
+            timeline_offset_millis: self.timeline_offset().as_secs_f32() * 1_000.0,
+            timeline_zoom_amount: self.timeline_zoom_amount(),
+            timeline_zoom_factor: self.timeline_zoom_factor(),
+            undo_effect: self.undo_effect(),
+            was_close_requested: self.close_requested(),
+            workbench_offset: self.workbench_offset().to_tuple(),
+            workbench_zoom: self.workbench_zoom(),
         }
     }
 }

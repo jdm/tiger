@@ -28,6 +28,8 @@ const props = defineProps<{
 	hitbox: HitboxDTO
 }>();
 
+defineExpose({ hitboxName: props.hitbox.name });
+
 const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);

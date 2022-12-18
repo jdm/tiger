@@ -29,6 +29,8 @@ const props = defineProps<{
 	compact: boolean,
 }>();
 
+defineExpose({ framePath: props.frame.path });
+
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 const dragCursorElement: Ref<HTMLElement | null> = ref(null);
 

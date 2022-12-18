@@ -6,17 +6,17 @@
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)
 - [x] Can zoom workbench with mousewheel
-- [ ] Frames pane auto-scrolls when browsing with keyboard controls
+- [x] Frames pane auto-scrolls when browsing with keyboard controls
 - [x] Animations pane auto-scrolls when browsing with keyboard controls
-- [ ] Hitboxes pane auto-scrolls when browsing with keyboard controls
+- [x] Hitboxes pane auto-scrolls when browsing with keyboard controls
 - [x] Autoscroll to newly created animations
-- [ ] Autoscroll to newly created hitboxes
+- [x] Autoscroll to newly created hitboxes
 - [ ] Autoscroll to newly imported frames
 - [x] Autoscroll to newly renamed animations
 - [ ] Autoscroll to newly renamed hitboxes
-- [ ] Frames pane saves scroll position in undo stack
+- [x] Frames pane saves scroll position in undo stack
 - [x] Animations pane saves scroll position in undo stack
-- [ ] Hitboxes pane saves scroll position in undo stack
+- [x] Hitboxes pane saves scroll position in undo stack
 - [ ] Can press Home/End to select first/last frame
 - [ ] Can press Home/End to select first/last animation
 - [ ] Can press Home/End to select first/last hitbox

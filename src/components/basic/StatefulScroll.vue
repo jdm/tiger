@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, Ref, watch } from "vue";
+import { nextTick, ref, Ref, watch } from "vue";
 
 const props = defineProps<{
 	scrollTop: number,
@@ -48,10 +48,12 @@ function scrollToElement(element: HTMLElement) {
 }
 
 watch(() => props.scrollTop, (newPosition) => {
-	if (!scrollableElement.value) {
-		return;
-	}
-	scrollableElement.value.scrollTop = newPosition;
+	nextTick(() => {
+		if (!scrollableElement.value) {
+			return;
+		}
+		scrollableElement.value.scrollTop = newPosition;
+	});
 });
 
 </script>

@@ -66,11 +66,21 @@ export async function filterAnimations(searchQuery: string): Promise<void> {
   );
 }
 
+export async function setFramesListOffset(offset: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_frames_list_offset", { offset: offset }));
+}
+
 export async function setAnimationsListOffset(offset: number): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(
     await invoke("set_animations_list_offset", { offset: offset })
   );
+}
+
+export async function setHitboxesListOffset(offset: number): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("set_hitboxes_list_offset", { offset: offset }));
 }
 
 export async function importFrames(paths: string[]): Promise<void> {

@@ -38,10 +38,14 @@ export type Document = {
   wasCloseRequested: boolean;
   sheet: Sheet;
   framesListMode: ListMode;
+  framesListOffset: number;
   framesFilter: string;
   animationsFilter: string;
   animationsListOffset: number;
+  hitboxesListOffset: number;
   lastInteractedAnimation: string | null;
+  lastInteractedFrame: string | null;
+  lastInteractedHitbox: string | null;
   workbenchOffset: [number, number];
   workbenchZoom: number;
   currentAnimationName: string | null;

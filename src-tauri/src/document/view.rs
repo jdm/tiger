@@ -19,10 +19,13 @@ pub struct View {
     pub(super) current_sequence: Option<Direction>,
     pub(super) darken_sprites: bool,
     pub(super) frames_filter: String,
+    pub(super) frames_grid_offset: u32,
     pub(super) frames_list_mode: ListMode,
+    pub(super) frames_list_offset: u32,
     pub(super) hide_hitboxes: bool,
     pub(super) hide_origin: bool,
     pub(super) hide_sprite: bool,
+    pub(super) hitboxes_list_offset: u32,
     pub(super) keyframe_snapping_base_duration: Duration,
     pub(super) lock_hitboxes: bool,
     pub(super) selection: SelectionState,
@@ -45,10 +48,13 @@ impl Default for View {
             current_sequence: None,
             darken_sprites: true,
             frames_filter: Default::default(),
+            frames_grid_offset: 0,
             frames_list_mode: ListMode::Grid4xN,
+            frames_list_offset: 0,
             hide_hitboxes: false,
             hide_origin: false,
             hide_sprite: false,
+            hitboxes_list_offset: 0,
             keyframe_snapping_base_duration: Duration::from_millis(100),
             lock_hitboxes: false,
             selection: Default::default(),
@@ -180,6 +186,13 @@ impl View {
     pub(super) fn skip_to_timeline_start(&mut self) {
         self.timeline_clock = Duration::ZERO;
     }
+
+    pub(super) fn set_frames_list_offset(&mut self, offset: u32) {
+        match self.frames_list_mode {
+            ListMode::Linear => self.frames_list_offset = offset,
+            ListMode::Grid4xN => self.frames_grid_offset = offset,
+        }
+    }
 }
 
 impl Document {
@@ -195,8 +208,19 @@ impl Document {
         &self.view.animations_filter
     }
 
+    pub fn frames_list_offset(&self) -> u32 {
+        match self.view.frames_list_mode {
+            ListMode::Linear => self.view.frames_list_offset,
+            ListMode::Grid4xN => self.view.frames_grid_offset,
+        }
+    }
+
     pub fn animations_list_offset(&self) -> u32 {
         self.view.animations_list_offset
+    }
+
+    pub fn hitboxes_list_offset(&self) -> u32 {
+        self.view.hitboxes_list_offset
     }
 
     pub fn selection(&self) -> &SelectionState {
