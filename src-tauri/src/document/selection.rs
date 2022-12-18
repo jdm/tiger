@@ -398,7 +398,8 @@ impl Document {
         let (animation_name, _) = self.workbench_animation()?;
         let ((direction, index), keyframe) = self.workbench_keyframe()?;
         Ok(keyframe
-            .hitboxes_iter()
+            .sorted_hitboxes()
+            .into_iter()
             .map(|(n, _)| (animation_name.clone(), direction, index, n.clone()))
             .collect())
     }

@@ -138,7 +138,7 @@ impl Keyframe {
         let frame_data = Frame::new(sheet, frame, texture_layout)?;
 
         let mut hitboxes = Vec::new();
-        for (hitbox_name, hitbox) in keyframe.hitboxes_iter() {
+        for (hitbox_name, hitbox) in keyframe.sorted_hitboxes() {
             hitboxes.push(Hitbox::new(hitbox_name.clone(), hitbox)?);
         }
 

@@ -35,7 +35,7 @@
 - [x] Navigation while backtracked in undo stack no longer truncates the undo stack
 - [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
 - [x] Fixed a bug where up/down arrows selected animations in case-sensitive order
-- [ ] Fixed a bug where hitboxes were ordered in case-sensitive order
+- [x] Fixed a bug where hitboxes were ordered in case-sensitive order
 
 ## Tiger 0.8
 

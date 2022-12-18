@@ -88,7 +88,7 @@ pub struct Sequence<P: Paths> {
 #[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Keyframe<P: Paths> {
     pub(in crate::sheet) frame: PathBuf,
-    pub(in crate::sheet) hitboxes: BTreeMap<String, Hitbox>,
+    pub(in crate::sheet) hitboxes: HashMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),
     #[derivative(PartialEq = "ignore")]

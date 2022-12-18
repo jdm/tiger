@@ -578,7 +578,8 @@ impl<P: Paths> From<&sheet::Keyframe<P>> for Keyframe {
             duration_millis: keyframe.duration_millis(),
             offset: keyframe.offset().to_tuple(),
             hitboxes: keyframe
-                .hitboxes_iter()
+                .sorted_hitboxes()
+                .into_iter()
                 .map(|(n, h)| (n.clone(), h).into())
                 .collect(),
             key: keyframe.key(),

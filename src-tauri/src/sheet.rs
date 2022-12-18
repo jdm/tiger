@@ -5,7 +5,7 @@ use euclid::rect;
 use pathdiff::diff_paths;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufWriter;
@@ -18,8 +18,6 @@ use uuid::Uuid;
 
 #[cfg(test)]
 use euclid::vec2;
-#[cfg(test)]
-use std::collections::HashMap;
 
 #[cfg(test)]
 mod test;
@@ -663,7 +661,7 @@ impl<P: Paths> Keyframe<P> {
             frame: frame.as_ref().to_owned(),
             duration_millis: 100,
             offset: (0, 0),
-            hitboxes: BTreeMap::new(),
+            hitboxes: HashMap::new(),
             key: Uuid::new_v4(),
             paths: std::marker::PhantomData,
         }
@@ -714,6 +712,12 @@ impl<P: Paths> Keyframe<P> {
 
     pub fn hitboxes_iter_mut(&mut self) -> impl Iterator<Item = (&String, &mut Hitbox)> {
         self.hitboxes.iter_mut()
+    }
+
+    pub fn sorted_hitboxes(&self) -> Vec<(&String, &Hitbox)> {
+        let mut hitboxes = self.hitboxes.iter().collect::<Vec<_>>();
+        hitboxes.sort_by_cached_key(|(n, _)| n.to_lowercase());
+        hitboxes
     }
 
     pub fn has_hitbox<T: AsRef<str>>(&self, name: T) -> bool {
