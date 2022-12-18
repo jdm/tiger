@@ -58,7 +58,7 @@ watch(() => app.currentDocument?.lastInteractedFrame, (path) => {
 		return;
 	}
 	nextTick(() => {
-		const target = frameElements.value.find((el) => el.framePath == path);
+		const target = frameElements.value.find((el) => el.getFrame().path == path);
 		if (!target || !scrollableElement.value) {
 			return;
 		}

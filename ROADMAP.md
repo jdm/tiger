@@ -13,7 +13,7 @@
 - [x] Autoscroll to newly created hitboxes
 - [ ] Autoscroll to newly imported frames
 - [x] Autoscroll to newly renamed animations
-- [ ] Autoscroll to newly renamed hitboxes
+- [x] Autoscroll to newly renamed hitboxes
 - [x] Frames pane saves scroll position in undo stack
 - [x] Animations pane saves scroll position in undo stack
 - [x] Hitboxes pane saves scroll position in undo stack

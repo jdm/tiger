@@ -50,7 +50,7 @@ watch(() => app.currentDocument?.lastInteractedAnimation, (name) => {
 		return;
 	}
 	nextTick(() => {
-		const target = animationElements.value.find((el) => el.animationName == name);
+		const target = animationElements.value.find((el) => el.getAnimation().name == name);
 		if (!target || !scrollableElement.value) {
 			return;
 		}

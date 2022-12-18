@@ -72,7 +72,7 @@ watch(() => app.currentDocument?.lastInteractedHitbox, (name) => {
 		return;
 	}
 	nextTick(() => {
-		const target = hitboxElements.value.find((el) => el.hitboxName == name);
+		const target = hitboxElements.value.find((el) => el.getHitbox().name == name);
 		if (!target || !scrollableElement.value) {
 			return;
 		}

@@ -29,7 +29,9 @@ const props = defineProps<{
 	animation: AnimationDTO
 }>();
 
-defineExpose({ animationName: props.animation.name });
+defineExpose({
+	getAnimation: () => props.animation
+});
 
 const newName = ref("");
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
