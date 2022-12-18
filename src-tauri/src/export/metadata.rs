@@ -229,7 +229,7 @@ impl Sheet {
 
         let animations = {
             let mut animations = Vec::new();
-            for (animation_name, animation) in sheet.animations_iter() {
+            for (animation_name, animation) in sheet.sorted_animations() {
                 let animation_data =
                     Animation::new(sheet, animation_name.clone(), animation, texture_layout)?;
                 animations.push(animation_data);

@@ -388,7 +388,8 @@ impl Document {
 
     fn selectable_animations(&self) -> Vec<String> {
         self.sheet
-            .animations_iter()
+            .sorted_animations()
+            .into_iter()
             .map(|(n, _)| n.clone())
             .collect()
     }

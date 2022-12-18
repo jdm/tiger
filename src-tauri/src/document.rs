@@ -115,7 +115,8 @@ impl Document {
 
         if let Some(name) = document
             .sheet
-            .animations_iter()
+            .sorted_animations()
+            .into_iter()
             .map(|(name, _)| name)
             .min()
             .cloned()

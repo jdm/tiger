@@ -99,6 +99,12 @@ impl<P: Paths> Sheet<P> {
         self.animations.iter()
     }
 
+    pub fn sorted_animations(&self) -> Vec<(&String, &Animation<P>)> {
+        let mut animations = self.animations.iter().collect::<Vec<_>>();
+        animations.sort_by_cached_key(|(n, _)| n.to_lowercase());
+        animations
+    }
+
     pub fn has_frame<T: AsRef<Path>>(&self, path: T) -> bool {
         self.frames.iter().any(|f| f.source == path.as_ref())
     }

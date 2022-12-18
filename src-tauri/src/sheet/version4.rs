@@ -1,6 +1,6 @@
 use derivative::Derivative;
 use serde::{Deserialize, Serialize};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::Read;
 use std::path::PathBuf;
 use uuid::Uuid;
@@ -18,7 +18,7 @@ struct VersionedSheet {
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Sheet<P: Paths> {
     pub(in crate::sheet) frames: Vec<Frame<P>>,
-    pub(in crate::sheet) animations: BTreeMap<String, Animation<P>>,
+    pub(in crate::sheet) animations: HashMap<String, Animation<P>>,
     pub(in crate::sheet) export_settings: Option<ExportSettings<P>>,
     #[serde(skip)]
     pub(in crate::sheet) paths: P,
