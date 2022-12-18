@@ -82,6 +82,8 @@ pub enum DocumentError {
     NotResizingHitbox,
     #[error("Not currently adjusting export settings")]
     NotEditingExportSettings,
+    #[error("Sequence in animation has no keyframes")]
+    SequenceHasNoKeyframes,
 }
 
 pub type DocumentResult<T> = Result<T, DocumentError>;

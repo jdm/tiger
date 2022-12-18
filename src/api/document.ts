@@ -170,6 +170,16 @@ export async function browseSelection(
   );
 }
 
+export async function browseToEnd(shift: boolean): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("browse_to_end", { shift: shift }));
+}
+
+export async function browseToStart(shift: boolean): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("browse_to_start", { shift: shift }));
+}
+
 export async function clearSelection(): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("clear_selection"));

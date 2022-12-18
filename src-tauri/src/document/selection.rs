@@ -309,6 +309,60 @@ impl Document {
         Ok(())
     }
 
+    pub(super) fn browse_to_end(&mut self, shift: bool) -> DocumentResult<()> {
+        if !self.view.selection.frames.is_empty() {
+            if let Some(frame) = self.selectable_frames().last() {
+                self.select_frame(frame, shift, false);
+            }
+        } else if !self.view.selection.animations.is_empty() {
+            if let Some(animation) = self.selectable_animations().last() {
+                self.select_animation(animation, shift, false);
+            }
+        } else if !self.view.selection.hitboxes.is_empty() {
+            if let Some(hitbox) = self.selectable_hitboxes()?.last() {
+                self.select_hitbox(hitbox.3.clone(), shift, false)?;
+            }
+        } else if shift {
+            let (direction, sequence) = self.workbench_sequence()?;
+            let index = match sequence.num_keyframes() {
+                0 => None,
+                n => Some(n - 1),
+            }
+            .ok_or(DocumentError::SequenceHasNoKeyframes)?;
+            self.select_keyframe(direction, index, shift, false)?;
+        } else {
+            self.jump_to_animation_end()?;
+        }
+        Ok(())
+    }
+
+    pub(super) fn browse_to_start(&mut self, shift: bool) -> DocumentResult<()> {
+        if !self.view.selection.frames.is_empty() {
+            if let Some(frame) = self.selectable_frames().first() {
+                self.select_frame(frame, shift, false);
+            }
+        } else if !self.view.selection.animations.is_empty() {
+            if let Some(animation) = self.selectable_animations().first() {
+                self.select_animation(animation, shift, false);
+            }
+        } else if !self.view.selection.hitboxes.is_empty() {
+            if let Some(hitbox) = self.selectable_hitboxes()?.first() {
+                self.select_hitbox(hitbox.3.clone(), shift, false)?;
+            }
+        } else if shift {
+            let (direction, sequence) = self.workbench_sequence()?;
+            let index = match sequence.num_keyframes() {
+                0 => None,
+                _ => Some(0),
+            }
+            .ok_or(DocumentError::SequenceHasNoKeyframes)?;
+            self.select_keyframe(direction, index, shift, false)?;
+        } else {
+            self.jump_to_animation_start()?;
+        }
+        Ok(())
+    }
+
     fn browse_frames(&mut self, direction: BrowseDirection, shift: bool) {
         let item_pool = self.selectable_frames();
         let delta = direction.as_list_offset(self.view.frames_list_mode);

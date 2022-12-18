@@ -593,6 +593,24 @@ pub fn browse_selection(
 }
 
 #[tauri::command]
+pub fn browse_to_end(app_state: tauri::State<'_, AppState>, shift: bool) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::BrowseToEnd(shift)).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn browse_to_start(app_state: tauri::State<'_, AppState>, shift: bool) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::BrowseToStart(shift)).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn clear_selection(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {

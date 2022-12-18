@@ -3,13 +3,13 @@ import {
   beginExportAs,
   beginRenameSelection,
   browseSelection,
+  browseToEnd,
+  browseToStart,
   centerWorkbench,
   copy,
   cut,
   deleteSelection,
   doExport,
-  jumpToAnimationEnd,
-  jumpToAnimationStart,
   nudgeSelection,
   paste,
   pause,
@@ -123,9 +123,9 @@ function onKeyDown(event: KeyboardEvent) {
       event.preventDefault();
       browseSelection(BrowseDirection.Right, event.shiftKey);
     } else if (event.key == "Home") {
-      jumpToAnimationStart();
+      browseToStart(event.shiftKey);
     } else if (event.key == "End") {
-      jumpToAnimationEnd();
+      browseToEnd(event.shiftKey);
     } else if (event.key == "F2") {
       beginRenameSelection();
     }

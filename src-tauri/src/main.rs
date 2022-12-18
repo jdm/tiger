@@ -79,6 +79,8 @@ fn main() {
             api::begin_rename_selection,
             api::begin_resize_hitbox,
             api::browse_selection,
+            api::browse_to_end,
+            api::browse_to_start,
             api::cancel_export_as,
             api::cancel_rename,
             api::center_workbench,

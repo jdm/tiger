@@ -24,6 +24,8 @@ pub enum Command {
     DeleteSelection,
     NudgeSelection(NudgeDirection, bool),
     BrowseSelection(BrowseDirection, bool),
+    BrowseToEnd(bool),
+    BrowseToStart(bool),
     ClearSelection,
     SelectAll,
     SelectFrame(PathBuf, bool, bool),
@@ -147,6 +149,8 @@ impl Document {
             Command::DeleteSelection => self.delete_selection()?,
             Command::NudgeSelection(d, l) => self.nudge_selection(d, l)?,
             Command::BrowseSelection(d, shift) => self.browse_selection(d, shift)?,
+            Command::BrowseToEnd(shift) => self.browse_to_end(shift)?,
+            Command::BrowseToStart(shift) => self.browse_to_start(shift)?,
             Command::ClearSelection => self.view.selection.clear(),
             Command::SelectAll => self.select_all()?,
             Command::SelectFrame(ref p, shift, ctrl) => self.select_frame(p, shift, ctrl),
@@ -425,6 +429,8 @@ impl Display for Command {
             | Command::FilterFrames(_)
             | Command::FilterAnimations(_)
             | Command::BrowseSelection(_, _)
+            | Command::BrowseToEnd(_)
+            | Command::BrowseToStart(_)
             | Command::ClearSelection
             | Command::SelectAll
             | Command::SelectFrame(_, _, _)

@@ -17,9 +17,9 @@
 - [x] Frames pane saves scroll position in undo stack
 - [x] Animations pane saves scroll position in undo stack
 - [x] Hitboxes pane saves scroll position in undo stack
-- [ ] Can press Home/End to select first/last frame
-- [ ] Can press Home/End to select first/last animation
-- [ ] Can press Home/End to select first/last hitbox
+- [x] Can press Home/End to select first/last frame
+- [x] Can press Home/End to select first/last animation
+- [x] Can press Home/End to select first/last hitbox
 - [x] Can press Ctrl+A to select all frames
 - [x] Can press Ctrl+A to select all animations
 - [x] Can press Ctrl+A to select all hitboxes
