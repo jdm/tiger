@@ -134,6 +134,7 @@ fn main() {
             api::save_as,
             api::save,
             api::scrub_timeline,
+            api::select_all,
             api::select_animation,
             api::select_direction,
             api::select_frame,

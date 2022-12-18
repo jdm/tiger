@@ -20,10 +20,10 @@
 - [ ] Can press Home/End to select first/last frame
 - [ ] Can press Home/End to select first/last animation
 - [ ] Can press Home/End to select first/last hitbox
-- [ ] Can press Ctrl+A to select all frames
-- [ ] Can press Ctrl+A to select all animations
-- [ ] Can press Ctrl+A to select all hitboxes
-- [ ] Can press Ctrl+A to select all keyframes
+- [x] Can press Ctrl+A to select all frames
+- [x] Can press Ctrl+A to select all animations
+- [x] Can press Ctrl+A to select all hitboxes
+- [x] Can press Ctrl+A to select all keyframes
 - [x] Timeline scroll position in undo stack
 - [x] Timeline zoom keeps current position invariant
 - [x] Can zoom timeline with mousewheel
@@ -36,6 +36,7 @@
 - [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
 - [x] Fixed a bug where up/down arrows selected animations in case-sensitive order
 - [x] Fixed a bug where hitboxes were ordered in case-sensitive order
+- [ ] Decide ordering for frames panel
 
 ## Tiger 0.8
 

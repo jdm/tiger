@@ -618,6 +618,15 @@ pub fn select_frame(
 }
 
 #[tauri::command]
+pub fn select_all(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::SelectAll).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn select_animation(
     app_state: tauri::State<'_, AppState>,
     name: String,

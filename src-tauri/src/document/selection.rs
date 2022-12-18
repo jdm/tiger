@@ -153,6 +153,30 @@ impl Document {
         self.view.selection.hitboxes.only(hitboxes);
     }
 
+    pub(super) fn select_all(&mut self) -> DocumentResult<()> {
+        let mut new_selection = SelectionState::default();
+        if !self.view.selection.frames.is_empty() {
+            new_selection.frames.only(self.selectable_frames());
+        } else if !self.view.selection.animations.is_empty() {
+            new_selection.animations.only(self.selectable_animations());
+        } else if !self.view.selection.hitboxes.is_empty() {
+            new_selection.hitboxes.only(self.selectable_hitboxes()?);
+        } else {
+            let (animation_name, animation) = self.workbench_animation()?;
+            let keyframes: Vec<(String, Direction, usize)> = animation
+                .sequences_iter()
+                .flat_map(|(d, s)| {
+                    s.keyframes_iter()
+                        .enumerate()
+                        .map(|(i, _)| (animation_name.clone(), *d, i))
+                })
+                .collect();
+            new_selection.keyframes.only(keyframes);
+        }
+        self.view.selection = new_selection;
+        Ok(())
+    }
+
     pub(super) fn select_frame<T: AsRef<Path>>(&mut self, path: T, shift: bool, ctrl: bool) {
         self.view.selection.animations.clear();
         self.view.selection.keyframes.clear();

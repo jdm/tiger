@@ -139,6 +139,11 @@ export async function cancelRename(): Promise<void> {
   appStore.patch(await invoke("cancel_rename"));
 }
 
+export async function selectAll(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("select_all"));
+}
+
 export async function nudgeSelection(
   direction: NudgeDirection,
   largeNudge: boolean

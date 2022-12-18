@@ -25,6 +25,7 @@ pub enum Command {
     NudgeSelection(NudgeDirection, bool),
     BrowseSelection(BrowseDirection, bool),
     ClearSelection,
+    SelectAll,
     SelectFrame(PathBuf, bool, bool),
     SelectAnimation(String, bool, bool),
     SelectKeyframe(Direction, usize, bool, bool),
@@ -147,6 +148,7 @@ impl Document {
             Command::NudgeSelection(d, l) => self.nudge_selection(d, l)?,
             Command::BrowseSelection(d, shift) => self.browse_selection(d, shift)?,
             Command::ClearSelection => self.view.selection.clear(),
+            Command::SelectAll => self.select_all()?,
             Command::SelectFrame(ref p, shift, ctrl) => self.select_frame(p, shift, ctrl),
             Command::SelectAnimation(ref n, shift, ctrl) => self.select_animation(n, shift, ctrl),
             Command::SelectKeyframe(d, i, shift, ctrl) => {
@@ -424,6 +426,7 @@ impl Display for Command {
             | Command::FilterAnimations(_)
             | Command::BrowseSelection(_, _)
             | Command::ClearSelection
+            | Command::SelectAll
             | Command::SelectFrame(_, _, _)
             | Command::SelectAnimation(_, _, _)
             | Command::SelectKeyframe(_, _, _, _)

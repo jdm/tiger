@@ -18,6 +18,7 @@ import {
   resetTimelineZoom,
   resetWorkbenchZoom,
   save,
+  selectAll,
   undo,
   zoomInTimeline,
   zoomInWorkbench,
@@ -89,6 +90,8 @@ function onKeyDown(event: KeyboardEvent) {
       } else {
         resetWorkbenchZoom();
       }
+    } else if (event.key == "a") {
+      selectAll();
     } else if (event.key == "ArrowUp") {
       nudgeSelection(NudgeDirection.Up, event.shiftKey);
     } else if (event.key == "ArrowDown") {
