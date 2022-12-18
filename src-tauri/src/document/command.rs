@@ -13,9 +13,11 @@ pub enum Command {
     DetachedNavigation,
     Paste(Clipboard),
     SetFramesListMode(ListMode),
+    SetFramesListOffset(u32),
     FilterFrames(String),
     FilterAnimations(String),
     SetAnimationsListOffset(u32),
+    SetHitboxesListOffset(u32),
     ImportFrames(Vec<PathBuf>),
     DeleteFrame(PathBuf),
     DeleteSelectedFrames,
@@ -136,6 +138,8 @@ impl Document {
             Command::FilterFrames(ref q) => self.view.frames_filter = q.clone(),
             Command::FilterAnimations(ref q) => self.view.animations_filter = q.clone(),
             Command::SetAnimationsListOffset(o) => self.view.animations_list_offset = o,
+            Command::SetFramesListOffset(o) => self.view.set_frames_list_offset(o),
+            Command::SetHitboxesListOffset(o) => self.view.hitboxes_list_offset = o,
             Command::ImportFrames(ref p) => self.sheet.add_frames(p),
             Command::DeleteFrame(ref p) => self.sheet.delete_frame(p),
             Command::DeleteSelectedFrames => self.delete_selected_frames(),
@@ -450,6 +454,8 @@ impl Display for Command {
             | Command::ZoomOutTimeline
             | Command::ZoomOutTimelineAround(_)
             | Command::SetAnimationsListOffset(_)
+            | Command::SetFramesListOffset(_)
+            | Command::SetHitboxesListOffset(_)
             | Command::SetTimelineZoomAmount(_)
             | Command::SetTimelineOffset(_)
             | Command::PanTimeline(_)
