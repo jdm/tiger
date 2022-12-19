@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::sheet::version3 as previous_version;
-use crate::sheet::{Any, Paths, SheetError, Version};
+use crate::sheet::{ordered_map, Any, Paths, SheetError, Version};
 
 const THIS_VERSION: Version = Version::Tiger4;
 
@@ -18,6 +18,7 @@ struct VersionedSheet {
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Sheet<P: Paths> {
     pub(in crate::sheet) frames: Vec<Frame<P>>,
+    #[serde(serialize_with = "ordered_map")]
     pub(in crate::sheet) animations: HashMap<String, Animation<P>>,
     pub(in crate::sheet) export_settings: Option<ExportSettings<P>>,
     #[serde(skip)]
@@ -88,6 +89,7 @@ pub struct Sequence<P: Paths> {
 #[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Keyframe<P: Paths> {
     pub(in crate::sheet) frame: PathBuf,
+    #[serde(serialize_with = "ordered_map")]
     pub(in crate::sheet) hitboxes: HashMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),

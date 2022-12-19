@@ -4,11 +4,10 @@ use euclid::default::*;
 use euclid::rect;
 use pathdiff::diff_paths;
 use regex::Regex;
-use serde::{Deserialize, Serialize};
+use serde::{ser::SerializeMap, Deserialize, Serialize};
 use std::collections::{HashMap, HashSet};
 use std::fs::File;
-use std::io::BufReader;
-use std::io::BufWriter;
+use std::io::{BufReader, BufWriter};
 use std::ops::Range;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
@@ -1059,6 +1058,20 @@ fn absolute_to_relative<P: AsRef<Path>, B: AsRef<Path>>(
     diff_paths(&path, &base).ok_or_else(|| {
         SheetError::AbsoluteToRelativePath(path.as_ref().to_owned(), base.as_ref().to_owned())
     })
+}
+
+fn ordered_map<V: Serialize, S: serde::Serializer>(
+    value: &HashMap<String, V>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let mut sorted = value.iter().collect::<Vec<_>>();
+    sorted.sort_by_cached_key(|(k, _)| k.to_lowercase());
+
+    let mut map = serializer.serialize_map(Some(sorted.len()))?;
+    for (k, v) in sorted {
+        map.serialize_entry(k, v)?;
+    }
+    map.end()
 }
 
 #[test]
