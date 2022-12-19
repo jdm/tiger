@@ -79,7 +79,7 @@ export type Document = {
 
 export type Sheet = {
   frames: Frame[];
-  animations: Record<string, Animation>;
+  animations: Animation[];
 };
 
 export type Frame = {

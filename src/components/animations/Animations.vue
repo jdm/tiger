@@ -59,7 +59,7 @@ watch(() => app.currentDocument?.lastInteractedAnimation, (name) => {
 });
 
 const visibleAnimations = computed(() => {
-	return app.sortedAnimations?.filter((a) => !a.filteredOut);
+	return app.currentDocument?.sheet.animations.filter((a) => !a.filteredOut);
 });
 
 const searchQuery = computed({

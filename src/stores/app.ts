@@ -34,31 +34,16 @@ export const useAppStore = defineStore("app", {
       }
       return null;
     },
-    sortedAnimations(): Animation[] | null {
-      if (!this.currentDocument?.sheet.animations) {
+    currentAnimation(): Animation | null {
+      const currentAnimationName = this.currentDocument?.currentAnimationName;
+      if (!currentAnimationName) {
         return null;
       }
-      let animations = Object.values(this.currentDocument.sheet.animations);
-      animations.sort((a, b) => {
-        const nameA = a.name.toLowerCase();
-        const nameB = b.name.toLowerCase();
-        if (nameA < nameB) {
-          return -1;
-        }
-        if (nameA > nameB) {
-          return 1;
-        }
-        return 0;
-      });
-      return animations;
-    },
-    currentAnimation(): Animation | null {
-      if (this.currentDocument?.currentAnimationName) {
-        return this.currentDocument.sheet.animations[
-          this.currentDocument.currentAnimationName
-        ];
-      }
-      return null;
+      return (
+        this.currentDocument?.sheet.animations.find(
+          (a) => a.name == currentAnimationName
+        ) || null
+      );
     },
     currentSequence(): Sequence | null {
       if (
@@ -91,10 +76,12 @@ export const useAppStore = defineStore("app", {
       );
     },
     selectedAnimations(): Animation[] | null {
-      if (!this.sortedAnimations) {
+      if (!this.currentDocument) {
         return null;
       }
-      return this.sortedAnimations.filter((animation) => animation.selected);
+      return this.currentDocument.sheet.animations.filter(
+        (animation) => animation.selected
+      );
     },
     selectedHitboxes(): Hitbox[] | null {
       if (!this.currentKeyframe) {

@@ -98,7 +98,7 @@ pub struct Document {
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
     frames: Vec<Frame>,
-    animations: HashMap<String, Animation>,
+    animations: Vec<Animation>,
 }
 
 #[derive(Clone, Serialize)]
@@ -354,14 +354,14 @@ impl document::Document {
             frame.filtered_out = self.is_frame_filtered_out(&frame.path);
         }
 
-        for (animation_name, animation) in sheet.animations.iter_mut() {
-            animation.selected = self.selection().is_animation_selected(animation_name);
-            animation.filtered_out = self.is_animation_filtered_out(animation_name);
+        for animation in sheet.animations.iter_mut() {
+            animation.selected = self.selection().is_animation_selected(&animation.name);
+            animation.filtered_out = self.is_animation_filtered_out(&animation.name);
             for (direction, sequence) in animation.sequences.iter_mut() {
                 let mut time_millis = 0;
                 for (index, keyframe) in sequence.keyframes.iter_mut().enumerate() {
                     keyframe.selected = self.selection().is_keyframe_selected(
-                        animation_name,
+                        &animation.name,
                         (*direction).into(),
                         index,
                     );
@@ -369,7 +369,7 @@ impl document::Document {
                     time_millis += keyframe.duration_millis;
                     for hitbox in keyframe.hitboxes.iter_mut() {
                         hitbox.selected = self.selection().is_hitbox_selected(
-                            animation_name,
+                            &animation.name,
                             (*direction).into(),
                             index,
                             &hitbox.name,
@@ -459,13 +459,14 @@ impl<P: Paths> sheet::Sheet<P> {
                 SheetTrim::OnlyAnimation(_) | SheetTrim::Empty => vec![],
             },
             animations: self
-                .animations_iter()
+                .sorted_animations()
+                .into_iter()
                 .filter(|(name, _)| match &trim {
                     SheetTrim::Full => true,
                     SheetTrim::OnlyAnimation(n) => *name == n,
                     SheetTrim::Empty => false,
                 })
-                .map(|(name, animation)| (name.to_owned(), (name, animation).into()))
+                .map(|(name, animation)| (name, animation).into())
                 .collect(),
         }
     }
