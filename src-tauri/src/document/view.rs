@@ -296,24 +296,21 @@ impl Document {
     }
 
     pub fn is_frame_filtered_out<T: AsRef<Path>>(&self, frame: T) -> bool {
-        !self
-            .view
-            .frames_filter
-            .split_ascii_whitespace()
-            .all(|search_term| {
-                frame
-                    .as_ref()
-                    .as_os_str()
-                    .to_string_lossy()
-                    .contains(search_term)
-            })
+        let filter = self.view.frames_filter.to_lowercase();
+        !filter.split_ascii_whitespace().all(|search_term| {
+            frame
+                .as_ref()
+                .as_os_str()
+                .to_string_lossy()
+                .to_lowercase()
+                .contains(search_term)
+        })
     }
 
     pub fn is_animation_filtered_out<T: AsRef<str>>(&self, animation_name: T) -> bool {
-        !self
-            .view
-            .animations_filter
+        let filter = self.view.animations_filter.to_lowercase();
+        !filter
             .split_ascii_whitespace()
-            .all(|search_term| animation_name.as_ref().contains(search_term))
+            .all(|search_term| animation_name.as_ref().to_lowercase().contains(search_term))
     }
 }

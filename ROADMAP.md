@@ -3,6 +3,7 @@
 ## Tiger 0.7
 
 - [ ] Tooltips everywhere
+- [x] Filters in the Animations and Frames panes are case-insensitive
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)
 - [x] Can zoom workbench with mousewheel
