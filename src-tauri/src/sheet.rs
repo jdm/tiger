@@ -92,6 +92,12 @@ impl<P: Paths> Sheet<P> {
         self.frames.iter()
     }
 
+    pub fn sorted_frames(&self) -> Vec<&Frame<P>> {
+        let mut frames = self.frames.iter().collect::<Vec<_>>();
+        frames.sort();
+        frames
+    }
+
     pub fn animations_iter(&self) -> impl Iterator<Item = (&String, &Animation<P>)> {
         self.animations.iter()
     }
@@ -1072,6 +1078,15 @@ fn ordered_map<V: Serialize, S: serde::Serializer>(
         map.serialize_entry(k, v)?;
     }
     map.end()
+}
+
+fn ordered_slice<V: Serialize + Ord, S: serde::Serializer>(
+    value: &[V],
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let mut sorted = value.iter().collect::<Vec<_>>();
+    sorted.sort();
+    sorted.serialize(serializer)
 }
 
 #[test]

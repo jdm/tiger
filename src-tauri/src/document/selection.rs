@@ -459,7 +459,8 @@ impl Document {
 
     fn selectable_frames(&self) -> Vec<PathBuf> {
         self.sheet
-            .frames_iter()
+            .sorted_frames()
+            .into_iter()
             .map(|f| f.source().to_owned())
             .collect()
     }

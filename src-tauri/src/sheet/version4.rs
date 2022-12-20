@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::sheet::version3 as previous_version;
-use crate::sheet::{ordered_map, Any, Paths, SheetError, Version};
+use crate::sheet::{ordered_map, ordered_slice, Any, Paths, SheetError, Version};
 
 const THIS_VERSION: Version = Version::Tiger4;
 
@@ -17,6 +17,7 @@ struct VersionedSheet {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Sheet<P: Paths> {
+    #[serde(serialize_with = "ordered_slice")]
     pub(in crate::sheet) frames: Vec<Frame<P>>,
     #[serde(serialize_with = "ordered_map")]
     pub(in crate::sheet) animations: HashMap<String, Animation<P>>,

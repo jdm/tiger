@@ -92,7 +92,8 @@ impl Frame {
         texture_layout: &TextureLayout,
     ) -> Result<Self, MetadataError> {
         let index = sheet
-            .frames_iter()
+            .sorted_frames()
+            .into_iter()
             .position(|f| std::ptr::eq(f, frame))
             .ok_or(MetadataError::InvalidFrameReference)?;
 
@@ -221,7 +222,7 @@ impl Sheet {
     ) -> Result<Self, MetadataError> {
         let frames = {
             let mut frames = Vec::new();
-            for frame in sheet.frames_iter() {
+            for frame in sheet.sorted_frames() {
                 frames.push(Frame::new(sheet, frame, texture_layout)?);
             }
             frames

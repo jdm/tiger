@@ -2,7 +2,11 @@
 
 ## Tiger 0.7
 
-- [ ] Tooltips everywhere
+- [ ] Tooltips to show full path in frames pane
+- [ ] Tooltips to explain workbench toolbar items
+- [ ] Tooltip for keyframe snapping toggle
+- [ ] Tooltip for animation looping toggle
+- [ ] Tooltip for lock keyframes toggle
 - [x] Filters in the Animations and Frames panes are case-insensitive
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)
@@ -32,12 +36,13 @@
 - [x] Removed timeline scrollbar
 - [x] Timeline scrolling follows playback
 - [x] Timeline scrolling follows frame selection
+- [x] Frames are now ordered by path in the UI and in tiger files
 - [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
 - [x] Navigation while backtracked in undo stack no longer truncates the undo stack
 - [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
 - [x] Fixed a bug where up/down arrows selected animations in case-sensitive order
 - [x] Fixed a bug where hitboxes were ordered in case-sensitive order
-- [ ] Decide ordering for frames panel
+- [ ] Fixed a bug where buttons would have a white outline when pressing arrow keys after clicking them
 
 ## Tiger 0.8
 

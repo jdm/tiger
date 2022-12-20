@@ -455,7 +455,7 @@ impl<P: Paths> sheet::Sheet<P> {
     fn to_dto(&self, trim: SheetTrim) -> Sheet {
         Sheet {
             frames: match trim {
-                SheetTrim::Full => self.frames_iter().map(|f| f.into()).collect(),
+                SheetTrim::Full => self.sorted_frames().into_iter().map(|f| f.into()).collect(),
                 SheetTrim::OnlyAnimation(_) | SheetTrim::Empty => vec![],
             },
             animations: self
