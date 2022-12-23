@@ -1,3 +1,11 @@
+# Development environment
+
+- Install Rust stable compiler
+- Install Node.js
+- Install the tauri CLI via `cargo install tauri-cli`
+- Run `npm install`
+- Run `cargo tauri dev`
+
 # How to make a release
 
 - Move relevant section of ROADMAP.md into CHANGELOG.md, commit and push
