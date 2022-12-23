@@ -1170,38 +1170,38 @@ mod test {
     fn can_browse_frames_as_a_4xn_grid() {
         let mut d = Document::new("tmp");
         d.sheet.add_frames(&vec![
-            "00", "10", "20", "30", //
-            "01", "11", "21", "31", //
-            "02", "12", "22", "32",
+            "0a", "0b", "0c", "0d", //
+            "1a", "1b", "1c", "1d", //
+            "2a", "2b", "2c", "2d",
         ]);
         d.view.frames_list_mode = ListMode::Grid4xN;
-        d.select_frame("00", false, false);
+        d.select_frame("0a", false, false);
         let to_set = |v: Vec<&str>| v.iter().map(PathBuf::from).collect();
 
         d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["10"]));
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0b"]));
         d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["20"]));
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0c"]));
         d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["30"]));
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0d"]));
         d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["01"]));
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["1a"]));
         d.browse_selection(BrowseDirection::Left, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["30"]));
+        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0d"]));
         d.browse_selection(BrowseDirection::Down, true).unwrap();
         assert_eq!(
             d.view.selection.frames.selected_items,
-            to_set(vec!["30", "01", "11", "21", "31"])
+            to_set(vec!["0d", "1a", "1b", "1c", "1d"])
         );
         d.browse_selection(BrowseDirection::Down, true).unwrap();
         assert_eq!(
             d.view.selection.frames.selected_items,
-            to_set(vec!["30", "01", "11", "21", "31", "02", "12", "22", "32"])
+            to_set(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c", "2d"])
         );
         d.browse_selection(BrowseDirection::Left, true).unwrap();
         assert_eq!(
             d.view.selection.frames.selected_items,
-            to_set(vec!["30", "01", "11", "21", "31", "02", "12", "22"])
+            to_set(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c"])
         );
     }
 }

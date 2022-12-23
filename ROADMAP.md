@@ -42,7 +42,7 @@
 - [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
 - [x] Fixed a bug where up/down arrows selected animations in case-sensitive order
 - [x] Fixed a bug where hitboxes were ordered in case-sensitive order
-- [ ] Fixed a bug where buttons would have a white outline when pressing arrow keys after clicking them
+- [x] Fixed a bug where buttons would have a white outline when pressing arrow keys after clicking them
 
 ## Tiger 0.8
 
