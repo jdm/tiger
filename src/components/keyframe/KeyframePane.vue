@@ -5,8 +5,10 @@
 		</div>
 		<div class="flex-1 flex flex-col min-h-0 p-4 gap-4">
 			<div class="w-full flex gap-2 items-center">
-				<Toggle :toggled="!!app.currentDocument?.lockHitboxes" @toggled="onToggleLockHitboxes"
-					:icon="LockClosedIcon" />
+				<TooltipArea text="Lock hitboxes">
+					<Toggle :toggled="!!app.currentDocument?.lockHitboxes" @toggled="onToggleLockHitboxes"
+						:icon="LockClosedIcon" />
+				</TooltipArea>
 				<div class="flex-1 flex justify-end">
 					<Button :positive="true" :icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
 				</div>
@@ -40,6 +42,7 @@ import PaneInset from "@/components/basic/PaneInset.vue"
 import Hitbox from "@/components/keyframe/Hitbox.vue";
 import StatefulScroll from "@/components/basic/StatefulScroll.vue"
 import Toggle from "@/components/basic/Toggle.vue"
+import TooltipArea from "@/components/basic/TooltipArea.vue"
 
 const app = useAppStore();
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);

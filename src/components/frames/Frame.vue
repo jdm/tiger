@@ -1,15 +1,17 @@
 <template>
-	<div @click.stop="onFrameClicked" @contextmenu.stop.prevent="onOpenContextMenu" @dragstart="onDragStart"
-		@dragend="onDragEnd" draggable="true">
-		<Selectable v-if="compact" :left-icon="PhotoIcon" :text="frame.name" :selected="frame.selected"
-			:actions="[{ icon: XMarkIcon, callback: onDeleteClicked }]" />
-		<div v-else
-			class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
-			:class="frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
-			<img :src="sprite.getURL(frame.path)" class="pixelated object-none" />
+	<TooltipArea :text="frame.path">
+		<div @click.stop="onFrameClicked" @contextmenu.stop.prevent="onOpenContextMenu" @dragstart="onDragStart"
+			@dragend="onDragEnd" draggable="true">
+			<Selectable v-if="compact" :left-icon="PhotoIcon" :text="frame.name" :selected="frame.selected"
+				:actions="[{ icon: XMarkIcon, callback: onDeleteClicked }]" />
+			<div v-else
+				class="aspect-square checkerboard flex place-content-center rounded-sm cursor-pointer overflow-hidden outline-offset-2"
+				:class="frame.selected ? 'outline outline-blue-600' : 'hover:outline outline-plastic-500'">
+				<img :src="sprite.getURL(frame.path)" class="pixelated object-none" />
+			</div>
+			<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
 		</div>
-		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
-	</div>
+	</TooltipArea>
 </template>
 
 <script setup lang="ts">
@@ -21,6 +23,7 @@ import { revealInExplorer } from "@/api/app"
 import { beginDragAndDropFrame, endDragAndDropFrame, selectFrame, deleteSelectedFrames, deleteFrame } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
+import TooltipArea from "@/components/basic/TooltipArea.vue"
 
 const sprite = useSpriteStore();
 

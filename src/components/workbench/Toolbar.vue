@@ -6,11 +6,19 @@
 		outline outline-4 outline-neutral-900
 	">
 		<FlatMultiSwitch :items="zoomItems" @activate="onZoomClicked" />
-		<FlatToggle :icon="SunIcon" v-model="spriteDarkening" />
+		<TooltipArea text="Toggle sprite darkening">
+			<FlatToggle :icon="SunIcon" v-model="spriteDarkening" />
+		</TooltipArea>
 		<div class="flex items-center gap-1">
-			<FlatToggle :icon="PhotoIcon" v-model="drawSprite" color="orange" />
-			<FlatToggle :icon="TagIcon" v-model="drawHitboxes" color="pink" />
-			<FlatToggle :icon="PlusIcon" v-model="drawOrigin" color="sky" />
+			<TooltipArea text="Toggle frame visibility">
+				<FlatToggle :icon="PhotoIcon" v-model="drawSprite" color="orange" />
+			</TooltipArea>
+			<TooltipArea text="Toggle hitboxes visibility">
+				<FlatToggle :icon="TagIcon" v-model="drawHitboxes" color="pink" />
+			</TooltipArea>
+			<TooltipArea text="Toggle origin visibility">
+				<FlatToggle :icon="PlusIcon" v-model="drawOrigin" color="sky" />
+			</TooltipArea>
 		</div>
 	</div>
 </template>
@@ -22,6 +30,7 @@ import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin
 import { useAppStore } from "@/stores/app"
 import FlatMultiSwitch, { FlatMultiSwitchItem } from "@/components/basic/FlatMultiSwitch.vue";
 import FlatToggle from "@/components/basic/FlatToggle.vue"
+import TooltipArea from "@/components/basic/TooltipArea.vue"
 
 const app = useAppStore();
 

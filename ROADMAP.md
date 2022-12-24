@@ -2,11 +2,11 @@
 
 ## Tiger 0.7
 
-- [ ] Tooltips to show full path in frames pane
-- [ ] Tooltips to explain workbench toolbar items
-- [ ] Tooltip for keyframe snapping toggle
-- [ ] Tooltip for animation looping toggle
-- [ ] Tooltip for lock keyframes toggle
+- [x] Tooltips to show full path in frames pane
+- [x] Tooltips for workbench toolbar items
+- [x] Tooltip for keyframe snapping toggle
+- [x] Tooltip for animation looping toggle
+- [x] Tooltip for lock hitboxes toggle
 - [x] Filters in the Animations and Frames panes are case-insensitive
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)

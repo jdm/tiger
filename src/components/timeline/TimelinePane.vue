@@ -3,19 +3,23 @@
 		<div class="w-full px-4 py-2 flex items-center">
 			<div class="flex-1 flex gap-2">
 				<PerspectivePicker />
-				<Toggle :toggled="!!app.currentAnimation?.isLooping" @toggled="setAnimationLooping"
-					:icon="ArrowPathIcon" />
+				<TooltipArea text="Toggle animation looping">
+					<Toggle :toggled="!!app.currentAnimation?.isLooping" @toggled="setAnimationLooping"
+						:icon="ArrowPathIcon" />
+				</TooltipArea>
 			</div>
 			<div class="flex-1 flex justify-center">
 				<PlaybackControls />
 			</div>
 			<div class="flex-1 flex gap-2 justify-end items-center">
-				<Toggle :toggled="!!app.currentDocument?.snapKeyframeDurations" @toggled="setSnapKeyframeDurations"
-					:icon="AdjustmentsHorizontalIcon" :canExpand="true">
-					<template #expanded>
-						<SnappingOptions />
-					</template>
-				</Toggle>
+				<TooltipArea text="Keyframe snapping">
+					<Toggle :toggled="!!app.currentDocument?.snapKeyframeDurations" @toggled="setSnapKeyframeDurations"
+						:icon="AdjustmentsHorizontalIcon" :canExpand="true">
+						<template #expanded>
+							<SnappingOptions />
+						</template>
+					</Toggle>
+				</TooltipArea>
 				<MagnifyingGlassIcon class="w-5 text-plastic-400" />
 				<Slider class="w-28" v-model:value="zoomAmount" v-model:dragging="draggingScale" />
 			</div>
@@ -70,6 +74,7 @@ import Slider from "@/components/basic/Slider.vue"
 import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import Toggle from "@/components/basic/Toggle.vue"
+import TooltipArea from "@/components/basic/TooltipArea.vue"
 import PerspectivePicker from "@/components/timeline/PerspectivePicker.vue"
 import PlaybackControls from "@/components/timeline/PlaybackControls.vue"
 import Ruler from "@/components/timeline/Ruler.vue"
