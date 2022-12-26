@@ -1134,16 +1134,21 @@ mod test {
         d.select_animation("A", false, false);
         let just_a = HashSet::from(["A".to_owned()]);
         let just_b = HashSet::from(["B".to_owned()]);
+        let just_c = HashSet::from(["C".to_owned()]);
         let b_and_c = HashSet::from(["B".to_owned(), "C".to_owned()]);
-        assert_eq!(&d.view.selection.animations.selected_items, &just_a,);
+        assert_eq!(&d.view.selection.animations.selected_items, &just_a);
         d.browse_selection(BrowseDirection::Down, false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_b,);
+        assert_eq!(&d.view.selection.animations.selected_items, &just_b);
         d.browse_selection(BrowseDirection::Down, true).unwrap();
         assert_eq!(&d.view.selection.animations.selected_items, &b_and_c);
         d.browse_selection(BrowseDirection::Up, false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_b,);
+        assert_eq!(&d.view.selection.animations.selected_items, &just_b);
         d.browse_selection(BrowseDirection::Left, false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_b,);
+        assert_eq!(&d.view.selection.animations.selected_items, &just_b);
+        d.browse_to_end(false).unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &just_c);
+        d.browse_to_start(false).unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &just_a);
     }
 
     #[test]
@@ -1154,6 +1159,7 @@ mod test {
         d.select_frame("A", false, false);
         let just_a = HashSet::from([PathBuf::from("A")]);
         let just_b = HashSet::from([PathBuf::from("B")]);
+        let just_c = HashSet::from([PathBuf::from("C")]);
         let b_and_c = HashSet::from([PathBuf::from("B"), PathBuf::from("C")]);
         assert_eq!(&d.view.selection.frames.selected_items, &just_a,);
         d.browse_selection(BrowseDirection::Down, false).unwrap();
@@ -1164,6 +1170,10 @@ mod test {
         assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
         d.browse_selection(BrowseDirection::Left, false).unwrap();
         assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
+        d.browse_to_end(false).unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &just_c);
+        d.browse_to_start(false).unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &just_a);
     }
 
     #[test]
@@ -1254,6 +1264,61 @@ mod test {
                 ])
             );
         }
+
+        d.browse_to_end(false).unwrap();
+        assert_eq!(
+            d.view.selection.keyframes.selected_items,
+            to_set(vec![(Direction::South, 2)])
+        );
+
+        d.browse_to_start(false).unwrap();
+        assert_eq!(
+            d.view.selection.keyframes.selected_items,
+            to_set(vec![(Direction::South, 0)])
+        );
+    }
+
+    #[test]
+    fn can_browse_hitboxes() {
+        let to_set = |v: Vec<&str>| {
+            v.into_iter()
+                .map(|h| ("walk_cycle".into(), Direction::North, 0, h.into()))
+                .collect()
+        };
+
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("H0");
+        keyframe.create_hitbox("H2");
+        keyframe.create_hitbox("H1");
+
+        d.select_hitbox("H0", false, false).unwrap();
+        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H0"]));
+
+        d.browse_selection(BrowseDirection::Down, false).unwrap();
+        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H1"]));
+
+        d.browse_selection(BrowseDirection::Down, true).unwrap();
+        assert_eq!(
+            d.view.selection.hitboxes.selected_items,
+            to_set(vec!["H1", "H2"])
+        );
+
+        d.browse_selection(BrowseDirection::Up, false).unwrap();
+        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H1"]));
+
+        d.browse_to_end(false).unwrap();
+        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H2"]));
+
+        d.browse_to_start(false).unwrap();
+        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H0"]));
     }
 
     #[test]
