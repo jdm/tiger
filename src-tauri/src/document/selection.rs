@@ -1204,4 +1204,47 @@ mod test {
             to_set(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c"])
         );
     }
+
+    #[test]
+    fn can_delete_selection_frames() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["A", "B", "C"]);
+        d.select_frame("B", false, false);
+        assert!(d.sheet.frame("B").is_some());
+        d.delete_selection().unwrap();
+        assert_eq!(d.sheet.frames_iter().count(), 2);
+        assert!(d.sheet.frame("B").is_none());
+    }
+
+    #[test]
+    fn can_nudge_keyframe() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_keyframes_only(vec![("walk_cycle".to_owned(), Direction::North, 1)]);
+        d.nudge_selection(NudgeDirection::Up, true).unwrap();
+        assert_eq!(
+            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
+            vec2(0, -10)
+        );
+        d.nudge_selection(NudgeDirection::Right, false).unwrap();
+        assert_eq!(
+            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
+            vec2(1, -10)
+        );
+        d.nudge_selection(NudgeDirection::Left, true).unwrap();
+        assert_eq!(
+            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
+            vec2(-9, -10)
+        );
+        d.nudge_selection(NudgeDirection::Down, false).unwrap();
+        assert_eq!(
+            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
+            vec2(-9, -9)
+        );
+    }
 }
