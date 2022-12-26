@@ -1206,6 +1206,57 @@ mod test {
     }
 
     #[test]
+    fn can_browse_keyframes() {
+        let to_set = |v: Vec<(Direction, usize)>| {
+            v.into_iter()
+                .map(|(d, i)| ("walk_cycle".into(), d, i))
+                .collect()
+        };
+
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([
+                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+            ]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+
+        {
+            d.select_keyframe(Direction::North, 1, false, false)
+                .unwrap();
+            d.browse_selection(BrowseDirection::Right, false).unwrap();
+            assert_eq!(
+                d.view.selection.keyframes.selected_items,
+                to_set(vec![(Direction::North, 2)])
+            );
+            d.browse_selection(BrowseDirection::Left, false).unwrap();
+            assert_eq!(
+                d.view.selection.keyframes.selected_items,
+                to_set(vec![(Direction::North, 1)])
+            );
+        }
+
+        {
+            d.select_keyframe(Direction::North, 1, false, false)
+                .unwrap();
+            d.browse_selection(BrowseDirection::Right, true).unwrap();
+            d.browse_selection(BrowseDirection::Down, true).unwrap();
+            assert_eq!(
+                d.view.selection.keyframes.selected_items,
+                to_set(vec![
+                    (Direction::North, 1),
+                    (Direction::North, 2),
+                    (Direction::South, 1),
+                    (Direction::South, 2)
+                ])
+            );
+        }
+    }
+
+    #[test]
     fn can_delete_selection_frames() {
         let mut d = Document::new("tmp");
         d.sheet.add_frames(&vec!["A", "B", "C"]);
