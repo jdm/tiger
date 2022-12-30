@@ -1,0 +1,199 @@
+{
+  "version": "Tiger4",
+  "sheet": {
+    "frames": [
+      {
+        "source": "flame-hit-0.png"
+      },
+      {
+        "source": "flame-hit-1.png"
+      },
+      {
+        "source": "flame-hit-2.png"
+      },
+      {
+        "source": "flame-idle-0.png"
+      },
+      {
+        "source": "flame-idle-1.png"
+      },
+      {
+        "source": "flame-idle-2.png"
+      },
+      {
+        "source": "flame-idle-3.png"
+      },
+      {
+        "source": "flame-idle-4.png"
+      }
+    ],
+    "animations": {
+      "hit": {
+        "sequences": {
+          "North": {
+            "keyframes": [
+              {
+                "frame": "flame-hit-0.png",
+                "hitboxes": {},
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": "flame-hit-1.png",
+                "hitboxes": {},
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": "flame-hit-2.png",
+                "hitboxes": {},
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              }
+            ]
+          }
+        },
+        "is_looping": false
+      },
+      "idle": {
+        "sequences": {
+          "North": {
+            "keyframes": [
+              {
+                "frame": "flame-idle-0.png",
+                "hitboxes": {
+                  "hit": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -12,
+                          -28
+                        ],
+                        "size": [
+                          24,
+                          24
+                        ]
+                      }
+                    }
+                  }
+                },
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": "flame-idle-1.png",
+                "hitboxes": {
+                  "hit": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -12,
+                          -28
+                        ],
+                        "size": [
+                          24,
+                          24
+                        ]
+                      }
+                    }
+                  }
+                },
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": "flame-idle-2.png",
+                "hitboxes": {
+                  "hit": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -12,
+                          -28
+                        ],
+                        "size": [
+                          24,
+                          24
+                        ]
+                      }
+                    }
+                  }
+                },
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": "flame-idle-3.png",
+                "hitboxes": {
+                  "hit": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -12,
+                          -28
+                        ],
+                        "size": [
+                          24,
+                          24
+                        ]
+                      }
+                    }
+                  }
+                },
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              },
+              {
+                "frame": "flame-idle-4.png",
+                "hitboxes": {
+                  "hit": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -12,
+                          -28
+                        ],
+                        "size": [
+                          24,
+                          24
+                        ]
+                      }
+                    }
+                  }
+                },
+                "duration_millis": 100,
+                "offset": [
+                  0,
+                  -22
+                ]
+              }
+            ]
+          }
+        },
+        "is_looping": true
+      }
+    },
+    "export_settings": null
+  }
+}
