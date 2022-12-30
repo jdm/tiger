@@ -1,0 +1,81 @@
+TEXTURE
+samurai.png
+
+FRAMES
+0 x = 96, y = 16, w = 16, h = 16
+1 x = 80, y = 16, w = 16, h = 16
+2 x = 64, y = 48, w = 16, h = 16
+3 x = 64, y = 32, w = 16, h = 16
+4 x = 64, y = 16, w = 16, h = 16
+5 x = 112, y = 0, w = 16, h = 16
+6 x = 96, y = 0, w = 16, h = 16
+7 x = 80, y = 0, w = 16, h = 16
+8 x = 64, y = 0, w = 16, h = 16
+9 x = 48, y = 48, w = 16, h = 16
+10 x = 48, y = 32, w = 16, h = 16
+11 x = 48, y = 16, w = 16, h = 16
+12 x = 48, y = 0, w = 16, h = 16
+13 x = 32, y = 48, w = 16, h = 16
+14 x = 32, y = 32, w = 16, h = 16
+15 x = 32, y = 16, w = 16, h = 16
+16 x = 32, y = 0, w = 16, h = 16
+17 x = 16, y = 48, w = 16, h = 16
+18 x = 16, y = 32, w = 16, h = 16
+19 x = 16, y = 16, w = 16, h = 16
+20 x = 16, y = 0, w = 16, h = 16
+21 x = 0, y = 48, w = 16, h = 16
+22 x = 0, y = 32, w = 16, h = 16
+23 x = 0, y = 16, w = 16, h = 16
+24 x = 0, y = 0, w = 16, h = 16
+
+ANIMATIONS
+[attack]
+loop = false,
+	direction = East
+		id = 0, duration = 100, ox = -8, oy = -16
+	direction = North
+		id = 1, duration = 100, ox = -8, oy = -16
+	direction = West
+		id = 3, duration = 100, ox = -8, oy = -16
+	direction = South
+		id = 2, duration = 100, ox = -8, oy = -16
+[dead]
+loop = false,
+	direction = North
+		id = 4, duration = 100, ox = -8, oy = -16
+[idle]
+loop = false,
+	direction = East
+		id = 5, duration = 100, ox = -8, oy = -16
+			[weak] x = -5, y = -13, w = 10, h = 10
+	direction = North
+		id = 6, duration = 100, ox = -8, oy = -16
+			[weak] x = -5, y = -13, w = 10, h = 10
+	direction = West
+		id = 8, duration = 100, ox = -8, oy = -16
+			[weak] x = -5, y = -13, w = 10, h = 10
+	direction = South
+		id = 7, duration = 100, ox = -8, oy = -16
+			[weak] x = -5, y = -13, w = 10, h = 10
+[walk]
+loop = true,
+	direction = East
+		id = 9, duration = 100, ox = -8, oy = -16
+		id = 10, duration = 100, ox = -8, oy = -16
+		id = 11, duration = 100, ox = -8, oy = -16
+		id = 12, duration = 100, ox = -8, oy = -16
+	direction = North
+		id = 13, duration = 100, ox = -8, oy = -16
+		id = 14, duration = 100, ox = -8, oy = -16
+		id = 15, duration = 100, ox = -8, oy = -16
+		id = 16, duration = 100, ox = -8, oy = -16
+	direction = West
+		id = 21, duration = 100, ox = -8, oy = -16
+		id = 22, duration = 100, ox = -8, oy = -16
+		id = 23, duration = 100, ox = -8, oy = -16
+		id = 24, duration = 100, ox = -8, oy = -16
+	direction = South
+		id = 17, duration = 100, ox = -8, oy = -16
+		id = 18, duration = 100, ox = -8, oy = -16
+		id = 19, duration = 100, ox = -8, oy = -16
+		id = 20, duration = 100, ox = -8, oy = -16

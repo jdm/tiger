@@ -53,12 +53,17 @@ pub(super) fn pack_sheet(
         }
     }
 
-    let items = bitmaps.iter().map(|(path, bitmap)| crunch::Item {
-        data: path,
-        w: bitmap.width() as usize,
-        h: bitmap.height() as usize,
-        rot: crunch::Rotation::None,
-    });
+    let mut items = bitmaps
+        .iter()
+        .map(|(path, bitmap)| crunch::Item {
+            data: path,
+            w: bitmap.width() as usize,
+            h: bitmap.height() as usize,
+            rot: crunch::Rotation::None,
+        })
+        .collect::<Vec<_>>();
+    items.sort_by_key(|i| i.data);
+
     let (width, height, layout) =
         crunch::pack_into_po2(8_192, items).map_err(|_| PackError::Packing)?;
     let layout = layout

@@ -194,6 +194,13 @@
         "is_looping": true
       }
     },
-    "export_settings": null
+    "export_settings": {
+      "Template": {
+        "template_file": "export.template",
+        "texture_file": "..\\test-output\\flame.png",
+        "metadata_file": "..\\test-output\\flame.export",
+        "metadata_paths_root": "..\\test-output"
+      }
+    }
   }
 }

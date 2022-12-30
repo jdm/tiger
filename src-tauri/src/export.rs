@@ -76,3 +76,33 @@ fn create_file(path: &Path) -> Result<File, ExportError> {
 fn create_dir(path: &Path) -> Result<(), ExportError> {
     create_dir_all(path).map_err(|e| ExportError::IoError(path.to_owned(), e))
 }
+
+#[cfg(test)]
+mod test {
+
+    use parking_lot::Mutex;
+    use std::collections::HashMap;
+    use std::sync::Arc;
+
+    use super::*;
+    use crate::{app, document, export};
+
+    #[test]
+    fn export_matches_known_output() {
+        let texture_cache = Arc::new(Mutex::new(HashMap::new()));
+        let mut app = app::App::default();
+        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        let document = app.current_document().unwrap();
+        let packed_sheet = export::pack_sheet(document.sheet(), texture_cache).unwrap();
+        let exported = generate_sheet_metadata(
+            document.sheet(),
+            document.sheet().export_settings().as_ref().unwrap(),
+            packed_sheet.layout(),
+        )
+        .unwrap();
+        assert_eq!(
+            exported,
+            std::fs::read_to_string("test-data/samurai.export").unwrap()
+        );
+    }
+}

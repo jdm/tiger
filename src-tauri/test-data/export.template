@@ -1,0 +1,22 @@
+TEXTURE
+{{ replace sheet_image "\\" "/" }}
+
+FRAMES
+{{ #each frames as |frame| }}
+{{ frame.index }} x = {{ frame.x }}, y = {{ frame.y }}, w = {{ frame.width }}, h = {{ frame.height }}
+{{ /each }}
+
+ANIMATIONS
+{{ #each animations as |animation| }}
+[{{ animation.name }}]
+loop = {{ animation.is_looping }},
+{{ #each sequences as |sequence| }}
+	direction = {{ sequence.direction }}
+	{{ #each sequence.keyframes as |keyframe| }}
+		id = {{ keyframe.frame.index }}, duration = {{ keyframe.duration }}, ox = {{ keyframe.x }}, oy = {{ keyframe.y }}
+		{{ #each keyframe.hitboxes as |hitbox| }}
+			[{{ hitbox.name }}] x = {{ hitbox.x }}, y = {{ hitbox.y }}, w = {{ hitbox.width }}, h = {{ hitbox.height }}
+		{{ /each }}
+	{{ /each }}
+{{ /each }}
+{{ /each }}
