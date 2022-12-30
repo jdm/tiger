@@ -1136,6 +1136,7 @@ mod test {
         let just_b = HashSet::from(["B".to_owned()]);
         let just_c = HashSet::from(["C".to_owned()]);
         let b_and_c = HashSet::from(["B".to_owned(), "C".to_owned()]);
+        let a_b_c = HashSet::from(["A".to_owned(), "B".to_owned(), "C".to_owned()]);
         assert_eq!(&d.view.selection.animations.selected_items, &just_a);
         d.browse_selection(BrowseDirection::Down, false).unwrap();
         assert_eq!(&d.view.selection.animations.selected_items, &just_b);
@@ -1149,6 +1150,8 @@ mod test {
         assert_eq!(&d.view.selection.animations.selected_items, &just_c);
         d.browse_to_start(false).unwrap();
         assert_eq!(&d.view.selection.animations.selected_items, &just_a);
+        d.select_all().unwrap();
+        assert_eq!(&d.view.selection.animations.selected_items, &a_b_c);
     }
 
     #[test]
@@ -1161,6 +1164,7 @@ mod test {
         let just_b = HashSet::from([PathBuf::from("B")]);
         let just_c = HashSet::from([PathBuf::from("C")]);
         let b_and_c = HashSet::from([PathBuf::from("B"), PathBuf::from("C")]);
+        let a_b_c = HashSet::from([PathBuf::from("A"), PathBuf::from("B"), PathBuf::from("C")]);
         assert_eq!(&d.view.selection.frames.selected_items, &just_a,);
         d.browse_selection(BrowseDirection::Down, false).unwrap();
         assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
@@ -1174,6 +1178,8 @@ mod test {
         assert_eq!(&d.view.selection.frames.selected_items, &just_c);
         d.browse_to_start(false).unwrap();
         assert_eq!(&d.view.selection.frames.selected_items, &just_a);
+        d.select_all().unwrap();
+        assert_eq!(&d.view.selection.frames.selected_items, &a_b_c);
     }
 
     #[test]
@@ -1276,6 +1282,19 @@ mod test {
             d.view.selection.keyframes.selected_items,
             to_set(vec![(Direction::South, 0)])
         );
+
+        d.select_all().unwrap();
+        assert_eq!(
+            d.view.selection.keyframes.selected_items,
+            to_set(vec![
+                (Direction::North, 0),
+                (Direction::North, 1),
+                (Direction::North, 2),
+                (Direction::South, 0),
+                (Direction::South, 1),
+                (Direction::South, 2)
+            ])
+        );
     }
 
     #[test]
@@ -1319,6 +1338,12 @@ mod test {
 
         d.browse_to_start(false).unwrap();
         assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H0"]));
+
+        d.select_all().unwrap();
+        assert_eq!(
+            d.view.selection.hitboxes.selected_items,
+            to_set(vec!["H0", "H1", "H2"])
+        );
     }
 
     #[test]
