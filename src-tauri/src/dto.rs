@@ -110,7 +110,7 @@ pub struct Frame {
     filtered_out: bool,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Animation {
     name: String,
@@ -461,12 +461,17 @@ impl<P: Paths> sheet::Sheet<P> {
             animations: self
                 .sorted_animations()
                 .into_iter()
-                .filter(|(name, _)| match &trim {
-                    SheetTrim::Full => true,
-                    SheetTrim::OnlyAnimation(n) => *name == n,
-                    SheetTrim::Empty => false,
+                .filter_map(|(name, animation)| match &trim {
+                    SheetTrim::Full => Some(animation.to_dto(name)),
+                    SheetTrim::OnlyAnimation(n) => {
+                        if name == n {
+                            Some(animation.to_dto(name))
+                        } else {
+                            Some(Animation::default())
+                        }
+                    }
+                    SheetTrim::Empty => None,
                 })
-                .map(|(name, animation)| (name, animation).into())
                 .collect(),
         }
     }
@@ -483,23 +488,19 @@ impl<P: Paths> From<&sheet::Frame<P>> for Frame {
     }
 }
 
-impl<T, P: Paths> From<(T, &sheet::Animation<P>)> for Animation
-where
-    T: AsRef<str>,
-{
-    fn from(animation: (T, &sheet::Animation<P>)) -> Self {
-        Self {
-            name: animation.0.as_ref().to_owned(),
+impl<P: Paths> sheet::Animation<P> {
+    fn to_dto<T: AsRef<str>>(&self, name: T) -> Animation {
+        Animation {
+            name: name.as_ref().to_owned(),
             selected: false,
             filtered_out: false,
-            sequences: animation
-                .1
+            sequences: self
                 .sequences_iter()
                 .map(|(d, s)| ((*d).into(), s.into()))
                 .collect(),
-            direction_preset: animation.1.direction_preset().map(|p| p.into()),
-            is_looping: animation.1.looping(),
-            key: animation.1.key(),
+            direction_preset: self.direction_preset().map(|p| p.into()),
+            is_looping: self.looping(),
+            key: self.key(),
         }
     }
 }
@@ -743,8 +744,18 @@ mod test {
         let dto = app.to_dto(AppTrim::OnlyWorkbench);
         assert_eq!(dto.documents.len(), 2);
         assert!(dto.documents[0].sheet.animations.is_empty());
-        assert_eq!(dto.documents[1].sheet.animations.len(), 1);
-        assert_eq!(dto.documents[1].sheet.animations[0].name, animation_name);
+        // Must preserve size of animations array to avoid patching incorrect array entries
+        assert_eq!(
+            dto.documents[1].sheet.animations.len(),
+            app.current_document()
+                .unwrap()
+                .sheet()
+                .animations_iter()
+                .count()
+        );
+        for animation in &dto.documents[1].sheet.animations {
+            assert!(animation.sequences.is_empty() || animation.name == animation_name);
+        }
     }
 
     #[test]
