@@ -6,7 +6,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::sheet::version3 as previous_version;
-use crate::sheet::{ordered_map, ordered_slice, Any, Paths, SheetError, Version};
+use crate::sheet::{ordered_map, ordered_slice, portable_path, Any, Paths, SheetError, Version};
 
 const THIS_VERSION: Version = Version::Tiger4;
 
@@ -28,6 +28,7 @@ pub struct Sheet<P: Paths> {
 
 #[derive(Clone, Debug, Eq, PartialEq, Serialize, Deserialize)]
 pub struct Frame<P: Paths> {
+    #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) source: PathBuf,
     #[serde(skip)]
     pub(in crate::sheet) paths: std::marker::PhantomData<P>,
@@ -89,6 +90,7 @@ pub struct Sequence<P: Paths> {
 #[derivative(PartialEq)]
 #[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Keyframe<P: Paths> {
+    #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) frame: PathBuf,
     #[serde(serialize_with = "ordered_map")]
     pub(in crate::sheet) hitboxes: HashMap<String, Hitbox>,
@@ -123,9 +125,13 @@ pub enum ExportSettings<P: Paths> {
 
 #[derive(Clone, Debug, Default, Eq, PartialEq, Serialize, Deserialize)]
 pub struct TemplateExportSettings<P: Paths> {
+    #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) template_file: PathBuf,
+    #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) texture_file: PathBuf,
+    #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) metadata_file: PathBuf,
+    #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) metadata_paths_root: PathBuf,
     #[serde(skip)]
     pub(in crate::sheet) paths: std::marker::PhantomData<P>,

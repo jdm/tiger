@@ -1089,6 +1089,11 @@ fn ordered_slice<V: Serialize + Ord, S: serde::Serializer>(
     sorted.serialize(serializer)
 }
 
+fn portable_path<S: serde::Serializer>(value: &PathBuf, serializer: S) -> Result<S::Ok, S::Error> {
+    let cleaned = value.to_string_lossy().replace('\\', "/");
+    cleaned.serialize(serializer)
+}
+
 #[test]
 fn can_read_write_sheet_from_disk() {
     let original = Sheet::<Any>::read("test-data/sample_sheet_1.tiger")
