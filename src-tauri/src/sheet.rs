@@ -1096,21 +1096,18 @@ fn portable_path<S: serde::Serializer>(value: &PathBuf, serializer: S) -> Result
 
 #[test]
 fn can_read_write_sheet_from_disk() {
-    let original = Sheet::<Any>::read("test-data/sample_sheet_1.tiger")
+    let original = Sheet::<Any>::read("test-data/samurai.tiger")
         .unwrap()
         .with_relative_paths("test-data")
         .unwrap()
         .with_absolute_paths();
-    original
-        .clone()
-        .write("test-data/sample_sheet_copy.tiger")
-        .unwrap();
-    let copy = Sheet::<Any>::read("test-data/sample_sheet_copy.tiger")
+    original.clone().write("test-data/copy.tiger").unwrap();
+    let copy = Sheet::<Any>::read("test-data/copy.tiger")
         .unwrap()
         .with_relative_paths("test-data")
         .unwrap()
         .with_absolute_paths();
-    std::fs::remove_file("test-data/sample_sheet_copy.tiger").unwrap();
+    std::fs::remove_file("test-data/copy.tiger").unwrap();
     assert_eq!(original, copy);
 }
 
