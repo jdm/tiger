@@ -38,7 +38,7 @@
 							<h1 class="text-plastic-200 text-xl">Metadata Format</h1>
 							<InputField label="Metadata Template File">
 								<template #content>
-									<InputPath v-model="templateFile" class="mt-1"
+									<InputPath v-model="templateFile" pick-existing class="mt-1"
 										placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.template" />
 								</template>
 								<template #error>
