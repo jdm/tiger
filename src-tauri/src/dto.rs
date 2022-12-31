@@ -710,8 +710,8 @@ mod test {
     #[test]
     fn can_preserve_all() {
         let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/sample_sheet_1.tiger").unwrap());
-        app.open_document(document::Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/flame.tiger").unwrap());
         let dto = app.to_dto(AppTrim::Full);
         assert_eq!(dto.documents.len(), 2);
         assert!(!dto.documents[0].sheet.animations.is_empty());
@@ -721,8 +721,8 @@ mod test {
     #[test]
     fn can_trim_inactive_documents() {
         let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/sample_sheet_1.tiger").unwrap());
-        app.open_document(document::Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/flame.tiger").unwrap());
         let dto = app.to_dto(AppTrim::OnlyCurrentDocument);
         assert_eq!(dto.documents.len(), 2);
         assert!(dto.documents[0].sheet.animations.is_empty());
@@ -732,8 +732,8 @@ mod test {
     #[test]
     fn can_trim_all_except_workbench() {
         let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/sample_sheet_1.tiger").unwrap());
-        app.open_document(document::Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/flame.tiger").unwrap());
         let animation_name = app
             .current_document()
             .unwrap()
@@ -761,7 +761,7 @@ mod test {
     #[test]
     fn can_trim_all_documents() {
         let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
         let dto = app.to_dto(AppTrim::NoDocuments);
         assert!(!dto.documents.is_empty());
         assert!(dto.documents[0].sheet.animations.is_empty());

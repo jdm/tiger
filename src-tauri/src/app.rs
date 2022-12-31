@@ -220,42 +220,42 @@ mod test {
     fn can_open_and_close_documents() {
         let mut app = App::default();
 
-        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(app.documents_iter().count(), 1);
-        assert!(app.document("test-data/sample_sheet_1.tiger").is_some());
-        assert!(app.document_mut("test-data/sample_sheet_1.tiger").is_some());
+        assert!(app.document("test-data/samurai.tiger").is_some());
+        assert!(app.document_mut("test-data/samurai.tiger").is_some());
 
-        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        app.open_document(Document::open("test-data/flame.tiger").unwrap());
         assert_eq!(app.documents_iter().count(), 2);
-        assert!(app.document("test-data/sample_sheet_2.tiger").is_some());
-        assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_some());
+        assert!(app.document("test-data/flame.tiger").is_some());
+        assert!(app.document_mut("test-data/flame.tiger").is_some());
 
-        app.close_document("test-data/sample_sheet_2.tiger");
+        app.close_document("test-data/flame.tiger");
         assert_eq!(app.documents_iter().count(), 1);
-        assert!(app.document("test-data/sample_sheet_2.tiger").is_none());
-        assert!(app.document_mut("test-data/sample_sheet_2.tiger").is_none());
+        assert!(app.document("test-data/flame.tiger").is_none());
+        assert!(app.document_mut("test-data/flame.tiger").is_none());
     }
 
     #[test]
     fn open_and_close_updates_focused_document() {
         let mut app = App::default();
 
-        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(
             app.current_document().unwrap().path(),
-            Path::new("test-data/sample_sheet_1.tiger")
+            Path::new("test-data/samurai.tiger")
         );
 
-        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
+        app.open_document(Document::open("test-data/flame.tiger").unwrap());
         assert_eq!(
             app.current_document().unwrap().path(),
-            Path::new("test-data/sample_sheet_2.tiger")
+            Path::new("test-data/flame.tiger")
         );
 
-        app.close_document("test-data/sample_sheet_2.tiger");
+        app.close_document("test-data/flame.tiger");
         assert_eq!(
             app.current_document().unwrap().path(),
-            Path::new("test-data/sample_sheet_1.tiger")
+            Path::new("test-data/samurai.tiger")
         );
     }
 
@@ -263,13 +263,12 @@ mod test {
     fn can_manually_focus_a_document() {
         let mut app = App::default();
 
-        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
-        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
-        app.focus_document("test-data/sample_sheet_1.tiger")
-            .unwrap();
+        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        app.open_document(Document::open("test-data/flame.tiger").unwrap());
+        app.focus_document("test-data/samurai.tiger").unwrap();
         assert_eq!(
             app.current_document().unwrap().path(),
-            Path::new("test-data/sample_sheet_1.tiger")
+            Path::new("test-data/samurai.tiger")
         );
     }
 
@@ -277,37 +276,37 @@ mod test {
     fn keeps_track_of_recently_opened_documents() {
         let mut app = App::default();
 
-        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(
             *app.recent_documents,
-            vec![PathBuf::from("test-data/sample_sheet_1.tiger")]
+            vec![PathBuf::from("test-data/samurai.tiger")]
         );
 
-        app.open_document(Document::open("test-data/sample_sheet_2.tiger").unwrap());
-        assert_eq!(
-            *app.recent_documents,
-            vec![
-                PathBuf::from("test-data/sample_sheet_2.tiger"),
-                PathBuf::from("test-data/sample_sheet_1.tiger")
-            ]
-        );
-
-        app.open_document(Document::open("test-data/sample_sheet_1.tiger").unwrap());
+        app.open_document(Document::open("test-data/flame.tiger").unwrap());
         assert_eq!(
             *app.recent_documents,
             vec![
-                PathBuf::from("test-data/sample_sheet_1.tiger"),
-                PathBuf::from("test-data/sample_sheet_2.tiger"),
+                PathBuf::from("test-data/flame.tiger"),
+                PathBuf::from("test-data/samurai.tiger")
             ]
         );
 
-        app.relocate_document("test-data/sample_sheet_1.tiger", "relocated");
+        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        assert_eq!(
+            *app.recent_documents,
+            vec![
+                PathBuf::from("test-data/samurai.tiger"),
+                PathBuf::from("test-data/flame.tiger"),
+            ]
+        );
+
+        app.relocate_document("test-data/samurai.tiger", "relocated");
         assert_eq!(
             *app.recent_documents,
             vec![
                 PathBuf::from("relocated"),
-                PathBuf::from("test-data/sample_sheet_1.tiger"),
-                PathBuf::from("test-data/sample_sheet_2.tiger"),
+                PathBuf::from("test-data/samurai.tiger"),
+                PathBuf::from("test-data/flame.tiger"),
             ]
         );
 
@@ -317,8 +316,8 @@ mod test {
             vec![
                 PathBuf::from("new"),
                 PathBuf::from("relocated"),
-                PathBuf::from("test-data/sample_sheet_1.tiger"),
-                PathBuf::from("test-data/sample_sheet_2.tiger"),
+                PathBuf::from("test-data/samurai.tiger"),
+                PathBuf::from("test-data/flame.tiger"),
             ]
         );
     }
