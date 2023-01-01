@@ -3,7 +3,7 @@ use std::path::Path;
 use crate::document::*;
 use crate::export::Template;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum ExportSettingsValidation {
     Template(TemplateExportSettingsValidation),
 }
@@ -178,5 +178,90 @@ fn validate_output_directory_path(p: &Path) -> Option<ExportSettingsError> {
         Some(ExportSettingsError::ExpectedDirectory)
     } else {
         None
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use super::*;
+
+    #[test]
+    fn validates_empty_paths_in_export_settings() {
+        let mut d = Document::new("tmp.tiger");
+        d.begin_export_as();
+        assert_eq!(
+            d.validate_export_settings().unwrap(),
+            ExportSettingsValidation::Template(TemplateExportSettingsValidation {
+                template_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                texture_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                metadata_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                metadata_paths_root_error: Some(ExportSettingsError::ExpectedAbsolutePath)
+            })
+        );
+    }
+
+    #[test]
+    fn validates_relative_paths_in_export_settings() {
+        let mut d = Document::new("tmp.tiger");
+        d.begin_export_as();
+        d.set_export_template_file("relative/path.template")
+            .unwrap();
+        d.set_export_texture_file("relative/path.png").unwrap();
+        d.set_export_metadata_file("relative/path.json").unwrap();
+        d.set_export_metadata_paths_root("relative/").unwrap();
+        assert_eq!(
+            d.validate_export_settings().unwrap(),
+            ExportSettingsValidation::Template(TemplateExportSettingsValidation {
+                template_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                texture_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                metadata_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                metadata_paths_root_error: Some(ExportSettingsError::ExpectedAbsolutePath)
+            })
+        );
+    }
+
+    #[test]
+    fn validates_files_vs_dirs_in_export_settings() {
+        let mut d = Document::new("tmp.tiger");
+        let dir = std::env::current_dir().unwrap();
+        let file = PathBuf::from("test-data/samurai.tiger")
+            .canonicalize()
+            .unwrap();
+        d.begin_export_as();
+        d.set_export_template_file(&dir).unwrap();
+        d.set_export_texture_file(&dir).unwrap();
+        d.set_export_metadata_file(&dir).unwrap();
+        d.set_export_metadata_paths_root(file).unwrap();
+        assert_eq!(
+            d.validate_export_settings().unwrap(),
+            ExportSettingsValidation::Template(TemplateExportSettingsValidation {
+                template_file_error: Some(ExportSettingsError::ExpectedFile),
+                texture_file_error: Some(ExportSettingsError::ExpectedFile),
+                metadata_file_error: Some(ExportSettingsError::ExpectedFile),
+                metadata_paths_root_error: Some(ExportSettingsError::ExpectedDirectory)
+            })
+        );
+    }
+
+    #[test]
+    fn validates_template_file() {
+        let test_table: Vec<(&'static str, fn(e: Option<ExportSettingsError>) -> bool)> = vec![
+            ("test-data/export.template", |e| e.is_none()),
+            ("test-data/samurai-dead-all.png", |e| {
+                matches!(e, Some(ExportSettingsError::TemplateError(_)))
+            }),
+        ];
+
+        let mut d = Document::new("tmp.tiger");
+        d.begin_export_as();
+        for (path, test) in test_table {
+            let absolute_path = PathBuf::from(path).canonicalize().unwrap();
+            d.set_export_template_file(absolute_path).unwrap();
+            let validation = match d.validate_export_settings().unwrap() {
+                ExportSettingsValidation::Template(v) => v,
+            };
+            assert!(test(validation.template_file_error));
+        }
     }
 }
