@@ -30,7 +30,6 @@
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
 import { onMounted, onUnmounted, ref, watch } from "vue"
-import { getState } from "@/api/app"
 import { AppState, Patch, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
