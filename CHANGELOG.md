@@ -1,5 +1,51 @@
 # Changelog
 
+## Tiger 0.7
+
+- [x] Tooltips to show full path in frames pane
+- [x] Tooltips for workbench toolbar items
+- [x] Tooltip for keyframe snapping toggle
+- [x] Tooltip for animation looping toggle
+- [x] Tooltip for lock hitboxes toggle
+- [x] Can navigate modal dialog buttons with keyboard controls
+- [x] Can tab between details fields
+- [x] Filters in the Animations and Frames panes are case-insensitive
+- [x] Can press F2 to rename animations or hitboxes
+- [x] Workbench zoom keeps screen center invariant (not origin)
+- [x] Can zoom workbench with mousewheel
+- [x] Frames pane auto-scrolls when browsing with keyboard controls
+- [x] Animations pane auto-scrolls when browsing with keyboard controls
+- [x] Hitboxes pane auto-scrolls when browsing with keyboard controls
+- [x] Autoscroll to newly created animations
+- [x] Autoscroll to newly created hitboxes
+- [x] Autoscroll to newly imported frames
+- [x] Autoscroll to newly renamed animations
+- [x] Autoscroll to newly renamed hitboxes
+- [x] Frames pane saves scroll position in undo stack
+- [x] Animations pane saves scroll position in undo stack
+- [x] Hitboxes pane saves scroll position in undo stack
+- [x] Can press Home/End to select first/last frame
+- [x] Can press Home/End to select first/last animation
+- [x] Can press Home/End to select first/last hitbox
+- [x] Can press Ctrl+A to select all frames
+- [x] Can press Ctrl+A to select all animations
+- [x] Can press Ctrl+A to select all hitboxes
+- [x] Can press Ctrl+A to select all keyframes
+- [x] Timeline scroll position in undo stack
+- [x] Timeline zoom keeps current position invariant
+- [x] Can zoom timeline with mousewheel
+- [x] Can scroll timeline with mousewheel or right-click drag
+- [x] Removed timeline scrollbar
+- [x] Timeline scrolling follows playback
+- [x] Timeline scrolling follows frame selection
+- [x] Frames are now ordered by path in the UI and in tiger files
+- [x] Fixed a bug where keyframes could not be dropped in the timeline dead zone
+- [x] Navigation while backtracked in undo stack no longer truncates the undo stack
+- [x] Fixed a bug where play/pause actions could cause selection inaccuracies in undo history
+- [x] Fixed a bug where up/down arrows selected animations in case-sensitive order
+- [x] Fixed a bug where hitboxes were ordered in case-sensitive order
+- [x] Fixed a bug where buttons would have a white outline when pressing arrow keys after clicking them
+
 ## Tiger 0.6.1
 
 - [x] Fixed a bug where exported textures were incorrectly sized
