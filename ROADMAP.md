@@ -52,6 +52,10 @@
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Reach satisfying test coverage
+- [ ] Button hover & press states
+- [ ] Toggle hover state
+- [ ] Multiswitch hover state
+- [ ] Playback controls hover & press states
 - [ ] Export complete notification
 
 ## Tiger 0.9
