@@ -12,11 +12,11 @@ defineProps<{
 
 <style scoped>
 .fade-enter-active {
-	transition: opacity 0.3s ease-out;
+	transition: opacity 0.2s ease-out;
 }
 
 .fade-leave-active {
-	transition: opacity 0.2s ease-in;
+	transition: opacity 0.1s ease-in;
 }
 
 .fade-enter-from,

@@ -33,12 +33,12 @@ const activeModalID = computed(() => {
 <style scoped>
 .slide-fade-enter-active {
 	transition-property: opacity, transform;
-	transition: 0.3s ease-out;
+	transition: 0.2s ease-out;
 }
 
 .slide-fade-leave-active {
 	transition-property: opacity, transform;
-	transition: 0.2s ease-in;
+	transition: 0.1s ease-in;
 }
 
 .slide-fade-enter-from,

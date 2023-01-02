@@ -167,12 +167,12 @@ function longErrorText(error: ExportSettingsError): string | null {
 <style>
 .pane-slide-enter-active {
 	transition-property: transform;
-	transition: 0.3s ease-out;
+	transition: 0.2s ease-out;
 }
 
 .pane-slide-leave-active {
 	transition-property: transform;
-	transition: 0.2s ease-in;
+	transition: 0.1s ease-in;
 }
 
 .pane-slide-enter-from,
