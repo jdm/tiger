@@ -73,6 +73,7 @@
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Readme logo
+- [ ] Gif/video in readme
 - [ ] Branding in installer
 - [ ] Github social media preview image (in repo settings)
 - [ ] About dialog
