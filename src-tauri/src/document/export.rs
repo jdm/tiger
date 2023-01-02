@@ -246,7 +246,8 @@ mod test {
 
     #[test]
     fn validates_template_file() {
-        let test_table: Vec<(&'static str, fn(e: Option<ExportSettingsError>) -> bool)> = vec![
+        type Test = fn(e: Option<ExportSettingsError>) -> bool;
+        let test_table: Vec<(&str, Test)> = vec![
             ("test-data/export.template", |e| e.is_none()),
             ("test-data/samurai-dead-all.png", |e| {
                 matches!(e, Some(ExportSettingsError::TemplateError(_)))
@@ -258,9 +259,8 @@ mod test {
         for (path, test) in test_table {
             let absolute_path = PathBuf::from(path).canonicalize().unwrap();
             d.set_export_template_file(absolute_path).unwrap();
-            let validation = match d.validate_export_settings().unwrap() {
-                ExportSettingsValidation::Template(v) => v,
-            };
+            let ExportSettingsValidation::Template(validation) =
+                d.validate_export_settings().unwrap();
             assert!(test(validation.template_file_error));
         }
     }
