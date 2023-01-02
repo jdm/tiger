@@ -3,7 +3,8 @@
 		<input ref="inputElement" v-model.lazy="value" @keydown.enter="onInputConfirmed"
 			@keydown.escape="onInputCancelled"
 			class="w-full text-xs bg-transparent text-plastic-300 rounded-sm border-0 focus:ring-0"
-			:class="readOnly ? 'pointer-events-none' : ''" type="text" spellcheck="false" :readonly="readOnly" />
+			:class="readOnly ? 'pointer-events-none' : ''" type="text" spellcheck="false" :readonly="readOnly"
+			:tabindex="tabIndex" />
 		<div v-if="unit" class="text-xs self-center px-2 text-plastic-500">{{ unit }}</div>
 	</div>
 </template>
@@ -22,6 +23,8 @@ const emit = defineEmits<{
 }>();
 
 const inputElement: Ref<HTMLInputElement | null> = ref(null);
+
+const tabIndex = computed(() => props.readOnly ? -1 : 0);
 
 const multipleValues = computed(() => {
 	return !props.values.every(v => v == props.values[0])

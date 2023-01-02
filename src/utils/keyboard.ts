@@ -30,7 +30,10 @@ import { useAppStore } from "@/stores/app";
 import { BrowseDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
-  if (document.activeElement?.tagName == "INPUT" && event.key != "Tab") {
+  const isActiveElementKeyboardFriendly =
+    (document.activeElement as HTMLInputElement).tabIndex != -1;
+
+  if (document.activeElement?.tagName == "INPUT" && !event.ctrlKey) {
     return;
   }
 
@@ -103,11 +106,13 @@ function onKeyDown(event: KeyboardEvent) {
     }
   } else {
     if (event.key == " ") {
-      event.preventDefault();
-      if (app.currentDocument?.timelineIsPlaying) {
-        pause();
-      } else {
-        play();
+      if (!isActiveElementKeyboardFriendly) {
+        event.preventDefault();
+        if (app.currentDocument?.timelineIsPlaying) {
+          pause();
+        } else {
+          play();
+        }
       }
     } else if (event.key == "Delete") {
       deleteSelection();
@@ -129,10 +134,10 @@ function onKeyDown(event: KeyboardEvent) {
       browseToEnd(event.shiftKey);
     } else if (event.key == "F2") {
       beginRenameSelection();
-    } else if (event.key == "Tab") {
-      event.preventDefault();
     } else if (event.key == "Enter") {
-      event.preventDefault();
+      if (!isActiveElementKeyboardFriendly) {
+        event.preventDefault();
+      }
     }
   }
 }

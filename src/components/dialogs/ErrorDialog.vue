@@ -8,7 +8,7 @@
 			</div>
 		</template>
 		<template #actions>
-			<Button label="OK" @click="acknowledgeError" class="w-20" />
+			<Button label="OK" @click="acknowledgeError" tabbable class="w-20" />
 		</template>
 	</ModalDialog>
 </template>

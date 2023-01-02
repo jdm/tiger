@@ -1,7 +1,7 @@
 <template>
 	<div class="rounded-md overflow-hidden flex bg-plastic-800 border-y border-plastic-900 border-b-plastic-600">
 		<slot name="before"></slot>
-		<input type="text" spellcheck="false" :placeholder="placeholder || 'Example Text'" v-model="value"
+		<input type="text" spellcheck="false" :placeholder="placeholder || 'Example Text'" v-model="value" tabindex="-1"
 			class="w-full bg-transparent border-0 text-plastic-300 placeholder-plastic-500 focus:ring-0" />
 		<slot name="after"></slot>
 	</div>

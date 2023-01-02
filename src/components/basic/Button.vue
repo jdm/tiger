@@ -1,8 +1,8 @@
 <template>
 	<div class="h-11 rounded-md" :class="containerClasses">
 		<button type="button"
-			class="w-full h-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border-t border-b-2 focus:outline-0"
-			:disabled="disabled" :class="buttonClasses" @click="emit('click')">
+			class="w-full h-full flex items-center justify-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium border-t border-b-2 outline-offset-2 focus:outline-2 focus:outline-blue-500 focus:outline-dotted active:outline-0"
+			:disabled="disabled" :tabindex="tabIndex" :class="buttonClasses" @click="onClick">
 			<component :is="icon" v-if="icon" class="w-5" />
 			<div v-if="label">{{ label }}</div>
 		</button>
@@ -18,6 +18,7 @@ type ButtonColor = "pink";
 const props = defineProps<{
 	label?: string,
 	disabled?: boolean,
+	tabbable?: boolean,
 	positive?: boolean,
 	danger?: boolean,
 	customColor?: ButtonColor,
@@ -30,6 +31,13 @@ const emit = defineEmits<{
 
 const containerClasses = computed(() => [...outline.value,]);
 const buttonClasses = computed(() => [...palette.value,]);
+
+const tabIndex = computed(() => props.tabbable ? 0 : -1);
+
+function onClick(event: MouseEvent) {
+	(event.currentTarget as HTMLButtonElement)?.blur();
+	emit('click');
+}
 
 const outline = computed(() => {
 	if (props.disabled){

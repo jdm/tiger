@@ -7,6 +7,8 @@
 - [x] Tooltip for keyframe snapping toggle
 - [x] Tooltip for animation looping toggle
 - [x] Tooltip for lock hitboxes toggle
+- [x] Can navigate modal dialog buttons with keyboard controls
+- [x] Can tab between details fields
 - [x] Filters in the Animations and Frames panes are case-insensitive
 - [x] Can press F2 to rename animations or hitboxes
 - [x] Workbench zoom keeps screen center invariant (not origin)

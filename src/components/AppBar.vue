@@ -9,8 +9,8 @@
 		<template #right>
 			<div>
 				<div v-if="!app.isReleaseBuild" class="h-full inline-flex items-center">
-					<button @click="onToggleDevTools" class="p-1 px-2 rounded-md text-white"
-						:class="debugMode ? 'bg-green-500' : 'bg-red-500'">🐛</button>
+					<button @click="onToggleDevTools" tabindex="-1" class="p-1 px-2 rounded-md text-white"
+						:class="dev.debugModeEnabled ? 'bg-green-500' : 'bg-red-500'">🐛</button>
 				</div>
 			</div>
 		</template>
@@ -20,19 +20,18 @@
 <script setup lang="ts">
 import { computed, reactive } from "vue"
 import { useAppStore } from "@/stores/app"
+import { useDevStore } from "@/stores/dev"
 import { closeAllDocuments, closeCurrentDocument, openDocuments as doOpenDocuments, revealInExplorer, saveAll } from "@/api/app"
 import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut } from "@/api/document"
 import { newDocument, openDocuments, saveAs } from "@/api/local"
 import MenuBar, { MenuBarEntry, MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
 
-const props = defineProps<{ debugMode: boolean, }>();
-const emit = defineEmits(["update:debugMode"]);
-
 const app = useAppStore();
+const dev = useDevStore();
 
 function onToggleDevTools() {
-	emit("update:debugMode", !props.debugMode);
+	dev.toggleDebugModeEnabled();
 }
 
 const fileMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([

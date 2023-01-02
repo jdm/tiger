@@ -1,27 +1,6 @@
 <template>
   <div class="relative h-screen w-screen overflow-hidden select-none" @contextmenu="onContextMenu">
-    <div class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
-      <AppBar v-model:debugMode="allowContextMenu" />
-      <div class="flex-1 relative">
-        <div class="absolute inset-0 min-h-0 flex gap-5 p-5">
-          <div class="basis-[27.375rem] min-w-0 flex flex-col gap-5">
-            <AnimationsPane class="flex-1" />
-            <FramesPane class="flex-1" />
-          </div>
-          <div class="flex-1 min-w-0 flex flex-col">
-            <div class="flex-1 min-h-0 flex gap-5 pb-5">
-              <WorkbenchPane class="flex-1" />
-              <div class="basis-80 min-w-0 flex flex-col gap-5">
-                <KeyframePane class="flex-1" />
-                <DetailsPane class="basis-80" />
-              </div>
-            </div>
-            <TimelinePane />
-          </div>
-        </div>
-        <ExportOverlay class="absolute inset-0 z-[9997]" />
-      </div>
-    </div>
+    <MainLayer />
     <ModalLayer class="absolute inset-0 z-[9998]" />
     <FloatingLayer class="absolute inset-0 z-[9999]" />
   </div>
@@ -29,26 +8,20 @@
 
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
-import { onMounted, onUnmounted, ref, watch } from "vue"
+import { onMounted, onUnmounted, watch } from "vue"
 import { AppState, Patch, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
 import { useAppStore } from "@/stores/app"
+import { useDevStore } from "@/stores/dev"
 import { useSpriteStore } from "@/stores/sprite"
 import { registerKeyboardShortcuts, unregisterKeyboardShortcuts } from "@/utils/keyboard"
-import AppBar from "@/components/AppBar.vue"
-import AnimationsPane from "@/components/animations/AnimationsPane.vue"
 import FloatingLayer from "@/components/basic/FloatingLayer.vue"
-import DetailsPane from "@/components/details/DetailsPane.vue"
-import ExportOverlay from "@/components/export/ExportOverlay.vue"
-import FramesPane from "@/components/frames/FramesPane.vue"
-import KeyframePane from "@/components/keyframe/KeyframePane.vue"
-import TimelinePane from "@/components/timeline/TimelinePane.vue"
-import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
+import MainLayer from "@/components/MainLayer.vue"
 import ModalLayer from "@/components/ModalLayer.vue"
 
 const app = useAppStore();
+const dev = useDevStore();
 const sprite = useSpriteStore();
-const allowContextMenu = ref(false);
 
 onMounted(() => {
   listen("patch-state", event => {
@@ -87,7 +60,7 @@ watch(() => app.currentDocument?.timelineIsPlaying, (isPlaying) => {
 });
 
 function onContextMenu(e: Event) {
-  if (!allowContextMenu.value) {
+  if (!dev.debugModeEnabled) {
     e.preventDefault();
   }
 }

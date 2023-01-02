@@ -26,6 +26,14 @@ export const useAppStore = defineStore("app", {
     },
   },
   getters: {
+    activeModalId(): string | null {
+      if (this.error != null) {
+        return this.error.key;
+      } else if (this.currentDocument?.wasCloseRequested) {
+        return "closing_" + this.currentDocument.path;
+      }
+      return null;
+    },
     currentDocument(state) {
       for (let document of state.documents) {
         if (document.path == state.currentDocumentPath) {
