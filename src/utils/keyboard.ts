@@ -33,7 +33,7 @@ function onKeyDown(event: KeyboardEvent) {
   const isActiveElementKeyboardFriendly =
     (document.activeElement as HTMLInputElement).tabIndex != -1;
 
-  if (document.activeElement?.tagName == "INPUT" && !event.ctrlKey) {
+  if (document.activeElement?.tagName == "INPUT") {
     return;
   }
 
