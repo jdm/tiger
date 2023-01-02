@@ -56,6 +56,8 @@
 - [ ] Toggle hover state
 - [ ] Multiswitch hover state
 - [ ] Playback controls hover & press states
+- [ ] Can press escape to close modals
+- [ ] Can press escape to close export overlay
 - [ ] Export complete notification
 
 ## Tiger 0.9
