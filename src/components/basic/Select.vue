@@ -1,6 +1,7 @@
 <template>
 	<div ref="el" class="relative">
-		<div @click="onOpen" class="h-11 rounded-md border-2 border-plastic-900">
+		<div @click="onClick" @mousedown="onMouseDown"
+			class="h-11 rounded-md cursor-pointer border-2 border-plastic-900">
 			<div class="h-full flex items-center gap-2 pl-4 pr-2 rounded-md
 				border-y  border-t-zinc-300 border-b-zinc-700 bg-zinc-400">
 				<div class="flex-1 grid pr-8">
@@ -50,6 +51,7 @@ const emit = defineEmits<{
 const el: Ref<HTMLElement | null> = ref(null);
 const open = ref(false);
 const listPosition = ref([0, 0] as [number, number]);
+let mouseDownWhileOpen = false;
 
 const selectedOption = computed(() => {
 	return props.options.find((o) => o.value == props.selected);
@@ -62,12 +64,19 @@ const listWidth = computed(() => {
 	return el.value.clientWidth;
 });
 
-function onOpen() {
+function onClick() {
+	if (mouseDownWhileOpen) {
+		return;
+	}
 	if (el.value) {
 		const boundingBox = el.value.getBoundingClientRect();
 		listPosition.value = [boundingBox.left, boundingBox.bottom];
 	}
 	open.value = !open.value;
+}
+
+function onMouseDown() {
+	mouseDownWhileOpen = open.value;
 }
 
 function onOptionSelected(option: SelectOption) {

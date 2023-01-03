@@ -8,10 +8,12 @@
 - [ ] Automatically add extensions to exported files
 - [ ] Default paths for NFD dialogs
 - [ ] Reach satisfying test coverage
-- [ ] Button hover & press states
-- [ ] Toggle hover state
-- [ ] Multiswitch hover state
-- [ ] Playback controls hover & press states
+- [x] Hover & pressed states for Button controls
+- [x] Hover & pressed states for Toggle controls
+- [x] Hover & pressed states for playback controls
+- [x] Hover state for FlatMultiSwitch controls
+- [x] Hover state for InputPath controls
+- [x] Can close directions dropdown menu by clicking it again
 - [ ] Can press escape to close modals
 - [ ] Can press escape to close export overlay
 - [ ] Export complete notification
