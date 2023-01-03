@@ -17,6 +17,7 @@
 - [ ] Can press escape to close modals
 - [ ] Can press escape to close export overlay
 - [ ] Export complete notification
+- [x] Fixed a bug where timeline would not fill entire panel after resizing the program window
 
 ## Tiger 0.9
 

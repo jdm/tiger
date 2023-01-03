@@ -84,18 +84,17 @@ import SnappingOptions from "@/components/timeline/SnappingOptions.vue"
 const app = useAppStore();
 
 const scrollableElement: Ref<HTMLElement | null> = ref(null);
+const scrollableElementWidth = ref(0);
 const scrubbing = ref(false);
 const panning = ref(false);
 const draggingScale = ref(false);
-
+const isWindowSizeStable = isStable([scrollableElementWidth]);
 const offset = computed(() => app.currentDocument?.timelineOffsetMillis || 0);
 const isPlaying = computed(() => app.currentDocument?.timelineIsPlaying);
-
 const zoomAmount = computed({
 	get: () => app.currentDocument ? app.currentDocument?.timelineZoomAmount : 0.5,
 	set: setTimelineZoomAmount,
 });
-
 const zoomFactor = computed(() => app.currentDocument?.timelineZoomFactor || 1);
 const isZoomStable = isStable([zoomFactor]);
 
@@ -122,8 +121,25 @@ const animationDuration = computed(() => {
 	return Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
 });
 
+const resizeObserver = new ResizeObserver(entries => {
+	for (let entry of entries) {
+		if (entry.target === scrollableElement.value) {
+			scrollableElementWidth.value = entry.contentRect.width;
+		}
+	}
+});
+
+watch(scrollableElement, (newScrollable, oldScrollable) => {
+	if (oldScrollable) {
+		resizeObserver.unobserve(oldScrollable);
+	}
+	if (newScrollable) {
+		resizeObserver.observe(newScrollable);
+	}
+});
+
 const timelineSize = computed(() => {
-	const visibleDuration = offset.value + (scrollableElement.value?.clientWidth || 0) / zoomFactor.value;
+	const visibleDuration = offset.value + scrollableElementWidth.value / zoomFactor.value;
 	const bonusDuration = 500 / zoomFactor.value;
 	return zoomFactor.value * Math.max(visibleDuration, animationDuration.value + bonusDuration);
 });
@@ -133,7 +149,7 @@ const scrollingCanAnimate = debounceAnimation(
 	() => !draggingScale.value && !panning.value && !isPlaying.value,
 	50
 );
-const animateScrolling = computed(() => scrollingCanAnimate.value || !isZoomStable.value);
+const animateScrolling = computed(() => isWindowSizeStable.value && (scrollingCanAnimate.value || !isZoomStable.value));
 
 const timelineStyle = computed(() => {
 	return {
