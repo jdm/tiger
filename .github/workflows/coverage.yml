@@ -17,8 +17,9 @@ jobs:
       - name: Install Rust Toolchain
         uses: actions-rs/toolchain@v1
         with:
-          toolchain: nightly # https://github.com/actions-rs/grcov#usage
+          toolchain: nightly
           profile: minimal
+          components: llvm-tools-preview
           default: true
       - name: Download Build Cache
         uses: actions/cache@v3
@@ -42,9 +43,20 @@ jobs:
         working-directory: src-tauri
         env:
           CARGO_INCREMENTAL: "0"
-          RUSTFLAGS: "-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
+          RUSTFLAGS: "-Cinstrument-coverage -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Cpanic=abort -Zpanic_abort_tests"
       - name: Gather Results
-        run: grcov ./target/debug -s . --llvm --branch --guess-directory-when-missing --ignore-not-existing -t lcov -o coverage.txt
+        run: >
+          grcov ./target/debug
+          -s .
+          --llvm
+          --branch
+          --ignore-not-existing
+          -t coveralls
+          -o coverage.txt
+          --excl-line "#\[derive\("
+          --excl-br-line "#\[derive\("
+          --excl-start "mod test \{"
+          --excl-br-start "mod test \{"
         working-directory: src-tauri
       - name: Upload Results
         uses: codecov/codecov-action@v2
