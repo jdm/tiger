@@ -85,24 +85,30 @@ mod test {
     use std::sync::Arc;
 
     use super::*;
-    use crate::{app, document, export};
+    use crate::{app, document};
 
     #[test]
     fn export_matches_known_output() {
         let texture_cache = Arc::new(Mutex::new(HashMap::new()));
         let mut app = app::App::default();
         app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+
         let document = app.current_document().unwrap();
-        let packed_sheet = export::pack_sheet(document.sheet(), texture_cache).unwrap();
-        let exported = generate_sheet_metadata(
-            document.sheet(),
-            document.sheet().export_settings().as_ref().unwrap(),
-            packed_sheet.layout(),
-        )
-        .unwrap();
+        let ExportSettings::Template(export_settings) =
+            document.sheet().export_settings().as_ref().unwrap();
+
+        std::fs::remove_file(export_settings.texture_file()).ok();
+        std::fs::remove_file(export_settings.metadata_file()).ok();
+        export_sheet(document.sheet(), texture_cache).unwrap();
+
         assert_eq!(
-            exported,
+            std::fs::read_to_string(export_settings.metadata_file()).unwrap(),
             std::fs::read_to_string("test-data/samurai.export").unwrap()
+        );
+
+        assert_eq!(
+            std::fs::read(export_settings.texture_file()).unwrap(),
+            std::fs::read("test-data/samurai.png").unwrap()
         );
     }
 }
