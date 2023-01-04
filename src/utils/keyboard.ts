@@ -5,6 +5,7 @@ import {
   browseSelection,
   browseToEnd,
   browseToStart,
+  cancelExportAs,
   centerWorkbench,
   copy,
   cut,
@@ -25,7 +26,13 @@ import {
   zoomOutTimeline,
   zoomOutWorkbench,
 } from "@/api/document";
-import { closeAllDocuments, closeCurrentDocument, saveAll } from "@/api/app";
+import {
+  acknowledgeError,
+  cancelExit,
+  closeAllDocuments,
+  closeCurrentDocument,
+  saveAll,
+} from "@/api/app";
 import { useAppStore } from "@/stores/app";
 import { BrowseDirection, NudgeDirection } from "@/api/dto";
 
@@ -137,6 +144,14 @@ function onKeyDown(event: KeyboardEvent) {
     } else if (event.key == "Enter") {
       if (!isActiveElementKeyboardFriendly) {
         event.preventDefault();
+      }
+    } else if (event.key == "Escape") {
+      if (app.error) {
+        acknowledgeError();
+      } else if (app.currentDocument?.wasCloseRequested) {
+        cancelExit();
+      } else if (app.currentDocument?.exportSettingsBeingEdited) {
+        cancelExportAs();
       }
     }
   }

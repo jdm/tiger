@@ -14,8 +14,7 @@
 - [x] Hover state for FlatMultiSwitch controls
 - [x] Hover state for InputPath controls
 - [x] Can close directions dropdown menu by clicking it again
-- [ ] Can press escape to close modals
-- [ ] Can press escape to close export overlay
+- [x] Can press escape to close modals / export overlay
 - [ ] Export complete notification
 - [x] Fixed a bug where timeline would not fill entire panel after resizing the program window
 
