@@ -1,5 +1,5 @@
 <template>
-	<button type="button" class="h-11 rounded-md cursor-pointer" :class="buttonClasses" @mouseenter="onMouseEnter"
+	<button type="button" class="h-11 rounded-md" :class="buttonClasses" @mouseenter="onMouseEnter"
 		@mouseleave="onMouseLeave" @mousedown="onMouseDown" @mouseup="onMouseUp" @click="onClick" :disabled="disabled"
 		:tabindex="tabIndex">
 		<div class="h-full rounded-md" :class="outline">
@@ -48,7 +48,8 @@ function onClick(event: MouseEvent) {
 }
 
 const buttonClasses = computed(() => [
-	...active.value? ["pt-px"] : [],
+	...active.value ? ["pt-px"] : [],
+	...!props.disabled ? ["cursor-pointer"] : [],
 	...props.tabbable && !active.value ? ["focus:outline-2", "focus:outline-blue-500", "focus:outline-dotted"] : ["focus:outline-0"],
 ]);
 
