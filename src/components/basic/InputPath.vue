@@ -40,10 +40,11 @@ const iconClass = computed(()=>[
 
 async function openFilePicker() {
 	let file;
+	const defaultPath = value.value || undefined;
 	if (props.pickExisting || props.isDirectory) {
-		file = await open({ directory: props.isDirectory });
+		file = await open({ directory: props.isDirectory, defaultPath: defaultPath });
 	} else {
-		file = await save();
+		file = await save({ defaultPath: defaultPath });
 	}
 	if (typeof file === "string") {
 		value.value = file;

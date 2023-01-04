@@ -46,7 +46,7 @@ const fileMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 	)},
 	{},
 	{ name: "Save", shortcut: "Ctrl+S", action: save, disabled: !app.currentDocument },
-	{ name: "Save As…", shortcut: "Ctrl+Shift+S", action: saveAs, disabled: !app.currentDocument },
+	{ name: "Save As…", shortcut: "Ctrl+Shift+S", action: () => saveAs(app.currentDocumentPath), disabled: !app.currentDocument },
 	{ name: "Save All", shortcut: "Ctrl+Alt+S", action: saveAll, disabled: !app.currentDocument },
 	{ name: "Export", shortcut: "Ctrl+E", action: doExport, disabled: !app.currentDocument },
 	{ name: "Export As…", shortcut: "Ctrl+Shift+E", action: beginExportAs, disabled: !app.currentDocument },

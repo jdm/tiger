@@ -58,7 +58,8 @@ function onKeyDown(event: KeyboardEvent) {
         save();
       }
     } else if (event.key == "S") {
-      saveAs();
+      event.preventDefault();
+      saveAs(app.currentDocumentPath);
     } else if (event.key == "e") {
       doExport();
     } else if (event.key == "E") {

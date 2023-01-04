@@ -6,7 +6,7 @@
 - [ ] In-place tutorials instead of blank data
 - [ ] Consider merging some code between save, save_as and save_all
 - [ ] Automatically add extensions to exported files
-- [ ] Default paths for NFD dialogs
+- [x] All file dialogs open with a sensible default file/directory selected
 - [ ] Reach satisfying test coverage
 - [x] Hover & pressed states for Button controls
 - [x] Hover & pressed states for Toggle controls

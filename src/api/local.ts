@@ -33,9 +33,10 @@ export async function openDocuments() {
   }
 }
 
-export async function saveAs() {
+export async function saveAs(currentPath: string | null) {
   const file = await saveFileDialog({
     filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],
+    defaultPath: currentPath || undefined,
   });
   if (typeof file === "string") {
     doSaveAs(file);
