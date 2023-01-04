@@ -109,7 +109,7 @@ pub async fn open_documents(
         let open_path = path.to_owned();
         documents.push((
             open_path.clone(),
-            tauri::async_runtime::spawn_blocking(move || Document::open(&open_path))
+            tauri::async_runtime::spawn_blocking(move || Document::open(open_path))
                 .await
                 .unwrap(),
         ));
@@ -239,106 +239,24 @@ pub fn close_without_saving(
     }))
 }
 
-#[tauri::command]
-pub async fn save(
+struct DocumentToSave {
+    sheet: Sheet<Absolute>,
+    source: PathBuf,
+    destination: PathBuf,
+    version: i32,
+}
+
+async fn save_documents(
     window: tauri::Window,
     app_state: tauri::State<'_, AppState<'_>>,
+    mut documents: Vec<DocumentToSave>,
 ) -> Result<Patch, ()> {
-    let (sheet, destination, version) = {
-        let app = app_state.0.lock();
-        match app.current_document() {
-            Some(d) => (d.sheet().clone(), d.path().to_owned(), d.version()),
-            _ => return Ok(Patch(Vec::new())),
-        }
-    };
-
-    let write_destination = destination.clone();
-    let result = tauri::async_runtime::spawn_blocking(move || sheet.write(&write_destination))
-        .await
-        .unwrap();
-
-    Ok(app_state.mutate(AppTrim::Full, |app| match result {
-        Ok(_) => {
-            if let Some(document) = app.document_mut(&destination) {
-                document.mark_as_saved(version);
-            }
-            app.advance_exit();
-            if app.should_exit() {
-                window.close().ok();
-            }
-        }
-        Err(e) => app.show_error_message(
-            "Error".to_owned(),
-            format!(
-                "An error occured while trying to save `{}`",
-                destination.to_file_name()
-            ),
-            e.to_string(),
-        ),
-    }))
-}
-
-#[tauri::command]
-pub async fn save_as(
-    app_state: tauri::State<'_, AppState<'_>>,
-    new_path: PathBuf,
-) -> Result<Patch, ()> {
-    let (sheet, old_path, version) = {
-        let app = app_state.0.lock();
-        match app.current_document() {
-            Some(d) => (d.sheet().clone(), d.path().to_owned(), d.version()),
-            _ => return Ok(Patch(Vec::new())),
-        }
-    };
-
-    let write_destination = new_path.clone();
-    let result = tauri::async_runtime::spawn_blocking(move || sheet.write(&write_destination))
-        .await
-        .unwrap();
-
-    Ok(app_state.mutate(AppTrim::Full, |app| match result {
-        Ok(_) => {
-            app.relocate_document(old_path, &new_path);
-            if let Some(document) = app.document_mut(&new_path) {
-                document.mark_as_saved(version);
-            }
-        }
-        Err(e) => app.show_error_message(
-            "Error".to_owned(),
-            format!(
-                "An error occured while trying to save `{}`",
-                new_path.to_file_name()
-            ),
-            e.to_string(),
-        ),
-    }))
-}
-
-#[tauri::command]
-pub async fn save_all(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch, ()> {
-    struct DocumentToSave {
-        sheet: Sheet<Absolute>,
-        destination: PathBuf,
-        version: i32,
-    }
-
-    let documents_to_save: Vec<DocumentToSave> = {
-        let app = app_state.0.lock();
-        app.documents_iter()
-            .map(|d| DocumentToSave {
-                sheet: d.sheet().clone(),
-                destination: d.path().to_owned(),
-                version: d.version(),
-            })
-            .collect()
-    };
-
     let mut work = Vec::new();
-    for document in &documents_to_save {
-        let sheet_cloned = document.sheet.clone();
-        let destination_cloned = document.destination.clone();
+    for document in &mut documents {
+        let sheet = std::mem::take(&mut document.sheet);
+        let write_destination = document.destination.clone();
         work.push(tauri::async_runtime::spawn_blocking(move || {
-            sheet_cloned.write(&destination_cloned)
+            sheet.write(&write_destination)
         }));
     }
     let results = futures::future::join_all(work)
@@ -347,24 +265,90 @@ pub async fn save_all(app_state: tauri::State<'_, AppState<'_>>) -> Result<Patch
         .map(|r| r.unwrap());
 
     Ok(app_state.mutate(AppTrim::Full, |app| {
-        for (document_to_save, result) in documents_to_save.iter().zip(results) {
+        for (document, result) in documents.iter().zip(results) {
             match result {
                 Ok(_) => {
-                    if let Some(document) = app.document_mut(&document_to_save.destination) {
-                        document.mark_as_saved(document_to_save.version);
+                    app.relocate_document(&document.source, &document.destination);
+                    if let Some(d) = app.document_mut(&document.destination) {
+                        d.mark_as_saved(document.version);
                     }
                 }
                 Err(e) => app.show_error_message(
                     "Error".to_owned(),
                     format!(
                         "An error occured while trying to save `{}`",
-                        document_to_save.destination.to_file_name()
+                        document.destination.to_file_name()
                     ),
                     e.to_string(),
                 ),
             }
         }
+
+        app.advance_exit();
+        if app.should_exit() {
+            window.close().ok();
+        }
     }))
+}
+
+#[tauri::command]
+pub async fn save(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState<'_>>,
+) -> Result<Patch, ()> {
+    let documents_to_save: Vec<DocumentToSave> = {
+        let app = app_state.0.lock();
+        let Some(document) = app.current_document() else {
+            return Ok(Patch(Vec::new()))
+        };
+        vec![DocumentToSave {
+            sheet: document.sheet().clone(),
+            source: document.path().to_owned(),
+            destination: document.path().to_owned(),
+            version: document.version(),
+        }]
+    };
+    save_documents(window, app_state, documents_to_save).await
+}
+
+#[tauri::command]
+pub async fn save_as(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState<'_>>,
+    new_path: PathBuf,
+) -> Result<Patch, ()> {
+    let documents_to_save: Vec<DocumentToSave> = {
+        let app = app_state.0.lock();
+        let Some(document) = app.current_document() else {
+            return Ok(Patch(Vec::new()))
+        };
+        vec![DocumentToSave {
+            sheet: document.sheet().clone(),
+            source: document.path().to_owned(),
+            destination: new_path,
+            version: document.version(),
+        }]
+    };
+    save_documents(window, app_state, documents_to_save).await
+}
+
+#[tauri::command]
+pub async fn save_all(
+    window: tauri::Window,
+    app_state: tauri::State<'_, AppState<'_>>,
+) -> Result<Patch, ()> {
+    let documents_to_save: Vec<DocumentToSave> = {
+        let app = app_state.0.lock();
+        app.documents_iter()
+            .map(|d| DocumentToSave {
+                sheet: d.sheet().clone(),
+                source: d.path().to_owned(),
+                destination: d.path().to_owned(),
+                version: d.version(),
+            })
+            .collect()
+    };
+    save_documents(window, app_state, documents_to_save).await
 }
 
 #[tauri::command]

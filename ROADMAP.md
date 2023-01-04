@@ -4,7 +4,7 @@
 
 - [ ] Handle missing frame files (warning + offer to relocate)
 - [ ] In-place tutorials instead of blank data
-- [ ] Consider merging some code between save, save_as and save_all
+- [x] Merge redundant code between save(), save_as() and save_all()
 - [ ] Automatically add extensions to exported files
 - [x] All file dialogs open with a sensible default file/directory selected
 - [ ] Reach satisfying test coverage
