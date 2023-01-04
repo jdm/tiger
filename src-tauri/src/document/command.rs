@@ -201,9 +201,8 @@ impl Document {
                 self.view.snap_keyframes_to_multiples_of_duration = s
             }
             Command::SetKeyframeSnappingBaseDuration(d) => {
-                self.view.keyframe_snapping_base_duration = d
-                    .min(Duration::from_millis(1_000))
-                    .max(Duration::from_millis(1))
+                self.view.keyframe_snapping_base_duration =
+                    d.clamp(Duration::from_millis(1), Duration::from_millis(1_000))
             }
             Command::ZoomInTimeline => self.view.zoom_in_timeline(),
             Command::ZoomInTimelineAround(t) => self.view.zoom_in_timeline_around(t),

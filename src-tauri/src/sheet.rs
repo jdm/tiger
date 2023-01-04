@@ -328,7 +328,7 @@ impl<P: Paths> Frame<P> {
 impl Frame<Relative> {
     pub fn with_absolute_paths<T: AsRef<Path>>(self, relative_to: T) -> Frame<Absolute> {
         Frame {
-            source: relative_to.as_ref().join(&self.source).resolve(),
+            source: relative_to.as_ref().join(self.source).resolve(),
             paths: std::marker::PhantomData,
         }
     }
