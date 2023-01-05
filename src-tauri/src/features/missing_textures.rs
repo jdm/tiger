@@ -1,38 +1,97 @@
+use std::collections::{HashMap, HashSet};
+use std::path::PathBuf;
 use std::time::Duration;
-use tauri::Manager;
 
-use crate::api::Stateful;
 use crate::app::AppState;
 use crate::dto::AppTrim;
-use crate::utils::file_watcher::FileWatcher;
 use crate::utils::texture_list::TextureList;
+use crate::TigerApp;
 
-pub fn init(tauri_app: &tauri::App) {
-    let tauri_app_handle = tauri_app.handle();
-    let (mut file_watcher, events_receiver) = FileWatcher::new(move || {
-        let app_state = tauri_app_handle.state::<AppState>();
-        let app = app_state.0.lock();
-        app.list_textures()
-    });
-
+pub fn init<A: TigerApp + Send + Clone + 'static>(tiger_app: A, period: Duration) {
     std::thread::spawn(move || loop {
-        file_watcher.update_watched_files();
-        std::thread::sleep(Duration::from_millis(1_000));
-    });
+        std::thread::sleep(period);
 
-    let tauri_app_handle = tauri_app.handle();
-    std::thread::spawn(move || loop {
-        if let Ok(Ok(_)) = events_receiver.recv() {
-            tauri_app_handle.patch_state(AppTrim::Full, |app| {
+        let (all_textures, old_missing_textures) = {
+            let app_state = tiger_app.state::<AppState>();
+            let app = app_state.0.lock();
+            let mut all_textures = HashMap::new();
+            let mut old_missing_textures = HashMap::new();
+            for document in app.documents_iter() {
+                all_textures.insert(document.path().to_owned(), document.list_textures());
+                old_missing_textures.insert(
+                    document.path().to_owned(),
+                    document.missing_textures().clone(),
+                );
+            }
+            (all_textures, old_missing_textures)
+        };
+
+        let mut new_missing_textures: HashMap<PathBuf, HashSet<PathBuf>> = all_textures
+            .into_iter()
+            .map(|(p, t)| (p, t.into_iter().filter(|t| !t.exists()).collect()))
+            .collect();
+
+        if old_missing_textures != new_missing_textures {
+            tiger_app.patch_state(AppTrim::Full, |app| {
                 for document in app.documents_iter_mut() {
-                    let missing_textures = document
-                        .list_textures()
-                        .into_iter()
-                        .filter(|t| !t.exists())
-                        .collect();
-                    document.set_missing_textures(missing_textures);
+                    if let Some(textures) = new_missing_textures.remove(document.path()) {
+                        document.set_missing_textures(textures);
+                    }
                 }
             });
         }
     });
+}
+
+#[cfg(test)]
+mod test {
+
+    use std::{fs::File, path::PathBuf, time::Instant};
+
+    use super::*;
+    use crate::{app::AppState, document::Command, mock::TigerAppMock};
+
+    fn assert_with_timeout<F: Fn() -> bool>(check: F) {
+        let start = Instant::now();
+        while Instant::now().duration_since(start) < Duration::from_secs(5) {
+            if check() {
+                return;
+            }
+        }
+        panic!("assertion timeout");
+    }
+
+    #[test]
+    fn detects_texture_addition_and_removal() {
+        let filename = "test-output/detects_removed_texture.png";
+        std::fs::remove_file(filename).ok();
+
+        let is_missing = |app: &TigerAppMock| {
+            let app_state = app.state::<AppState>();
+            let app = app_state.0.lock();
+            app.current_document()
+                .unwrap()
+                .is_frame_missing_on_disk(filename)
+        };
+
+        let app = TigerAppMock::new();
+        init(app.clone(), Duration::from_millis(50));
+
+        {
+            let app_state = app.state::<AppState>();
+            let mut app = app_state.0.lock();
+            app.new_document("tmp.tiger");
+            app.current_document_mut()
+                .unwrap()
+                .process_command(Command::ImportFrames(vec![PathBuf::from(filename)]))
+                .unwrap();
+        }
+        assert_with_timeout(|| is_missing(&app));
+
+        File::create(filename).unwrap();
+        assert_with_timeout(|| !is_missing(&app));
+
+        std::fs::remove_file(filename).ok();
+        assert_with_timeout(|| is_missing(&app));
+    }
 }

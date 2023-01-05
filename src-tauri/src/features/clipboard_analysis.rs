@@ -1,11 +1,11 @@
 use log::error;
 use std::time::Duration;
-use tauri::{ClipboardManager, Manager};
+use tauri::ClipboardManager;
 
-use crate::api::Stateful;
 use crate::app::AppState;
 use crate::document::clipboard_manifest;
 use crate::dto::AppTrim;
+use crate::TigerApp;
 
 pub fn init(tauri_app: &tauri::App) {
     let tauri_app_handle = tauri_app.handle();

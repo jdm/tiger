@@ -1,10 +1,9 @@
 use std::{collections::HashSet, time::Duration};
-use tauri::Manager;
 
-use crate::api::Stateful;
 use crate::app::AppState;
 use crate::sheet;
 use crate::utils::file_watcher::FileWatcher;
+use crate::TigerApp;
 
 pub fn init(tauri_app: &tauri::App) {
     let tauri_app_handle = tauri_app.handle();

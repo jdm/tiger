@@ -5,9 +5,11 @@
 
 use log::{error, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
+use std::time::Duration;
 use tauri::Manager;
 
-use api::Stateful;
+use app::{App, AppState};
+use dto::AppTrim;
 
 mod api;
 mod app;
@@ -15,8 +17,13 @@ mod document;
 mod dto;
 mod export;
 mod features;
+#[cfg(test)]
+mod mock;
 mod sheet;
 mod utils;
+
+static EVENT_PATCH_STATE: &str = "patch-state";
+static EVENT_REPLACE_STATE: &str = "replace-state";
 
 fn main() {
     utils::paths::init();
@@ -41,10 +48,9 @@ fn main() {
         .manage(features::texture_cache::TextureCache::default())
         .setup(|tauri_app| {
             init_window_shadow(tauri_app);
-            tauri_app
-                .state::<features::texture_cache::TextureCache>()
+            tauri::Manager::state::<features::texture_cache::TextureCache>(tauri_app)
                 .init(tauri_app);
-            features::missing_textures::init(tauri_app);
+            features::missing_textures::init(tauri_app.handle(), Duration::from_millis(500));
             features::recent_documents::init(tauri_app);
             features::template_hot_reload::init(tauri_app);
             features::texture_hot_reload::init(tauri_app);
@@ -215,5 +221,54 @@ fn init_window_shadow(tauri_app: &mut tauri::App) {
     };
     if let Err(e) = window_shadows::set_shadow(&window, true) {
         error!("Failed to initialize window shadows: `{e}`");
+    }
+}
+
+pub trait TigerApp {
+    fn state<T>(&self) -> AppState;
+    fn patch_state<F: FnOnce(&mut App)>(&self, app_trim: AppTrim, operation: F);
+    fn replace_state(&self);
+}
+
+impl TigerApp for tauri::App {
+    fn state<T>(&self) -> AppState {
+        TigerApp::state::<AppState>(&self.handle())
+    }
+
+    fn patch_state<F: FnOnce(&mut App)>(&self, app_trim: AppTrim, operation: F) {
+        TigerApp::patch_state(&self.handle(), app_trim, operation)
+    }
+
+    fn replace_state(&self) {
+        TigerApp::replace_state(&self.handle())
+    }
+}
+
+impl TigerApp for tauri::AppHandle {
+    fn state<T>(&self) -> AppState {
+        let state = tauri::Manager::state::<AppState>(self);
+        AppState(state.0.clone())
+    }
+
+    fn patch_state<F>(&self, app_trim: AppTrim, operation: F)
+    where
+        F: FnOnce(&mut App),
+    {
+        let app_state = tauri::Manager::state::<AppState>(self);
+        let patch = app_state.mutate(app_trim, operation);
+        if !patch.0.is_empty() {
+            if let Err(e) = self.emit_all(EVENT_PATCH_STATE, patch) {
+                error!("Error while pushing state patch: {e}");
+            }
+        }
+    }
+
+    fn replace_state(&self) {
+        let app_state = tauri::Manager::state::<AppState>(self);
+        let app = app_state.0.lock();
+        let new_state = app.to_dto(dto::AppTrim::Full);
+        if let Err(e) = self.emit_all(EVENT_REPLACE_STATE, new_state) {
+            error!("Error while replacing state: {e}");
+        }
     }
 }
