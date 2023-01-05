@@ -877,6 +877,12 @@ impl Hitbox {
     }
 }
 
+impl Default for Hitbox {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Default for ExportSettings<Any> {
     fn default() -> Self {
         Self::Template(TemplateExportSettings::<Any>::default())
