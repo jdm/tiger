@@ -46,7 +46,6 @@ impl<F: Fn() -> HashSet<PathBuf>> FileWatcher<F> {
             .collect::<HashSet<_>>();
 
         for file in files_to_watch {
-            self.watched_files.insert(file.to_owned());
             if self
                 .debouncer
                 .watcher()
@@ -54,6 +53,8 @@ impl<F: Fn() -> HashSet<PathBuf>> FileWatcher<F> {
                 .is_err()
             {
                 println!("Error adding file watch for {:?}", &file);
+            } else {
+                self.watched_files.insert(file.to_owned());
             }
         }
     }
