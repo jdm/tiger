@@ -44,13 +44,14 @@ jobs:
           RUSTFLAGS: "-Cinstrument-coverage"
       - name: Gather Results
         run: >
-          grcov ./target/debug
+          grcov .
           -s .
+          -t coveralls
+          -o coverage.txt
           --llvm
           --branch
           --ignore-not-existing
-          -t coveralls
-          -o coverage.txt
+          --binary-path ./target/debug
           --excl-line "#\[derive\("
           --excl-br-line "#\[derive\("
           --excl-start "mod test \{"
