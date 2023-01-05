@@ -138,83 +138,91 @@ pub fn clipboard_manifest<S: AsRef<str>>(clipboard_content: S) -> Option<Clipboa
         .map(|c| c.manifest())
 }
 
-#[test]
-fn can_copy_paste_animation() {
-    let mut document = Document::new("tmp");
-    document.sheet.create_animation("animation");
+#[cfg(test)]
+mod test {
 
-    document.select_animation_only("animation".to_owned());
-    let clipboard = document.copy().unwrap();
-    document.paste(clipboard).unwrap();
+    use super::*;
 
-    assert_eq!(document.sheet.animations_iter().count(), 2);
-    assert!(document.view.selection.is_animation_selected("animation 2"));
-}
+    #[test]
+    fn can_copy_paste_animation() {
+        let mut document = Document::new("tmp");
+        document.sheet.create_animation("animation");
 
-#[test]
-fn can_copy_paste_keyframe() {
-    let mut document = Document::new("tmp");
+        document.select_animation_only("animation".to_owned());
+        let clipboard = document.copy().unwrap();
+        document.paste(clipboard).unwrap();
 
-    document.sheet.add_test_animation(
-        "animation",
-        HashMap::from([
-            (Direction::East, vec!["frame.png"]),
-            (Direction::West, vec![]),
-        ]),
-    );
+        assert_eq!(document.sheet.animations_iter().count(), 2);
+        assert!(document.view.selection.is_animation_selected("animation 2"));
+    }
 
-    let keyframe = document.sheet.keyframe_mut("animation", Direction::East, 0);
-    keyframe.create_hitbox("hitbox");
+    #[test]
+    fn can_copy_paste_keyframe() {
+        let mut document = Document::new("tmp");
 
-    document.edit_animation("animation").unwrap();
-    document.select_keyframe_only("animation".to_owned(), Direction::East, 0);
-    let clipboard = document.copy().unwrap();
+        document.sheet.add_test_animation(
+            "animation",
+            HashMap::from([
+                (Direction::East, vec!["frame.png"]),
+                (Direction::West, vec![]),
+            ]),
+        );
 
-    document.select_direction(Direction::West).unwrap();
-    document.paste(clipboard).unwrap();
+        let keyframe = document.sheet.keyframe_mut("animation", Direction::East, 0);
+        keyframe.create_hitbox("hitbox");
 
-    assert!(document
-        .sheet
-        .animation("animation")
-        .unwrap()
-        .sequence(Direction::West)
-        .unwrap()
-        .keyframe(0)
-        .is_some());
-}
+        document.edit_animation("animation").unwrap();
+        document.select_keyframe_only("animation".to_owned(), Direction::East, 0);
+        let clipboard = document.copy().unwrap();
 
-#[test]
-fn can_copy_paste_hitbox() {
-    let mut document = Document::new("tmp");
+        document.select_direction(Direction::West).unwrap();
+        document.paste(clipboard).unwrap();
 
-    document.sheet.add_test_animation(
-        "animation",
-        HashMap::from([
-            (Direction::East, vec!["frame.png"]),
-            (Direction::West, vec!["frame.png"]),
-        ]),
-    );
+        assert!(document
+            .sheet
+            .animation("animation")
+            .unwrap()
+            .sequence(Direction::West)
+            .unwrap()
+            .keyframe(0)
+            .is_some());
+    }
 
-    let keyframe = document.sheet.keyframe_mut("animation", Direction::East, 0);
-    keyframe.create_hitbox("hitbox");
+    #[test]
+    fn can_copy_paste_hitbox() {
+        let mut document = Document::new("tmp");
 
-    document.edit_animation("animation").unwrap();
-    document.select_hitbox_only("animation", Direction::East, 0, "hitbox");
-    let clipboard = document.copy().unwrap();
+        document.sheet.add_test_animation(
+            "animation",
+            HashMap::from([
+                (Direction::East, vec!["frame.png"]),
+                (Direction::West, vec!["frame.png"]),
+            ]),
+        );
 
-    document.select_direction(Direction::West).unwrap();
-    document.paste(clipboard).unwrap();
-    assert!(document
-        .sheet
-        .animation("animation")
-        .unwrap()
-        .sequence(Direction::West)
-        .unwrap()
-        .keyframe(0)
-        .unwrap()
-        .has_hitbox("hitbox"));
-    assert!(document
-        .view
-        .selection
-        .is_hitbox_selected("animation", Direction::West, 0, "hitbox"));
+        let keyframe = document.sheet.keyframe_mut("animation", Direction::East, 0);
+        keyframe.create_hitbox("hitbox");
+
+        document.edit_animation("animation").unwrap();
+        document.select_hitbox_only("animation", Direction::East, 0, "hitbox");
+        let clipboard = document.copy().unwrap();
+
+        document.select_direction(Direction::West).unwrap();
+        document.paste(clipboard).unwrap();
+        assert!(document
+            .sheet
+            .animation("animation")
+            .unwrap()
+            .sequence(Direction::West)
+            .unwrap()
+            .keyframe(0)
+            .unwrap()
+            .has_hitbox("hitbox"));
+        assert!(document.view.selection.is_hitbox_selected(
+            "animation",
+            Direction::West,
+            0,
+            "hitbox"
+        ));
+    }
 }

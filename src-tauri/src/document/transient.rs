@@ -757,554 +757,420 @@ impl ResizeAxis {
     }
 }
 
-#[test]
-fn can_rename_animations() {
-    use std::path::Path;
+#[cfg(test)]
+mod test {
 
-    let mut d = Document::new("tmp");
-    d.sheet
-        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-    d.select_animation("walk_cycle", false, false);
-    d.begin_rename_selection();
-    assert_eq!("walk_cycle", d.animation_being_renamed().unwrap().as_str());
-    d.end_rename_animation("renamed".to_owned()).unwrap();
-    assert_eq!(None, d.animation_being_renamed());
+    use super::*;
 
-    assert!(d.sheet().animation("renamed").is_some());
-}
+    #[test]
+    fn can_rename_animations() {
+        let mut d = Document::new("tmp");
+        d.sheet
+            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+        d.select_animation("walk_cycle", false, false);
+        d.begin_rename_selection();
+        assert_eq!("walk_cycle", d.animation_being_renamed().unwrap().as_str());
+        d.end_rename_animation("renamed".to_owned()).unwrap();
+        assert_eq!(None, d.animation_being_renamed());
 
-#[test]
-fn can_rename_hitboxes() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-    keyframe.create_hitbox("my_hitbox");
+        assert!(d.sheet().animation("renamed").is_some());
+    }
 
-    d.edit_animation("walk_cycle").unwrap();
-    d.select_hitbox("my_hitbox", false, false).unwrap();
-    d.begin_rename_selection();
-    assert_eq!("my_hitbox", d.hitbox_being_renamed().unwrap().as_str());
-    d.end_rename_hitbox("renamed".to_owned()).unwrap();
-    assert_eq!(None, d.hitbox_being_renamed());
+    #[test]
+    fn can_rename_hitboxes() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("my_hitbox");
 
-    assert!(d
-        .sheet()
-        .animation("walk_cycle")
-        .unwrap()
-        .sequence(Direction::North)
-        .unwrap()
-        .keyframe(0)
-        .unwrap()
-        .has_hitbox("renamed"));
-}
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_hitbox("my_hitbox", false, false).unwrap();
+        d.begin_rename_selection();
+        assert_eq!("my_hitbox", d.hitbox_being_renamed().unwrap().as_str());
+        d.end_rename_hitbox("renamed".to_owned()).unwrap();
+        assert_eq!(None, d.hitbox_being_renamed());
 
-#[test]
-fn can_drag_and_drop_frame_to_timeline() {
-    use std::path::Path;
+        assert!(d
+            .sheet()
+            .animation("walk_cycle")
+            .unwrap()
+            .sequence(Direction::North)
+            .unwrap()
+            .keyframe(0)
+            .unwrap()
+            .has_hitbox("renamed"));
+    }
 
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet
-        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-    d.edit_animation("walk_cycle").unwrap();
+    #[test]
+    fn can_drag_and_drop_frame_to_timeline() {
+        use std::path::Path;
 
-    d.begin_drag_and_drop_frame(PathBuf::from("walk_1"));
-    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
-    d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
-    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
-    d.begin_drag_and_drop_frame(PathBuf::from("walk_2"));
-    d.drop_frame_on_timeline(Direction::North, 2).unwrap();
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet
+            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+        d.edit_animation("walk_cycle").unwrap();
 
-    let animation = d.sheet.animation("walk_cycle").unwrap();
-    let sequence = animation.sequence(Direction::North).unwrap();
-    let keyframes = sequence
-        .keyframes_iter()
-        .map(|k| k.frame())
-        .collect::<Vec<_>>();
-    assert_eq!(
-        keyframes,
-        vec![
-            Path::new("walk_0"),
-            Path::new("walk_1"),
-            Path::new("walk_2")
-        ]
-    );
-}
+        d.begin_drag_and_drop_frame(PathBuf::from("walk_1"));
+        d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+        d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+        d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+        d.begin_drag_and_drop_frame(PathBuf::from("walk_2"));
+        d.drop_frame_on_timeline(Direction::North, 2).unwrap();
 
-#[test]
-fn can_drag_and_drop_multiple_frames_to_timeline() {
-    use std::path::Path;
-
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_2"]);
-    d.sheet
-        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-    d.edit_animation("walk_cycle").unwrap();
-
-    d.select_frame("walk_0", false, true);
-    d.select_frame("walk_2", false, true);
-    d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
-    d.drop_frame_on_timeline(Direction::North, 0).unwrap();
-
-    let animation = d.sheet.animation("walk_cycle").unwrap();
-    let sequence = animation.sequence(Direction::North).unwrap();
-    let keyframes = sequence
-        .keyframes_iter()
-        .map(|k| k.frame())
-        .collect::<Vec<_>>();
-    assert_eq!(keyframes, vec![Path::new("walk_0"), Path::new("walk_2")]);
-}
-
-#[test]
-fn keeps_track_of_frames_being_dragged() {
-    use std::path::Path;
-
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet
-        .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-    d.edit_animation("walk_cycle").unwrap();
-
-    d.select_frame("walk_0", false, true);
-    d.select_frame("walk_2", false, true);
-    assert!(d.frames_being_dragged().is_empty());
-    d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
-    assert_eq!(
-        d.frames_being_dragged(),
-        HashSet::from([PathBuf::from("walk_0"), PathBuf::from("walk_2")]),
-    );
-    d.end_drag_and_drop_frame();
-    assert!(d.frames_being_dragged().is_empty());
-}
-
-#[test]
-fn can_drag_and_drop_keyframe_to_reorder() {
-    use std::path::Path;
-
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-
-    d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-    d.drop_keyframe_on_timeline(Direction::North, 0).unwrap();
-
-    let animation = d.sheet.animation("walk_cycle").unwrap();
-    let sequence = animation.sequence(Direction::North).unwrap();
-    let keyframes = sequence
-        .keyframes_iter()
-        .map(|k| k.frame())
-        .collect::<Vec<_>>();
-    assert_eq!(
-        keyframes,
-        vec![
-            Path::new("walk_1"),
-            Path::new("walk_0"),
-            Path::new("walk_2")
-        ]
-    );
-}
-
-#[test]
-fn can_drag_and_drop_multiple_keyframes_to_reorder() {
-    use std::path::Path;
-
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-
-    d.select_keyframes_only([
-        ("walk_cycle".to_owned(), Direction::North, 0),
-        ("walk_cycle".to_owned(), Direction::North, 1),
-    ]);
-    d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-    d.drop_keyframe_on_timeline(Direction::North, 3).unwrap();
-
-    let animation = d.sheet.animation("walk_cycle").unwrap();
-    let sequence = animation.sequence(Direction::North).unwrap();
-    let keyframes = sequence
-        .keyframes_iter()
-        .map(|k| k.frame())
-        .collect::<Vec<_>>();
-    assert_eq!(
-        keyframes,
-        vec![
-            Path::new("walk_2"),
-            Path::new("walk_0"),
-            Path::new("walk_1")
-        ]
-    );
-}
-
-#[test]
-fn can_drag_and_drop_keyframes_to_different_direction() {
-    use std::path::Path;
-
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([
-            (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-            (Direction::South, vec![]),
-        ]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-
-    d.select_keyframes_only([
-        ("walk_cycle".to_owned(), Direction::North, 1),
-        ("walk_cycle".to_owned(), Direction::North, 2),
-    ]);
-    d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-    d.drop_keyframe_on_timeline(Direction::South, 0).unwrap();
-
-    let animation = d.sheet.animation("walk_cycle").unwrap();
-    {
+        let animation = d.sheet.animation("walk_cycle").unwrap();
         let sequence = animation.sequence(Direction::North).unwrap();
         let keyframes = sequence
             .keyframes_iter()
             .map(|k| k.frame())
             .collect::<Vec<_>>();
-        assert_eq!(keyframes, vec![Path::new("walk_0"),]);
+        assert_eq!(
+            keyframes,
+            vec![
+                Path::new("walk_0"),
+                Path::new("walk_1"),
+                Path::new("walk_2")
+            ]
+        );
     }
-    {
-        let sequence = animation.sequence(Direction::South).unwrap();
+
+    #[test]
+    fn can_drag_and_drop_multiple_frames_to_timeline() {
+        use std::path::Path;
+
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_2"]);
+        d.sheet
+            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+        d.edit_animation("walk_cycle").unwrap();
+
+        d.select_frame("walk_0", false, true);
+        d.select_frame("walk_2", false, true);
+        d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+        d.drop_frame_on_timeline(Direction::North, 0).unwrap();
+
+        let animation = d.sheet.animation("walk_cycle").unwrap();
+        let sequence = animation.sequence(Direction::North).unwrap();
         let keyframes = sequence
             .keyframes_iter()
             .map(|k| k.frame())
             .collect::<Vec<_>>();
-        assert_eq!(keyframes, vec![Path::new("walk_1"), Path::new("walk_2")]);
+        assert_eq!(keyframes, vec![Path::new("walk_0"), Path::new("walk_2")]);
     }
-}
 
-#[test]
-fn keeps_track_of_keyframes_being_dragged() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
+    #[test]
+    fn keeps_track_of_frames_being_dragged() {
+        use std::path::Path;
 
-    d.select_keyframes_only([
-        ("walk_cycle".to_owned(), Direction::North, 0),
-        ("walk_cycle".to_owned(), Direction::North, 1),
-    ]);
-    assert!(d.keyframes_being_dragged().is_empty());
-    d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-    assert_eq!(
-        d.keyframes_being_dragged(),
-        HashSet::from([(Direction::North, 0), (Direction::North, 1)])
-    );
-    d.end_drag_and_drop_keyframe();
-    assert!(d.keyframes_being_dragged().is_empty());
-}
-
-#[test]
-fn can_drag_keyframe_duration() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-
-    d.edit_animation("walk_cycle").unwrap();
-    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-    d.update_drag_keyframe_duration(50).unwrap();
-    d.end_drag_keyframe_duration();
-
-    let new_duration = d
-        .sheet
-        .keyframe("walk_cycle", Direction::North, 1)
-        .duration_millis();
-    assert_eq!(new_duration, 150);
-}
-
-#[test]
-fn drag_keyframe_duration_can_snap_to_other_keyframe() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([
-            (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-            (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-        ]),
-    );
-
-    d.edit_animation("walk_cycle").unwrap();
-    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-    d.update_drag_keyframe_duration(99).unwrap();
-    d.end_drag_keyframe_duration();
-    let new_duration = d
-        .sheet
-        .keyframe("walk_cycle", Direction::North, 1)
-        .duration_millis();
-
-    assert_eq!(new_duration, 200);
-}
-
-#[test]
-fn drag_keyframe_duration_does_not_snap_to_moving_keyframes() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([
-            (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-            (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-        ]),
-    );
-
-    d.edit_animation("walk_cycle").unwrap();
-    d.select_keyframes_only(vec![
-        ("walk_cycle".to_owned(), Direction::North, 0),
-        ("walk_cycle".to_owned(), Direction::South, 2),
-    ]);
-    d.begin_drag_keyframe_duration(Direction::South, 2).unwrap();
-    d.update_drag_keyframe_duration(49).unwrap();
-    d.update_drag_keyframe_duration(50).unwrap();
-    d.end_drag_keyframe_duration();
-    let new_duration = d
-        .sheet
-        .keyframe("walk_cycle", Direction::South, 2)
-        .duration_millis();
-
-    assert_eq!(new_duration, 150);
-}
-
-#[test]
-fn drag_keyframe_duration_can_snap_to_duration() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-
-    d.view.snap_keyframes_to_multiples_of_duration = true;
-    d.view.keyframe_snapping_base_duration = Duration::from_millis(50);
-    d.edit_animation("walk_cycle").unwrap();
-    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-    d.update_drag_keyframe_duration(49).unwrap();
-    d.end_drag_keyframe_duration();
-    let new_duration = d
-        .sheet
-        .keyframe("walk_cycle", Direction::North, 1)
-        .duration_millis();
-
-    assert_eq!(new_duration, 150);
-}
-
-#[test]
-fn can_drag_multiple_keyframe_durations() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-
-    d.edit_animation("walk_cycle").unwrap();
-    d.select_keyframes_only([
-        ("walk_cycle".to_owned(), Direction::North, 0),
-        ("walk_cycle".to_owned(), Direction::North, 1),
-    ]);
-    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-    d.update_drag_keyframe_duration(50).unwrap();
-    d.end_drag_keyframe_duration();
-
-    assert_eq!(
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
         d.sheet
-            .keyframe("walk_cycle", Direction::North, 0)
-            .duration_millis(),
-        125
-    );
+            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
+        d.edit_animation("walk_cycle").unwrap();
 
-    assert_eq!(
-        d.sheet
+        d.select_frame("walk_0", false, true);
+        d.select_frame("walk_2", false, true);
+        assert!(d.frames_being_dragged().is_empty());
+        d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+        assert_eq!(
+            d.frames_being_dragged(),
+            HashSet::from([PathBuf::from("walk_0"), PathBuf::from("walk_2")]),
+        );
+        d.end_drag_and_drop_frame();
+        assert!(d.frames_being_dragged().is_empty());
+    }
+
+    #[test]
+    fn can_drag_and_drop_keyframe_to_reorder() {
+        use std::path::Path;
+
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+
+        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
+        d.drop_keyframe_on_timeline(Direction::North, 0).unwrap();
+
+        let animation = d.sheet.animation("walk_cycle").unwrap();
+        let sequence = animation.sequence(Direction::North).unwrap();
+        let keyframes = sequence
+            .keyframes_iter()
+            .map(|k| k.frame())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            keyframes,
+            vec![
+                Path::new("walk_1"),
+                Path::new("walk_0"),
+                Path::new("walk_2")
+            ]
+        );
+    }
+
+    #[test]
+    fn can_drag_and_drop_multiple_keyframes_to_reorder() {
+        use std::path::Path;
+
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+
+        d.select_keyframes_only([
+            ("walk_cycle".to_owned(), Direction::North, 0),
+            ("walk_cycle".to_owned(), Direction::North, 1),
+        ]);
+        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
+        d.drop_keyframe_on_timeline(Direction::North, 3).unwrap();
+
+        let animation = d.sheet.animation("walk_cycle").unwrap();
+        let sequence = animation.sequence(Direction::North).unwrap();
+        let keyframes = sequence
+            .keyframes_iter()
+            .map(|k| k.frame())
+            .collect::<Vec<_>>();
+        assert_eq!(
+            keyframes,
+            vec![
+                Path::new("walk_2"),
+                Path::new("walk_0"),
+                Path::new("walk_1")
+            ]
+        );
+    }
+
+    #[test]
+    fn can_drag_and_drop_keyframes_to_different_direction() {
+        use std::path::Path;
+
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([
+                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::South, vec![]),
+            ]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+
+        d.select_keyframes_only([
+            ("walk_cycle".to_owned(), Direction::North, 1),
+            ("walk_cycle".to_owned(), Direction::North, 2),
+        ]);
+        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
+        d.drop_keyframe_on_timeline(Direction::South, 0).unwrap();
+
+        let animation = d.sheet.animation("walk_cycle").unwrap();
+        {
+            let sequence = animation.sequence(Direction::North).unwrap();
+            let keyframes = sequence
+                .keyframes_iter()
+                .map(|k| k.frame())
+                .collect::<Vec<_>>();
+            assert_eq!(keyframes, vec![Path::new("walk_0"),]);
+        }
+        {
+            let sequence = animation.sequence(Direction::South).unwrap();
+            let keyframes = sequence
+                .keyframes_iter()
+                .map(|k| k.frame())
+                .collect::<Vec<_>>();
+            assert_eq!(keyframes, vec![Path::new("walk_1"), Path::new("walk_2")]);
+        }
+    }
+
+    #[test]
+    fn keeps_track_of_keyframes_being_dragged() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+
+        d.select_keyframes_only([
+            ("walk_cycle".to_owned(), Direction::North, 0),
+            ("walk_cycle".to_owned(), Direction::North, 1),
+        ]);
+        assert!(d.keyframes_being_dragged().is_empty());
+        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
+        assert_eq!(
+            d.keyframes_being_dragged(),
+            HashSet::from([(Direction::North, 0), (Direction::North, 1)])
+        );
+        d.end_drag_and_drop_keyframe();
+        assert!(d.keyframes_being_dragged().is_empty());
+    }
+
+    #[test]
+    fn can_drag_keyframe_duration() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+
+        d.edit_animation("walk_cycle").unwrap();
+        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+        d.update_drag_keyframe_duration(50).unwrap();
+        d.end_drag_keyframe_duration();
+
+        let new_duration = d
+            .sheet
             .keyframe("walk_cycle", Direction::North, 1)
-            .duration_millis(),
-        125
-    );
-}
+            .duration_millis();
+        assert_eq!(new_duration, 150);
+    }
 
-#[test]
-fn keeps_track_of_keyframe_durations_being_dragged() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
+    #[test]
+    fn drag_keyframe_duration_can_snap_to_other_keyframe() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([
+                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+            ]),
+        );
 
-    d.select_keyframes_only([
-        ("walk_cycle".to_owned(), Direction::North, 0),
-        ("walk_cycle".to_owned(), Direction::North, 1),
-    ]);
+        d.edit_animation("walk_cycle").unwrap();
+        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+        d.update_drag_keyframe_duration(99).unwrap();
+        d.end_drag_keyframe_duration();
+        let new_duration = d
+            .sheet
+            .keyframe("walk_cycle", Direction::North, 1)
+            .duration_millis();
 
-    assert!(!d.is_dragging_keyframe_duration());
-    d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-    assert!(d.is_dragging_keyframe_duration());
-    d.update_drag_keyframe_duration(50).unwrap();
-    assert!(d.is_dragging_keyframe_duration());
-    d.end_drag_keyframe_duration();
-    assert!(!d.is_dragging_keyframe_duration());
-}
+        assert_eq!(new_duration, 200);
+    }
 
-#[test]
-fn can_nudge_keyframe() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-    d.view.set_workbench_zoom_factor(1);
+    #[test]
+    fn drag_keyframe_duration_does_not_snap_to_moving_keyframes() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([
+                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
+                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
+            ]),
+        );
 
-    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-    keyframe.create_hitbox("my_hitbox");
-    let initial = d
-        .sheet
-        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-        .rectangle();
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_keyframes_only(vec![
+            ("walk_cycle".to_owned(), Direction::North, 0),
+            ("walk_cycle".to_owned(), Direction::South, 2),
+        ]);
+        d.begin_drag_keyframe_duration(Direction::South, 2).unwrap();
+        d.update_drag_keyframe_duration(49).unwrap();
+        d.update_drag_keyframe_duration(50).unwrap();
+        d.end_drag_keyframe_duration();
+        let new_duration = d
+            .sheet
+            .keyframe("walk_cycle", Direction::South, 2)
+            .duration_millis();
 
-    d.begin_nudge_keyframe(Direction::North, 0).unwrap();
-    d.update_nudge_keyframe(vec2(5, 10), false).unwrap();
-    assert_eq!(
-        d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
-        vec2(0, 10),
-    );
-    assert_eq!(
-        d.sheet
-            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-            .rectangle(),
-        euclid::rect(
-            initial.origin.x,
-            initial.origin.y + 10,
-            initial.size.width,
-            initial.size.height
-        ),
-    );
-}
+        assert_eq!(new_duration, 150);
+    }
 
-#[test]
-fn can_nudge_multiple_keyframes() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-    d.view.set_workbench_zoom_factor(1);
+    #[test]
+    fn drag_keyframe_duration_can_snap_to_duration() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
 
-    d.select_keyframes_only([
-        ("walk_cycle".to_owned(), Direction::North, 0),
-        ("walk_cycle".to_owned(), Direction::North, 1),
-    ]);
+        d.view.snap_keyframes_to_multiples_of_duration = true;
+        d.view.keyframe_snapping_base_duration = Duration::from_millis(50);
+        d.edit_animation("walk_cycle").unwrap();
+        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+        d.update_drag_keyframe_duration(49).unwrap();
+        d.end_drag_keyframe_duration();
+        let new_duration = d
+            .sheet
+            .keyframe("walk_cycle", Direction::North, 1)
+            .duration_millis();
 
-    d.begin_nudge_keyframe(Direction::North, 0).unwrap();
-    d.update_nudge_keyframe(vec2(5, 10), true).unwrap();
-    assert_eq!(
-        d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
-        vec2(5, 10),
-    );
-    assert_eq!(
-        d.sheet.keyframe("walk_cycle", Direction::North, 1).offset(),
-        vec2(5, 10),
-    );
-}
+        assert_eq!(new_duration, 150);
+    }
 
-#[test]
-fn can_nudge_hitbox() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-    d.view.set_workbench_zoom_factor(1);
+    #[test]
+    fn can_drag_multiple_keyframe_durations() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
 
-    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-    keyframe.create_hitbox("my_hitbox");
-    let initial = d
-        .sheet
-        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-        .rectangle();
+        d.edit_animation("walk_cycle").unwrap();
+        d.select_keyframes_only([
+            ("walk_cycle".to_owned(), Direction::North, 0),
+            ("walk_cycle".to_owned(), Direction::North, 1),
+        ]);
+        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+        d.update_drag_keyframe_duration(50).unwrap();
+        d.end_drag_keyframe_duration();
 
-    d.begin_nudge_hitbox("my_hitbox").unwrap();
-    d.update_nudge_hitbox(vec2(5, 10), false).unwrap();
-    d.end_nudge_hitbox();
-    let hitbox = d
-        .sheet
-        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
-    assert_eq!(
-        hitbox.rectangle(),
-        euclid::rect(
-            initial.origin.x,
-            initial.origin.y + 10,
-            initial.size.width,
-            initial.size.height
-        )
-    );
-}
+        assert_eq!(
+            d.sheet
+                .keyframe("walk_cycle", Direction::North, 0)
+                .duration_millis(),
+            125
+        );
 
-#[test]
-fn keeps_track_of_hitboxes_being_nudged() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-    d.view.set_workbench_zoom_factor(1);
+        assert_eq!(
+            d.sheet
+                .keyframe("walk_cycle", Direction::North, 1)
+                .duration_millis(),
+            125
+        );
+    }
 
-    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-    keyframe.create_hitbox("my_hitbox");
+    #[test]
+    fn keeps_track_of_keyframe_durations_being_dragged() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
 
-    assert!(d.hitboxes_being_nudged().is_empty());
-    d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-    d.begin_nudge_hitbox("my_hitbox").unwrap();
-    assert_eq!(d.hitboxes_being_nudged(), HashSet::from(["my_hitbox"]));
-    d.update_nudge_hitbox(vec2(5, 10), true).unwrap();
-    d.end_nudge_hitbox();
-    assert!(d.hitboxes_being_nudged().is_empty());
-}
+        d.select_keyframes_only([
+            ("walk_cycle".to_owned(), Direction::North, 0),
+            ("walk_cycle".to_owned(), Direction::North, 1),
+        ]);
 
-#[test]
-fn can_resize_hitbox() {
-    use euclid::rect;
+        assert!(!d.is_dragging_keyframe_duration());
+        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
+        assert!(d.is_dragging_keyframe_duration());
+        d.update_drag_keyframe_duration(50).unwrap();
+        assert!(d.is_dragging_keyframe_duration());
+        d.end_drag_keyframe_duration();
+        assert!(!d.is_dragging_keyframe_duration());
+    }
 
-    let test_cases: Vec<(_, Vector2D<i32>, euclid::default::Rect<i32>)> = vec![
-        (ResizeAxis::NW, vec2(10, 10), rect(10, 10, 90, 90)),
-        (ResizeAxis::NE, vec2(10, 10), rect(0, 10, 110, 90)),
-        (ResizeAxis::SW, vec2(10, 10), rect(10, 0, 90, 110)),
-        (ResizeAxis::SE, vec2(10, 10), rect(0, 0, 110, 110)),
-        (ResizeAxis::N, vec2(10, 10), rect(0, 10, 100, 90)),
-        (ResizeAxis::W, vec2(10, 10), rect(10, 0, 90, 100)),
-        (ResizeAxis::S, vec2(10, 10), rect(0, 0, 100, 110)),
-        (ResizeAxis::E, vec2(10, 10), rect(0, 0, 110, 100)),
-    ];
-
-    for (axis, delta, expected) in test_cases {
+    #[test]
+    fn can_nudge_keyframe() {
         let mut d = Document::new("tmp");
         d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
         d.sheet.add_test_animation(
@@ -1316,15 +1182,189 @@ fn can_resize_hitbox() {
 
         let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
         keyframe.create_hitbox("my_hitbox");
+        let initial = d
+            .sheet
+            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+            .rectangle();
+
+        d.begin_nudge_keyframe(Direction::North, 0).unwrap();
+        d.update_nudge_keyframe(vec2(5, 10), false).unwrap();
+        assert_eq!(
+            d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
+            vec2(0, 10),
+        );
+        assert_eq!(
+            d.sheet
+                .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+                .rectangle(),
+            euclid::rect(
+                initial.origin.x,
+                initial.origin.y + 10,
+                initial.size.width,
+                initial.size.height
+            ),
+        );
+    }
+
+    #[test]
+    fn can_nudge_multiple_keyframes() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.view.set_workbench_zoom_factor(1);
+
+        d.select_keyframes_only([
+            ("walk_cycle".to_owned(), Direction::North, 0),
+            ("walk_cycle".to_owned(), Direction::North, 1),
+        ]);
+
+        d.begin_nudge_keyframe(Direction::North, 0).unwrap();
+        d.update_nudge_keyframe(vec2(5, 10), true).unwrap();
+        assert_eq!(
+            d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
+            vec2(5, 10),
+        );
+        assert_eq!(
+            d.sheet.keyframe("walk_cycle", Direction::North, 1).offset(),
+            vec2(5, 10),
+        );
+    }
+
+    #[test]
+    fn can_nudge_hitbox() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.view.set_workbench_zoom_factor(1);
+
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("my_hitbox");
+        let initial = d
+            .sheet
+            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+            .rectangle();
+
+        d.begin_nudge_hitbox("my_hitbox").unwrap();
+        d.update_nudge_hitbox(vec2(5, 10), false).unwrap();
+        d.end_nudge_hitbox();
         let hitbox = d
             .sheet
-            .hitbox_mut("walk_cycle", Direction::North, 0, "my_hitbox");
-        hitbox.set_position(vec2(0, 0));
-        hitbox.set_size(vec2(100, 100));
+            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+        assert_eq!(
+            hitbox.rectangle(),
+            euclid::rect(
+                initial.origin.x,
+                initial.origin.y + 10,
+                initial.size.width,
+                initial.size.height
+            )
+        );
+    }
+
+    #[test]
+    fn keeps_track_of_hitboxes_being_nudged() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.view.set_workbench_zoom_factor(1);
+
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("my_hitbox");
+
+        assert!(d.hitboxes_being_nudged().is_empty());
+        d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+        d.begin_nudge_hitbox("my_hitbox").unwrap();
+        assert_eq!(d.hitboxes_being_nudged(), HashSet::from(["my_hitbox"]));
+        d.update_nudge_hitbox(vec2(5, 10), true).unwrap();
+        d.end_nudge_hitbox();
+        assert!(d.hitboxes_being_nudged().is_empty());
+    }
+
+    #[test]
+    fn can_resize_hitbox() {
+        use euclid::rect;
+
+        let test_cases: Vec<(_, Vector2D<i32>, euclid::default::Rect<i32>)> = vec![
+            (ResizeAxis::NW, vec2(10, 10), rect(10, 10, 90, 90)),
+            (ResizeAxis::NE, vec2(10, 10), rect(0, 10, 110, 90)),
+            (ResizeAxis::SW, vec2(10, 10), rect(10, 0, 90, 110)),
+            (ResizeAxis::SE, vec2(10, 10), rect(0, 0, 110, 110)),
+            (ResizeAxis::N, vec2(10, 10), rect(0, 10, 100, 90)),
+            (ResizeAxis::W, vec2(10, 10), rect(10, 0, 90, 100)),
+            (ResizeAxis::S, vec2(10, 10), rect(0, 0, 100, 110)),
+            (ResizeAxis::E, vec2(10, 10), rect(0, 0, 110, 100)),
+        ];
+
+        for (axis, delta, expected) in test_cases {
+            let mut d = Document::new("tmp");
+            d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+            d.sheet.add_test_animation(
+                "walk_cycle",
+                HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+            );
+            d.edit_animation("walk_cycle").unwrap();
+            d.view.set_workbench_zoom_factor(1);
+
+            let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+            keyframe.create_hitbox("my_hitbox");
+            let hitbox = d
+                .sheet
+                .hitbox_mut("walk_cycle", Direction::North, 0, "my_hitbox");
+            hitbox.set_position(vec2(0, 0));
+            hitbox.set_size(vec2(100, 100));
+
+            d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+            d.begin_resize_hitbox("my_hitbox", axis).unwrap();
+            d.update_resize_hitbox(delta, false).unwrap();
+            d.end_resize_hitbox();
+            let hitbox = d
+                .sheet
+                .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+            assert_eq!(
+                hitbox.rectangle(),
+                euclid::rect(
+                    expected.origin.x,
+                    expected.origin.y,
+                    expected.size.width,
+                    expected.size.height
+                )
+            );
+        }
+    }
+
+    #[test]
+    fn can_resize_hitbox_while_preserving_aspect_ratio() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.view.set_workbench_zoom_factor(1);
+
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("my_hitbox");
+        let initial = d
+            .sheet
+            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
+            .rectangle();
 
         d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-        d.begin_resize_hitbox("my_hitbox", axis).unwrap();
-        d.update_resize_hitbox(delta, false).unwrap();
+        d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
+        d.update_resize_hitbox(vec2(40, 80), true).unwrap();
         d.end_resize_hitbox();
         let hitbox = d
             .sheet
@@ -1332,70 +1372,34 @@ fn can_resize_hitbox() {
         assert_eq!(
             hitbox.rectangle(),
             euclid::rect(
-                expected.origin.x,
-                expected.origin.y,
-                expected.size.width,
-                expected.size.height
+                initial.origin.x,
+                initial.origin.y,
+                initial.size.width + 80,
+                initial.size.height + 80
             )
         );
     }
-}
 
-#[test]
-fn can_resize_hitbox_while_preserving_aspect_ratio() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-    d.view.set_workbench_zoom_factor(1);
+    #[test]
+    fn keeps_track_of_hitboxes_being_resized() {
+        let mut d = Document::new("tmp");
+        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
+        d.sheet.add_test_animation(
+            "walk_cycle",
+            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+        );
+        d.edit_animation("walk_cycle").unwrap();
+        d.view.set_workbench_zoom_factor(1);
 
-    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-    keyframe.create_hitbox("my_hitbox");
-    let initial = d
-        .sheet
-        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-        .rectangle();
+        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
+        keyframe.create_hitbox("my_hitbox");
 
-    d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-    d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
-    d.update_resize_hitbox(vec2(40, 80), true).unwrap();
-    d.end_resize_hitbox();
-    let hitbox = d
-        .sheet
-        .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
-    assert_eq!(
-        hitbox.rectangle(),
-        euclid::rect(
-            initial.origin.x,
-            initial.origin.y,
-            initial.size.width + 80,
-            initial.size.height + 80
-        )
-    );
-}
-
-#[test]
-fn keeps_track_of_hitboxes_being_resized() {
-    let mut d = Document::new("tmp");
-    d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-    d.sheet.add_test_animation(
-        "walk_cycle",
-        HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-    );
-    d.edit_animation("walk_cycle").unwrap();
-    d.view.set_workbench_zoom_factor(1);
-
-    let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-    keyframe.create_hitbox("my_hitbox");
-
-    assert!(d.hitboxes_being_resized().is_empty());
-    d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-    d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
-    assert_eq!(d.hitboxes_being_resized(), HashSet::from(["my_hitbox"]));
-    d.update_resize_hitbox(vec2(40, 80), false).unwrap();
-    d.end_resize_hitbox();
-    assert!(d.hitboxes_being_resized().is_empty());
+        assert!(d.hitboxes_being_resized().is_empty());
+        d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
+        d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
+        assert_eq!(d.hitboxes_being_resized(), HashSet::from(["my_hitbox"]));
+        d.update_resize_hitbox(vec2(40, 80), false).unwrap();
+        d.end_resize_hitbox();
+        assert!(d.hitboxes_being_resized().is_empty());
+    }
 }

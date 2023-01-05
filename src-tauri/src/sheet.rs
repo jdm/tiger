@@ -18,8 +18,6 @@ use uuid::Uuid;
 #[cfg(test)]
 use euclid::vec2;
 
-#[cfg(test)]
-mod test;
 pub(in crate::sheet) mod version1;
 pub(in crate::sheet) mod version2;
 pub(in crate::sheet) mod version3;
@@ -1094,423 +1092,513 @@ fn portable_path<S: serde::Serializer>(value: &Path, serializer: S) -> Result<S:
     cleaned.serialize(serializer)
 }
 
-#[test]
-fn can_read_write_sheet_from_disk() {
-    let original = Sheet::<Any>::read("test-data/samurai.tiger")
-        .unwrap()
-        .with_relative_paths("test-data")
-        .unwrap()
-        .with_absolute_paths();
-    original.clone().write("test-data/copy.tiger").unwrap();
-    let copy = Sheet::<Any>::read("test-data/copy.tiger")
-        .unwrap()
-        .with_relative_paths("test-data")
-        .unwrap()
-        .with_absolute_paths();
-    std::fs::remove_file("test-data/copy.tiger").unwrap();
-    assert_eq!(original, copy);
-}
+#[cfg(test)]
+mod test {
 
-#[test]
-fn can_add_and_remove_sheet_frame() {
-    let mut sheet = Sheet::<Any>::default();
-    sheet.add_frame("frame.png");
-    assert!(sheet.has_frame("frame.png"));
-    assert!(sheet.frame("frame.png").is_some());
-    assert_eq!(
-        sheet.frame("frame.png").unwrap().source(),
-        Path::new("frame.png")
-    );
-    sheet.delete_frame("frame.png");
-    assert!(!sheet.has_frame("frame.png"));
-    assert!(sheet.frame("frame.png").is_none());
-}
+    use super::*;
 
-#[test]
-fn deleting_frame_remove_its_usage() {
-    let mut sheet = Sheet::<Any>::default();
-    sheet.add_test_animation(
-        "Animation",
-        HashMap::from([(Direction::North, vec!["frame.png"])]),
-    );
+    impl<Z: Paths + Default> Sheet<Z> {
+        pub fn add_test_animation<N: AsRef<str>, P: AsRef<Path>>(
+            &mut self,
+            animation_name: N,
+            content: HashMap<Direction, Vec<P>>,
+        ) {
+            let (effective_animation_name, animation) =
+                self.create_animation(animation_name.as_ref());
+            assert_eq!(animation_name.as_ref(), effective_animation_name);
 
-    sheet.delete_frame("frame.png");
+            if content.is_empty() {
+                animation.apply_direction_preset(DirectionPreset::EightDirections);
+            } else {
+                let direction_preset =
+                    DirectionPreset::from_directions(content.keys().copied()).unwrap();
+                animation.apply_direction_preset(direction_preset);
+            }
 
-    assert_eq!(
-        0,
-        sheet
-            .animation("Animation")
-            .unwrap()
-            .sequence(Direction::North)
-            .unwrap()
-            .num_keyframes()
-    );
-}
+            for (direction, frames) in content {
+                for frame in &frames {
+                    self.add_frame(frame);
+                }
+                let animation = self.animation_mut(animation_name.as_ref()).unwrap();
+                let sequence = animation.sequence_mut(direction).unwrap();
+                for frame in frames.iter().rev() {
+                    sequence.insert_keyframe(Keyframe::new(frame), 0).unwrap();
+                }
+            }
+        }
 
-#[test]
-fn cannot_add_duplicate_sheet_frame() {
-    let mut sheet = Sheet::<Any>::default();
-    sheet.add_frame("frame.png");
-    sheet.add_frame("frame.png");
-    assert_eq!(sheet.frames_iter().count(), 1);
-}
+        pub fn sequence<T: AsRef<str>>(
+            &self,
+            animation_name: T,
+            direction: Direction,
+        ) -> &Sequence<Z> {
+            let animation = self.animation(animation_name).unwrap();
+            animation.sequence(direction).unwrap()
+        }
 
-#[test]
-fn can_add_and_remove_sheet_frames() {
-    let mut sheet = Sheet::<Any>::default();
-    assert_eq!(sheet.frames_iter().count(), 0);
-    sheet.add_frames(&vec![&Path::new("foo.png"), &Path::new("bar.png")]);
-    assert_eq!(sheet.frames_iter().count(), 2);
-    sheet.delete_frame(Path::new("foo.png"));
-    assert_eq!(sheet.frames_iter().count(), 1);
-}
+        pub fn keyframe<T: AsRef<str>>(
+            &self,
+            animation_name: T,
+            direction: Direction,
+            index: usize,
+        ) -> &Keyframe<Z> {
+            let animation = self.animation(animation_name).unwrap();
+            let sequence = animation.sequence(direction).unwrap();
+            sequence.keyframe(index).unwrap()
+        }
 
-#[test]
-fn can_sort_frames() {
-    let frame_a = Frame::<Any>::new(Path::new("a"));
-    let frame_b = Frame::<Any>::new(Path::new("b"));
-    let frame_c = Frame::<Any>::new(Path::new("c"));
-    assert!(frame_a < frame_b);
-    assert!(frame_a < frame_c);
-    assert!(frame_b < frame_c);
-}
+        pub fn keyframe_mut<T: AsRef<str>>(
+            &mut self,
+            animation_name: T,
+            direction: Direction,
+            index: usize,
+        ) -> &mut Keyframe<Z> {
+            let animation = self.animation_mut(animation_name).unwrap();
+            let sequence = animation.sequence_mut(direction).unwrap();
+            sequence.keyframe_mut(index).unwrap()
+        }
 
-#[test]
-fn can_add_and_remove_sheet_animation() {
-    let mut sheet = Sheet::<Any>::default();
-    let (name_1, _animation) = sheet.create_animation("Animation");
-    assert!(sheet.has_animation(&name_1));
-    assert!(sheet.animation(&name_1).is_some());
-    assert!(sheet.animation_mut(&name_1).is_some());
-    assert_eq!(sheet.animations_iter().count(), 1);
+        pub fn hitbox<T: AsRef<str>, U: AsRef<str>>(
+            &self,
+            animation_name: T,
+            direction: Direction,
+            index: usize,
+            hitbox_name: U,
+        ) -> &Hitbox {
+            let keyframe = self.keyframe(animation_name, direction, index);
+            keyframe.hitboxes.get(hitbox_name.as_ref()).unwrap()
+        }
 
-    let (name_2, _animation) = sheet.create_animation("Animation");
-    assert!(sheet.has_animation(&name_2));
-
-    sheet.delete_animation(&name_1);
-    assert!(!sheet.has_animation(&name_1));
-    assert!(sheet.animation(&name_1).is_none());
-    assert!(sheet.animation_mut(&name_1).is_none());
-    assert!(sheet.has_animation(&name_2));
-}
-
-#[test]
-fn can_rename_sheet_animation() {
-    let mut sheet = Sheet::<Any>::default();
-    let (old_name, _animation) = sheet.create_animation("Animation");
-    sheet.rename_animation(&old_name, "updated name").unwrap();
-    assert!(sheet.animation("updated name").is_some());
-    assert!(sheet.animation(&old_name).is_none());
-}
-
-#[test]
-fn can_rename_sheet_animation_to_same_name() {
-    let mut sheet = Sheet::<Any>::default();
-    let (old_name, _animation) = sheet.create_animation("Animation");
-    sheet.rename_animation(&old_name, &old_name).unwrap();
-}
-
-#[test]
-fn cannot_rename_sheet_animation_to_existing_name() {
-    let mut sheet = Sheet::<Any>::default();
-    let (old_name, _animation) = sheet.create_animation("Animation");
-    sheet.rename_animation(&old_name, "conflict").unwrap();
-    let (old_name, _animation) = sheet.create_animation("Animation");
-    assert!(sheet.rename_animation(&old_name, "conflict").is_err());
-}
-
-#[test]
-fn can_read_write_animation_looping() {
-    let mut animation = Animation::<Any>::new();
-    animation.set_looping(true);
-    assert!(animation.looping());
-    animation.set_looping(false);
-    assert!(!animation.looping());
-}
-
-#[test]
-fn can_access_animation_sequences() {
-    let mut animation = Animation::<Any>::new();
-    animation.apply_direction_preset(DirectionPreset::FourDirections);
-    assert!(animation.sequence(Direction::West).is_some());
-    assert!(animation.sequence_mut(Direction::West).is_some());
-    assert_eq!(animation.sequences_iter().count(), 4);
-    assert_eq!(animation.sequences_iter_mut().count(), 4);
-}
-
-#[test]
-fn can_animation_can_apply_direction_preset() {
-    let mut animation = Animation::<Any>::new();
-    assert_eq!(animation.direction_preset(), None);
-    for preset in all::<DirectionPreset>() {
-        animation.apply_direction_preset(preset);
-        assert_eq!(animation.direction_preset(), Some(preset));
+        pub fn hitbox_mut<T: AsRef<str>, U: AsRef<str>>(
+            &mut self,
+            animation_name: T,
+            direction: Direction,
+            index: usize,
+            hitbox_name: U,
+        ) -> &mut Hitbox {
+            let keyframe = self.keyframe_mut(animation_name, direction, index);
+            keyframe.hitboxes.get_mut(hitbox_name.as_ref()).unwrap()
+        }
     }
-}
 
-#[test]
-fn animation_can_recognize_direction_preset() {
-    let mut animation = Animation::<Any>::new();
-    animation
-        .sequences
-        .insert(Direction::NorthEast, Sequence::default());
-    animation
-        .sequences
-        .insert(Direction::NorthWest, Sequence::default());
-    animation
-        .sequences
-        .insert(Direction::SouthEast, Sequence::default());
-    assert_eq!(animation.direction_preset(), None);
-    animation
-        .sequences
-        .insert(Direction::SouthWest, Sequence::default());
-    assert_eq!(
-        animation.direction_preset(),
-        Some(DirectionPreset::Isometric)
-    );
-}
+    #[test]
+    fn can_read_write_sheet_from_disk() {
+        let original = Sheet::<Any>::read("test-data/samurai.tiger")
+            .unwrap()
+            .with_relative_paths("test-data")
+            .unwrap()
+            .with_absolute_paths();
+        original.clone().write("test-data/copy.tiger").unwrap();
+        let copy = Sheet::<Any>::read("test-data/copy.tiger")
+            .unwrap()
+            .with_relative_paths("test-data")
+            .unwrap()
+            .with_absolute_paths();
+        std::fs::remove_file("test-data/copy.tiger").unwrap();
+        assert_eq!(original, copy);
+    }
 
-#[test]
-fn can_add_and_remove_sequence_keyframe() {
-    let mut sequence = Sequence::<Any>::default();
-    let keyframe_a = Keyframe::new(Path::new("a.png"));
-    let keyframe_b = Keyframe::new(Path::new("b.png"));
-
-    sequence.insert_keyframe(keyframe_a, 0).unwrap();
-    sequence.insert_keyframe(keyframe_b, 1).unwrap();
-    assert_eq!(sequence.num_keyframes(), 2);
-    assert_eq!(sequence.keyframe(0).unwrap().frame(), Path::new("a.png"));
-    assert_eq!(
-        sequence.keyframe_mut(0).unwrap().frame(),
-        Path::new("a.png")
-    );
-    assert_eq!(sequence.keyframe(1).unwrap().frame(), Path::new("b.png"));
-    assert_eq!(
-        sequence.keyframe_mut(1).unwrap().frame(),
-        Path::new("b.png")
-    );
-
-    sequence.delete_keyframe(0).unwrap();
-    assert_eq!(sequence.num_keyframes(), 1);
-    assert_eq!(sequence.keyframe(0).unwrap().frame(), Path::new("b.png"));
-    assert!(sequence.keyframe(1).is_none());
-}
-
-#[test]
-fn cannot_add_sequence_keyframe_at_illegal_index() {
-    let mut sequence = Sequence::<Any>::default();
-    let frame_path = &Path::new("a.png");
-    sequence
-        .insert_keyframe(Keyframe::new(frame_path), 0)
-        .unwrap();
-    sequence
-        .insert_keyframe(Keyframe::new(frame_path), 0)
-        .unwrap();
-    assert!(sequence
-        .insert_keyframe(Keyframe::new(frame_path), 3)
-        .is_err());
-}
-
-#[test]
-fn can_measure_sequence_duration() {
-    let mut sequence = Sequence::<Any>::default();
-    assert_eq!(sequence.duration_millis(), None);
-
-    let mut keyframe_a = Keyframe::new(Path::new("a.png"));
-    let mut keyframe_b = Keyframe::new(Path::new("b.png"));
-    keyframe_a.set_duration_millis(150);
-    keyframe_b.set_duration_millis(250);
-    sequence.insert_keyframe(keyframe_a, 0).unwrap();
-    sequence.insert_keyframe(keyframe_b, 1).unwrap();
-
-    assert_eq!(sequence.duration(), Some(Duration::from_millis(400)));
-}
-
-#[test]
-fn can_query_sequence_by_time_elapsed() {
-    let mut sequence = Sequence::<Any>::default();
-    assert!(sequence.keyframe_at(Duration::default()).is_none());
-
-    let mut keyframe_a = Keyframe::<Any>::new(Path::new("a.png"));
-    keyframe_a.set_duration_millis(200);
-    let mut keyframe_b = Keyframe::<Any>::new(Path::new("b.png"));
-    keyframe_b.set_duration_millis(200);
-
-    sequence.insert_keyframe(keyframe_a, 0).unwrap();
-    sequence.insert_keyframe(keyframe_b, 1).unwrap();
-    assert_eq!(sequence.keyframe_times(), vec![0, 200]);
-
-    for (time, frame_index) in [(0, 0), (199, 0), (200, 1), (399, 1), (400, 1), (401, 1)] {
+    #[test]
+    fn can_add_and_remove_sheet_frame() {
+        let mut sheet = Sheet::<Any>::default();
+        sheet.add_frame("frame.png");
+        assert!(sheet.has_frame("frame.png"));
+        assert!(sheet.frame("frame.png").is_some());
         assert_eq!(
-            sequence.keyframe_at(Duration::from_millis(time)).unwrap().0,
-            frame_index
+            sheet.frame("frame.png").unwrap().source(),
+            Path::new("frame.png")
         );
+        sheet.delete_frame("frame.png");
+        assert!(!sheet.has_frame("frame.png"));
+        assert!(sheet.frame("frame.png").is_none());
+    }
+
+    #[test]
+    fn deleting_frame_remove_its_usage() {
+        let mut sheet = Sheet::<Any>::default();
+        sheet.add_test_animation(
+            "Animation",
+            HashMap::from([(Direction::North, vec!["frame.png"])]),
+        );
+
+        sheet.delete_frame("frame.png");
+
         assert_eq!(
-            sequence
-                .keyframe_at_mut(Duration::from_millis(time))
+            0,
+            sheet
+                .animation("Animation")
                 .unwrap()
-                .0,
-            frame_index
+                .sequence(Direction::North)
+                .unwrap()
+                .num_keyframes()
         );
     }
-}
 
-#[test]
-fn can_read_keyframe_frame() {
-    let frame = Path::new("./example/directory/texture.png");
-    let keyframe = Keyframe::<Relative>::new(frame);
-    assert_eq!(keyframe.frame(), frame);
-}
-
-#[test]
-fn can_read_write_keyframe_duration() {
-    let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
-    keyframe.set_duration_millis(200);
-    assert_eq!(keyframe.duration_millis(), 200);
-}
-
-#[test]
-fn can_read_write_keyframe_offset() {
-    let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
-    keyframe.set_offset(vec2(30, 20));
-    assert_eq!(keyframe.offset(), vec2(30, 20));
-}
-
-#[test]
-fn can_add_and_remove_keyframe_hitbox() {
-    let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
-    let (name, _hitbox) = keyframe.create_hitbox("Hitbox");
-    assert!(keyframe.has_hitbox(&name));
-    assert_eq!(keyframe.hitboxes_iter().count(), 1);
-    assert_eq!(keyframe.hitboxes_iter_mut().count(), 1);
-    keyframe.delete_hitbox(&name);
-    assert!(!keyframe.has_hitbox(&name));
-    assert_eq!(keyframe.hitboxes_iter().count(), 0);
-    assert_eq!(keyframe.hitboxes_iter_mut().count(), 0);
-}
-
-#[test]
-fn can_rename_keyframe_hitbox() {
-    let frame = Path::new("./example/directory/texture.png");
-    let mut keyframe = Keyframe::<Relative>::new(frame);
-    let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
-    keyframe.rename_hitbox(&old_name, "updated name").unwrap();
-    assert!(keyframe.has_hitbox("updated name"));
-    assert!(!keyframe.has_hitbox(&old_name));
-}
-
-#[test]
-fn can_rename_hitbox_to_existing_name() {
-    let frame = Path::new("./example/directory/texture.png");
-    let mut keyframe = Keyframe::<Relative>::new(frame);
-    let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
-    keyframe.rename_hitbox(&old_name, "conflict").unwrap();
-
-    let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
-    assert!(keyframe.rename_hitbox(&old_name, "conflict").is_err());
-}
-
-#[test]
-fn can_read_write_hitbox_position() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_position(vec2(100, 100));
-    assert_eq!(hitbox.position(), vec2(100, 100));
-}
-
-#[test]
-fn can_read_write_hitbox_size() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_size(vec2(50, 50));
-    assert_eq!(hitbox.size(), vec2(50, 50));
-}
-
-#[test]
-fn moving_hitbox_preserves_size() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_size(vec2(50, 50));
-    hitbox.set_position(vec2(0, 0));
-    hitbox.set_position(vec2(100, 100));
-    assert_eq!(hitbox.size(), vec2(50, 50));
-}
-
-#[test]
-fn resizing_hitbox_preserves_position() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_position(vec2(10, 10));
-    hitbox.set_size(vec2(50, 50));
-    hitbox.set_size(vec2(100, 100));
-    assert_eq!(hitbox.position(), vec2(10, 10));
-}
-
-#[test]
-fn can_convert_hitbox_to_rectangle() {
-    let mut hitbox = Hitbox::new();
-    hitbox.set_position(vec2(100, 100));
-    hitbox.set_size(vec2(50, 50));
-    assert_eq!(hitbox.rectangle(), rect(100, 100, 50, 50));
-}
-
-#[test]
-fn template_export_settings_can_convert_relative_and_absolute_paths() {
-    let absolute = TemplateExportSettings::<Any> {
-        template_file: PathBuf::from("a/b/format.template").resolve(),
-        texture_file: PathBuf::from("a/b/c/sheet.png").resolve(),
-        metadata_file: PathBuf::from("a/b/c/sheet.lua").resolve(),
-        metadata_paths_root: PathBuf::from("a/b").resolve(),
-        paths: std::marker::PhantomData,
+    #[test]
+    fn cannot_add_duplicate_sheet_frame() {
+        let mut sheet = Sheet::<Any>::default();
+        sheet.add_frame("frame.png");
+        sheet.add_frame("frame.png");
+        assert_eq!(sheet.frames_iter().count(), 1);
     }
-    .with_absolute_paths()
-    .unwrap();
 
-    let relative = absolute
-        .clone()
-        .with_relative_paths(PathBuf::from("a/b").resolve())
+    #[test]
+    fn can_add_and_remove_sheet_frames() {
+        let mut sheet = Sheet::<Any>::default();
+        assert_eq!(sheet.frames_iter().count(), 0);
+        sheet.add_frames(&vec![&Path::new("foo.png"), &Path::new("bar.png")]);
+        assert_eq!(sheet.frames_iter().count(), 2);
+        sheet.delete_frame(Path::new("foo.png"));
+        assert_eq!(sheet.frames_iter().count(), 1);
+    }
+
+    #[test]
+    fn can_sort_frames() {
+        let frame_a = Frame::<Any>::new(Path::new("a"));
+        let frame_b = Frame::<Any>::new(Path::new("b"));
+        let frame_c = Frame::<Any>::new(Path::new("c"));
+        assert!(frame_a < frame_b);
+        assert!(frame_a < frame_c);
+        assert!(frame_b < frame_c);
+    }
+
+    #[test]
+    fn can_add_and_remove_sheet_animation() {
+        let mut sheet = Sheet::<Any>::default();
+        let (name_1, _animation) = sheet.create_animation("Animation");
+        assert!(sheet.has_animation(&name_1));
+        assert!(sheet.animation(&name_1).is_some());
+        assert!(sheet.animation_mut(&name_1).is_some());
+        assert_eq!(sheet.animations_iter().count(), 1);
+
+        let (name_2, _animation) = sheet.create_animation("Animation");
+        assert!(sheet.has_animation(&name_2));
+
+        sheet.delete_animation(&name_1);
+        assert!(!sheet.has_animation(&name_1));
+        assert!(sheet.animation(&name_1).is_none());
+        assert!(sheet.animation_mut(&name_1).is_none());
+        assert!(sheet.has_animation(&name_2));
+    }
+
+    #[test]
+    fn can_rename_sheet_animation() {
+        let mut sheet = Sheet::<Any>::default();
+        let (old_name, _animation) = sheet.create_animation("Animation");
+        sheet.rename_animation(&old_name, "updated name").unwrap();
+        assert!(sheet.animation("updated name").is_some());
+        assert!(sheet.animation(&old_name).is_none());
+    }
+
+    #[test]
+    fn can_rename_sheet_animation_to_same_name() {
+        let mut sheet = Sheet::<Any>::default();
+        let (old_name, _animation) = sheet.create_animation("Animation");
+        sheet.rename_animation(&old_name, &old_name).unwrap();
+    }
+
+    #[test]
+    fn cannot_rename_sheet_animation_to_existing_name() {
+        let mut sheet = Sheet::<Any>::default();
+        let (old_name, _animation) = sheet.create_animation("Animation");
+        sheet.rename_animation(&old_name, "conflict").unwrap();
+        let (old_name, _animation) = sheet.create_animation("Animation");
+        assert!(sheet.rename_animation(&old_name, "conflict").is_err());
+    }
+
+    #[test]
+    fn can_read_write_animation_looping() {
+        let mut animation = Animation::<Any>::new();
+        animation.set_looping(true);
+        assert!(animation.looping());
+        animation.set_looping(false);
+        assert!(!animation.looping());
+    }
+
+    #[test]
+    fn can_access_animation_sequences() {
+        let mut animation = Animation::<Any>::new();
+        animation.apply_direction_preset(DirectionPreset::FourDirections);
+        assert!(animation.sequence(Direction::West).is_some());
+        assert!(animation.sequence_mut(Direction::West).is_some());
+        assert_eq!(animation.sequences_iter().count(), 4);
+        assert_eq!(animation.sequences_iter_mut().count(), 4);
+    }
+
+    #[test]
+    fn can_animation_can_apply_direction_preset() {
+        let mut animation = Animation::<Any>::new();
+        assert_eq!(animation.direction_preset(), None);
+        for preset in all::<DirectionPreset>() {
+            animation.apply_direction_preset(preset);
+            assert_eq!(animation.direction_preset(), Some(preset));
+        }
+    }
+
+    #[test]
+    fn animation_can_recognize_direction_preset() {
+        let mut animation = Animation::<Any>::new();
+        animation
+            .sequences
+            .insert(Direction::NorthEast, Sequence::default());
+        animation
+            .sequences
+            .insert(Direction::NorthWest, Sequence::default());
+        animation
+            .sequences
+            .insert(Direction::SouthEast, Sequence::default());
+        assert_eq!(animation.direction_preset(), None);
+        animation
+            .sequences
+            .insert(Direction::SouthWest, Sequence::default());
+        assert_eq!(
+            animation.direction_preset(),
+            Some(DirectionPreset::Isometric)
+        );
+    }
+
+    #[test]
+    fn can_add_and_remove_sequence_keyframe() {
+        let mut sequence = Sequence::<Any>::default();
+        let keyframe_a = Keyframe::new(Path::new("a.png"));
+        let keyframe_b = Keyframe::new(Path::new("b.png"));
+
+        sequence.insert_keyframe(keyframe_a, 0).unwrap();
+        sequence.insert_keyframe(keyframe_b, 1).unwrap();
+        assert_eq!(sequence.num_keyframes(), 2);
+        assert_eq!(sequence.keyframe(0).unwrap().frame(), Path::new("a.png"));
+        assert_eq!(
+            sequence.keyframe_mut(0).unwrap().frame(),
+            Path::new("a.png")
+        );
+        assert_eq!(sequence.keyframe(1).unwrap().frame(), Path::new("b.png"));
+        assert_eq!(
+            sequence.keyframe_mut(1).unwrap().frame(),
+            Path::new("b.png")
+        );
+
+        sequence.delete_keyframe(0).unwrap();
+        assert_eq!(sequence.num_keyframes(), 1);
+        assert_eq!(sequence.keyframe(0).unwrap().frame(), Path::new("b.png"));
+        assert!(sequence.keyframe(1).is_none());
+    }
+
+    #[test]
+    fn cannot_add_sequence_keyframe_at_illegal_index() {
+        let mut sequence = Sequence::<Any>::default();
+        let frame_path = &Path::new("a.png");
+        sequence
+            .insert_keyframe(Keyframe::new(frame_path), 0)
+            .unwrap();
+        sequence
+            .insert_keyframe(Keyframe::new(frame_path), 0)
+            .unwrap();
+        assert!(sequence
+            .insert_keyframe(Keyframe::new(frame_path), 3)
+            .is_err());
+    }
+
+    #[test]
+    fn can_measure_sequence_duration() {
+        let mut sequence = Sequence::<Any>::default();
+        assert_eq!(sequence.duration_millis(), None);
+
+        let mut keyframe_a = Keyframe::new(Path::new("a.png"));
+        let mut keyframe_b = Keyframe::new(Path::new("b.png"));
+        keyframe_a.set_duration_millis(150);
+        keyframe_b.set_duration_millis(250);
+        sequence.insert_keyframe(keyframe_a, 0).unwrap();
+        sequence.insert_keyframe(keyframe_b, 1).unwrap();
+
+        assert_eq!(sequence.duration(), Some(Duration::from_millis(400)));
+    }
+
+    #[test]
+    fn can_query_sequence_by_time_elapsed() {
+        let mut sequence = Sequence::<Any>::default();
+        assert!(sequence.keyframe_at(Duration::default()).is_none());
+
+        let mut keyframe_a = Keyframe::<Any>::new(Path::new("a.png"));
+        keyframe_a.set_duration_millis(200);
+        let mut keyframe_b = Keyframe::<Any>::new(Path::new("b.png"));
+        keyframe_b.set_duration_millis(200);
+
+        sequence.insert_keyframe(keyframe_a, 0).unwrap();
+        sequence.insert_keyframe(keyframe_b, 1).unwrap();
+        assert_eq!(sequence.keyframe_times(), vec![0, 200]);
+
+        for (time, frame_index) in [(0, 0), (199, 0), (200, 1), (399, 1), (400, 1), (401, 1)] {
+            assert_eq!(
+                sequence.keyframe_at(Duration::from_millis(time)).unwrap().0,
+                frame_index
+            );
+            assert_eq!(
+                sequence
+                    .keyframe_at_mut(Duration::from_millis(time))
+                    .unwrap()
+                    .0,
+                frame_index
+            );
+        }
+    }
+
+    #[test]
+    fn can_read_keyframe_frame() {
+        let frame = Path::new("./example/directory/texture.png");
+        let keyframe = Keyframe::<Relative>::new(frame);
+        assert_eq!(keyframe.frame(), frame);
+    }
+
+    #[test]
+    fn can_read_write_keyframe_duration() {
+        let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
+        keyframe.set_duration_millis(200);
+        assert_eq!(keyframe.duration_millis(), 200);
+    }
+
+    #[test]
+    fn can_read_write_keyframe_offset() {
+        let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
+        keyframe.set_offset(vec2(30, 20));
+        assert_eq!(keyframe.offset(), vec2(30, 20));
+    }
+
+    #[test]
+    fn can_add_and_remove_keyframe_hitbox() {
+        let mut keyframe = Keyframe::<Relative>::new(Path::new("./example/directory/texture.png"));
+        let (name, _hitbox) = keyframe.create_hitbox("Hitbox");
+        assert!(keyframe.has_hitbox(&name));
+        assert_eq!(keyframe.hitboxes_iter().count(), 1);
+        assert_eq!(keyframe.hitboxes_iter_mut().count(), 1);
+        keyframe.delete_hitbox(&name);
+        assert!(!keyframe.has_hitbox(&name));
+        assert_eq!(keyframe.hitboxes_iter().count(), 0);
+        assert_eq!(keyframe.hitboxes_iter_mut().count(), 0);
+    }
+
+    #[test]
+    fn can_rename_keyframe_hitbox() {
+        let frame = Path::new("./example/directory/texture.png");
+        let mut keyframe = Keyframe::<Relative>::new(frame);
+        let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
+        keyframe.rename_hitbox(&old_name, "updated name").unwrap();
+        assert!(keyframe.has_hitbox("updated name"));
+        assert!(!keyframe.has_hitbox(&old_name));
+    }
+
+    #[test]
+    fn can_rename_hitbox_to_existing_name() {
+        let frame = Path::new("./example/directory/texture.png");
+        let mut keyframe = Keyframe::<Relative>::new(frame);
+        let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
+        keyframe.rename_hitbox(&old_name, "conflict").unwrap();
+
+        let (old_name, _hitbox) = keyframe.create_hitbox("Hitbox");
+        assert!(keyframe.rename_hitbox(&old_name, "conflict").is_err());
+    }
+
+    #[test]
+    fn can_read_write_hitbox_position() {
+        let mut hitbox = Hitbox::new();
+        hitbox.set_position(vec2(100, 100));
+        assert_eq!(hitbox.position(), vec2(100, 100));
+    }
+
+    #[test]
+    fn can_read_write_hitbox_size() {
+        let mut hitbox = Hitbox::new();
+        hitbox.set_size(vec2(50, 50));
+        assert_eq!(hitbox.size(), vec2(50, 50));
+    }
+
+    #[test]
+    fn moving_hitbox_preserves_size() {
+        let mut hitbox = Hitbox::new();
+        hitbox.set_size(vec2(50, 50));
+        hitbox.set_position(vec2(0, 0));
+        hitbox.set_position(vec2(100, 100));
+        assert_eq!(hitbox.size(), vec2(50, 50));
+    }
+
+    #[test]
+    fn resizing_hitbox_preserves_position() {
+        let mut hitbox = Hitbox::new();
+        hitbox.set_position(vec2(10, 10));
+        hitbox.set_size(vec2(50, 50));
+        hitbox.set_size(vec2(100, 100));
+        assert_eq!(hitbox.position(), vec2(10, 10));
+    }
+
+    #[test]
+    fn can_convert_hitbox_to_rectangle() {
+        let mut hitbox = Hitbox::new();
+        hitbox.set_position(vec2(100, 100));
+        hitbox.set_size(vec2(50, 50));
+        assert_eq!(hitbox.rectangle(), rect(100, 100, 50, 50));
+    }
+
+    #[test]
+    fn template_export_settings_can_convert_relative_and_absolute_paths() {
+        let absolute = TemplateExportSettings::<Any> {
+            template_file: PathBuf::from("a/b/format.template").resolve(),
+            texture_file: PathBuf::from("a/b/c/sheet.png").resolve(),
+            metadata_file: PathBuf::from("a/b/c/sheet.lua").resolve(),
+            metadata_paths_root: PathBuf::from("a/b").resolve(),
+            paths: std::marker::PhantomData,
+        }
+        .with_absolute_paths()
         .unwrap();
-    assert_eq!(relative.template_file, Path::new("format.template"));
-    assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
-    assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));
-    assert_eq!(&relative.metadata_paths_root, Path::new(""));
 
-    let roundtrip = relative.with_absolute_paths("a/b");
-    assert_eq!(roundtrip, absolute);
-}
+        let relative = absolute
+            .clone()
+            .with_relative_paths(PathBuf::from("a/b").resolve())
+            .unwrap();
+        assert_eq!(relative.template_file, Path::new("format.template"));
+        assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
+        assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));
+        assert_eq!(&relative.metadata_paths_root, Path::new(""));
 
-#[test]
-fn template_export_settings_can_adjust_paths() {
-    let mut settings = TemplateExportSettings::<Any>::default();
+        let roundtrip = relative.with_absolute_paths("a/b");
+        assert_eq!(roundtrip, absolute);
+    }
 
-    let path = Path::new("template_file");
-    settings.set_template_file(path);
-    assert_eq!(settings.template_file(), path);
+    #[test]
+    fn template_export_settings_can_adjust_paths() {
+        let mut settings = TemplateExportSettings::<Any>::default();
 
-    let path = Path::new("texture_file");
-    settings.set_texture_file(path);
-    assert_eq!(settings.texture_file(), path);
+        let path = Path::new("template_file");
+        settings.set_template_file(path);
+        assert_eq!(settings.template_file(), path);
 
-    let path = Path::new("metadata_file");
-    settings.set_metadata_file(path);
-    assert_eq!(settings.metadata_file(), path);
+        let path = Path::new("texture_file");
+        settings.set_texture_file(path);
+        assert_eq!(settings.texture_file(), path);
 
-    let path = Path::new("metadata_paths_root");
-    settings.set_metadata_paths_root(path);
-    assert_eq!(settings.metadata_paths_root(), path);
-}
+        let path = Path::new("metadata_file");
+        settings.set_metadata_file(path);
+        assert_eq!(settings.metadata_file(), path);
 
-#[test]
-fn generate_unique_name_respects_suggestions() {
-    assert_eq!("oink", generate_unique_name("oink", |_| true));
-}
+        let path = Path::new("metadata_paths_root");
+        settings.set_metadata_paths_root(path);
+        assert_eq!(settings.metadata_paths_root(), path);
+    }
 
-#[test]
-fn generate_unique_name_finds_workarounds() {
-    assert_eq!("oink 2", generate_unique_name("oink", |n| n != "oink"));
-    assert_eq!(
-        "oink 3",
-        generate_unique_name("oink", |n| n != "oink" && n != "oink 2")
-    );
-}
+    #[test]
+    fn generate_unique_name_respects_suggestions() {
+        assert_eq!("oink", generate_unique_name("oink", |_| true));
+    }
 
-#[test]
-fn generate_unique_name_detects_existing_numbers() {
-    assert_eq!("oink 3", generate_unique_name("oink 2", |n| n != "oink 2"));
+    #[test]
+    fn generate_unique_name_finds_workarounds() {
+        assert_eq!("oink 2", generate_unique_name("oink", |n| n != "oink"));
+        assert_eq!(
+            "oink 3",
+            generate_unique_name("oink", |n| n != "oink" && n != "oink 2")
+        );
+    }
+
+    #[test]
+    fn generate_unique_name_detects_existing_numbers() {
+        assert_eq!("oink 3", generate_unique_name("oink 2", |n| n != "oink 2"));
+    }
 }
