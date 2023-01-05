@@ -1,4 +1,4 @@
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
@@ -10,6 +10,7 @@ mod command;
 mod content;
 mod export;
 mod keyframe;
+mod relocate;
 mod selection;
 mod timeline;
 mod transient;
@@ -20,6 +21,7 @@ pub use command::*;
 pub use content::*;
 pub use export::*;
 pub use keyframe::*;
+pub use relocate::*;
 pub use selection::*;
 pub use timeline::*;
 pub use transient::*;
@@ -44,6 +46,7 @@ pub struct Persistent {
     pub(super) close_requested: bool,
     pub(super) timeline_is_playing: bool,
     pub(super) export_settings_edit: Option<ExportSettings<Any>>,
+    pub(super) relocate_frames_edit: Option<HashMap<PathBuf, PathBuf>>,
     pub(super) preserve_aspect_ratio: bool,
     pub(super) missing_textures: HashSet<PathBuf>,
 }
@@ -84,6 +87,8 @@ pub enum DocumentError {
     NotResizingHitbox,
     #[error("Not currently adjusting export settings")]
     NotEditingExportSettings,
+    #[error("Not currently relocating frames")]
+    NotRelocatingFrames,
     #[error("Sequence in animation has no keyframes")]
     SequenceHasNoKeyframes,
 }

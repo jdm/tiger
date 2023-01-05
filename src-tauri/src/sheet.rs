@@ -128,6 +128,23 @@ impl<P: Paths> Sheet<P> {
         }
     }
 
+    pub fn relocate_frames(&mut self, mapping: &HashMap<PathBuf, PathBuf>) {
+        for frame in self.frames.iter_mut() {
+            if let Some(moved) = mapping.get(&frame.source) {
+                frame.source = moved.clone();
+            }
+        }
+        for (_, animation) in self.animations.iter_mut() {
+            for (_, sequence) in animation.sequences.iter_mut() {
+                for keyframe in sequence.keyframes.iter_mut() {
+                    if let Some(moved) = mapping.get(&keyframe.frame) {
+                        keyframe.frame = moved.clone();
+                    }
+                }
+            }
+        }
+    }
+
     pub fn create_animation<T: AsRef<str>>(
         &mut self,
         proposed_name: T,

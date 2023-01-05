@@ -520,6 +520,48 @@ pub fn import_frames(
 }
 
 #[tauri::command]
+pub fn begin_relocate_frames(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::BeginRelocateFrames).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn relocate_frame(
+    app_state: tauri::State<'_, AppState>,
+    from: PathBuf,
+    to: PathBuf,
+) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document
+                .process_command(Command::RelocateFrame(from, to))
+                .ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn cancel_relocate_frames(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::CancelRelocateFrames).ok();
+        }
+    }))
+}
+
+#[tauri::command]
+pub fn end_relocate_frames(app_state: tauri::State<'_, AppState>) -> Result<Patch, ()> {
+    Ok(app_state.mutate(AppTrim::Full, |app| {
+        if let Some(document) = app.current_document_mut() {
+            document.process_command(Command::EndRelocateFrames).ok();
+        }
+    }))
+}
+
+#[tauri::command]
 pub fn delete_frame(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
     Ok(app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {

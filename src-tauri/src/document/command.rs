@@ -19,6 +19,10 @@ pub enum Command {
     SetAnimationsListOffset(u32),
     SetHitboxesListOffset(u32),
     ImportFrames(Vec<PathBuf>),
+    BeginRelocateFrames,
+    RelocateFrame(PathBuf, PathBuf),
+    CancelRelocateFrames,
+    EndRelocateFrames,
     DeleteFrame(PathBuf),
     DeleteSelectedFrames,
     DeleteSelection,
@@ -144,6 +148,12 @@ impl Document {
             Command::SetFramesListOffset(o) => self.view.set_frames_list_offset(o),
             Command::SetHitboxesListOffset(o) => self.view.hitboxes_list_offset = o,
             Command::ImportFrames(ref p) => self.import_frames(p),
+            Command::BeginRelocateFrames => self.begin_relocate_frames(),
+            Command::RelocateFrame(ref from, ref to) => {
+                self.relocate_frame(from.clone(), to.clone())?
+            }
+            Command::CancelRelocateFrames => self.cancel_relocate_frames(),
+            Command::EndRelocateFrames => self.end_relocate_frames()?,
             Command::DeleteFrame(ref p) => self.sheet.delete_frame(p),
             Command::DeleteSelectedFrames => self.delete_selected_frames(),
             Command::DeleteSelection => self.delete_selection()?,
@@ -515,6 +525,11 @@ impl Display for Command {
             Command::TogglePreserveAspectRatio => f.write_str("Toggle Preserve Aspect Ratio"),
             Command::SetSnapKeyframeDurations(true) => f.write_str("Enable Keyframe Snapping"),
             Command::SetSnapKeyframeDurations(false) => f.write_str("Disable Keyframe Snapping"),
+
+            Command::BeginRelocateFrames
+            | Command::RelocateFrame(_, _)
+            | Command::CancelRelocateFrames
+            | Command::EndRelocateFrames => f.write_str("Relocate Frames"),
 
             Command::SetSnapKeyframeToOtherKeyframes(_)
             | Command::SetSnapKeyframeToMultiplesOfDuration(_)

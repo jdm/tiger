@@ -70,6 +70,7 @@ export type Document = {
   animationBeingRenamed: string | null;
   hitboxBeingRenamed: string | null;
   framesBeingDragged: string[];
+  framesBeingRelocated: Record<string, string> | null;
   keyframesBeingDragged: [Direction, number][];
   hitboxesBeingNudged: string[];
   hitboxesBeingResized: string[];
