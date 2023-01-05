@@ -44,6 +44,7 @@ fn main() {
             tauri_app
                 .state::<features::texture_cache::TextureCache>()
                 .init(tauri_app);
+            features::missing_textures::init(tauri_app);
             features::recent_documents::init(tauri_app);
             features::template_hot_reload::init(tauri_app);
             features::texture_hot_reload::init(tauri_app);

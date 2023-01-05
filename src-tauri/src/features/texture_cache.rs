@@ -9,6 +9,7 @@ use tauri::Manager;
 
 use crate::app::AppState;
 use crate::utils::file_watcher::FileWatcher;
+use crate::utils::texture_list::TextureList;
 
 #[derive(Clone, Default)]
 pub struct TextureCache {
@@ -25,8 +26,11 @@ impl TextureCache {
     pub fn init(&self, tauri_app: &tauri::App) {
         let tauri_app_handle = tauri_app.handle();
 
-        let (mut file_watcher, events_receiver) =
-            FileWatcher::new(move || list_textures(&tauri_app_handle));
+        let (mut file_watcher, events_receiver) = FileWatcher::new(move || {
+            let app_state = tauri_app_handle.state::<AppState>();
+            let app = app_state.0.lock();
+            app.list_textures()
+        });
 
         std::thread::spawn(move || loop {
             file_watcher.update_watched_files();
@@ -51,7 +55,11 @@ impl TextureCache {
                 let cache = cache.lock();
                 cache.keys().cloned().collect()
             };
-            let desired_entries = list_textures(&tauri_app_handle);
+            let desired_entries = {
+                let app_state = tauri_app_handle.state::<AppState>();
+                let app = app_state.0.lock();
+                app.list_textures()
+            };
             let missing_entries = desired_entries
                 .iter()
                 .filter(|p| !current_entries.contains(*p))
@@ -103,13 +111,4 @@ fn add<P: AsRef<Path>>(textures: &HashSet<P>, cache_handle: CacheHandle) {
             cache.insert(path.to_owned(), texture);
         }
     }
-}
-
-fn list_textures(tauri_app_handle: &tauri::AppHandle) -> HashSet<PathBuf> {
-    let app_state = tauri_app_handle.state::<AppState>();
-    let app = app_state.0.lock();
-    app.documents_iter()
-        .flat_map(|d| d.sheet().frames_iter())
-        .map(|f| f.source().to_owned())
-        .collect::<HashSet<_>>()
 }

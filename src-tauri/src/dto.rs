@@ -108,6 +108,7 @@ pub struct Frame {
     name: String,
     selected: bool,
     filtered_out: bool,
+    missing_on_disk: bool,
 }
 
 #[derive(Clone, Default, Serialize)]
@@ -352,6 +353,7 @@ impl document::Document {
         for frame in sheet.frames.iter_mut() {
             frame.selected = self.selection().is_frame_selected(&frame.path);
             frame.filtered_out = self.is_frame_filtered_out(&frame.path);
+            frame.missing_on_disk = self.is_frame_missing_on_disk(&frame.path);
         }
 
         for animation in sheet.animations.iter_mut() {
@@ -484,6 +486,7 @@ impl<P: Paths> From<&sheet::Frame<P>> for Frame {
             name: frame.source().to_file_stem(),
             selected: false,
             filtered_out: false,
+            missing_on_disk: false,
         }
     }
 }

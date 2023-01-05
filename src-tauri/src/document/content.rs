@@ -61,4 +61,12 @@ impl Document {
             self.sheet.delete_animation(animation);
         }
     }
+
+    pub fn set_missing_textures(&mut self, missing_textures: HashSet<PathBuf>) {
+        self.persistent.missing_textures = missing_textures;
+    }
+
+    pub fn is_frame_missing_on_disk<T: AsRef<Path>>(&self, frame: T) -> bool {
+        self.persistent.missing_textures.contains(frame.as_ref())
+    }
 }

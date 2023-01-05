@@ -1,8 +1,9 @@
-use std::path::PathBuf;
 use std::time::Duration;
 use tauri::Manager;
 
+use crate::api::Stateful;
 use crate::app::AppState;
+use crate::dto::AppTrim;
 use crate::utils::file_watcher::FileWatcher;
 use crate::utils::texture_list::TextureList;
 
@@ -21,16 +22,17 @@ pub fn init(tauri_app: &tauri::App) {
 
     let tauri_app_handle = tauri_app.handle();
     std::thread::spawn(move || loop {
-        #[derive(Clone, serde::Serialize)]
-        struct TextureEvent {
-            path: PathBuf,
-        }
-        if let Ok(Ok(events)) = events_receiver.recv() {
-            for event in events {
-                tauri_app_handle
-                    .emit_all("invalidate-texture", TextureEvent { path: event.path })
-                    .ok();
-            }
+        if let Ok(Ok(_)) = events_receiver.recv() {
+            tauri_app_handle.patch_state(AppTrim::Full, |app| {
+                for document in app.documents_iter_mut() {
+                    let missing_textures = document
+                        .list_textures()
+                        .into_iter()
+                        .filter(|t| !t.exists())
+                        .collect();
+                    document.set_missing_textures(missing_textures);
+                }
+            });
         }
     });
 }

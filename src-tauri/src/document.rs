@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 use thiserror::Error;
@@ -44,6 +45,7 @@ pub struct Persistent {
     pub(super) timeline_is_playing: bool,
     pub(super) export_settings_edit: Option<ExportSettings<Any>>,
     pub(super) preserve_aspect_ratio: bool,
+    pub(super) missing_textures: HashSet<PathBuf>,
 }
 
 #[derive(Error, Debug)]
