@@ -8,6 +8,7 @@
 - [ ] Automatically add extensions to exported files
 - [x] All file dialogs open with a sensible default file/directory selected
 - [ ] Reach satisfying test coverage
+- [x] Replace tarpaulin with grcov for code coverage measurements
 - [x] Hover & pressed states for Button controls
 - [x] Hover & pressed states for Toggle controls
 - [x] Hover & pressed states for playback controls
