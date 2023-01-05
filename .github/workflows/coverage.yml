@@ -44,9 +44,10 @@ jobs:
           RUSTFLAGS: "-Cinstrument-coverage"
       - name: Gather Results
         run: >
-          grcov .
+          grcov
+          .
           -s .
-          -t coveralls
+          -t lcov
           -o coverage.txt
           --llvm
           --branch
