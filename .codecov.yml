@@ -9,3 +9,5 @@ coverage:
     project:
       default:
         informational: true
+fixes:
+  - "::src-tauri/" # eg. remaps `src/main.rs` to `src-tauri/src/main.rs`

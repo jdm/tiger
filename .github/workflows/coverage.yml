@@ -52,6 +52,7 @@ jobs:
           --llvm
           --branch
           --ignore-not-existing
+          --keep-only src/**
           --binary-path ./target/debug
           --excl-line "#\[derive\("
           --excl-br-line "#\[derive\("
