@@ -10,7 +10,7 @@ pub trait TextureList {
     fn list_textures(&self) -> HashSet<PathBuf>;
 }
 
-impl TextureList for App<'_> {
+impl TextureList for App {
     fn list_textures(&self) -> HashSet<PathBuf> {
         self.documents_iter()
             .flat_map(|d| d.list_textures())

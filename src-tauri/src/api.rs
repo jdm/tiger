@@ -14,7 +14,7 @@ use crate::sheet::{Absolute, Sheet};
 static EVENT_PATCH_STATE: &str = "patch-state";
 static EVENT_REPLACE_STATE: &str = "replace-state";
 
-impl AppState<'_> {
+impl AppState {
     pub fn mutate<F>(&self, app_trim: AppTrim, operation: F) -> Patch
     where
         F: FnOnce(&mut App),
@@ -101,7 +101,7 @@ pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Res
 
 #[tauri::command]
 pub async fn open_documents(
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
     paths: Vec<PathBuf>,
 ) -> Result<Patch, ()> {
     let mut documents: Vec<(PathBuf, DocumentResult<Document>)> = Vec::new();
@@ -248,7 +248,7 @@ struct DocumentToSave {
 
 async fn save_documents(
     window: tauri::Window,
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
     mut documents: Vec<DocumentToSave>,
 ) -> Result<Patch, ()> {
     let mut work = Vec::new();
@@ -294,7 +294,7 @@ async fn save_documents(
 #[tauri::command]
 pub async fn save(
     window: tauri::Window,
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
     let documents_to_save: Vec<DocumentToSave> = {
         let app = app_state.0.lock();
@@ -314,7 +314,7 @@ pub async fn save(
 #[tauri::command]
 pub async fn save_as(
     window: tauri::Window,
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
     new_path: PathBuf,
 ) -> Result<Patch, ()> {
     let documents_to_save: Vec<DocumentToSave> = {
@@ -335,7 +335,7 @@ pub async fn save_as(
 #[tauri::command]
 pub async fn save_all(
     window: tauri::Window,
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
 ) -> Result<Patch, ()> {
     let documents_to_save: Vec<DocumentToSave> = {
         let app = app_state.0.lock();
@@ -1676,7 +1676,7 @@ pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 
 #[tauri::command]
 pub async fn export(
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
     texture_cache: tauri::State<'_, TextureCache>,
 ) -> Result<Patch, ()> {
     let (sheet, document_name) = {
@@ -1782,7 +1782,7 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 
 #[tauri::command]
 pub async fn end_export_as(
-    app_state: tauri::State<'_, AppState<'_>>,
+    app_state: tauri::State<'_, AppState>,
     texture_cache: tauri::State<'_, TextureCache>,
 ) -> Result<Patch, ()> {
     let mut patch = app_state.mutate(AppTrim::Full, |app| {

@@ -285,7 +285,7 @@ impl<T: AsRef<Path>> ToFileName for T {
     }
 }
 
-impl app::App<'_> {
+impl app::App {
     pub fn to_dto(&self, trim: AppTrim) -> App {
         App {
             documents: self

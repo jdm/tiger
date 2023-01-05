@@ -17,12 +17,12 @@ pub enum AppError {
 }
 
 #[derive(Clone)]
-pub struct AppState<'a>(pub Arc<Mutex<App<'a>>>);
+pub struct AppState(pub Arc<Mutex<App>>);
 #[derive(Debug, Default)]
-pub struct App<'a> {
+pub struct App {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
-    recent_documents: Observable<'a, Vec<PathBuf>>,
+    recent_documents: Observable<'static, Vec<PathBuf>>,
     clipboard_manifest: Option<ClipboardManifest>,
     errors: Vec<UserFacingError>,
     exit_requested: bool,
@@ -36,7 +36,7 @@ pub struct UserFacingError {
     pub details: String,
 }
 
-impl<'a> App<'a> {
+impl App {
     pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
         self.documents.iter()
     }
@@ -197,7 +197,7 @@ impl<'a> App<'a> {
         });
     }
 
-    pub fn recent_documents_delegate(&self) -> &Delegate<'a, Vec<PathBuf>> {
+    pub fn recent_documents_delegate(&self) -> &Delegate<'static, Vec<PathBuf>> {
         self.recent_documents.delegate()
     }
 
