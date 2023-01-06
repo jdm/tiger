@@ -1,11 +1,21 @@
 <template>
 	<div class="flex-1 flex flex-col items-stretch min-h-0 p-4 gap-4">
-		<div class="w-full flex gap-2 items-center">
+		<Transition>
+			<div v-if="app.anyFramesMissing" class="-mt-4 -mx-4 overflow-hidden">
+				<div class="w-full flex items-center py-2 pl-4 pr-6 bg-red-600 text-plastic-900 text-sm font-medium">
+					<ExclamationTriangleIcon class="mr-4 w-9 p-1.5 text-red-600 bg-plastic-900 rounded-full" />
+					<div class="grow">Some frames are missing from your computer.</div>
+					<a class="underline underline-offset-2 text-red-100 cursor-pointer"
+						@click="beginRelocateFrames">Relocate</a>
+				</div>
+			</div>
+		</Transition>
+		<div class="w-full flex gap-2 items-center transition-all" :class="darkening">
 			<MultiSwitch :items="listModes" @activate="switchListMode" />
 			<InputSearch placeholder="Search frames" v-model="searchQuery" />
 			<Button :positive="true" :icon="PhotoIcon" label="Import" @click="importFrames" />
 		</div>
-		<PaneInset class="flex-1 min-h-0">
+		<PaneInset class="flex-1 min-h-0 transition-all" :class="darkening">
 			<StatefulScroll ref="scrollableElement" v-model:scroll-top="scrollPosition"
 				class="p-4 h-full styled-scrollbars" @click="clearSelection">
 				<div :class="listMode == ListMode.Grid4xN ? 'grid grid-cols-4 gap-4' : 'flex flex-col'">
@@ -20,10 +30,11 @@
 <script setup lang="ts">
 import { computed, nextTick, Ref, ref, watch } from "vue"
 import { Bars4Icon, PhotoIcon, Squares2X2Icon } from "@heroicons/vue/20/solid"
+import { ExclamationTriangleIcon } from "@heroicons/vue/24/solid"
 import { useAppStore } from "@/stores/app"
 import { ListMode } from "@/api/dto"
 import { importFrames } from "@/api/local"
-import { clearSelection, filterFrames,  setFramesListMode, setFramesListOffset } from "@/api/document"
+import { beginRelocateFrames, clearSelection, filterFrames,  setFramesListMode, setFramesListOffset } from "@/api/document"
 import Button from "@/components/basic/Button.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import MultiSwitch, { MultiSwitchItem } from "@/components/basic/MultiSwitch.vue"
@@ -75,4 +86,25 @@ const searchQuery = computed({
 	set: filterFrames,
 });
 
+const darkening = computed(() => [
+	...app.anyFramesMissing ? ["brightness-[.4]", "saturate-0"] : [],
+]);
+
 </script>
+
+<style>
+.v-enter-active {
+	transition: max-height 0.15s ease-out;
+	max-height: 56px;
+}
+
+.v-leave-active {
+	transition: max-height 0.15s ease-in;
+	max-height: 56px;
+}
+
+.v-enter-from,
+.v-leave-to {
+	max-height: 0px;
+}
+</style>

@@ -88,6 +88,26 @@ export async function importFrames(paths: string[]): Promise<void> {
   appStore.patch(await invoke("import_frames", { paths: paths }));
 }
 
+export async function beginRelocateFrames(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("begin_relocate_frames"));
+}
+
+export async function relocateFrame(from: string, to: string): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("relocate_frame", { from: from, to: to }));
+}
+
+export async function cancelRelocateFrames(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("cancel_relocate_frames"));
+}
+
+export async function endRelocateFrames(): Promise<void> {
+  const appStore = useAppStore();
+  appStore.patch(await invoke("end_relocate_frames"));
+}
+
 export async function deleteFrame(path: string): Promise<void> {
   const appStore = useAppStore();
   appStore.patch(await invoke("delete_frame", { path: path }));

@@ -31,6 +31,8 @@ export const useAppStore = defineStore("app", {
         return this.error.key;
       } else if (this.currentDocument?.wasCloseRequested) {
         return "closing_" + this.currentDocument.path;
+      } else if (!!this.currentDocument?.framesBeingRelocated) {
+        return "relocating_" + this.currentDocument.path;
       }
       return null;
     },
@@ -104,6 +106,9 @@ export const useAppStore = defineStore("app", {
       return Object.values(this.currentAnimation.sequences).flatMap(
         (sequence) => sequence.keyframes.filter((keyframe) => keyframe.selected)
       );
+    },
+    anyFramesMissing(): boolean {
+      return !!this.currentDocument?.sheet.frames.some((f) => f.missingOnDisk);
     },
     canCut(): boolean {
       return (

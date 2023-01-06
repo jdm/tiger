@@ -88,6 +88,7 @@ export type Frame = {
   name: string;
   selected: boolean;
   filteredOut: boolean;
+  missingOnDisk: boolean;
 };
 
 export type Animation = {

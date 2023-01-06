@@ -2,8 +2,8 @@
 	<div>
 		<BoundingBox v-if="frameSize && drawBoundingBox" :position="position" :size="frameSize"
 			:colorClasses="backgroundColor" />
-		<img ref="el" :src="sprite.getURL(keyframe.frame)" @load="onFrameLoaded" class="absolute pixelated z-10"
-			:class="frameClass" draggable="false" :style="frameStyle" />
+		<img ref="imageElement" :src="sprite.getURL(keyframe.frame)" @load="onImageLoaded" @error="onImageError"
+			class="absolute pixelated z-10" :class="frameClass" draggable="false" :style="frameStyle" />
 		<BoundingBox v-if="frameSize && drawBoundingBox" :position="position" :size="frameSize"
 			class="z-20 fill-transparent" :colorClasses="outlineColor" />
 		<DragArea v-if="canInteract" :buttons="['left', 'right']" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave"
@@ -31,8 +31,9 @@ const props = defineProps<{
 	index: number,
 }>();
 
-const el: Ref<HTMLImageElement | null> = ref(null);
+const imageElement: Ref<HTMLImageElement | null> = ref(null);
 const hovered = ref(false);
+const hasImage = ref(false);
 const frameSize: Ref<[number, number] | null> = ref(null);
 
 const isActiveFrame = computed(() => props.keyframe == app.currentKeyframe);
@@ -46,7 +47,7 @@ const position = computed(() => [
 
 const frameClass = computed(() => {
 	return [
-		(frameSize.value && isActiveFrame.value) ? "opacity-100" : "opacity-0",
+		(hasImage.value && isActiveFrame.value) ? "opacity-100" : "opacity-0",
 		...(app.currentDocument?.darkenSprites ? ["saturate-50", "brightness-50", "contrast-125"] : []),
 	];
 });
@@ -94,11 +95,18 @@ function onMouseLeave() {
 	hovered.value = false;
 }
 
-function onFrameLoaded() {
-	if (!el.value) {
-		return;
+function onImageLoaded() {
+	if (imageElement.value) {
+		frameSize.value = [imageElement.value.naturalWidth, imageElement.value.naturalHeight];
+	} else {
+		frameSize.value = null;
 	}
-	frameSize.value = [el.value.naturalWidth, el.value.naturalHeight];
+	hasImage.value = (imageElement.value?.naturalWidth || 0) > 0;
+}
+
+function onImageError() {
+	frameSize.value = null;
+	hasImage.value = false;
 }
 
 function startDrag(event: DragAreaEvent) {

@@ -6,6 +6,7 @@ import {
   browseToEnd,
   browseToStart,
   cancelExportAs,
+  cancelRelocateFrames,
   centerWorkbench,
   copy,
   cut,
@@ -151,6 +152,8 @@ function onKeyDown(event: KeyboardEvent) {
         acknowledgeError();
       } else if (app.currentDocument?.wasCloseRequested) {
         cancelExit();
+      } else if (app.currentDocument?.framesBeingRelocated) {
+        cancelRelocateFrames();
       } else if (app.currentDocument?.exportSettingsBeingEdited) {
         cancelExportAs();
       }

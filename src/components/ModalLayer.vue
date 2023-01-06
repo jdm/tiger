@@ -6,6 +6,7 @@
 				class="absolute inset-0 pointer-events-auto flex items-center justify-center">
 				<ErrorDialog v-if="app.error" :error="app.error" />
 				<UnsavedChangesDialog v-else-if="app.currentDocument?.wasCloseRequested" />
+				<RelocateFramesDialog v-else-if="!!app.currentDocument?.framesBeingRelocated" />
 			</div>
 		</Transition>
 	</div>
@@ -15,6 +16,7 @@
 import { useAppStore } from "@/stores/app"
 import ScreenCover from "@/components/basic/ScreenCover.vue"
 import ErrorDialog from "@/components/dialogs/ErrorDialog.vue"
+import RelocateFramesDialog from "@/components/dialogs/RelocateFramesDialog.vue"
 import UnsavedChangesDialog from "@/components/dialogs/UnsavedChangesDialog.vue"
 
 const app = useAppStore();
