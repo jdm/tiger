@@ -69,3 +69,50 @@ impl Document {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use crate::{app::AppState, mock::TigerAppMock, TigerApp};
+
+    use super::*;
+
+    #[test]
+    fn can_relocate_frames() {
+        let tiger_app = TigerAppMock::new();
+        let app_state = tiger_app.state::<AppState>();
+
+        {
+            let mut state = app_state.0.lock();
+            state.new_document("tmp.tiger");
+            state
+                .current_document_mut()
+                .unwrap()
+                .sheet
+                .add_frames(&vec![
+                    "samurai-dead-all.png",
+                    "samurai-idle-west.png",
+                    "bad-frame.png",
+                ]);
+        }
+
+        tiger_app.wait_for_periodic_scans();
+
+        let mut state = app_state.0.lock();
+        let d = state.current_document_mut().unwrap();
+        d.begin_relocate_frames();
+        d.relocate_frame(
+            PathBuf::from("samurai-dead-all.png"),
+            PathBuf::from("test-data/samurai-dead-all.png"),
+        )
+        .unwrap();
+        d.end_relocate_frames().unwrap();
+
+        assert!(!d.sheet.has_frame("samurai-dead-all.png"));
+        assert!(!d.sheet.has_frame("samurai-idle-west.png"));
+        assert!(d.sheet.has_frame("bad-frame.png"));
+        assert!(d.sheet.has_frame("test-data/samurai-dead-all.png"));
+        assert!(d.sheet.has_frame("test-data/samurai-idle-west.png"));
+        assert!(d.sheet.has_frame("bad-frame.png"));
+    }
+}

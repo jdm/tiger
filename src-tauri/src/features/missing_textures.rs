@@ -75,7 +75,6 @@ mod test {
         };
 
         let app = TigerAppMock::new();
-        init(app.clone(), Duration::from_millis(50));
 
         {
             let app_state = app.state::<AppState>();

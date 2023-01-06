@@ -1,9 +1,9 @@
 use parking_lot::Mutex;
-use std::sync::Arc;
+use std::{sync::Arc, time::Duration};
 
 use crate::{
     app::{App, AppState},
-    TigerApp,
+    features, TigerApp,
 };
 
 #[derive(Clone)]
@@ -12,10 +12,18 @@ pub struct TigerAppMock {
 }
 
 impl TigerAppMock {
+    const PERIOD: Duration = Duration::from_millis(50);
+
     pub fn new() -> Self {
-        Self {
+        let app = Self {
             app_state: AppState(Arc::new(Mutex::new(App::default()))),
-        }
+        };
+        features::missing_textures::init(app.clone(), Self::PERIOD);
+        app
+    }
+
+    pub fn wait_for_periodic_scans(&self) {
+        std::thread::sleep(2 * Self::PERIOD);
     }
 }
 

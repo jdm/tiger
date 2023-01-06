@@ -1286,6 +1286,32 @@ mod test {
     }
 
     #[test]
+    fn can_relocate_frame() {
+        let mut sheet = Sheet::<Any>::default();
+        sheet.add_frame("old.png");
+        assert!(sheet.has_frame("old.png"));
+        sheet.relocate_frames(&HashMap::from([("old.png".into(), "new.png".into())]));
+        assert!(!sheet.has_frame("old.png"));
+        assert!(sheet.has_frame("new.png"));
+    }
+
+    #[test]
+    fn relocating_a_frame_updates_its_usage() {
+        let mut sheet = Sheet::<Any>::default();
+        sheet.add_frame("old.png");
+        sheet.add_test_animation(
+            "Animation",
+            HashMap::from([(Direction::North, vec!["old.png"])]),
+        );
+        sheet.relocate_frames(&HashMap::from([("old.png".into(), "new.png".into())]));
+
+        assert_eq!(
+            PathBuf::from("new.png"),
+            sheet.keyframe("Animation", Direction::North, 0).frame
+        );
+    }
+
+    #[test]
     fn can_add_and_remove_sheet_animation() {
         let mut sheet = Sheet::<Any>::default();
         let (name_1, _animation) = sheet.create_animation("Animation");
