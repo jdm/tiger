@@ -3,12 +3,12 @@
 		@mouseleave="onMouseLeave" @mousedown="onMouseDown" @mouseup="onMouseUp" @click="onClick" :disabled="disabled"
 		:tabindex="tabIndex">
 		<div class="h-full rounded-md" :class="outline">
-			<div class="relative w-full h-full rounded-md overflow-clip border-t border-b-2 outline-offset-2 active:outline-0"
-				:class="palette">
+			<div class="relative w-full h-full rounded-md overflow-clip border-t outline-offset-2 active:outline-0"
+				:class="innerClasses">
 				<div class="h-full px-3 flex flex-row items-center justify-center">
 					<div class="flex items-center justify-center gap-2 text-sm font-medium">
-						<component :is="icon" v-if="icon" class="w-5" :class="active ? 'translate-y-px' : ''" />
-						<div v-if="label" :class="active ? 'translate-y-px' : ''">{{ label }}</div>
+						<component :is="icon" v-if="icon" class="w-5" />
+						<div v-if="label">{{ label }}</div>
 					</div>
 				</div>
 				<div class="absolute w-full h-full top-0 left-0 blur-md scale-75 mix-blend-screen" :class="glow"
@@ -48,7 +48,7 @@ function onClick(event: MouseEvent) {
 }
 
 const buttonClasses = computed(() => [
-	...active.value ? ["pt-px"] : [],
+	...active.value ? ["pt-0.5"] : ["transition-all", "duration-75", "ease-out"],
 	...!props.disabled ? ["cursor-pointer"] : [],
 	...props.tabbable && !active.value ? ["focus:outline-2", "focus:outline-blue-500", "focus:outline-dotted"] : ["focus:outline-0"],
 ]);
@@ -60,17 +60,31 @@ const outline = computed(() => {
 	return ["border-2", "border-plastic-900"];
 });
 
+const innerClasses = computed(() => [
+	...palette.value,
+	active.value ? "border-b-0" : "border-b-2",
+	...active.value ? [] : ["transition-all", "duration-75", "ease-out"],
+]);
+
 const palette = computed(() => {
 	if (props.disabled){
 		return ["text-plastic-600", "bg-plastic-800", "border-none"];
 	} else if (props.customColor == "pink") {
-		return ["text-pink-100", "bg-gradient-to-b", "from-pink-800", "to-pink-600", "border-t-pink-600", "border-b-pink-900"];
+		return 	[	"text-pink-100", "bg-gradient-to-b", "from-pink-800", "to-pink-600", "border-b-pink-900"
+				,	active.value ? "border-t-pink-800" : "border-t-pink-600",
+				];
 	} else if (props.danger) {
-		return ["text-red-100", "bg-gradient-to-b", "from-red-800", "to-red-600", "border-t-red-600", "border-b-red-900"];
+		return 	[	"text-red-100", "bg-gradient-to-b", "from-red-800", "to-red-600", "border-b-red-900"
+				,	active.value ? "border-t-red-800" : "border-t-red-600",
+				];
 	} else if (props.positive) {
-		return ["text-green-100", "bg-gradient-to-b", "from-green-800", "to-green-600", "border-t-green-600", "border-b-green-900"];
+		return 	[	"text-green-100", "bg-gradient-to-b", "from-green-800", "to-green-600", "border-b-green-900"
+				,	active.value ? "border-t-green-800" : "border-t-green-600",
+				];
 	}
-	return ["text-plastic-200", "bg-gradient-to-b", "from-plastic-600", "to-plastic-500", "border-t-plastic-500", "border-b-plastic-700"];
+	return 	[	"text-plastic-200", "bg-gradient-to-b", "from-plastic-600", "to-plastic-500", "border-b-plastic-700"
+			,	active.value ? "border-t-plastic-600" : "border-t-plastic-500",
+			];
 });
 
 const glow = computed(() => {
@@ -81,7 +95,7 @@ const glow = computed(() => {
 	} else if (props.danger) {
 		return ["bg-rose-500/50"];
 	} else if (props.positive) {
-		return ["bg-teal-500/50"];
+		return ["bg-green-400/50"];
 	}
 	return ["bg-plastic-500/50"];
 });
