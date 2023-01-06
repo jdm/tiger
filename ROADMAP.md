@@ -5,7 +5,7 @@
 - [x] Handle missing frame files (warning + offer to relocate)
 - [ ] In-place tutorials instead of blank data
 - [x] Merge redundant code between save(), save_as() and save_all()
-- [ ] Automatically add extensions to exported files
+- [x] Automatically add extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected
 - [ ] Reach satisfying test coverage
 - [x] Replace tarpaulin with grcov for code coverage measurements

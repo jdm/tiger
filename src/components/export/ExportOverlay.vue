@@ -10,7 +10,8 @@
 							<InputField label="Texture File">
 								<template #content>
 									<InputPath v-model="textureFile" class="mt-1"
-										placeholder="C:\ExampleGame\Assets\Sprites\Hero.png" />
+										placeholder="C:\ExampleGame\Assets\Sprites\Hero.png"
+										:filters="[{ name: 'Texture', extensions: ['png'] }]" />
 								</template>
 								<template #error>
 									<Transition name="error-slide">
@@ -22,7 +23,8 @@
 							<InputField label="Metadata File">
 								<template #content>
 									<InputPath v-model="metadataFile" class="mt-1"
-										placeholder="C:\ExampleGame\Assets\Sprites\Hero.json" />
+										placeholder="C:\ExampleGame\Assets\Sprites\Hero.json"
+										:filters="[{ name: 'Any', extensions: [] }]" />
 								</template>
 								<template #error>
 									<Transition name="error-slide">

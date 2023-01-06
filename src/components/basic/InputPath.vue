@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { open, save } from "@tauri-apps/api/dialog";
+import { DialogFilter, open, save } from "@tauri-apps/api/dialog";
 import { computed, ref, WritableComputedRef } from "vue";
 import { EllipsisHorizontalIcon, FolderIcon } from "@heroicons/vue/20/solid"
 import InputText from "@/components/basic/InputText.vue"
@@ -23,6 +23,7 @@ const props = defineProps<{
 	isDirectory?: boolean,
 	pickExisting?: boolean,
 	placeholder?: string,
+	filters?: DialogFilter[],
 	modelValue: string,
 }>();
 
@@ -43,9 +44,9 @@ async function openFilePicker() {
 	let file;
 	const defaultPath = value.value || undefined;
 	if (props.pickExisting || props.isDirectory) {
-		file = await open({ directory: props.isDirectory, defaultPath: defaultPath });
+		file = await open({ directory: props.isDirectory, defaultPath: defaultPath, filters: props.filters });
 	} else {
-		file = await save({ defaultPath: defaultPath });
+		file = await save({ defaultPath: defaultPath, filters: props.filters });
 	}
 	if (typeof file === "string") {
 		value.value = file;
