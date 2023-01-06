@@ -2,7 +2,7 @@
 
 ## Tiger 0.8
 
-- [ ] Handle missing frame files (warning + offer to relocate)
+- [x] Handle missing frame files (warning + offer to relocate)
 - [ ] In-place tutorials instead of blank data
 - [x] Merge redundant code between save(), save_as() and save_all()
 - [ ] Automatically add extensions to exported files
