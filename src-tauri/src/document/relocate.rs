@@ -26,7 +26,39 @@ impl Document {
     }
 
     pub(super) fn relocate_frame(&mut self, from: PathBuf, to: PathBuf) -> DocumentResult<()> {
-        self.relocate_frames_edit_mut()?.insert(from, to);
+        self.relocate_frames_edit_mut()?
+            .insert(from.clone(), to.clone());
+
+        let Some(old_directory) = from.parent() else {
+            return Ok(());
+        };
+        let Some(new_directory) = to.parent() else {
+            return Ok(());
+        };
+
+        let mut automatic_relocations = HashMap::new();
+        for frame in self.sheet().frames_iter() {
+            if !self.is_frame_missing_on_disk(frame.source()) {
+                continue;
+            }
+            if self.relocate_frames_edit()?.contains_key(frame.source()) {
+                continue;
+            }
+            if frame.source().parent() != Some(old_directory) {
+                continue;
+            };
+            let Some(file_name) = frame.source().file_name() else {
+                continue;
+            };
+            let candidate_location = new_directory.join(file_name);
+            if candidate_location.exists() {
+                automatic_relocations.insert(frame.source().to_owned(), candidate_location);
+            }
+        }
+
+        self.relocate_frames_edit_mut()?
+            .extend(automatic_relocations);
+
         Ok(())
     }
 
