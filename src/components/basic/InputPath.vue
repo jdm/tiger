@@ -1,5 +1,5 @@
 <template>
-	<InputText v-model="value">
+	<InputText v-model="value" :placeholder="placeholder">
 		<template #after>
 			<span @click="openFilePicker" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" class="relative inline-flex items-center px-3 rounded-md
 				cursor-pointer  bg-plastic-600
@@ -22,6 +22,7 @@ import InputText from "@/components/basic/InputText.vue"
 const props = defineProps<{
 	isDirectory?: boolean,
 	pickExisting?: boolean,
+	placeholder?: string,
 	modelValue: string,
 }>();
 
