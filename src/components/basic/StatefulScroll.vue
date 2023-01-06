@@ -11,7 +11,7 @@ const props = defineProps<{
 	scrollTop: number,
 }>();
 
-const emit = defineEmits(["update:scrollTop"])
+const emit = defineEmits(["update:scrollTop"]);
 
 defineExpose({
 	scrollToElement
