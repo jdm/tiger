@@ -73,14 +73,14 @@ impl Document {
 #[cfg(test)]
 mod test {
 
-    use crate::{app::AppState, mock::TigerAppMock, TigerApp};
+    use crate::{mock::TigerAppMock, TigerApp};
 
     use super::*;
 
     #[test]
     fn can_relocate_frames() {
         let tiger_app = TigerAppMock::new();
-        let app_state = tiger_app.state::<AppState>();
+        let app_state = tiger_app.app_state();
 
         {
             let mut state = app_state.0.lock();

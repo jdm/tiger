@@ -2,7 +2,6 @@ use log::error;
 use std::time::Duration;
 use tauri::ClipboardManager;
 
-use crate::app::AppState;
 use crate::document::clipboard_manifest;
 use crate::dto::AppTrim;
 use crate::TigerApp;
@@ -31,7 +30,7 @@ fn update_clipboard_manifest(app_handle: &tauri::AppHandle) {
     };
 
     {
-        let app_state = app_handle.state::<AppState>();
+        let app_state = app_handle.app_state();
         let app = app_state.0.lock();
         if *app.clipboard_manifest() == new_manifest {
             return;

@@ -5,11 +5,10 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::{collections::HashSet, time::Duration};
-use tauri::Manager;
 
-use crate::app::AppState;
 use crate::utils::file_watcher::FileWatcher;
 use crate::utils::texture_list::TextureList;
+use crate::TigerApp;
 
 #[derive(Clone, Default)]
 pub struct TextureCache {
@@ -23,18 +22,19 @@ impl TextureCache {
         self.content.clone()
     }
 
-    pub fn init(&self, tauri_app: &tauri::App) {
-        let tauri_app_handle = tauri_app.handle();
-
-        let (mut file_watcher, events_receiver) = FileWatcher::new(move || {
-            let app_state = tauri_app_handle.state::<AppState>();
-            let app = app_state.0.lock();
-            app.list_textures()
+    pub fn init<A: TigerApp + Send + Clone + 'static>(&self, tauri_app: A, period: Duration) {
+        let (mut file_watcher, events_receiver) = FileWatcher::new({
+            let tauri_app = tauri_app.clone();
+            move || {
+                let app_state = tauri_app.app_state();
+                let app = app_state.0.lock();
+                app.list_textures()
+            }
         });
 
         std::thread::spawn(move || loop {
             file_watcher.update_watched_files();
-            std::thread::sleep(Duration::from_millis(1_000));
+            std::thread::sleep(period);
         });
 
         let cache_handle = self.handle();
@@ -47,7 +47,6 @@ impl TextureCache {
             }
         });
 
-        let tauri_app_handle = tauri_app.handle();
         let cache_handle = self.handle();
         std::thread::spawn(move || loop {
             let current_entries: HashSet<PathBuf> = {
@@ -56,7 +55,7 @@ impl TextureCache {
                 cache.keys().cloned().collect()
             };
             let desired_entries = {
-                let app_state = tauri_app_handle.state::<AppState>();
+                let app_state = tauri_app.app_state();
                 let app = app_state.0.lock();
                 app.list_textures()
             };
@@ -70,7 +69,7 @@ impl TextureCache {
                 .collect::<HashSet<_>>();
             remove(&extraneous_entries, cache_handle.clone());
             add(&missing_entries, cache_handle.clone());
-            std::thread::sleep(Duration::from_millis(1_000));
+            std::thread::sleep(period);
         });
     }
 }
@@ -110,5 +109,51 @@ fn add<P: AsRef<Path>>(textures: &HashSet<P>, cache_handle: CacheHandle) {
         for (path, texture) in new_textures {
             cache.insert(path.to_owned(), texture);
         }
+    }
+}
+
+#[cfg(test)]
+mod test {
+
+    use crate::{
+        document::{Command, Document},
+        mock::TigerAppMock,
+        TigerApp,
+    };
+
+    #[test]
+    fn adds_and_removes_textures() {
+        let dir = std::env::current_dir().unwrap();
+        let frame_path = dir.join("test-data/samurai-dead-all.png");
+
+        let app = TigerAppMock::new();
+        {
+            let app_state = app.app_state();
+            let mut app = app_state.0.lock();
+            app.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        }
+
+        app.wait_for_periodic_scans();
+        assert!(app
+            .texture_cache()
+            .handle()
+            .lock()
+            .contains_key(&frame_path));
+
+        {
+            let app_state = app.app_state();
+            let mut app = app_state.0.lock();
+            app.current_document_mut()
+                .unwrap()
+                .process_command(Command::DeleteFrame(frame_path.clone()))
+                .unwrap();
+        }
+
+        app.wait_for_periodic_scans();
+        assert!(!app
+            .texture_cache()
+            .handle()
+            .lock()
+            .contains_key(&frame_path));
     }
 }

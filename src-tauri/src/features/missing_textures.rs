@@ -2,7 +2,6 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::app::AppState;
 use crate::dto::AppTrim;
 use crate::utils::texture_list::TextureList;
 use crate::TigerApp;
@@ -12,7 +11,7 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(tiger_app: A, period: Duration
         std::thread::sleep(period);
 
         let (all_textures, old_missing_textures) = {
-            let app_state = tiger_app.state::<AppState>();
+            let app_state = tiger_app.app_state();
             let app = app_state.0.lock();
             let mut all_textures = HashMap::new();
             let mut old_missing_textures = HashMap::new();
@@ -49,7 +48,7 @@ mod test {
     use std::{fs::File, path::PathBuf, time::Instant};
 
     use super::*;
-    use crate::{app::AppState, document::Command, mock::TigerAppMock};
+    use crate::{document::Command, mock::TigerAppMock};
 
     fn assert_with_timeout<F: Fn() -> bool>(check: F) {
         let start = Instant::now();
@@ -67,7 +66,7 @@ mod test {
         std::fs::remove_file(filename).ok();
 
         let is_missing = |app: &TigerAppMock| {
-            let app_state = app.state::<AppState>();
+            let app_state = app.app_state();
             let app = app_state.0.lock();
             app.current_document()
                 .unwrap()
@@ -77,7 +76,7 @@ mod test {
         let app = TigerAppMock::new();
 
         {
-            let app_state = app.state::<AppState>();
+            let app_state = app.app_state();
             let mut app = app_state.0.lock();
             app.new_document("tmp.tiger");
             app.current_document_mut()
