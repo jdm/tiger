@@ -6,7 +6,7 @@ import {
   Keyframe,
   Patch,
   Sequence,
-} from "@/api/dto";
+} from "@/backend/dto";
 import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
 

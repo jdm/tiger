@@ -18,8 +18,8 @@
 
 <script setup lang="ts">
 import { computed, ref } from "vue"
-import { Hitbox } from "@/api/dto"
-import { beginNudgeHitbox, beginResizeHitbox, endNudgeHitbox, endResizeHitbox, pan, selectHitbox, updateNudgeHitbox, updateResizeHitbox } from "@/api/document"
+import { beginNudgeHitbox, beginResizeHitbox, endNudgeHitbox, endResizeHitbox, pan, selectHitbox, updateNudgeHitbox, updateResizeHitbox } from "@/backend/api"
+import { Hitbox } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"

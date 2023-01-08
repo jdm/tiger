@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { setKeyframeDuration, setKeyframeOffsetX, setKeyframeOffsetY } from "@/api/document"
+import { setKeyframeDuration, setKeyframeOffsetX, setKeyframeOffsetY } from "@/backend/api"
 import { useStateStore } from "@/stores/state"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import DetailKey from "@/components/details/DetailKey.vue"

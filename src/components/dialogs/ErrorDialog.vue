@@ -15,8 +15,8 @@
 
 <script setup lang="ts">
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline"
-import { UserFacingError } from "@/api/dto"
-import { acknowledgeError } from "@/api/app"
+import { acknowledgeError } from "@/backend/api"
+import { UserFacingError } from "@/backend/dto"
 import Button from "@/components/basic/Button.vue"
 import ModalDialog from "@/components/basic/ModalDialog.vue"
 

@@ -1,6 +1,6 @@
 import { createPinia } from "pinia";
 import { createApp } from "vue";
-import { getState } from "./api/app";
+import { getState } from "./backend/api";
 import App from "./App.vue";
 import "./index.css";
 

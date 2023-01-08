@@ -27,7 +27,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight, togglePreserveAspectRatio } from "@/api/document"
+import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight, togglePreserveAspectRatio } from "@/backend/api"
 import { useStateStore } from "@/stores/state"
 import { LinkIcon } from "@heroicons/vue/20/solid"
 import PaneInset from "@/components/basic/PaneInset.vue"

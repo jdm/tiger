@@ -15,9 +15,9 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
-import { Direction } from "@/api/dto"
+import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration, endDragAndDropKeyframe, deleteSelectedKeyframes, copy, cut } from "@/backend/api"
+import { Direction } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
-import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration, endDragAndDropKeyframe, deleteSelectedKeyframes, copy, cut } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 

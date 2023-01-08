@@ -15,10 +15,10 @@
 
 <script setup lang="ts">
 import { computed, CSSProperties, ref, Ref } from "vue"
-import { Direction, Keyframe } from "@/api/dto"
+import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from "@/backend/api"
+import { Direction, Keyframe } from "@/backend/dto"
 import { useSpriteStore } from "@/stores/sprite"
 import { useStateStore } from "@/stores/state"
-import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from "@/api/document"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"
 

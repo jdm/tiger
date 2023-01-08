@@ -11,7 +11,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { ResizeAxis } from "@/api/dto";
+import { ResizeAxis } from "@/backend/dto";
 import DragArea, { Cursor, DragAreaEvent } from "@/components/basic/DragArea.vue";
 import { ResizeEvent } from "@/components/workbench/ResizeArea.vue";
 

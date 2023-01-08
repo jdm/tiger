@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/solid"
-import { showErrorMessage } from "@/api/app";
+import { showErrorMessage } from "@/backend/api";
 import Bubble from "@/components/basic/Bubble.vue"
 
 const props = defineProps<{

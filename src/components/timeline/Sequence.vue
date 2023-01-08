@@ -19,11 +19,11 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
+import { dropFrameOnTimeline, dropKeyframeOnTimeline, jumpToAnimationEnd, paste, selectDirection } from "@/backend/api"
+import { ClipboardManifest, Direction, Sequence as SequenceDTO } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
-import { ClipboardManifest, Direction, Sequence as SequenceDTO } from "@/api/dto"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Keyframe from "@/components/timeline/Keyframe.vue"
-import { dropFrameOnTimeline, dropKeyframeOnTimeline, jumpToAnimationEnd, paste, selectDirection } from "@/api/document"
 
 const state = useStateStore();
 

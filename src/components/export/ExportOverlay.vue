@@ -95,8 +95,8 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { BookOpenIcon } from "@heroicons/vue/24/outline"
-import { ExportSettingsError } from "@/api/dto"
-import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
+import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/backend/api"
+import { ExportSettingsError } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import Button from "@/components/basic/Button.vue"
 import InputError from "@/components/basic/InputError.vue"

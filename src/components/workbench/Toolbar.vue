@@ -26,7 +26,7 @@
 <script setup lang="ts">
 import { PhotoIcon, PlusIcon, SunIcon, TagIcon  } from "@heroicons/vue/20/solid";
 import { computed, WritableComputedRef } from "vue";
-import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin, hideSprite, setWorkbenchZoomFactor, showHitboxes, showOrigin, showSprite } from "@/api/document";
+import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin, hideSprite, setWorkbenchZoomFactor, showHitboxes, showOrigin, showSprite } from "@/backend/api";
 import { useStateStore } from "@/stores/state"
 import FlatMultiSwitch, { FlatMultiSwitchItem } from "@/components/basic/FlatMultiSwitch.vue";
 import FlatToggle from "@/components/basic/FlatToggle.vue"

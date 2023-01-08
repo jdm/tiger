@@ -18,8 +18,8 @@
 <script setup lang="ts">
 import { watch, computed, Ref, ref } from "vue"
 import { FilmIcon, PencilSquareIcon, XMarkIcon } from "@heroicons/vue/20/solid"
-import { Animation as AnimationDTO } from "@/api/dto"
-import { beginRenameAnimation, cancelRename, copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, endRenameAnimation, selectAnimation } from "@/api/document"
+import { beginRenameAnimation, cancelRename, copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, endRenameAnimation, selectAnimation } from "@/backend/api"
+import { Animation as AnimationDTO } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"

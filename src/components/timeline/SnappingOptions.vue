@@ -28,7 +28,7 @@
 
 <script setup lang="ts">
 import { computed, WritableComputedRef } from "vue";
-import { setKeyframeSnappingBaseDuration, setSnapKeyframeDurations, setSnapKeyframesToMultiplesOfDuration, setSnapKeyframesToOtherKeyframes } from "@/api/document";
+import { setKeyframeSnappingBaseDuration, setSnapKeyframeDurations, setSnapKeyframesToMultiplesOfDuration, setSnapKeyframesToOtherKeyframes } from "@/backend/api";
 import { useStateStore } from "@/stores/state";
 import Checkbox from "@/components/basic/Checkbox.vue";
 import MenuBackground from "@/components/basic/MenuBackground.vue";

@@ -15,11 +15,10 @@
 
 <script setup lang="ts">
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/outline"
+import { cancelExit, closeWithoutSaving, save } from "@/backend/api"
+import { useStateStore } from "@/stores/state"
 import Button from "@/components/basic/Button.vue"
 import ModalDialog from "@/components/basic/ModalDialog.vue"
-import { useStateStore } from "@/stores/state"
-import { cancelExit } from "@/api/app"
-import { closeWithoutSaving, save } from "@/api/document"
 
 const state = useStateStore();
 </script>

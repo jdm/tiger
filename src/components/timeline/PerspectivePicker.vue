@@ -4,10 +4,10 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import Select, { SelectOption } from "@/components/basic/Select.vue"
-import { DirectionPreset } from "@/api/dto"
-import { applyDirectionPreset } from "@/api/document"
+import { applyDirectionPreset } from "@/backend/api"
+import { DirectionPreset } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
+import Select, { SelectOption } from "@/components/basic/Select.vue"
 
 const state = useStateStore();
 const currentPreset = computed(() => state.currentAnimation?.directionPreset);

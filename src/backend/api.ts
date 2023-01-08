@@ -1,13 +1,115 @@
 import {
+  open as openFileDialog,
+  save as saveFileDialog,
+} from "@tauri-apps/api/dialog";
+import {
   BrowseDirection,
   Direction,
   DirectionPreset,
   ListMode,
   NudgeDirection,
+  Patch,
   ResizeAxis,
-} from "@/api/dto";
+} from "@/backend/dto";
 import { useStateStore } from "@/stores/state";
 import { invoke } from "@tauri-apps/api";
+
+export async function getState(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.$state = await invoke("get_state");
+}
+
+export async function showErrorMessage(
+  title: string,
+  summary: string,
+  details: string
+): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(
+    await invoke("show_error_message", {
+      title: title,
+      summary: summary,
+      details: details,
+    })
+  );
+}
+
+export async function acknowledgeError(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("acknowledge_error"));
+}
+
+export async function newDocument() {
+  const path = await saveFileDialog({
+    filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],
+    title: "New Spreadsheet",
+  });
+  if (typeof path === "string") {
+    const appStore = useStateStore();
+    appStore.patch(await invoke("new_document", { path: path }));
+  }
+}
+
+export async function openDocument(path: String) {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("open_documents", { paths: [path] }));
+}
+
+export async function openDocuments() {
+  const files = await openFileDialog({
+    filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],
+    multiple: true,
+  });
+  const appStore = useStateStore();
+  let patch: Patch | null = null;
+  if (typeof files === "string") {
+    patch = await invoke("open_documents", { paths: [files] });
+  } else if (files) {
+    patch = await invoke("open_documents", { paths: files });
+  }
+  if (patch) {
+    appStore.patch(patch);
+  }
+}
+
+export async function saveAll(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("save_all"));
+}
+
+export async function focusDocument(path: string): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("focus_document", { path: path }));
+}
+
+export async function closeDocument(path: string): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("close_document", { path: path }));
+}
+
+export async function closeCurrentDocument(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("close_current_document"));
+}
+
+export async function closeAllDocuments(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("close_all_documents"));
+}
+
+export async function requestExit(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("request_exit"));
+}
+
+export async function cancelExit(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("cancel_exit"));
+}
+
+export async function revealInExplorer(path: string): Promise<void> {
+  await invoke("reveal_in_explorer", { path: path });
+}
 
 export async function closeWithoutSaving(): Promise<void> {
   const appStore = useStateStore();
@@ -19,9 +121,15 @@ export async function save(): Promise<void> {
   appStore.patch(await invoke("save"));
 }
 
-export async function saveAs(newPath: string): Promise<void> {
-  const appStore = useStateStore();
-  appStore.patch(await invoke("save_as", { newPath: newPath }));
+export async function saveAs(currentPath: string | null) {
+  const newPath = await saveFileDialog({
+    filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],
+    defaultPath: currentPath || undefined,
+  });
+  if (typeof newPath === "string") {
+    const appStore = useStateStore();
+    appStore.patch(await invoke("save_as", { newPath: newPath }));
+  }
 }
 
 export async function undo(): Promise<void> {
@@ -83,9 +191,21 @@ export async function setHitboxesListOffset(offset: number): Promise<void> {
   appStore.patch(await invoke("set_hitboxes_list_offset", { offset: offset }));
 }
 
-export async function importFrames(paths: string[]): Promise<void> {
+export async function importFrames() {
+  const files = await openFileDialog({
+    filters: [{ name: "Image Files", extensions: ["png", "bmp"] }],
+    multiple: true,
+  });
   const appStore = useStateStore();
-  appStore.patch(await invoke("import_frames", { paths: paths }));
+  let patch: Patch | null = null;
+  if (typeof files === "string") {
+    patch = await invoke("import_frames", { paths: [files] });
+  } else if (files) {
+    patch = await invoke("import_frames", { paths: files });
+  }
+  if (patch) {
+    appStore.patch(patch);
+  }
 }
 
 export async function beginRelocateFrames(): Promise<void> {

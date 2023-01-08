@@ -17,8 +17,8 @@
 <script setup lang="ts">
 import { computed, Ref, ref, watch } from "vue"
 import { PencilSquareIcon, TagIcon, XMarkIcon } from "@heroicons/vue/20/solid"
-import { Hitbox as HitboxDTO } from "@/api/dto"
-import { beginRenameHitbox, cancelRename, copy, cut, deleteHitbox, deleteSelectedHitboxes, endRenameHitbox, selectHitbox } from "@/api/document"
+import { beginRenameHitbox, cancelRename, copy, cut, deleteHitbox, deleteSelectedHitboxes, endRenameHitbox, selectHitbox } from "@/backend/api"
+import { Hitbox as HitboxDTO } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"

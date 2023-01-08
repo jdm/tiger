@@ -31,8 +31,8 @@
 <script setup lang="ts">
 import { computed, nextTick, Ref, ref, watch } from "vue";
 import { LockClosedIcon, TagIcon } from "@heroicons/vue/20/solid";
-import { clearSelection, createHitbox, lockHitboxes, paste, setHitboxesListOffset, unlockHitboxes } from "@/api/document";
-import { ClipboardManifest } from "@/api/dto";
+import { clearSelection, createHitbox, lockHitboxes, paste, setHitboxesListOffset, unlockHitboxes } from "@/backend/api";
+import { ClipboardManifest } from "@/backend/dto";
 import { useStateStore } from "@/stores/state";
 import Button from "@/components/basic/Button.vue"
 import ContextMenu from "@/components/basic/ContextMenu.vue"

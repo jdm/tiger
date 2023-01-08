@@ -18,8 +18,8 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue";
 import { CheckCircleIcon } from "@heroicons/vue/24/solid"
-import { relocateFrame } from "@/api/document";
-import { Frame } from "@/api/dto";
+import { relocateFrame } from "@/backend/api";
+import { Frame } from "@/backend/dto";
 import { useStateStore } from "@/stores/state";
 import InputPath from "@/components/basic/InputPath.vue"
 import Thumbnail from "@/components/frames/Thumbnail.vue"

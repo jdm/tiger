@@ -1,18 +1,23 @@
-import { newDocument, openDocuments, saveAs } from "@/api/local";
 import {
+  acknowledgeError,
   beginExportAs,
   beginRenameSelection,
   browseSelection,
   browseToEnd,
   browseToStart,
+  cancelExit,
   cancelExportAs,
   cancelRelocateFrames,
   centerWorkbench,
+  closeAllDocuments,
+  closeCurrentDocument,
   copy,
   cut,
   deleteSelection,
   doExport,
+  newDocument,
   nudgeSelection,
+  openDocuments,
   paste,
   pause,
   play,
@@ -20,22 +25,17 @@ import {
   resetTimelineZoom,
   resetWorkbenchZoom,
   save,
+  saveAll,
+  saveAs,
   selectAll,
   undo,
   zoomInTimeline,
   zoomInWorkbench,
   zoomOutTimeline,
   zoomOutWorkbench,
-} from "@/api/document";
-import {
-  acknowledgeError,
-  cancelExit,
-  closeAllDocuments,
-  closeCurrentDocument,
-  saveAll,
-} from "@/api/app";
+} from "@/backend/api";
+import { BrowseDirection, NudgeDirection } from "@/backend/dto";
 import { useStateStore } from "@/stores/state";
-import { BrowseDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
   const isActiveElementKeyboardFriendly =

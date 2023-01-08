@@ -46,9 +46,8 @@
 <script setup lang="ts">
 import { onUnmounted, watch } from "vue"
 import { computed, Ref, ref } from "@vue/reactivity"
-import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/api/dto"
-import { closeDocument, focusDocument } from "@/api/app"
-import { clearSelection, pan, zoomInWorkbenchAround, zoomOutWorkbenchAround } from "@/api/document"
+import { closeDocument, focusDocument, clearSelection, pan, zoomInWorkbenchAround, zoomOutWorkbenchAround } from "@/backend/api"
+import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import { isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"

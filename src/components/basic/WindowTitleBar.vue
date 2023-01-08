@@ -36,7 +36,7 @@
 <script setup lang="ts">
 import { appWindow } from "@tauri-apps/api/window"
 import { computed, onMounted, Ref, ref } from "vue"
-import { requestExit } from "@/api/app"
+import { requestExit } from "@/backend/api"
 
 const isMaximized = ref(false);
 const titleBarElement: Ref<HTMLElement | null> = ref(null);

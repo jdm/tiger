@@ -7,9 +7,9 @@
 </template>
 
 <script setup lang="ts">
+import { computed } from "vue"
+import { scrubTimeline } from "@/backend/api"
 import { useStateStore } from "@/stores/state"
-import { computed } from "@vue/reactivity"
-import { scrubTimeline } from "@/api/document"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 
 const props = defineProps<{

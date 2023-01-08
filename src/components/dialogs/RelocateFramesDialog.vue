@@ -21,7 +21,7 @@
 import { computed } from "vue"
 import { PhotoIcon } from "@heroicons/vue/24/outline"
 import { useStateStore } from "@/stores/state"
-import { cancelRelocateFrames, endRelocateFrames } from "@/api/document"
+import { cancelRelocateFrames, endRelocateFrames } from "@/backend/api"
 import RelocateFrame from "@/components/dialogs/RelocateFrame.vue"
 import Button from "@/components/basic/Button.vue"
 import ModalDialog from "@/components/basic/ModalDialog.vue"

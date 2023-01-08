@@ -9,8 +9,8 @@
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
 import { onMounted, onUnmounted, watch } from "vue"
-import { State, Patch, TextureInvalidationEvent, } from "@/api/dto"
-import { tick } from "@/api/document"
+import { tick } from "@/backend/api"
+import { State, Patch, TextureInvalidationEvent, } from "@/backend/dto"
 import { useDevStore } from "@/stores/dev"
 import { useSpriteStore } from "@/stores/sprite"
 import { useStateStore } from "@/stores/state"

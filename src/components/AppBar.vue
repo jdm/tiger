@@ -21,9 +21,7 @@
 import { computed, reactive } from "vue"
 import { useStateStore } from "@/stores/state"
 import { useDevStore } from "@/stores/dev"
-import { closeAllDocuments, closeCurrentDocument, openDocuments as doOpenDocuments, revealInExplorer, saveAll } from "@/api/app"
-import { beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut } from "@/api/document"
-import { newDocument, openDocuments, saveAs } from "@/api/local"
+import { closeAllDocuments, closeCurrentDocument, revealInExplorer, saveAll, beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut, newDocument, openDocument, openDocuments, saveAs } from "@/backend/api"
 import MenuBar, { MenuBarEntry, MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
 
@@ -41,7 +39,7 @@ const fileMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 		return {
 			key: d.path,
 			name: d.name,
-			action: () => doOpenDocuments([d.path]),
+			action: () => openDocument(d.path),
 		}}
 	)},
 	{},

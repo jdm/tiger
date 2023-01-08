@@ -40,7 +40,7 @@ import {
 	jumpToAnimationStart, jumpToAnimationEnd,
 	jumpToNextFrame, jumpToPreviousFrame,
 	play, pause,
-} from "@/api/document"
+} from "@/backend/api"
 import { useStateStore } from "@/stores/state"
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { BackwardIcon, ForwardIcon, PauseCircleIcon, PlayCircleIcon } from "@heroicons/vue/24/solid";

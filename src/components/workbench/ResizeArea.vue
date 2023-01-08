@@ -15,7 +15,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { ResizeAxis } from "@/api/dto";
+import { ResizeAxis } from "@/backend/dto";
 import { useStateStore } from "@/stores/state"
 import { DragAreaEvent } from "@/components/basic/DragArea.vue";
 import ResizeHandle from "@/components/workbench/ResizeHandle.vue"

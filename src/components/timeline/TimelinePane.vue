@@ -62,11 +62,11 @@
 <script setup lang="ts">
 import { computed, Ref, ref, watch } from "vue"
 import { AdjustmentsHorizontalIcon, ArrowPathIcon, MagnifyingGlassIcon } from "@heroicons/vue/20/solid"
-import { Direction, Sequence as SequenceDTO } from "@/api/dto"
 import {
-panTimeline,
+	panTimeline,
 	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineOffset, setTimelineZoomAmount, zoomInTimeline, zoomInTimelineAround, zoomOutTimeline, zoomOutTimelineAround
-} from "@/api/document"
+} from "@/backend/api"
+import { Direction, Sequence as SequenceDTO } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import { debounceAnimation, isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"

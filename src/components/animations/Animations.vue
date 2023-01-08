@@ -21,8 +21,8 @@
 <script setup lang="ts">
 import { computed, nextTick, Ref, ref, watch } from "vue"
 import { FilmIcon } from "@heroicons/vue/20/solid"
-import { clearSelection, createAnimation, filterAnimations, paste, setAnimationsListOffset } from "@/api/document"
-import { ClipboardManifest } from "@/api/dto"
+import { clearSelection, createAnimation, filterAnimations, paste, setAnimationsListOffset } from "@/backend/api"
+import { ClipboardManifest } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import Animation from "@/components/animations/Animation.vue"
 import Button from "@/components/basic/Button.vue"
