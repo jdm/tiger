@@ -25,8 +25,8 @@ jobs:
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
             src-tauri/target/
-          key: ${{ runner.os }}-cargo-${{ github.ref }}-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-cargo-${{ github.ref }}
+          key: ${{ github.workflow }}-cargo-${{ github.ref }}-${{ github.sha }}
+          restore-keys: ${{ github.workflow }}-cargo-${{ github.ref }}
       - name: Install frontend dependencies
         run: npm install
       - name: Build complete app
