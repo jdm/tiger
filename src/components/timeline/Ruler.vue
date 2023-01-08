@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { computed } from "@vue/reactivity"
 import { scrubTimeline } from "@/api/document"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
@@ -19,10 +19,10 @@ const props = defineProps<{
 
 const emit = defineEmits(["update:scrubbing"]);
 
-const app = useAppStore();
+const state = useStateStore();
 
 const rulerStyle = computed(() => {
-	const zoom = app.currentDocument?.timelineZoomFactor || 1;
+	const zoom = state.currentDocument?.timelineZoomFactor || 1;
 	const tenMsTicks = `${10 * zoom}px 4px`;
 	const hundredMsTicks = `${100 * zoom}px 10px`;
 	const secondTicks = `${1000 * zoom}px 100%`;
@@ -43,7 +43,7 @@ function endScrub(e: DragAreaEvent) {
 
 function updateScrub(event: DragAreaEvent) {
 	const rulerStartX = event.htmlElement.getBoundingClientRect().left;
-	const zoom = app.currentDocument?.timelineZoomFactor || 1;
+	const zoom = state.currentDocument?.timelineZoomFactor || 1;
 	const newTime = Math.max(0, Math.round((event.mouseEvent.clientX - rulerStartX) / zoom));
 	scrubTimeline(newTime);
 }

@@ -41,14 +41,14 @@ import {
 	jumpToNextFrame, jumpToPreviousFrame,
 	play, pause,
 } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { ChevronLeftIcon, ChevronRightIcon } from "@heroicons/vue/20/solid";
 import { BackwardIcon, ForwardIcon, PauseCircleIcon, PlayCircleIcon } from "@heroicons/vue/24/solid";
 
-const app = useAppStore();
+const state = useStateStore();
 
 const togglePlaybackHovered = ref(false);
-const isPlaying = computed(() => !!app.currentDocument?.timelineIsPlaying);
+const isPlaying = computed(() => !!state.currentDocument?.timelineIsPlaying);
 
 function onMouseEnterTogglePlayback() {
 	togglePlaybackHovered.value = true;

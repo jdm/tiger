@@ -6,7 +6,7 @@ use std::time::Duration;
 use tauri::ClipboardManager;
 
 use crate::document::{Command, Document, DocumentResult};
-use crate::dto::{self, AppTrim, ToFileName};
+use crate::dto::{self, StateTrim, ToFileName};
 use crate::export::export_sheet;
 use crate::features::texture_cache;
 use crate::sheet::{Absolute, Sheet};
@@ -15,15 +15,15 @@ use crate::utils::handle::Handle;
 use crate::TigerApp;
 
 impl state::Handle {
-    pub fn mutate<F>(&self, app_trim: AppTrim, operation: F) -> Patch
+    pub fn mutate<F>(&self, state_trim: StateTrim, operation: F) -> Patch
     where
         F: FnOnce(&mut State),
     {
         let mut state = self.0.lock();
 
-        let old_state: dto::App = state.to_dto(app_trim);
+        let old_state: dto::State = state.to_dto(state_trim);
         operation(&mut state);
-        let new_state: dto::App = state.to_dto(app_trim);
+        let new_state: dto::State = state.to_dto(state_trim);
 
         let old_json = serde_json::to_value(old_state);
         let new_json = serde_json::to_value(new_state);
@@ -50,7 +50,7 @@ pub trait Api {
 #[async_trait]
 impl<T: TigerApp + Sync> Api for T {
     fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()> {
-        Ok(self.state().mutate(AppTrim::Full, |state| {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::DeleteFrame(path)).ok();
             }
@@ -75,7 +75,7 @@ impl<T: TigerApp + Sync> Api for T {
         .unwrap()
         {
             Ok(_) => Ok(Patch(Vec::new())),
-            Err(e) => Ok(self.state().mutate(AppTrim::Full, |state| {
+            Err(e) => Ok(self.state().mutate(StateTrim::Full, |state| {
                 state.show_error_message(
                     "Export Error".to_owned(),
                     format!(
@@ -89,7 +89,7 @@ impl<T: TigerApp + Sync> Api for T {
     }
 
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()> {
-        Ok(self.state().mutate(AppTrim::Full, |state| {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ImportFrames(paths)).ok();
             }
@@ -97,7 +97,7 @@ impl<T: TigerApp + Sync> Api for T {
     }
 
     fn new_document(&self, path: PathBuf) -> Result<Patch, ()> {
-        Ok(self.state().mutate(AppTrim::Full, |state| {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
             state.new_document(path);
         }))
     }
@@ -114,7 +114,7 @@ impl<T: TigerApp + Sync> Api for T {
             ));
         }
 
-        Ok(self.state().mutate(AppTrim::Full, |state| {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
             for document in documents {
                 match document {
                     (_, Ok(d)) => {
@@ -137,9 +137,9 @@ impl<T: TigerApp + Sync> Api for T {
 }
 
 #[tauri::command]
-pub fn get_state(state_handle: tauri::State<'_, state::Handle>) -> Result<dto::App, ()> {
+pub fn get_state(state_handle: tauri::State<'_, state::Handle>) -> Result<dto::State, ()> {
     let state = state_handle.0.lock();
-    Ok(state.to_dto(AppTrim::Full))
+    Ok(state.to_dto(StateTrim::Full))
 }
 
 #[tauri::command]
@@ -149,14 +149,14 @@ pub fn show_error_message(
     summary: String,
     details: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         state.show_error_message(title, summary, details);
     }))
 }
 
 #[tauri::command]
 pub fn acknowledge_error(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         state.acknowledge_error();
     }))
 }
@@ -176,7 +176,7 @@ pub fn focus_document(
     state_handle: tauri::State<'_, state::Handle>,
     path: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         state.focus_document(&path).ok();
     }))
 }
@@ -187,7 +187,7 @@ pub fn close_document(
     state_handle: tauri::State<'_, state::Handle>,
     path: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.document_mut(&path) {
             document.request_close();
         }
@@ -203,7 +203,7 @@ pub fn close_current_document(
     window: tauri::Window,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.request_close();
         }
@@ -219,7 +219,7 @@ pub fn close_all_documents(
     window: tauri::Window,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         for document in state.documents_iter_mut() {
             document.request_close();
         }
@@ -235,7 +235,7 @@ pub fn request_exit(
     window: tauri::Window,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         state.request_exit();
         if state.should_exit() {
             window.close().ok();
@@ -245,7 +245,7 @@ pub fn request_exit(
 
 #[tauri::command]
 pub fn cancel_exit(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         state.cancel_exit();
     }))
 }
@@ -265,7 +265,7 @@ pub fn close_without_saving(
     window: tauri::Window,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         let path = state.current_document().map(|d| d.path().to_owned());
         if let Some(path) = path {
             state.close_document(path);
@@ -302,7 +302,7 @@ async fn save_documents(
         .into_iter()
         .map(|r| r.unwrap());
 
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         for (document, result) in documents.iter().zip(results) {
             match result {
                 Ok(_) => {
@@ -392,7 +392,7 @@ pub async fn save_all(
 
 #[tauri::command]
 pub fn undo(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::Undo).ok();
         }
@@ -401,7 +401,7 @@ pub fn undo(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> 
 
 #[tauri::command]
 pub fn redo(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::Redo).ok();
         }
@@ -413,7 +413,7 @@ pub fn cut(
     tauri_app: tauri::AppHandle,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(data) = state.current_document().and_then(|d| d.copy()) {
             if let Ok(serialized) = serde_json::to_string(&data) {
                 let mut clipboard = tauri_app.clipboard_manager();
@@ -433,7 +433,7 @@ pub fn copy(
     tauri_app: tauri::AppHandle,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(data) = state.current_document().and_then(|d| d.copy()) {
             if let Ok(serialized) = serde_json::to_string(&data) {
                 let mut clipboard = tauri_app.clipboard_manager();
@@ -450,7 +450,7 @@ pub fn paste(
     tauri_app: tauri::AppHandle,
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         let clipboard = tauri_app.clipboard_manager();
         if let Ok(Some(serialized)) = clipboard.read_text() {
             if let Ok(data) = serde_json::from_str(&serialized) {
@@ -467,7 +467,7 @@ pub fn set_frames_list_mode(
     state_handle: tauri::State<'_, state::Handle>,
     list_mode: dto::ListMode,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetFramesListMode(list_mode.into()))
@@ -481,7 +481,7 @@ pub fn set_frames_list_offset(
     state_handle: tauri::State<'_, state::Handle>,
     offset: u32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetFramesListOffset(offset))
@@ -495,7 +495,7 @@ pub fn set_hitboxes_list_offset(
     state_handle: tauri::State<'_, state::Handle>,
     offset: u32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetHitboxesListOffset(offset))
@@ -509,7 +509,7 @@ pub fn filter_frames(
     state_handle: tauri::State<'_, state::Handle>,
     search_query: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::FilterFrames(search_query))
@@ -523,7 +523,7 @@ pub fn filter_animations(
     state_handle: tauri::State<'_, state::Handle>,
     search_query: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::FilterAnimations(search_query))
@@ -537,7 +537,7 @@ pub fn set_animations_list_offset(
     state_handle: tauri::State<'_, state::Handle>,
     offset: u32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetAnimationsListOffset(offset))
@@ -553,7 +553,7 @@ pub fn import_frames(app: tauri::AppHandle, paths: Vec<PathBuf>) -> Result<Patch
 
 #[tauri::command]
 pub fn begin_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::BeginRelocateFrames).ok();
         }
@@ -566,7 +566,7 @@ pub fn relocate_frame(
     from: PathBuf,
     to: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::RelocateFrame(from, to))
@@ -577,7 +577,7 @@ pub fn relocate_frame(
 
 #[tauri::command]
 pub fn cancel_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::CancelRelocateFrames).ok();
         }
@@ -586,7 +586,7 @@ pub fn cancel_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> 
 
 #[tauri::command]
 pub fn end_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EndRelocateFrames).ok();
         }
@@ -600,7 +600,7 @@ pub fn delete_frame(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn delete_selected_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::DeleteSelectedFrames).ok();
         }
@@ -609,7 +609,7 @@ pub fn delete_selected_frames(state_handle: tauri::State<'_, state::Handle>) -> 
 
 #[tauri::command]
 pub fn delete_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::DeleteSelection).ok();
         }
@@ -622,7 +622,7 @@ pub fn nudge_selection(
     direction: dto::NudgeDirection,
     large_nudge: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::NudgeSelection(direction.into(), large_nudge))
@@ -637,7 +637,7 @@ pub fn browse_selection(
     direction: dto::BrowseDirection,
     shift: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BrowseSelection(direction.into(), shift))
@@ -651,7 +651,7 @@ pub fn browse_to_end(
     state_handle: tauri::State<'_, state::Handle>,
     shift: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::BrowseToEnd(shift)).ok();
         }
@@ -663,7 +663,7 @@ pub fn browse_to_start(
     state_handle: tauri::State<'_, state::Handle>,
     shift: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::BrowseToStart(shift)).ok();
         }
@@ -672,7 +672,7 @@ pub fn browse_to_start(
 
 #[tauri::command]
 pub fn clear_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ClearSelection).ok();
         }
@@ -686,7 +686,7 @@ pub fn select_frame(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SelectFrame(path, shift, ctrl))
@@ -697,7 +697,7 @@ pub fn select_frame(
 
 #[tauri::command]
 pub fn select_all(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::SelectAll).ok();
         }
@@ -711,7 +711,7 @@ pub fn select_animation(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SelectAnimation(name, shift, ctrl))
@@ -728,7 +728,7 @@ pub fn select_keyframe(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SelectKeyframe(
@@ -749,7 +749,7 @@ pub fn select_hitbox(
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SelectHitbox(name, shift, ctrl))
@@ -760,7 +760,7 @@ pub fn select_hitbox(
 
 #[tauri::command]
 pub fn pan(state_handle: tauri::State<'_, state::Handle>, delta: (f32, f32)) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::Pan(delta.into())).ok();
         }
@@ -769,7 +769,7 @@ pub fn pan(state_handle: tauri::State<'_, state::Handle>, delta: (f32, f32)) -> 
 
 #[tauri::command]
 pub fn center_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::CenterWorkbench).ok();
         }
@@ -778,7 +778,7 @@ pub fn center_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result
 
 #[tauri::command]
 pub fn zoom_in_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ZoomInWorkbench).ok();
         }
@@ -787,7 +787,7 @@ pub fn zoom_in_workbench(state_handle: tauri::State<'_, state::Handle>) -> Resul
 
 #[tauri::command]
 pub fn zoom_out_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ZoomOutWorkbench).ok();
         }
@@ -799,7 +799,7 @@ pub fn zoom_in_workbench_around(
     state_handle: tauri::State<'_, state::Handle>,
     fixed_point: (f32, f32),
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
@@ -813,7 +813,7 @@ pub fn zoom_out_workbench_around(
     state_handle: tauri::State<'_, state::Handle>,
     fixed_point: (f32, f32),
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
@@ -827,7 +827,7 @@ pub fn set_workbench_zoom_factor(
     state_handle: tauri::State<'_, state::Handle>,
     zoom_factor: u32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
@@ -838,7 +838,7 @@ pub fn set_workbench_zoom_factor(
 
 #[tauri::command]
 pub fn reset_workbench_zoom(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ResetWorkbenchZoom).ok();
         }
@@ -847,7 +847,7 @@ pub fn reset_workbench_zoom(state_handle: tauri::State<'_, state::Handle>) -> Re
 
 #[tauri::command]
 pub fn enable_sprite_darkening(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::EnableSpriteDarkening)
@@ -860,7 +860,7 @@ pub fn enable_sprite_darkening(state_handle: tauri::State<'_, state::Handle>) ->
 pub fn disable_sprite_darkening(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DisableSpriteDarkening)
@@ -871,7 +871,7 @@ pub fn disable_sprite_darkening(
 
 #[tauri::command]
 pub fn hide_sprite(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::HideSprite).ok();
         }
@@ -880,7 +880,7 @@ pub fn hide_sprite(state_handle: tauri::State<'_, state::Handle>) -> Result<Patc
 
 #[tauri::command]
 pub fn show_sprite(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ShowSprite).ok();
         }
@@ -889,7 +889,7 @@ pub fn show_sprite(state_handle: tauri::State<'_, state::Handle>) -> Result<Patc
 
 #[tauri::command]
 pub fn hide_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::HideHitboxes).ok();
         }
@@ -898,7 +898,7 @@ pub fn hide_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Pa
 
 #[tauri::command]
 pub fn show_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ShowHitboxes).ok();
         }
@@ -907,7 +907,7 @@ pub fn show_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Pa
 
 #[tauri::command]
 pub fn hide_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::HideOrigin).ok();
         }
@@ -916,7 +916,7 @@ pub fn hide_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patc
 
 #[tauri::command]
 pub fn show_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ShowOrigin).ok();
         }
@@ -925,7 +925,7 @@ pub fn show_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patc
 
 #[tauri::command]
 pub fn create_animation(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::CreateAnimation).ok();
         }
@@ -937,7 +937,7 @@ pub fn edit_animation(
     state_handle: tauri::State<'_, state::Handle>,
     name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EditAnimation(name)).ok();
         }
@@ -949,7 +949,7 @@ pub fn begin_rename_animation(
     state_handle: tauri::State<'_, state::Handle>,
     animation_name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginRenameAnimation(animation_name))
@@ -963,7 +963,7 @@ pub fn begin_rename_hitbox(
     state_handle: tauri::State<'_, state::Handle>,
     hitbox_name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginRenameHitbox(hitbox_name))
@@ -974,7 +974,7 @@ pub fn begin_rename_hitbox(
 
 #[tauri::command]
 pub fn begin_rename_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::BeginRenameSelection).ok();
         }
@@ -983,7 +983,7 @@ pub fn begin_rename_selection(state_handle: tauri::State<'_, state::Handle>) -> 
 
 #[tauri::command]
 pub fn cancel_rename(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::CancelRename).ok();
         }
@@ -995,7 +995,7 @@ pub fn end_rename_animation(
     state_handle: tauri::State<'_, state::Handle>,
     new_name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::EndRenameAnimation(new_name))
@@ -1009,7 +1009,7 @@ pub fn end_rename_hitbox(
     state_handle: tauri::State<'_, state::Handle>,
     new_name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::EndRenameHitbox(new_name))
@@ -1023,7 +1023,7 @@ pub fn delete_animation(
     state_handle: tauri::State<'_, state::Handle>,
     name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DeleteAnimation(name))
@@ -1036,7 +1036,7 @@ pub fn delete_animation(
 pub fn delete_selected_animations(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DeleteSelectedAnimations)
@@ -1050,20 +1050,22 @@ pub fn tick(
     state_handle: tauri::State<'_, state::Handle>,
     delta_time_millis: f64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyCurrentDocument, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::Tick(Duration::from_nanos(
-                    (delta_time_millis * 1_000_000.0) as u64,
-                )))
-                .ok();
-        }
-    }))
+    Ok(
+        state_handle.mutate(StateTrim::OnlyCurrentDocument, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::Tick(Duration::from_nanos(
+                        (delta_time_millis * 1_000_000.0) as u64,
+                    )))
+                    .ok();
+            }
+        }),
+    )
 }
 
 #[tauri::command]
 pub fn play(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::Play).ok();
         }
@@ -1072,7 +1074,7 @@ pub fn play(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> 
 
 #[tauri::command]
 pub fn pause(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::Pause).ok();
         }
@@ -1084,7 +1086,7 @@ pub fn scrub_timeline(
     state_handle: tauri::State<'_, state::Handle>,
     time_millis: u64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
@@ -1095,7 +1097,7 @@ pub fn scrub_timeline(
 
 #[tauri::command]
 pub fn jump_to_animation_start(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::JumpToAnimationStart).ok();
         }
@@ -1104,7 +1106,7 @@ pub fn jump_to_animation_start(state_handle: tauri::State<'_, state::Handle>) ->
 
 #[tauri::command]
 pub fn jump_to_animation_end(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::JumpToAnimationEnd).ok();
         }
@@ -1113,7 +1115,7 @@ pub fn jump_to_animation_end(state_handle: tauri::State<'_, state::Handle>) -> R
 
 #[tauri::command]
 pub fn jump_to_previous_frame(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::JumpToPreviousFrame).ok();
         }
@@ -1122,7 +1124,7 @@ pub fn jump_to_previous_frame(state_handle: tauri::State<'_, state::Handle>) -> 
 
 #[tauri::command]
 pub fn jump_to_next_frame(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::JumpToNextFrame).ok();
         }
@@ -1134,7 +1136,7 @@ pub fn set_snap_keyframe_durations(
     state_handle: tauri::State<'_, state::Handle>,
     snap: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetSnapKeyframeDurations(snap))
@@ -1148,7 +1150,7 @@ pub fn set_snap_keyframes_to_other_keyframes(
     state_handle: tauri::State<'_, state::Handle>,
     snap: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
@@ -1162,7 +1164,7 @@ pub fn set_snap_keyframes_to_multiples_of_duration(
     state_handle: tauri::State<'_, state::Handle>,
     snap: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetSnapKeyframeToMultiplesOfDuration(snap))
@@ -1176,7 +1178,7 @@ pub fn set_keyframe_snapping_base_duration(
     state_handle: tauri::State<'_, state::Handle>,
     duration_millis: u64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeSnappingBaseDuration(
@@ -1189,7 +1191,7 @@ pub fn set_keyframe_snapping_base_duration(
 
 #[tauri::command]
 pub fn zoom_in_timeline(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ZoomInTimeline).ok();
         }
@@ -1198,7 +1200,7 @@ pub fn zoom_in_timeline(state_handle: tauri::State<'_, state::Handle>) -> Result
 
 #[tauri::command]
 pub fn zoom_out_timeline(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ZoomOutTimeline).ok();
         }
@@ -1210,7 +1212,7 @@ pub fn zoom_in_timeline_around(
     state_handle: tauri::State<'_, state::Handle>,
     fixed_point: f32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::ZoomInTimelineAround(Duration::from_secs_f32(
@@ -1226,7 +1228,7 @@ pub fn zoom_out_timeline_around(
     state_handle: tauri::State<'_, state::Handle>,
     fixed_point: f32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::ZoomOutTimelineAround(Duration::from_secs_f32(
@@ -1242,7 +1244,7 @@ pub fn set_timeline_zoom_amount(
     state_handle: tauri::State<'_, state::Handle>,
     amount: f32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetTimelineZoomAmount(amount))
@@ -1253,7 +1255,7 @@ pub fn set_timeline_zoom_amount(
 
 #[tauri::command]
 pub fn reset_timeline_zoom(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::ResetTimelineZoom).ok();
         }
@@ -1265,7 +1267,7 @@ pub fn set_timeline_offset(
     state_handle: tauri::State<'_, state::Handle>,
     offset_millis: f32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetTimelineOffset(Duration::from_secs_f32(
@@ -1281,7 +1283,7 @@ pub fn pan_timeline(
     state_handle: tauri::State<'_, state::Handle>,
     delta: f32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::PanTimeline(delta)).ok();
         }
@@ -1293,7 +1295,7 @@ pub fn set_animation_looping(
     state_handle: tauri::State<'_, state::Handle>,
     is_looping: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetAnimationLooping(is_looping))
@@ -1307,7 +1309,7 @@ pub fn apply_direction_preset(
     state_handle: tauri::State<'_, state::Handle>,
     preset: dto::DirectionPreset,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::ApplyDirectionPreset(preset.into()))
@@ -1321,7 +1323,7 @@ pub fn select_direction(
     state_handle: tauri::State<'_, state::Handle>,
     direction: dto::Direction,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SelectDirection(direction.into()))
@@ -1335,7 +1337,7 @@ pub fn begin_drag_and_drop_frame(
     state_handle: tauri::State<'_, state::Handle>,
     frame: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginDragAndDropFrame(frame))
@@ -1350,7 +1352,7 @@ pub fn drop_frame_on_timeline(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DropFrameOnTimeline(direction.into(), index))
@@ -1361,7 +1363,7 @@ pub fn drop_frame_on_timeline(
 
 #[tauri::command]
 pub fn end_drag_and_drop_frame(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EndDragAndDropFrame).ok();
         }
@@ -1372,7 +1374,7 @@ pub fn end_drag_and_drop_frame(state_handle: tauri::State<'_, state::Handle>) ->
 pub fn delete_selected_keyframes(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DeleteSelectedKeyframes)
@@ -1386,7 +1388,7 @@ pub fn set_keyframe_duration(
     state_handle: tauri::State<'_, state::Handle>,
     duration_millis: u64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeDuration(Duration::from_millis(
@@ -1402,7 +1404,7 @@ pub fn set_keyframe_offset_x(
     state_handle: tauri::State<'_, state::Handle>,
     x: i32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeOffsetX(x))
@@ -1416,7 +1418,7 @@ pub fn set_keyframe_offset_y(
     state_handle: tauri::State<'_, state::Handle>,
     y: i32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetKeyframeOffsetY(y))
@@ -1431,7 +1433,7 @@ pub fn begin_drag_and_drop_keyframe(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
@@ -1446,7 +1448,7 @@ pub fn drop_keyframe_on_timeline(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
@@ -1459,7 +1461,7 @@ pub fn drop_keyframe_on_timeline(
 pub fn end_drag_and_drop_keyframe(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::EndDragAndDropKeyframe)
@@ -1474,7 +1476,7 @@ pub fn begin_drag_keyframe_duration(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
@@ -1488,7 +1490,7 @@ pub fn update_drag_keyframe_duration(
     state_handle: tauri::State<'_, state::Handle>,
     delta_millis: i64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::UpdateDragKeyframeDuration(delta_millis))
@@ -1501,7 +1503,7 @@ pub fn update_drag_keyframe_duration(
 pub fn end_drag_keyframe_duration(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::EndDragKeyframeDuration())
@@ -1516,7 +1518,7 @@ pub fn begin_nudge_keyframe(
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
@@ -1531,7 +1533,7 @@ pub fn update_nudge_keyframe(
     displacement: (i32, i32),
     both_axis: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
@@ -1542,7 +1544,7 @@ pub fn update_nudge_keyframe(
 
 #[tauri::command]
 pub fn end_nudge_keyframe(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EndNudgeKeyframe()).ok();
         }
@@ -1554,7 +1556,7 @@ pub fn create_hitbox(
     state_handle: tauri::State<'_, state::Handle>,
     position: Option<(i32, i32)>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::CreateHitbox(position.map(|p| p.into())))
@@ -1568,7 +1570,7 @@ pub fn delete_hitbox(
     state_handle: tauri::State<'_, state::Handle>,
     name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::DeleteHitbox(name)).ok();
         }
@@ -1579,7 +1581,7 @@ pub fn delete_hitbox(
 pub fn delete_selected_hitboxes(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::DeleteSelectedHitboxes)
@@ -1590,7 +1592,7 @@ pub fn delete_selected_hitboxes(
 
 #[tauri::command]
 pub fn lock_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::LockHitboxes).ok();
         }
@@ -1599,7 +1601,7 @@ pub fn lock_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Pa
 
 #[tauri::command]
 pub fn unlock_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::UnlockHitboxes).ok();
         }
@@ -1611,7 +1613,7 @@ pub fn set_hitbox_position_x(
     state_handle: tauri::State<'_, state::Handle>,
     x: i32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetHitboxPositionX(x))
@@ -1625,7 +1627,7 @@ pub fn set_hitbox_position_y(
     state_handle: tauri::State<'_, state::Handle>,
     y: i32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetHitboxPositionY(y))
@@ -1639,7 +1641,7 @@ pub fn set_hitbox_width(
     state_handle: tauri::State<'_, state::Handle>,
     width: u32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetHitboxWidth(width))
@@ -1653,7 +1655,7 @@ pub fn set_hitbox_height(
     state_handle: tauri::State<'_, state::Handle>,
     height: u32,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetHitboxHeight(height))
@@ -1666,7 +1668,7 @@ pub fn set_hitbox_height(
 pub fn toggle_preserve_aspect_ratio(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::TogglePreserveAspectRatio)
@@ -1680,7 +1682,7 @@ pub fn begin_nudge_hitbox(
     state_handle: tauri::State<'_, state::Handle>,
     name: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginNudgeHitbox(name))
@@ -1695,7 +1697,7 @@ pub fn update_nudge_hitbox(
     displacement: (i32, i32),
     both_axis: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
@@ -1706,7 +1708,7 @@ pub fn update_nudge_hitbox(
 
 #[tauri::command]
 pub fn end_nudge_hitbox(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EndNudgeHitbox).ok();
         }
@@ -1719,7 +1721,7 @@ pub fn begin_resize_hitbox(
     name: String,
     axis: dto::ResizeAxis,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::BeginResizeHitbox(name, axis.into()))
@@ -1734,7 +1736,7 @@ pub fn update_resize_hitbox(
     displacement: (i32, i32),
     preserve_aspect_ratio: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::OnlyWorkbench, |state| {
+    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::UpdateResizeHitbox(
@@ -1748,7 +1750,7 @@ pub fn update_resize_hitbox(
 
 #[tauri::command]
 pub fn end_resize_hitbox(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EndResizeHitbox).ok();
         }
@@ -1762,7 +1764,7 @@ pub async fn export(app: tauri::AppHandle) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn begin_export_as(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::BeginExportAs).ok();
         }
@@ -1774,7 +1776,7 @@ pub fn set_export_template_file(
     state_handle: tauri::State<'_, state::Handle>,
     file: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetExportTemplateFile(file))
@@ -1788,7 +1790,7 @@ pub fn set_export_texture_file(
     state_handle: tauri::State<'_, state::Handle>,
     file: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetExportTextureFile(file))
@@ -1802,7 +1804,7 @@ pub fn set_export_metadata_file(
     state_handle: tauri::State<'_, state::Handle>,
     file: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetExportMetadataFile(file))
@@ -1816,7 +1818,7 @@ pub fn set_export_metadata_paths_root(
     state_handle: tauri::State<'_, state::Handle>,
     directory: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document
                 .process_command(Command::SetExportMetadataPathsRoot(directory))
@@ -1827,7 +1829,7 @@ pub fn set_export_metadata_paths_root(
 
 #[tauri::command]
 pub fn cancel_export_as(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(AppTrim::Full, |state| {
+    Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::CancelExportAs).ok();
         }
@@ -1839,7 +1841,7 @@ pub async fn end_export_as(
     state_handle: tauri::State<'_, state::Handle>,
     texture_cache: tauri::State<'_, texture_cache::Handle>,
 ) -> Result<Patch, ()> {
-    let mut patch = state_handle.mutate(AppTrim::Full, |state| {
+    let mut patch = state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
             document.process_command(Command::EndExportAs).ok();
         }
@@ -1860,7 +1862,7 @@ pub async fn end_export_as(
     .await
     .unwrap();
 
-    let mut additional_patch = state_handle.mutate(AppTrim::Full, |state| {
+    let mut additional_patch = state_handle.mutate(StateTrim::Full, |state| {
         if let Err(e) = result {
             state.show_error_message(
                 "Export Error".to_owned(),

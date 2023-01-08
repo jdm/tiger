@@ -27,15 +27,15 @@
 import { PhotoIcon, PlusIcon, SunIcon, TagIcon  } from "@heroicons/vue/20/solid";
 import { computed, WritableComputedRef } from "vue";
 import { disableSpriteDarkening, enableSpriteDarkening, hideHitboxes, hideOrigin, hideSprite, setWorkbenchZoomFactor, showHitboxes, showOrigin, showSprite } from "@/api/document";
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import FlatMultiSwitch, { FlatMultiSwitchItem } from "@/components/basic/FlatMultiSwitch.vue";
 import FlatToggle from "@/components/basic/FlatToggle.vue"
 import TooltipArea from "@/components/basic/TooltipArea.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const zoomItems = computed(() => {
-	const zoom = app.currentDocument?.workbenchZoom || 8;
+	const zoom = state.currentDocument?.workbenchZoom || 8;
 	return [
 		{ text: "1x", active: zoom == 1, zoomFactor: 1 },
 		{ text: "2x", active: zoom == 2, zoomFactor: 2 },
@@ -54,7 +54,7 @@ function onZoomClicked(item: FlatMultiSwitchItem) {
 }
 
 const spriteDarkening: WritableComputedRef<boolean> = computed({
-	get: () => !app.currentDocument?.darkenSprites,
+	get: () => !state.currentDocument?.darkenSprites,
 	set: (toggled) => {
 		if (toggled) {
 			disableSpriteDarkening();
@@ -65,7 +65,7 @@ const spriteDarkening: WritableComputedRef<boolean> = computed({
 });
 
 const drawSprite: WritableComputedRef<boolean> = computed({
-	get: () => !app.currentDocument?.hideSprite,
+	get: () => !state.currentDocument?.hideSprite,
 	set: (toggled) => {
 		if (toggled) {
 			showSprite();
@@ -76,7 +76,7 @@ const drawSprite: WritableComputedRef<boolean> = computed({
 });
 
 const drawHitboxes: WritableComputedRef<boolean> = computed({
-	get: () => !app.currentDocument?.hideHitboxes,
+	get: () => !state.currentDocument?.hideHitboxes,
 	set: (toggled) => {
 		if (toggled) {
 			showHitboxes();
@@ -87,7 +87,7 @@ const drawHitboxes: WritableComputedRef<boolean> = computed({
 });
 
 const drawOrigin: WritableComputedRef<boolean> = computed({
-	get: () => !app.currentDocument?.hideOrigin,
+	get: () => !state.currentDocument?.hideOrigin,
 	set: (toggled) => {
 		if (toggled) {
 			showOrigin();

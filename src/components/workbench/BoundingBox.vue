@@ -15,9 +15,9 @@
 
 <script setup lang="ts">
 import { computed } from "vue"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const props = defineProps<{
 	position: [number, number],
@@ -25,7 +25,7 @@ const props = defineProps<{
 	colorClasses: string | string[],
 }>();
 
-const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
+const zoom = computed(() => state.currentDocument?.workbenchZoom || 1);
 const scale = computed(() => 1 / zoom.value);
 
 const style = computed(() => {

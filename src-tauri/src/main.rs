@@ -8,7 +8,7 @@ use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, W
 use std::time::Duration;
 use tauri::Manager;
 
-use dto::AppTrim;
+use dto::StateTrim;
 use features::texture_cache;
 use state::State;
 
@@ -207,7 +207,7 @@ fn handle_window_event(event: tauri::GlobalWindowEvent) {
         event
             .window()
             .app_handle()
-            .patch_state(dto::AppTrim::Full, |state| {
+            .patch_state(dto::StateTrim::Full, |state| {
                 state.request_exit();
                 if !state.should_exit() {
                     api.prevent_close();
@@ -229,7 +229,7 @@ fn init_window_shadow(tauri_app: &mut tauri::App) {
 pub trait TigerApp {
     fn state(&self) -> state::Handle;
     fn texture_cache(&self) -> texture_cache::Handle;
-    fn patch_state<F: FnOnce(&mut State)>(&self, app_trim: AppTrim, operation: F);
+    fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F);
     fn replace_state(&self);
 }
 
@@ -242,8 +242,8 @@ impl TigerApp for tauri::App {
         self.handle().texture_cache()
     }
 
-    fn patch_state<F: FnOnce(&mut State)>(&self, app_trim: AppTrim, operation: F) {
-        TigerApp::patch_state(&self.handle(), app_trim, operation)
+    fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F) {
+        TigerApp::patch_state(&self.handle(), state_trim, operation)
     }
 
     fn replace_state(&self) {
@@ -262,12 +262,12 @@ impl TigerApp for tauri::AppHandle {
         texture_cache::Handle::clone(&cache)
     }
 
-    fn patch_state<F>(&self, app_trim: AppTrim, operation: F)
+    fn patch_state<F>(&self, state_trim: StateTrim, operation: F)
     where
         F: FnOnce(&mut State),
     {
         let state_handle = tauri::Manager::state::<state::Handle>(self);
-        let patch = state_handle.mutate(app_trim, operation);
+        let patch = state_handle.mutate(state_trim, operation);
         if !patch.0.is_empty() {
             if let Err(e) = self.emit_all(EVENT_PATCH_STATE, patch) {
                 error!("Error while pushing state patch: {e}");
@@ -278,7 +278,7 @@ impl TigerApp for tauri::AppHandle {
     fn replace_state(&self) {
         let state_handle = tauri::Manager::state::<state::Handle>(self);
         let state = state_handle.0.lock();
-        let new_state = state.to_dto(dto::AppTrim::Full);
+        let new_state = state.to_dto(dto::StateTrim::Full);
         if let Err(e) = self.emit_all(EVENT_REPLACE_STATE, new_state) {
             error!("Error while replacing state: {e}");
         }

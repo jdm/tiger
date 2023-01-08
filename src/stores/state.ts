@@ -1,6 +1,6 @@
 import {
   Animation,
-  AppState,
+  State,
   Frame,
   Hitbox,
   Keyframe,
@@ -10,7 +10,7 @@ import {
 import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
 
-export const useAppStore = defineStore("app", {
+export const useStateStore = defineStore("state", {
   state: () =>
     ({
       documents: [],
@@ -19,7 +19,7 @@ export const useAppStore = defineStore("app", {
       clipboardManifest: null,
       isReleaseBuild: false,
       error: null,
-    } as AppState),
+    } as State),
   actions: {
     patch(patch: Patch) {
       applyPatch(this.$state, patch, false);
@@ -132,5 +132,5 @@ export const useAppStore = defineStore("app", {
 });
 
 if (import.meta.hot) {
-  import.meta.hot.accept(acceptHMRUpdate(useAppStore, import.meta.hot));
+  import.meta.hot.accept(acceptHMRUpdate(useStateStore, import.meta.hot));
 }

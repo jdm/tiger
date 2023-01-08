@@ -23,7 +23,7 @@ import { computed, nextTick, Ref, ref, watch } from "vue"
 import { FilmIcon } from "@heroicons/vue/20/solid"
 import { clearSelection, createAnimation, filterAnimations, paste, setAnimationsListOffset } from "@/api/document"
 import { ClipboardManifest } from "@/api/dto"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import Animation from "@/components/animations/Animation.vue"
 import Button from "@/components/basic/Button.vue"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
@@ -31,21 +31,21 @@ import InputSearch from "@/components/basic/InputSearch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import StatefulScroll from "@/components/basic/StatefulScroll.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 const scrollableElement: Ref<typeof StatefulScroll | null> = ref(null);
 const animationElements: Ref<(typeof Animation)[]> = ref([]);
 
 const contextMenuEntries = computed(() => [
-	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: app.clipboardManifest != ClipboardManifest.Animations },
+	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: state.clipboardManifest != ClipboardManifest.Animations },
 ]);
 
 const scrollPosition =  computed({
-	get: () => app.currentDocument?.animationsListOffset || 0,
+	get: () => state.currentDocument?.animationsListOffset || 0,
 	set: (offset) => setAnimationsListOffset(offset),
 });
 
-watch(() => app.currentDocument?.lastInteractedAnimation, (name) => {
+watch(() => state.currentDocument?.lastInteractedAnimation, (name) => {
 	if (!name) {
 		return;
 	}
@@ -59,11 +59,11 @@ watch(() => app.currentDocument?.lastInteractedAnimation, (name) => {
 });
 
 const visibleAnimations = computed(() => {
-	return app.currentDocument?.sheet.animations.filter((a) => !a.filteredOut);
+	return state.currentDocument?.sheet.animations.filter((a) => !a.filteredOut);
 });
 
 const searchQuery = computed({
-	get: () => app.currentDocument?.animationsFilter || "",
+	get: () => state.currentDocument?.animationsFilter || "",
 	set: filterAnimations,
 });
 

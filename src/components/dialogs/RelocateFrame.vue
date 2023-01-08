@@ -20,11 +20,11 @@ import { computed, Ref, ref } from "vue";
 import { CheckCircleIcon } from "@heroicons/vue/24/solid"
 import { relocateFrame } from "@/api/document";
 import { Frame } from "@/api/dto";
-import { useAppStore } from "@/stores/app";
+import { useStateStore } from "@/stores/state";
 import InputPath from "@/components/basic/InputPath.vue"
 import Thumbnail from "@/components/frames/Thumbnail.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const props = defineProps<{
 	frame: Frame
@@ -33,7 +33,7 @@ const props = defineProps<{
 const hasReplacement = ref(false);
 
 const newLocation = computed({
-	get: () => app.currentDocument?.framesBeingRelocated?.[props.frame.path] || "",
+	get: () => state.currentDocument?.framesBeingRelocated?.[props.frame.path] || "",
 	set: (f) => relocateFrame(props.frame.path, f),
 });
 

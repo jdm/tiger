@@ -1,7 +1,7 @@
 <template>
 	<div class="flex-1 flex flex-col items-stretch min-h-0 p-4 gap-4">
 		<Transition>
-			<div v-if="app.anyFramesMissing" class="-mt-4 -mx-4 overflow-hidden">
+			<div v-if="state.anyFramesMissing" class="-mt-4 -mx-4 overflow-hidden">
 				<div class="w-full flex items-center py-2 pl-4 pr-6 bg-red-600 text-plastic-900 text-sm font-medium">
 					<ExclamationTriangleIcon class="mr-4 w-9 p-1.5 text-red-600 bg-plastic-900 rounded-full" />
 					<div class="grow">Some frames are missing from your computer.</div>
@@ -31,7 +31,7 @@
 import { computed, nextTick, Ref, ref, watch } from "vue"
 import { Bars4Icon, PhotoIcon, Squares2X2Icon } from "@heroicons/vue/20/solid"
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/solid"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { ListMode } from "@/api/dto"
 import { importFrames } from "@/api/local"
 import { beginRelocateFrames, clearSelection, filterFrames,  setFramesListMode, setFramesListOffset } from "@/api/document"
@@ -42,15 +42,15 @@ import PaneInset from "@/components/basic/PaneInset.vue"
 import StatefulScroll from "@/components/basic/StatefulScroll.vue"
 import Frame from "@/components/frames/Frame.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 const scrollableElement: Ref<typeof StatefulScroll | null> = ref(null);
 const frameElements: Ref<(typeof Frame)[]> = ref([]);
 
 const visibleFrames = computed(() => {
-	return app.currentDocument?.sheet.frames.filter((f) => !f.filteredOut);
+	return state.currentDocument?.sheet.frames.filter((f) => !f.filteredOut);
 });
 
-const listMode = computed(() => app.currentDocument?.framesListMode || ListMode.Grid4xN);
+const listMode = computed(() => state.currentDocument?.framesListMode || ListMode.Grid4xN);
 
 const listModes = computed((): MultiSwitchItem[] => {
 	return [
@@ -60,11 +60,11 @@ const listModes = computed((): MultiSwitchItem[] => {
 });
 
 const scrollPosition = computed({
-	get: () => app.currentDocument?.framesListOffset || 0,
+	get: () => state.currentDocument?.framesListOffset || 0,
 	set: setFramesListOffset,
 });
 
-watch(() => app.currentDocument?.lastInteractedFrame, (path) => {
+watch(() => state.currentDocument?.lastInteractedFrame, (path) => {
 	if (!path) {
 		return;
 	}
@@ -82,12 +82,12 @@ function switchListMode(item: MultiSwitchItem) {
 }
 
 const searchQuery = computed({
-	get: () => app.currentDocument?.framesFilter || "",
+	get: () => state.currentDocument?.framesFilter || "",
 	set: filterFrames,
 });
 
 const darkening = computed(() => [
-	...app.anyFramesMissing ? ["brightness-[.4]", "saturate-0"] : [],
+	...state.anyFramesMissing ? ["brightness-[.4]", "saturate-0"] : [],
 ]);
 
 </script>

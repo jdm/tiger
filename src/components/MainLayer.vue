@@ -1,5 +1,5 @@
 <template>
-	<fieldset :disabled="app.activeModalId != null" class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
+	<fieldset :disabled="state.activeModalId != null" class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
 		<AppBar />
 		<div class="flex-1 relative">
 			<div class="absolute inset-0 min-h-0 flex gap-5 p-5">
@@ -32,7 +32,7 @@ import FramesPane from "@/components/frames/FramesPane.vue"
 import KeyframePane from "@/components/keyframe/KeyframePane.vue"
 import TimelinePane from "@/components/timeline/TimelinePane.vue"
 import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 
-const app = useAppStore();
+const state = useStateStore();
 </script>

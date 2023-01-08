@@ -16,12 +16,12 @@
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
 import { Direction } from "@/api/dto"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { beginDragAndDropKeyframe, updateDragKeyframeDuration, selectKeyframe, endDragKeyframeDuration, beginDragKeyframeDuration, endDragAndDropKeyframe, deleteSelectedKeyframes, copy, cut } from "@/api/document"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const props = defineProps<{
 	name: string,
@@ -53,7 +53,7 @@ const dynamicClasses = computed(() => {
 			...(props.dragged ? ["border-dotted", "animate-pulse"] : [])
 		];
 	}
-	if (props.direction == app.currentDocument?.currentSequenceDirection) {
+	if (props.direction == state.currentDocument?.currentSequenceDirection) {
 		return ["text-orange-200", "bg-plastic-900", "border-orange-600"];
 	}
 	return ["text-plastic-500", "bg-plastic-900", "border-plastic-500"];
@@ -68,7 +68,7 @@ function mouseEventToTime(event: MouseEvent) {
 		return 0;
 	}
 	const pixelDelta = event.clientX - el.value.getBoundingClientRect().left;
-	const durationDelta = pixelDelta / (app.currentDocument?.timelineZoomFactor || 1);
+	const durationDelta = pixelDelta / (state.currentDocument?.timelineZoomFactor || 1);
 	return props.startTimeMillis + durationDelta;
 }
 

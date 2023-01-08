@@ -29,30 +29,30 @@
 <script setup lang="ts">
 import { computed, WritableComputedRef } from "vue";
 import { setKeyframeSnappingBaseDuration, setSnapKeyframeDurations, setSnapKeyframesToMultiplesOfDuration, setSnapKeyframesToOtherKeyframes } from "@/api/document";
-import { useAppStore } from "@/stores/app";
+import { useStateStore } from "@/stores/state";
 import Checkbox from "@/components/basic/Checkbox.vue";
 import MenuBackground from "@/components/basic/MenuBackground.vue";
 import MenuSeparator from "@/components/basic/MenuSeparator.vue";
 
-const app = useAppStore();
+const state = useStateStore();
 
 const snappingEnabled: WritableComputedRef<boolean> = computed({
-	get: () => !!app.currentDocument?.snapKeyframeDurations,
+	get: () => !!state.currentDocument?.snapKeyframeDurations,
 	set: setSnapKeyframeDurations,
 });
 
 const snapToKeyframes: WritableComputedRef<boolean> = computed({
-	get: () => !!app.currentDocument?.snapKeyframesToOtherKeyframes,
+	get: () => !!state.currentDocument?.snapKeyframesToOtherKeyframes,
 	set: setSnapKeyframesToOtherKeyframes,
 });
 
 const snapToMultiplesOf: WritableComputedRef<boolean> = computed({
-	get: () => !!app.currentDocument?.snapKeyframesToMultiplesOfDuration,
+	get: () => !!state.currentDocument?.snapKeyframesToMultiplesOfDuration,
 	set: setSnapKeyframesToMultiplesOfDuration,
 });
 
 const snappingBaseDuration: WritableComputedRef<number> = computed({
-	get: () => app.currentDocument?.keyframeSnappingBaseDurationMillis || 0,
+	get: () => state.currentDocument?.keyframeSnappingBaseDurationMillis || 0,
 	set: (n) => setKeyframeSnappingBaseDuration(Number(n)),
 });
 </script>

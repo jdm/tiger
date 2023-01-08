@@ -4,7 +4,7 @@
 			<div class="flex-1 flex gap-2">
 				<PerspectivePicker />
 				<TooltipArea text="Toggle animation looping">
-					<Toggle :toggled="!!app.currentAnimation?.isLooping" @toggled="setAnimationLooping"
+					<Toggle :toggled="!!state.currentAnimation?.isLooping" @toggled="setAnimationLooping"
 						:icon="ArrowPathIcon" />
 				</TooltipArea>
 			</div>
@@ -13,8 +13,8 @@
 			</div>
 			<div class="flex-1 flex gap-2 justify-end items-center">
 				<TooltipArea text="Keyframe snapping">
-					<Toggle :toggled="!!app.currentDocument?.snapKeyframeDurations" @toggled="setSnapKeyframeDurations"
-						:icon="AdjustmentsHorizontalIcon" :canExpand="true">
+					<Toggle :toggled="!!state.currentDocument?.snapKeyframeDurations"
+						@toggled="setSnapKeyframeDurations" :icon="AdjustmentsHorizontalIcon" :canExpand="true">
 						<template #expanded>
 							<SnappingOptions />
 						</template>
@@ -31,7 +31,7 @@
 					<div
 						class="w-36 flex flex-col py-2 gap-1 text-plastic-400 text-xs uppercase font-semibold text-right">
 						<div v-for="entry in sequenceEntries" @click="selectDirection(entry.direction)"
-							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="entry.sequence == app.currentSequence ?
+							class="h-10 ml-4 px-4 inline-flex items-center justify-end cursor-pointer" :class="entry.sequence == state.currentSequence ?
 							'text-plastic-200 bg-plastic-800 rounded-l-md border-y border-t-plastic-900 border-b-plastic-600' : ''">
 							{{ entry.direction }}
 						</div>
@@ -67,7 +67,7 @@ import {
 panTimeline,
 	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineOffset, setTimelineZoomAmount, zoomInTimeline, zoomInTimelineAround, zoomOutTimeline, zoomOutTimelineAround
 } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { debounceAnimation, isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Slider from "@/components/basic/Slider.vue"
@@ -81,7 +81,7 @@ import Ruler from "@/components/timeline/Ruler.vue"
 import Sequence from "@/components/timeline/Sequence.vue"
 import SnappingOptions from "@/components/timeline/SnappingOptions.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const scrollableElement: Ref<HTMLElement | null> = ref(null);
 const scrollableElementWidth = ref(0);
@@ -89,13 +89,13 @@ const scrubbing = ref(false);
 const panning = ref(false);
 const draggingScale = ref(false);
 const isWindowSizeStable = isStable([scrollableElementWidth]);
-const offset = computed(() => app.currentDocument?.timelineOffsetMillis || 0);
-const isPlaying = computed(() => app.currentDocument?.timelineIsPlaying);
+const offset = computed(() => state.currentDocument?.timelineOffsetMillis || 0);
+const isPlaying = computed(() => state.currentDocument?.timelineIsPlaying);
 const zoomAmount = computed({
-	get: () => app.currentDocument ? app.currentDocument?.timelineZoomAmount : 0.5,
+	get: () => state.currentDocument ? state.currentDocument?.timelineZoomAmount : 0.5,
 	set: setTimelineZoomAmount,
 });
-const zoomFactor = computed(() => app.currentDocument?.timelineZoomFactor || 1);
+const zoomFactor = computed(() => state.currentDocument?.timelineZoomFactor || 1);
 const isZoomStable = isStable([zoomFactor]);
 
 type SequenceEntry = {
@@ -104,11 +104,11 @@ type SequenceEntry = {
 };
 
 const sequenceEntries = computed(() => {
-	if (!app.currentAnimation) {
+	if (!state.currentAnimation) {
 		return null;
 	}
 	const orderedDirections = Object.values(Direction);
-	const entries = Object.entries(app.currentAnimation?.sequences).map(([direction, sequence]): SequenceEntry => {
+	const entries = Object.entries(state.currentAnimation?.sequences).map(([direction, sequence]): SequenceEntry => {
 		return { direction: direction as Direction, sequence: sequence }
 	});
 	entries.sort((entryA, entryB) =>
@@ -118,7 +118,7 @@ const sequenceEntries = computed(() => {
 });
 
 const animationDuration = computed(() => {
-	return Math.max(...Object.values(app.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
+	return Math.max(...Object.values(state.currentAnimation?.sequences || {}).map(s => s.durationMillis || 0)) || 0;
 });
 
 const resizeObserver = new ResizeObserver(entries => {
@@ -166,20 +166,20 @@ const animateRuler = debounceAnimation(
 );
 
 const animateSequences = debounceAnimation(
-	[() => app.currentDocument?.isDraggingKeyframeDuration, draggingScale],
-	() => !app.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value,
+	[() => state.currentDocument?.isDraggingKeyframeDuration, draggingScale],
+	() => !state.currentDocument?.isDraggingKeyframeDuration && !draggingScale.value,
 	50
 );
 
 const animatePlayhead = debounceAnimation(
 	[ isPlaying
-	, () => app.currentDocument?.isDraggingKeyframeDuration
+	, () => state.currentDocument?.isDraggingKeyframeDuration
 	, scrubbing
 	, panning
 	, draggingScale
 	],
 	() => !isPlaying.value
-	&& !app.currentDocument?.isDraggingKeyframeDuration
+	&& !state.currentDocument?.isDraggingKeyframeDuration
 	&& !scrubbing.value
 	&& !panning.value
 	&& !draggingScale.value,
@@ -187,14 +187,14 @@ const animatePlayhead = debounceAnimation(
 );
 
 const playheadStyle = computed(() => {
-	const time = app.currentDocument?.timelineClockMillis || 0;
+	const time = state.currentDocument?.timelineClockMillis || 0;
 	return {
 		transitionProperty: animatePlayhead.value ? "left" : "none",
 		left: `${Math.round(zoomFactor.value * (time - offset.value))}px`,
 	};
 });
 
-watch(() => app.currentDocument?.timelineClockMillis || 0, (clock) => {
+watch(() => state.currentDocument?.timelineClockMillis || 0, (clock) => {
 	if (!scrollableElement.value) {
 		return;
 	}

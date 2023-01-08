@@ -2,7 +2,7 @@
 	<div ref="el" @dragenter.prevent="onDragEnter" @dragleave="onDragLeave" @dragover.prevent="onDragOver"
 		@drop="onDrop"
 		class="flex items-center h-10 px-2 bg-plastic-800 border-y border-t-plastic-900 border-b-plastic-600"
-		:class="direction != app.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
+		:class="direction != state.currentDocument?.currentSequenceDirection ? 'rounded-md' : ''">
 		<div ref="keyframesElement" class="relative h-7" :style="sequenceWidth"
 			:class="isDraggingContent ? 'pointer-events-none' : ''">
 			<Keyframe v-for="entry in sequenceEntries" :name="entry.name" :selected="entry.selected"
@@ -19,13 +19,13 @@
 
 <script setup lang="ts">
 import { computed, Ref, ref } from "vue"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { ClipboardManifest, Direction, Sequence as SequenceDTO } from "@/api/dto"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Keyframe from "@/components/timeline/Keyframe.vue"
 import { dropFrameOnTimeline, dropKeyframeOnTimeline, jumpToAnimationEnd, paste, selectDirection } from "@/api/document"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const props = defineProps<{
 	sequence: SequenceDTO,
@@ -51,7 +51,7 @@ const receivingDragAndDrop = ref(false);
 const timeHovered = ref(0);
 
 const contextMenuEntries = computed(() => [
-	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: app.clipboardManifest != ClipboardManifest.Keyframes },
+	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: state.clipboardManifest != ClipboardManifest.Keyframes },
 ]);
 
 const insertionIndex = computed(() => {
@@ -64,8 +64,8 @@ const insertionIndex = computed(() => {
 });
 
 const isDraggingContent = computed(() => {
-	return (app.currentDocument?.framesBeingDragged.length || 0) != 0
-		|| (app.currentDocument?.keyframesBeingDragged.length || 0) != 0;
+	return (state.currentDocument?.framesBeingDragged.length || 0) != 0
+		|| (state.currentDocument?.keyframesBeingDragged.length || 0) != 0;
 });
 
 const sequenceEntries = computed((): SequenceEntry[] => {
@@ -73,19 +73,19 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 	let previewTime = null;
 	let entries: SequenceEntry[] = [];
 
-	if (!app.currentDocument) {
+	if (!state.currentDocument) {
 		return entries;
 	}
 
-	const previewFrameDuration = 40 / app.currentDocument.timelineZoomFactor;
-	const numPreviewFrames = Math.max(app.currentDocument.framesBeingDragged.length, app.currentDocument.keyframesBeingDragged.length);
+	const previewFrameDuration = 40 / state.currentDocument.timelineZoomFactor;
+	const numPreviewFrames = Math.max(state.currentDocument.framesBeingDragged.length, state.currentDocument.keyframesBeingDragged.length);
 
 	for (let [index, keyframe] of props.sequence.keyframes.entries()) {
 		if (receivingDragAndDrop.value && previewTime == null && index == insertionIndex.value) {
 			previewTime = currentTime;
 			currentTime += previewFrameDuration * numPreviewFrames;
 		}
-		const isBeingDragged = keyframe.selected && app.currentDocument.keyframesBeingDragged.length > 0;
+		const isBeingDragged = keyframe.selected && state.currentDocument.keyframesBeingDragged.length > 0;
 		entries.push({
 			name: keyframe.name,
 			selected: keyframe.selected,
@@ -122,7 +122,7 @@ const sequenceEntries = computed((): SequenceEntry[] => {
 });
 
 function entryStyle(entry: SequenceEntry) {
-	const zoom = app.currentDocument?.timelineZoomFactor || 1;
+	const zoom = state.currentDocument?.timelineZoomFactor || 1;
 	return {
 		transitionProperty: props.animate ? "width, left" : "none",
 		left: `${zoom * entry.startTimeMillis}px`,
@@ -131,7 +131,7 @@ function entryStyle(entry: SequenceEntry) {
 }
 
 const sequenceWidth = computed(() => {
-	const zoom = app.currentDocument?.timelineZoomFactor || 1;
+	const zoom = state.currentDocument?.timelineZoomFactor || 1;
 	return {
 		width: `${zoom * (props.sequence.durationMillis || 0)}px`
 	};
@@ -142,7 +142,7 @@ function mouseEventToTime(event: MouseEvent) {
 		return 0;
 	}
 	const pixelDelta = event.clientX - keyframesElement.value.getBoundingClientRect().left;
-	const time = pixelDelta / (app.currentDocument?.timelineZoomFactor || 1);
+	const time = pixelDelta / (state.currentDocument?.timelineZoomFactor || 1);
 	return time;
 }
 
@@ -166,9 +166,9 @@ function onDragOver(event: DragEvent) {
 }
 
 function onDrop() {
-	if ((app.currentDocument?.framesBeingDragged.length || 0) > 0) {
+	if ((state.currentDocument?.framesBeingDragged.length || 0) > 0) {
 		dropFrameOnTimeline(props.direction, insertionIndex.value);
-	} else if ((app.currentDocument?.keyframesBeingDragged.length || 0) > 0) {
+	} else if ((state.currentDocument?.keyframesBeingDragged.length || 0) > 0) {
 		dropKeyframeOnTimeline(props.direction, insertionIndex.value);
 	}
 	receivingDragAndDrop.value = false;

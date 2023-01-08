@@ -16,14 +16,14 @@
 <script setup lang="ts">
 import { computed, CSSProperties, ref, Ref } from "vue"
 import { Direction, Keyframe } from "@/api/dto"
-import { useAppStore } from "@/stores/app"
+import { useSpriteStore } from "@/stores/sprite"
+import { useStateStore } from "@/stores/state"
 import { beginNudgeKeyframe, endNudgeKeyframe, pan, selectKeyframe, updateNudgeKeyframe } from "@/api/document"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"
-import { useSpriteStore } from "@/stores/sprite"
 
-const app = useAppStore();
 const sprite = useSpriteStore();
+const state = useStateStore();
 
 const props = defineProps<{
 	keyframe: Keyframe,
@@ -36,9 +36,9 @@ const hovered = ref(false);
 const hasImage = ref(false);
 const frameSize: Ref<[number, number] | null> = ref(null);
 
-const isActiveFrame = computed(() => props.keyframe == app.currentKeyframe);
-const canInteract = computed(() => !app.currentDocument?.timelineIsPlaying && (isActiveFrame.value || props.keyframe.selected) && frameSize.value);
-const drawBoundingBox = computed(() => !app.currentDocument?.timelineIsPlaying && (isActiveFrame.value || props.keyframe.selected));
+const isActiveFrame = computed(() => props.keyframe == state.currentKeyframe);
+const canInteract = computed(() => !state.currentDocument?.timelineIsPlaying && (isActiveFrame.value || props.keyframe.selected) && frameSize.value);
+const drawBoundingBox = computed(() => !state.currentDocument?.timelineIsPlaying && (isActiveFrame.value || props.keyframe.selected));
 
 const position = computed(() => [
 	-Math.floor((frameSize.value?.[0] || 0) / 2) + props.keyframe.offset[0],
@@ -48,7 +48,7 @@ const position = computed(() => [
 const frameClass = computed(() => {
 	return [
 		(hasImage.value && isActiveFrame.value) ? "opacity-100" : "opacity-0",
-		...(app.currentDocument?.darkenSprites ? ["saturate-50", "brightness-50", "contrast-125"] : []),
+		...(state.currentDocument?.darkenSprites ? ["saturate-50", "brightness-50", "contrast-125"] : []),
 	];
 });
 
@@ -66,8 +66,8 @@ const frameStyle = computed(() => {
 
 const showHover = computed(() => {
 	return hovered.value
-		&& (app.currentDocument?.hitboxesBeingNudged || []).length == 0
-		&& (app.currentDocument?.hitboxesBeingResized || []).length == 0
+		&& (state.currentDocument?.hitboxesBeingNudged || []).length == 0
+		&& (state.currentDocument?.hitboxesBeingResized || []).length == 0
 		;
 });
 

@@ -14,7 +14,7 @@ use crate::{
 pub struct TigerAppMock {
     state: state::Handle,
     texture_cache: texture_cache::Handle,
-    client_state: Arc<Mutex<dto::App>>,
+    client_state: Arc<Mutex<dto::State>>,
 }
 
 impl TigerAppMock {
@@ -24,7 +24,7 @@ impl TigerAppMock {
         let app = Self {
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
-            client_state: Arc::new(Mutex::new(State::default().to_dto(dto::AppTrim::Full))),
+            client_state: Arc::new(Mutex::new(State::default().to_dto(dto::StateTrim::Full))),
         };
         app.texture_cache.init(app.clone(), Self::PERIOD);
         features::missing_textures::init(app.clone(), Self::PERIOD);
@@ -35,7 +35,7 @@ impl TigerAppMock {
         std::thread::sleep(2 * Self::PERIOD);
     }
 
-    pub fn client_state(&self) -> dto::App {
+    pub fn client_state(&self) -> dto::State {
         self.client_state.lock().clone()
     }
 
@@ -77,15 +77,15 @@ impl TigerApp for TigerAppMock {
         self.texture_cache.clone()
     }
 
-    fn patch_state<F: FnOnce(&mut State)>(&self, app_trim: dto::AppTrim, operation: F) {
+    fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: dto::StateTrim, operation: F) {
         let state_handle = self.state();
-        let patch = state_handle.mutate(app_trim, operation);
+        let patch = state_handle.mutate(state_trim, operation);
         self.apply_patch(patch);
     }
 
     fn replace_state(&self) {
         let state_handle = self.state();
         let state = state_handle.0.lock();
-        *self.client_state.lock() = state.to_dto(dto::AppTrim::Full);
+        *self.client_state.lock() = state.to_dto(dto::StateTrim::Full);
     }
 }

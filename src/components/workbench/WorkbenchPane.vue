@@ -1,8 +1,8 @@
 <template>
 	<Pane class="overflow-hidden">
 		<PaneTabList>
-			<PaneTab :closeable="true" v-for="document in app.documents" @select="focusDocument(document.path)"
-				@close="closeDocument(document.path)" :selected="document.path == app.currentDocumentPath">
+			<PaneTab :closeable="true" v-for="document in state.documents" @select="focusDocument(document.path)"
+				@close="closeDocument(document.path)" :selected="document.path == state.currentDocumentPath">
 				{{document.name + (document.hasUnsavedChanges ? "*" : "") }}</PaneTab>
 		</PaneTabList>
 		<div class="relative flex-1 overflow-hidden pointer-events-none" ref="drawingArea">
@@ -27,15 +27,15 @@
 			<DragArea :buttons="['right']" active-cursor="cursor-move" @drag-update="updatePanning" @click="onClick"
 				class="flex-1 graph-paper h-full pointer-events-auto transition-all" :style="graphPaperStyle" />
 			<div class="absolute inset-0 transition-transform" :style="contentTransform">
-				<Frame v-if="!app.currentDocument?.hideSprite" v-for="k in allAnimationKeyframes" :key="k.keyframe.key"
-					:keyframe="k.keyframe" :direction="k.direction" :index="k.index" />
-				<Hitbox v-if="!app.currentDocument?.hideHitboxes" v-for="hitbox in sortedHitboxes" :key="hitbox.key"
+				<Frame v-if="!state.currentDocument?.hideSprite" v-for="k in allAnimationKeyframes"
+					:key="k.keyframe.key" :keyframe="k.keyframe" :direction="k.direction" :index="k.index" />
+				<Hitbox v-if="!state.currentDocument?.hideHitboxes" v-for="hitbox in sortedHitboxes" :key="hitbox.key"
 					:hitbox="hitbox" />
 			</div>
-			<Origin v-if="!app.currentDocument?.hideOrigin" class="absolute inset-0 z-30 transition-all"
+			<Origin v-if="!state.currentDocument?.hideOrigin" class="absolute inset-0 z-30 transition-all"
 				:style="originTransform" />
 			<div class="absolute right-0 bottom-0 p-6 text-4xl font-bold text-neutral-600">
-				{{ app.currentAnimation?.name }}
+				{{ state.currentAnimation?.name }}
 			</div>
 
 			<Toolbar class="absolute top-6 right-6 z-[70] pointer-events-auto" />
@@ -49,7 +49,7 @@ import { computed, Ref, ref } from "@vue/reactivity"
 import { Direction, Keyframe, Hitbox as HitboxDTO } from "@/api/dto"
 import { closeDocument, focusDocument } from "@/api/app"
 import { clearSelection, pan, zoomInWorkbenchAround, zoomOutWorkbenchAround } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import Pane from "@/components/basic/Pane.vue"
@@ -60,11 +60,11 @@ import Hitbox from "@/components/workbench/Hitbox.vue"
 import Origin from "@/components/workbench/Origin.vue"
 import Toolbar from "@/components/workbench/Toolbar.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 const drawingArea: Ref<HTMLElement | null> = ref(null);
 const drawingAreaHalfSize = ref([0, 0]);
-const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
-const workbenchOffset = computed(() => app.currentDocument?.workbenchOffset || [0, 0]);
+const zoom = computed(() => state.currentDocument?.workbenchZoom || 1);
+const workbenchOffset = computed(() => state.currentDocument?.workbenchOffset || [0, 0]);
 const isZoomStable = isStable([zoom]);
 
 const resizeObserver = new ResizeObserver(entries => {
@@ -120,8 +120,8 @@ const contentTransform = computed(() => {
 
 const allAnimationKeyframes = computed((): { direction: Direction, index: number, keyframe: Keyframe }[] => {
 	let keyframes = [];
-	for (const direction in app.currentAnimation?.sequences) {
-		for (const [index, keyframe] of (app.currentAnimation?.sequences[direction as Direction].keyframes.entries()) || []) {
+	for (const direction in state.currentAnimation?.sequences) {
+		for (const [index, keyframe] of (state.currentAnimation?.sequences[direction as Direction].keyframes.entries()) || []) {
 			keyframes.push({
 				direction: direction as Direction,
 				index: index,
@@ -133,10 +133,10 @@ const allAnimationKeyframes = computed((): { direction: Direction, index: number
 });
 
 const sortedHitboxes = computed((): HitboxDTO[] => {
-	if (!app.currentKeyframe) {
+	if (!state.currentKeyframe) {
 		return [];
 	}
-	let hitboxes = [...app.currentKeyframe.hitboxes];
+	let hitboxes = [...state.currentKeyframe.hitboxes];
 	hitboxes.sort((a, b) => {
 		const areaA = a.size[0] * a.size[1];
 		const areaB = b.size[0] * b.size[1];

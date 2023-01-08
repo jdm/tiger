@@ -6,7 +6,7 @@
 		<div class="flex-1 flex flex-col min-h-0 p-4 gap-4">
 			<div class="w-full flex gap-2 items-center">
 				<TooltipArea text="Lock hitboxes">
-					<Toggle :toggled="!!app.currentDocument?.lockHitboxes" @toggled="onToggleLockHitboxes"
+					<Toggle :toggled="!!state.currentDocument?.lockHitboxes" @toggled="onToggleLockHitboxes"
 						:icon="LockClosedIcon" />
 				</TooltipArea>
 				<div class="flex-1 flex justify-end">
@@ -18,7 +18,7 @@
 					class="p-4 h-full styled-scrollbars" @click="clearSelection"
 					@contextmenu.stop.prevent="onOpenContextMenu">
 					<div class="flex flex-col">
-						<Hitbox ref="hitboxElements" v-for="hitbox in app.currentKeyframe?.hitboxes" :hitbox="hitbox"
+						<Hitbox ref="hitboxElements" v-for="hitbox in state.currentKeyframe?.hitboxes" :hitbox="hitbox"
 							:key="hitbox.key" />
 					</div>
 					<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
@@ -33,7 +33,7 @@ import { computed, nextTick, Ref, ref, watch } from "vue";
 import { LockClosedIcon, TagIcon } from "@heroicons/vue/20/solid";
 import { clearSelection, createHitbox, lockHitboxes, paste, setHitboxesListOffset, unlockHitboxes } from "@/api/document";
 import { ClipboardManifest } from "@/api/dto";
-import { useAppStore } from "@/stores/app";
+import { useStateStore } from "@/stores/state";
 import Button from "@/components/basic/Button.vue"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Pane from "@/components/basic/Pane.vue"
@@ -44,13 +44,13 @@ import StatefulScroll from "@/components/basic/StatefulScroll.vue"
 import Toggle from "@/components/basic/Toggle.vue"
 import TooltipArea from "@/components/basic/TooltipArea.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 const scrollableElement: Ref<typeof StatefulScroll | null> = ref(null);
 const hitboxElements: Ref<(typeof Hitbox)[]> = ref([]);
 
 const contextMenuEntries = computed(() => [
-	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: app.clipboardManifest != ClipboardManifest.Hitboxes },
+	{ name: "Paste", shortcut: "Ctrl+V", action: paste, disabled: state.clipboardManifest != ClipboardManifest.Hitboxes },
 ]);
 
 function onToggleLockHitboxes(toggled: boolean) {
@@ -66,11 +66,11 @@ function onAddClicked() {
 }
 
 const scrollPosition =  computed({
-	get: () => app.currentDocument?.hitboxesListOffset || 0,
+	get: () => state.currentDocument?.hitboxesListOffset || 0,
 	set: (offset) => setHitboxesListOffset(offset),
 });
 
-watch(() => app.currentDocument?.lastInteractedHitbox, (name) => {
+watch(() => state.currentDocument?.lastInteractedHitbox, (name) => {
 	if (!name) {
 		return;
 	}

@@ -19,7 +19,7 @@ import { computed, Ref, ref, watch } from "vue"
 import { PencilSquareIcon, TagIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { Hitbox as HitboxDTO } from "@/api/dto"
 import { beginRenameHitbox, cancelRename, copy, cut, deleteHitbox, deleteSelectedHitboxes, endRenameHitbox, selectHitbox } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
@@ -43,8 +43,8 @@ const contextMenuEntries = [
 	{ name: "Delete", shortcut: "Del", action: deleteSelectedHitboxes },
 ];
 
-const app = useAppStore();
-const renaming = computed(() => app.currentDocument?.hitboxBeingRenamed == props.hitbox.name);
+const state = useStateStore();
+const renaming = computed(() => state.currentDocument?.hitboxBeingRenamed == props.hitbox.name);
 watch(renaming, (to, from) => {
 	if (to) {
 		newName.value = props.hitbox.name;

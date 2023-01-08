@@ -7,10 +7,10 @@ import { computed } from "vue"
 import Select, { SelectOption } from "@/components/basic/Select.vue"
 import { DirectionPreset } from "@/api/dto"
 import { applyDirectionPreset } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 
-const app = useAppStore();
-const currentPreset = computed(() => app.currentAnimation?.directionPreset);
+const state = useStateStore();
+const currentPreset = computed(() => state.currentAnimation?.directionPreset);
 
 const options = computed((): SelectOption[] => {
 	return [

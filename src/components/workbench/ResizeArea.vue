@@ -16,7 +16,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { ResizeAxis } from "@/api/dto";
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { DragAreaEvent } from "@/components/basic/DragArea.vue";
 import ResizeHandle from "@/components/workbench/ResizeHandle.vue"
 
@@ -40,8 +40,8 @@ const emit =
 		(e: "dragEnd", event: DragAreaEvent): void
 	}>();
 
-const app = useAppStore();
-const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
+const state = useStateStore();
+const zoom = computed(() => state.currentDocument?.workbenchZoom || 1);
 
 const handles = computed(() => [
 	{ axis: ResizeAxis.NW, tx:0, ty:0 },

@@ -34,7 +34,7 @@ import {
   closeCurrentDocument,
   saveAll,
 } from "@/api/app";
-import { useAppStore } from "@/stores/app";
+import { useStateStore } from "@/stores/state";
 import { BrowseDirection, NudgeDirection } from "@/api/dto";
 
 function onKeyDown(event: KeyboardEvent) {
@@ -45,7 +45,7 @@ function onKeyDown(event: KeyboardEvent) {
     return;
   }
 
-  const app = useAppStore();
+  const state = useStateStore();
 
   if (event.ctrlKey) {
     if (event.key == "n") {
@@ -60,7 +60,7 @@ function onKeyDown(event: KeyboardEvent) {
       }
     } else if (event.key == "S") {
       event.preventDefault();
-      saveAs(app.currentDocumentPath);
+      saveAs(state.currentDocumentPath);
     } else if (event.key == "e") {
       doExport();
     } else if (event.key == "E") {
@@ -117,7 +117,7 @@ function onKeyDown(event: KeyboardEvent) {
     if (event.key == " ") {
       if (!isActiveElementKeyboardFriendly) {
         event.preventDefault();
-        if (app.currentDocument?.timelineIsPlaying) {
+        if (state.currentDocument?.timelineIsPlaying) {
           pause();
         } else {
           play();
@@ -148,13 +148,13 @@ function onKeyDown(event: KeyboardEvent) {
         event.preventDefault();
       }
     } else if (event.key == "Escape") {
-      if (app.error) {
+      if (state.error) {
         acknowledgeError();
-      } else if (app.currentDocument?.wasCloseRequested) {
+      } else if (state.currentDocument?.wasCloseRequested) {
         cancelExit();
-      } else if (app.currentDocument?.framesBeingRelocated) {
+      } else if (state.currentDocument?.framesBeingRelocated) {
         cancelRelocateFrames();
-      } else if (app.currentDocument?.exportSettingsBeingEdited) {
+      } else if (state.currentDocument?.exportSettingsBeingEdited) {
         cancelExportAs();
       }
     }

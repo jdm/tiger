@@ -28,18 +28,18 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { setHitboxPositionX, setHitboxPositionY, setHitboxWidth, setHitboxHeight, togglePreserveAspectRatio } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import { LinkIcon } from "@heroicons/vue/20/solid"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import DetailKey from "@/components/details/DetailKey.vue"
 import DetailValueNumber from "@/components/details/DetailValueNumber.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
-const preserveAR = computed(() => !!app.currentDocument?.preserveAspectRatio);
-const xValues = computed(() => app.selectedHitboxes?.map(h => h.topLeft[0]) || []);
-const yValues = computed(() => app.selectedHitboxes?.map(h => h.topLeft[1]) || []);
-const widthValues = computed(() => app.selectedHitboxes?.map(h => h.size[0]) || []);
-const heightValues = computed(() => app.selectedHitboxes?.map(h => h.size[1]) || []);
+const preserveAR = computed(() => !!state.currentDocument?.preserveAspectRatio);
+const xValues = computed(() => state.selectedHitboxes?.map(h => h.topLeft[0]) || []);
+const yValues = computed(() => state.selectedHitboxes?.map(h => h.topLeft[1]) || []);
+const widthValues = computed(() => state.selectedHitboxes?.map(h => h.size[0]) || []);
+const heightValues = computed(() => state.selectedHitboxes?.map(h => h.size[1]) || []);
 
 </script>

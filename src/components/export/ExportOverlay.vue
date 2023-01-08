@@ -97,16 +97,16 @@ import { computed, ref } from "vue"
 import { BookOpenIcon } from "@heroicons/vue/24/outline"
 import { ExportSettingsError } from "@/api/dto"
 import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import Button from "@/components/basic/Button.vue"
 import InputError from "@/components/basic/InputError.vue"
 import InputField from "@/components/basic/InputField.vue"
 import InputPath from "@/components/basic/InputPath.vue"
 import ScreenCover from "@/components/basic/ScreenCover.vue"
 
-const app = useAppStore();
-const settings = computed(() => app.currentDocument?.exportSettingsBeingEdited);
-const validation = computed(() => app.currentDocument?.exportSettingsValidation);
+const state = useStateStore();
+const settings = computed(() => state.currentDocument?.exportSettingsBeingEdited);
+const validation = computed(() => state.currentDocument?.exportSettingsValidation);
 
 const textureFile = computed({
 	get: () => settings.value?.textureFile || "",

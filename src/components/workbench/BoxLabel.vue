@@ -18,7 +18,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { useAppStore } from "@/stores/app";
+import { useStateStore } from "@/stores/state";
 
 const props = defineProps<{
 	color: "blue" | "pink",
@@ -28,8 +28,8 @@ const props = defineProps<{
 	text: string,
 }>();
 
-const app = useAppStore();
-const zoom = computed(() => app.currentDocument?.workbenchZoom || 1);
+const state = useStateStore();
+const zoom = computed(() => state.currentDocument?.workbenchZoom || 1);
 
 const scale = computed(() => {
 	const w = zoom.value * props.size[0];

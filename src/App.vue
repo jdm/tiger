@@ -9,26 +9,26 @@
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
 import { onMounted, onUnmounted, watch } from "vue"
-import { AppState, Patch, TextureInvalidationEvent, } from "@/api/dto"
+import { State, Patch, TextureInvalidationEvent, } from "@/api/dto"
 import { tick } from "@/api/document"
-import { useAppStore } from "@/stores/app"
 import { useDevStore } from "@/stores/dev"
 import { useSpriteStore } from "@/stores/sprite"
+import { useStateStore } from "@/stores/state"
 import { registerKeyboardShortcuts, unregisterKeyboardShortcuts } from "@/utils/keyboard"
 import FloatingLayer from "@/components/basic/FloatingLayer.vue"
 import MainLayer from "@/components/MainLayer.vue"
 import ModalLayer from "@/components/ModalLayer.vue"
 
-const app = useAppStore();
 const dev = useDevStore();
 const sprite = useSpriteStore();
+const state = useStateStore();
 
 onMounted(() => {
   listen("patch-state", event => {
-    app.patch(event.payload as Patch);
+    state.patch(event.payload as Patch);
   });
   listen("replace-state", event => {
-    app.$state = event.payload as AppState;
+    state.$state = event.payload as State;
   });
   listen("invalidate-texture", event => {
     const invalidationEvent = event.payload as TextureInvalidationEvent;
@@ -47,12 +47,12 @@ async function runTick(timestamp: number) {
     await tick(timestamp - previousTimestamp);
   }
   previousTimestamp = timestamp;
-  if (app.currentDocument?.timelineIsPlaying) {
+  if (state.currentDocument?.timelineIsPlaying) {
     window.requestAnimationFrame(runTick);
   }
 }
 
-watch(() => app.currentDocument?.timelineIsPlaying, (isPlaying) => {
+watch(() => state.currentDocument?.timelineIsPlaying, (isPlaying) => {
   if (isPlaying) {
     previousTimestamp = null;
     window.requestAnimationFrame(runTick);

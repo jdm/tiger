@@ -1,25 +1,25 @@
 <template>
 	<div class="pointer-events-none">
-		<ScreenCover :visible="app.activeModalId != null" />
+		<ScreenCover :visible="state.activeModalId != null" />
 		<Transition name="slide-fade">
-			<div v-if="app.activeModalId" :key="app.activeModalId"
+			<div v-if="state.activeModalId" :key="state.activeModalId"
 				class="absolute inset-0 pointer-events-auto flex items-center justify-center">
-				<ErrorDialog v-if="app.error" :error="app.error" />
-				<UnsavedChangesDialog v-else-if="app.currentDocument?.wasCloseRequested" />
-				<RelocateFramesDialog v-else-if="!!app.currentDocument?.framesBeingRelocated" />
+				<ErrorDialog v-if="state.error" :error="state.error" />
+				<UnsavedChangesDialog v-else-if="state.currentDocument?.wasCloseRequested" />
+				<RelocateFramesDialog v-else-if="!!state.currentDocument?.framesBeingRelocated" />
 			</div>
 		</Transition>
 	</div>
 </template>
 
 <script setup lang="ts">
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import ScreenCover from "@/components/basic/ScreenCover.vue"
 import ErrorDialog from "@/components/dialogs/ErrorDialog.vue"
 import RelocateFramesDialog from "@/components/dialogs/RelocateFramesDialog.vue"
 import UnsavedChangesDialog from "@/components/dialogs/UnsavedChangesDialog.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 </script>
 
 <style scoped>

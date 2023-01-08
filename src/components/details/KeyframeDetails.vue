@@ -19,17 +19,17 @@
 <script setup lang="ts">
 import { computed } from "vue"
 import { setKeyframeDuration, setKeyframeOffsetX, setKeyframeOffsetY } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import DetailKey from "@/components/details/DetailKey.vue"
 import DetailValueNumber from "@/components/details/DetailValueNumber.vue"
 import DetailValueString from "@/components/details/DetailValueString.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
-const frameValues = computed(() => app.selectedKeyframes?.map(keyframe => keyframe.name) || []);
-const durationValues = computed(() => app.selectedKeyframes?.map(keyframe => keyframe.durationMillis) || []);
-const xValues = computed(() => app.selectedKeyframes?.map(keyframe => keyframe.offset[0]) || []);
-const yValues = computed(() => app.selectedKeyframes?.map(keyframe => keyframe.offset[1]) || []);
+const frameValues = computed(() => state.selectedKeyframes?.map(keyframe => keyframe.name) || []);
+const durationValues = computed(() => state.selectedKeyframes?.map(keyframe => keyframe.durationMillis) || []);
+const xValues = computed(() => state.selectedKeyframes?.map(keyframe => keyframe.offset[0]) || []);
+const yValues = computed(() => state.selectedKeyframes?.map(keyframe => keyframe.offset[1]) || []);
 
 </script>

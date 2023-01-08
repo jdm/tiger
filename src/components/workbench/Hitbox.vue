@@ -5,7 +5,7 @@
 		<BoxLabel :text="hitbox.name" :position="hitbox.topLeft" :size="hitbox.size"
 			:color="hitbox.selected ? 'blue' : 'pink'" :hovered="showHover"
 			:class="hitbox.selected ? 'z-[51]' : 'z-[31]'" />
-		<DragArea v-if=" !app.currentDocument?.timelineIsPlaying && !app.currentDocument?.lockHitboxes"
+		<DragArea v-if=" !state.currentDocument?.timelineIsPlaying && !state.currentDocument?.lockHitboxes"
 			:buttons="['left', 'right']" active-cursor="cursor-move"
 			:inactive-cursor="hitbox.selected ? 'cursor-move' : 'cursor-pointer'" @mouseenter="onMouseEnter"
 			@mouseleave="onMouseLeave" @drag-start="startDrag" @drag-end="endDrag" @drag-update="updateDrag"
@@ -20,13 +20,13 @@
 import { computed, ref } from "vue"
 import { Hitbox } from "@/api/dto"
 import { beginNudgeHitbox, beginResizeHitbox, endNudgeHitbox, endResizeHitbox, pan, selectHitbox, updateNudgeHitbox, updateResizeHitbox } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
 import BoundingBox from "@/components/workbench/BoundingBox.vue"
 import BoxLabel from "@/components/workbench/BoxLabel.vue"
 import ResizeArea, { ResizeEvent } from "@/components/workbench/ResizeArea.vue"
 
-const app = useAppStore();
+const state = useStateStore();
 
 const props = defineProps<{
 	hitbox: Hitbox,
@@ -35,8 +35,8 @@ const props = defineProps<{
 const hovered = ref(false);
 const showHover =computed(() => {
 	return hovered.value
-		&& (app.currentDocument?.hitboxesBeingNudged || []).length == 0
-		&& (app.currentDocument?.hitboxesBeingResized || []).length == 0;
+		&& (state.currentDocument?.hitboxesBeingNudged || []).length == 0
+		&& (state.currentDocument?.hitboxesBeingResized || []).length == 0;
 });
 
 const positionStyle = computed(() => {

@@ -3,7 +3,7 @@ use std::time::Duration;
 use tauri::ClipboardManager;
 
 use crate::document::clipboard_manifest;
-use crate::dto::AppTrim;
+use crate::dto::StateTrim;
 use crate::TigerApp;
 
 pub fn init(tauri_app: &tauri::App) {
@@ -37,7 +37,7 @@ fn update_clipboard_manifest(app_handle: &tauri::AppHandle) {
         }
     }
 
-    app_handle.patch_state(AppTrim::NoDocuments, |state| {
+    app_handle.patch_state(StateTrim::NoDocuments, |state| {
         state.set_clipboard_manifest(new_manifest);
     });
 }

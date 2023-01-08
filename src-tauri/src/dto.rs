@@ -8,11 +8,11 @@ use crate::document::{self};
 use crate::sheet::{self, Paths};
 use crate::state;
 
-// Typescript: @/stores/app
+// Typescript: @/stores/state
 
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct App {
+pub struct State {
     pub documents: Vec<Document>,
     pub current_document_path: Option<PathBuf>,
     pub recent_document_paths: Vec<RecentDocument>,
@@ -240,7 +240,7 @@ pub struct ExportSettingsValidation {
 }
 
 #[derive(Clone, Copy)]
-pub enum AppTrim {
+pub enum StateTrim {
     Full,
     OnlyCurrentDocument,
     OnlyWorkbench,
@@ -286,19 +286,21 @@ impl<T: AsRef<Path>> ToFileName for T {
 }
 
 impl state::State {
-    pub fn to_dto(&self, trim: AppTrim) -> App {
-        App {
+    pub fn to_dto(&self, trim: StateTrim) -> State {
+        State {
             documents: self
                 .documents_iter()
                 .map(|document| {
                     let is_current = |path| Some(path) == self.current_document().map(|d| d.path());
                     let doc_trim = match (trim, document.path()) {
-                        (AppTrim::Full, _) => DocumentTrim::Full,
-                        (AppTrim::OnlyCurrentDocument, p) if is_current(p) => DocumentTrim::Full,
-                        (AppTrim::OnlyWorkbench, p) if is_current(p) => DocumentTrim::OnlyWorkbench,
-                        (AppTrim::OnlyCurrentDocument, _) => DocumentTrim::Empty,
-                        (AppTrim::OnlyWorkbench, _) => DocumentTrim::Empty,
-                        (AppTrim::NoDocuments, _) => DocumentTrim::Empty,
+                        (StateTrim::Full, _) => DocumentTrim::Full,
+                        (StateTrim::OnlyCurrentDocument, p) if is_current(p) => DocumentTrim::Full,
+                        (StateTrim::OnlyWorkbench, p) if is_current(p) => {
+                            DocumentTrim::OnlyWorkbench
+                        }
+                        (StateTrim::OnlyCurrentDocument, _) => DocumentTrim::Empty,
+                        (StateTrim::OnlyWorkbench, _) => DocumentTrim::Empty,
+                        (StateTrim::NoDocuments, _) => DocumentTrim::Empty,
                     };
                     document.to_dto(doc_trim)
                 })
@@ -717,7 +719,7 @@ mod test {
         let mut state = state::State::default();
         state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
         state.open_document(document::Document::open("test-data/flame.tiger").unwrap());
-        let dto = state.to_dto(AppTrim::Full);
+        let dto = state.to_dto(StateTrim::Full);
         assert_eq!(dto.documents.len(), 2);
         assert!(!dto.documents[0].sheet.animations.is_empty());
         assert!(!dto.documents[1].sheet.animations.is_empty());
@@ -728,7 +730,7 @@ mod test {
         let mut state = state::State::default();
         state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
         state.open_document(document::Document::open("test-data/flame.tiger").unwrap());
-        let dto = state.to_dto(AppTrim::OnlyCurrentDocument);
+        let dto = state.to_dto(StateTrim::OnlyCurrentDocument);
         assert_eq!(dto.documents.len(), 2);
         assert!(dto.documents[0].sheet.animations.is_empty());
         assert!(!dto.documents[1].sheet.animations.is_empty());
@@ -746,7 +748,7 @@ mod test {
             .as_ref()
             .cloned()
             .unwrap();
-        let dto = state.to_dto(AppTrim::OnlyWorkbench);
+        let dto = state.to_dto(StateTrim::OnlyWorkbench);
         assert_eq!(dto.documents.len(), 2);
         assert!(dto.documents[0].sheet.animations.is_empty());
         // Must preserve size of animations array to avoid patching incorrect array entries
@@ -768,7 +770,7 @@ mod test {
     fn can_trim_all_documents() {
         let mut state = state::State::default();
         state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
-        let dto = state.to_dto(AppTrim::NoDocuments);
+        let dto = state.to_dto(StateTrim::NoDocuments);
         assert!(!dto.documents.is_empty());
         assert!(dto.documents[0].sheet.animations.is_empty());
     }

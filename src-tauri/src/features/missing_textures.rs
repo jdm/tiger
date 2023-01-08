@@ -2,7 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::dto::AppTrim;
+use crate::dto::StateTrim;
 use crate::utils::texture_list::TextureList;
 use crate::TigerApp;
 
@@ -31,7 +31,7 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(tiger_app: A, period: Duration
             .collect();
 
         if old_missing_textures != new_missing_textures {
-            tiger_app.patch_state(AppTrim::Full, |state| {
+            tiger_app.patch_state(StateTrim::Full, |state| {
                 for document in state.documents_iter_mut() {
                     if let Some(textures) = new_missing_textures.remove(document.path()) {
                         document.set_missing_textures(textures);

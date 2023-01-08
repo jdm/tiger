@@ -20,7 +20,7 @@ import { watch, computed, Ref, ref } from "vue"
 import { FilmIcon, PencilSquareIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { Animation as AnimationDTO } from "@/api/dto"
 import { beginRenameAnimation, cancelRename, copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, endRenameAnimation, selectAnimation } from "@/api/document"
-import { useAppStore } from "@/stores/app"
+import { useStateStore } from "@/stores/state"
 import ContextMenu from "@/components/basic/ContextMenu.vue"
 import Selectable from "@/components/basic/Selectable.vue"
 import InputRename from "@/components/basic/InputRename.vue"
@@ -44,8 +44,9 @@ const contextMenuEntries = [
 	{ name: "Delete", shortcut: "Del", action: deleteSelectedAnimations },
 ];
 
-const app = useAppStore();
-const renaming = computed(() => app.currentDocument?.animationBeingRenamed == props.animation.name);
+const state = useStateStore();
+
+const renaming = computed(() => state.currentDocument?.animationBeingRenamed == props.animation.name);
 watch(renaming, (to, from) => {
 	if (to) {
 		newName.value = props.animation.name;
