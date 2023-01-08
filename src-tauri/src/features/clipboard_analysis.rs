@@ -31,7 +31,7 @@ fn update_clipboard_manifest(app_handle: &tauri::AppHandle) {
 
     {
         let state_handle = app_handle.state();
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         if *state.clipboard_manifest() == new_manifest {
             return;
         }

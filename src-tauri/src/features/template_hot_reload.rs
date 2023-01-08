@@ -9,7 +9,7 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
         let app = app.clone();
         move || {
             let state_handle = app.state();
-            let state = state_handle.0.lock();
+            let state = state_handle.lock();
             state
                 .documents_iter()
                 .flat_map(|d| d.export_settings_edit())

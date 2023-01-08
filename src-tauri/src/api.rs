@@ -11,7 +11,6 @@ use crate::export::export_sheet;
 use crate::features::texture_cache;
 use crate::sheet::{Absolute, Sheet};
 use crate::state::{self, State};
-use crate::utils::handle::Handle;
 use crate::TigerApp;
 
 impl state::Handle {
@@ -19,7 +18,7 @@ impl state::Handle {
     where
         F: FnOnce(&mut State),
     {
-        let mut state = self.0.lock();
+        let mut state = self.lock();
 
         let old_state: dto::State = state.to_dto(state_trim);
         operation(&mut state);
@@ -80,7 +79,7 @@ impl<T: TigerApp + Sync> Api for T {
     async fn export(&self) -> Result<Patch, ()> {
         let (sheet, document_name) = {
             let state_handle = self.state();
-            let state = state_handle.0.lock();
+            let state = state_handle.lock();
             match state.current_document() {
                 Some(d) => (d.sheet().clone(), d.path().to_file_name()),
                 _ => return Ok(Patch(Vec::new())),
@@ -158,7 +157,7 @@ impl<T: TigerApp + Sync> Api for T {
 
 #[tauri::command]
 pub fn get_state(state_handle: tauri::State<'_, state::Handle>) -> Result<dto::State, ()> {
-    let state = state_handle.0.lock();
+    let state = state_handle.lock();
     Ok(state.to_dto(StateTrim::Full))
 }
 
@@ -355,7 +354,7 @@ pub async fn save(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
     let documents_to_save: Vec<DocumentToSave> = {
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         let Some(document) = state.current_document() else {
             return Ok(Patch(Vec::new()))
         };
@@ -376,7 +375,7 @@ pub async fn save_as(
     new_path: PathBuf,
 ) -> Result<Patch, ()> {
     let documents_to_save: Vec<DocumentToSave> = {
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         let Some(document) = state.current_document() else {
             return Ok(Patch(Vec::new()))
         };
@@ -396,7 +395,7 @@ pub async fn save_all(
     state_handle: tauri::State<'_, state::Handle>,
 ) -> Result<Patch, ()> {
     let documents_to_save: Vec<DocumentToSave> = {
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         state
             .documents_iter()
             .map(|d| DocumentToSave {
@@ -1855,7 +1854,7 @@ pub async fn end_export_as(
     });
 
     let (sheet, document_name) = {
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         match state.current_document() {
             Some(d) => (d.sheet().clone(), d.path().to_file_name()),
             _ => return Ok(patch),
@@ -1863,8 +1862,8 @@ pub async fn end_export_as(
     };
 
     let result = tauri::async_runtime::spawn_blocking({
-        let texture_cache = texture_cache.0.clone();
-        move || export_sheet(&sheet, Handle(texture_cache))
+        let texture_cache = texture_cache::Handle::clone(&texture_cache);
+        move || export_sheet(&sheet, texture_cache)
     })
     .await
     .unwrap();

@@ -2,7 +2,7 @@ use std::sync::Arc;
 
 use parking_lot::{Mutex, MutexGuard};
 
-pub struct Handle<T>(pub Arc<Mutex<T>>);
+pub struct Handle<T>(Arc<Mutex<T>>);
 
 impl<T> Handle<T> {
     pub fn new(inner: T) -> Self {

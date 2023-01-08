@@ -1,12 +1,12 @@
 use json_patch::Patch;
-use parking_lot::Mutex;
-use std::{ops::Deref, path::PathBuf, sync::Arc, time::Duration};
+use std::{ops::Deref, path::PathBuf, time::Duration};
 
 use crate::{
     api::Api,
     dto,
     features::{self, texture_cache},
     state::{self, State},
+    utils::handle,
     TigerApp,
 };
 
@@ -14,7 +14,8 @@ use crate::{
 pub struct TigerAppMock {
     state: state::Handle,
     texture_cache: texture_cache::Handle,
-    client_state: Arc<Mutex<dto::State>>,
+    client_state: handle::Handle<dto::State>,
+    events: handle::Handle<Vec<(String, serde_json::Value)>>,
 }
 
 impl TigerAppMock {
@@ -24,11 +25,13 @@ impl TigerAppMock {
         let app = Self {
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
-            client_state: Arc::new(Mutex::new(State::default().to_dto(dto::StateTrim::Full))),
+            client_state: handle::Handle::new(State::default().to_dto(dto::StateTrim::Full)),
+            events: handle::Handle::new(vec![]),
         };
         app.texture_cache.init(app.clone(), Self::PERIOD);
         features::missing_textures::init(app.clone(), Self::PERIOD);
         features::template_hot_reload::init(app.clone(), Self::PERIOD);
+        features::texture_hot_reload::init(app.clone(), Self::PERIOD);
         app
     }
 
@@ -38,6 +41,10 @@ impl TigerAppMock {
 
     pub fn client_state(&self) -> dto::State {
         self.client_state.lock().clone()
+    }
+
+    pub fn events(&self) -> Vec<(String, serde_json::Value)> {
+        self.events.lock().clone()
     }
 
     fn apply_patch(&self, patch: Patch) {
@@ -94,7 +101,13 @@ impl TigerApp for TigerAppMock {
 
     fn replace_state(&self) {
         let state_handle = self.state();
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         *self.client_state.lock() = state.to_dto(dto::StateTrim::Full);
+    }
+
+    fn emit_all<S: serde::Serialize + Clone>(&self, event: &str, payload: S) {
+        self.events
+            .lock()
+            .push((event.to_owned(), serde_json::to_value(payload).unwrap()));
     }
 }

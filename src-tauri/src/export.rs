@@ -91,7 +91,7 @@ mod test {
 
         let ExportSettings::Template(export_settings) = {
             let state_handle = app.state();
-            let state = state_handle.0.lock();
+            let state = state_handle.lock();
             state
                 .current_document()
                 .unwrap()

@@ -12,7 +12,7 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
 
         let (all_textures, old_missing_textures) = {
             let state_handle = app.state();
-            let state = state_handle.0.lock();
+            let state = state_handle.lock();
             let mut all_textures = HashMap::new();
             let mut old_missing_textures = HashMap::new();
             for document in state.documents_iter() {

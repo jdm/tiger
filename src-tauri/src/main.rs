@@ -4,6 +4,7 @@
 )]
 
 use log::{error, LevelFilter};
+use serde::Serialize;
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use std::time::Duration;
 use tauri::Manager;
@@ -55,7 +56,7 @@ fn main() {
             features::missing_textures::init(tauri_app.handle(), Duration::from_millis(500));
             features::recent_documents::init(tauri_app);
             features::template_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
-            features::texture_hot_reload::init(tauri_app);
+            features::texture_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
             features::clipboard_analysis::init(tauri_app);
             Ok(())
         })
@@ -231,6 +232,7 @@ pub trait TigerApp {
     fn texture_cache(&self) -> texture_cache::Handle;
     fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F);
     fn replace_state(&self);
+    fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S);
 }
 
 impl TigerApp for tauri::App {
@@ -248,6 +250,10 @@ impl TigerApp for tauri::App {
 
     fn replace_state(&self) {
         TigerApp::replace_state(&self.handle())
+    }
+
+    fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S) {
+        TigerApp::emit_all(&self.handle(), event, payload)
     }
 }
 
@@ -269,7 +275,7 @@ impl TigerApp for tauri::AppHandle {
         let state_handle = tauri::Manager::state::<state::Handle>(self);
         let patch = state_handle.mutate(state_trim, operation);
         if !patch.0.is_empty() {
-            if let Err(e) = self.emit_all(EVENT_PATCH_STATE, patch) {
+            if let Err(e) = tauri::Manager::emit_all(self, EVENT_PATCH_STATE, patch) {
                 error!("Error while pushing state patch: {e}");
             }
         }
@@ -277,10 +283,14 @@ impl TigerApp for tauri::AppHandle {
 
     fn replace_state(&self) {
         let state_handle = tauri::Manager::state::<state::Handle>(self);
-        let state = state_handle.0.lock();
+        let state = state_handle.lock();
         let new_state = state.to_dto(dto::StateTrim::Full);
-        if let Err(e) = self.emit_all(EVENT_REPLACE_STATE, new_state) {
+        if let Err(e) = tauri::Manager::emit_all(self, EVENT_REPLACE_STATE, new_state) {
             error!("Error while replacing state: {e}");
         }
+    }
+
+    fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S) {
+        tauri::Manager::emit_all(self, event, payload).ok();
     }
 }

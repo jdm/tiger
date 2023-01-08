@@ -83,7 +83,7 @@ mod test {
         let state_handle = app.state();
 
         {
-            let mut state = state_handle.0.lock();
+            let mut state = state_handle.lock();
             state.new_document("tmp.tiger");
             state
                 .current_document_mut()
@@ -98,7 +98,7 @@ mod test {
 
         app.wait_for_periodic_scans();
 
-        let mut state = state_handle.0.lock();
+        let mut state = state_handle.lock();
         let d = state.current_document_mut().unwrap();
         d.begin_relocate_frames();
         d.relocate_frame(

@@ -10,7 +10,7 @@ use crate::utils::paths;
 
 pub fn init(tauri_app: &tauri::App) {
     let state_handle = tauri_app.state::<state::Handle>();
-    let mut state = state_handle.0.lock();
+    let mut state = state_handle.lock();
 
     match read_from_disk() {
         Ok(mut documents) => {

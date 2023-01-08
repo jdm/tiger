@@ -17,7 +17,7 @@ impl Handle {
             let app = app.clone();
             move || {
                 let state_handle = app.state();
-                let state = state_handle.0.lock();
+                let state = state_handle.lock();
                 state.list_textures()
             }
         });
@@ -48,7 +48,7 @@ impl Handle {
                 };
                 let desired_entries = {
                     let state_handle = app.state();
-                    let state = state_handle.0.lock();
+                    let state = state_handle.lock();
                     state.list_textures()
                 };
                 let missing_entries = desired_entries
