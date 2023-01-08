@@ -17,6 +17,7 @@ tauri-build = { version = "1.2", features = [] }
 debug = true
 
 [dependencies]
+async-trait = "0.1.61"
 crunch = "0.3.3"
 derivative = "2.2.0"
 directories = "4.0.1"
@@ -40,6 +41,7 @@ squeak = "0.1.0"
 sugar_path = "0.0.9"
 tauri = { version = "1.2", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
 thiserror = "1.0"
+tokio = { version = "1.24.1", features = ["macros"] }
 window-shadows = "0.2.0"
 
 [dependencies.uuid]

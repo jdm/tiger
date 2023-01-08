@@ -45,51 +45,31 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(tiger_app: A, period: Duration
 #[cfg(test)]
 mod test {
 
-    use std::{fs::File, path::PathBuf, time::Instant};
+    use std::{fs::File, path::PathBuf};
 
-    use super::*;
-    use crate::{document::Command, mock::TigerAppMock};
-
-    fn assert_with_timeout<F: Fn() -> bool>(check: F) {
-        let start = Instant::now();
-        while Instant::now().duration_since(start) < Duration::from_secs(5) {
-            if check() {
-                return;
-            }
-        }
-        panic!("assertion timeout");
-    }
+    use crate::mock::TigerAppMock;
 
     #[test]
     fn detects_texture_addition_and_removal() {
         let filename = "test-output/detects_removed_texture.png";
         std::fs::remove_file(filename).ok();
 
-        let is_missing = |app: &TigerAppMock| {
-            let app_state = app.app_state();
-            let app = app_state.0.lock();
-            app.current_document()
-                .unwrap()
-                .is_frame_missing_on_disk(filename)
-        };
+        let is_missing =
+            |app: &TigerAppMock| app.client_state().documents[0].sheet.frames[0].missing_on_disk;
 
         let app = TigerAppMock::new();
 
-        {
-            let app_state = app.app_state();
-            let mut app = app_state.0.lock();
-            app.new_document("tmp.tiger");
-            app.current_document_mut()
-                .unwrap()
-                .process_command(Command::ImportFrames(vec![PathBuf::from(filename)]))
-                .unwrap();
-        }
-        assert_with_timeout(|| is_missing(&app));
+        app.new_document("tmp.tiger".into());
+        app.import_frames(vec![PathBuf::from(filename)]);
+        app.wait_for_periodic_scans();
+        assert!(is_missing(&app));
 
         File::create(filename).unwrap();
-        assert_with_timeout(|| !is_missing(&app));
+        app.wait_for_periodic_scans();
+        assert!(!is_missing(&app));
 
         std::fs::remove_file(filename).ok();
-        assert_with_timeout(|| is_missing(&app));
+        app.wait_for_periodic_scans();
+        assert!(is_missing(&app));
     }
 }

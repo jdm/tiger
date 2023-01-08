@@ -115,23 +115,16 @@ fn add<P: AsRef<Path>>(textures: &HashSet<P>, cache_handle: CacheHandle) {
 #[cfg(test)]
 mod test {
 
-    use crate::{
-        document::{Command, Document},
-        mock::TigerAppMock,
-        TigerApp,
-    };
+    use crate::{mock::TigerAppMock, TigerApp};
 
-    #[test]
-    fn adds_and_removes_textures() {
+    #[tokio::test]
+    async fn adds_and_removes_textures() {
         let dir = std::env::current_dir().unwrap();
         let frame_path = dir.join("test-data/samurai-dead-all.png");
 
         let app = TigerAppMock::new();
-        {
-            let app_state = app.app_state();
-            let mut app = app_state.0.lock();
-            app.open_document(Document::open("test-data/samurai.tiger").unwrap());
-        }
+        app.open_documents(vec!["test-data/samurai.tiger".into()])
+            .await;
 
         app.wait_for_periodic_scans();
         assert!(app
@@ -140,14 +133,7 @@ mod test {
             .lock()
             .contains_key(&frame_path));
 
-        {
-            let app_state = app.app_state();
-            let mut app = app_state.0.lock();
-            app.current_document_mut()
-                .unwrap()
-                .process_command(Command::DeleteFrame(frame_path.clone()))
-                .unwrap();
-        }
+        app.delete_frame(frame_path.clone());
 
         app.wait_for_periodic_scans();
         assert!(!app

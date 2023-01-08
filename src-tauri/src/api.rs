@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use json_patch::Patch;
 use log::error;
 use std::path::PathBuf;
@@ -10,6 +11,7 @@ use crate::dto::{self, AppTrim, ToFileName};
 use crate::export::export_sheet;
 use crate::features::texture_cache::{self, TextureCache};
 use crate::sheet::{Absolute, Sheet};
+use crate::TigerApp;
 
 impl AppState {
     pub fn mutate<F>(&self, app_trim: AppTrim, operation: F) -> Patch
@@ -32,6 +34,72 @@ impl AppState {
                 Patch(Vec::new())
             }
         }
+    }
+}
+
+#[async_trait]
+pub trait Api {
+    fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()>;
+    fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
+    fn new_document(&self, path: PathBuf) -> Result<Patch, ()>;
+    async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
+}
+
+#[async_trait]
+impl<T: TigerApp + Sync> Api for T {
+    fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()> {
+        Ok(self.app_state().mutate(AppTrim::Full, |app| {
+            if let Some(document) = app.current_document_mut() {
+                document.process_command(Command::DeleteFrame(path)).ok();
+            }
+        }))
+    }
+
+    fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+        Ok(self.app_state().mutate(AppTrim::Full, |app| {
+            if let Some(document) = app.current_document_mut() {
+                document.process_command(Command::ImportFrames(paths)).ok();
+            }
+        }))
+    }
+
+    fn new_document(&self, path: PathBuf) -> Result<Patch, ()> {
+        Ok(self.app_state().mutate(AppTrim::Full, |app| {
+            app.new_document(path);
+        }))
+    }
+
+    async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+        let mut documents: Vec<(PathBuf, DocumentResult<Document>)> = Vec::new();
+        for path in &paths {
+            let open_path = path.to_owned();
+            documents.push((
+                open_path.clone(),
+                tauri::async_runtime::spawn_blocking(move || Document::open(open_path))
+                    .await
+                    .unwrap(),
+            ));
+        }
+
+        Ok(self.app_state().mutate(AppTrim::Full, |app| {
+            for document in documents {
+                match document {
+                    (_, Ok(d)) => {
+                        app.open_document(d);
+                    }
+                    (path, Err(e)) => {
+                        app.show_error_message(
+                            "Error".to_owned(),
+                            format!(
+                                "An error occured while trying to open `{}`",
+                                path.to_file_name()
+                            ),
+                            e.to_string(),
+                        );
+                    }
+                }
+            }
+        }))
     }
 }
 
@@ -61,47 +129,13 @@ pub fn acknowledge_error(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
-pub fn new_document(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::Full, |app| {
-        app.new_document(path);
-    }))
+pub fn new_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
+    app.new_document(path)
 }
 
 #[tauri::command]
-pub async fn open_documents(
-    app_state: tauri::State<'_, AppState>,
-    paths: Vec<PathBuf>,
-) -> Result<Patch, ()> {
-    let mut documents: Vec<(PathBuf, DocumentResult<Document>)> = Vec::new();
-    for path in &paths {
-        let open_path = path.to_owned();
-        documents.push((
-            open_path.clone(),
-            tauri::async_runtime::spawn_blocking(move || Document::open(open_path))
-                .await
-                .unwrap(),
-        ));
-    }
-
-    Ok(app_state.mutate(AppTrim::Full, |app| {
-        for document in documents {
-            match document {
-                (_, Ok(d)) => {
-                    app.open_document(d);
-                }
-                (path, Err(e)) => {
-                    app.show_error_message(
-                        "Error".to_owned(),
-                        format!(
-                            "An error occured while trying to open `{}`",
-                            path.to_file_name()
-                        ),
-                        e.to_string(),
-                    );
-                }
-            }
-        }
-    }))
+pub async fn open_documents(app: tauri::AppHandle, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+    app.open_documents(paths).await
 }
 
 #[tauri::command]
@@ -476,15 +510,8 @@ pub fn set_animations_list_offset(
 }
 
 #[tauri::command]
-pub fn import_frames(
-    app_state: tauri::State<'_, AppState>,
-    paths: Vec<PathBuf>,
-) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::Full, |app| {
-        if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::ImportFrames(paths)).ok();
-        }
-    }))
+pub fn import_frames(app: tauri::AppHandle, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+    app.import_frames(paths)
 }
 
 #[tauri::command]
@@ -530,12 +557,8 @@ pub fn end_relocate_frames(app_state: tauri::State<'_, AppState>) -> Result<Patc
 }
 
 #[tauri::command]
-pub fn delete_frame(app_state: tauri::State<'_, AppState>, path: PathBuf) -> Result<Patch, ()> {
-    Ok(app_state.mutate(AppTrim::Full, |app| {
-        if let Some(document) = app.current_document_mut() {
-            document.process_command(Command::DeleteFrame(path)).ok();
-        }
-    }))
+pub fn delete_frame(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
+    app.delete_frame(path)
 }
 
 #[tauri::command]

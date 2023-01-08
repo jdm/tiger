@@ -10,118 +10,118 @@ use crate::sheet::{self, Paths};
 
 // Typescript: @/stores/app
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct App {
-    documents: Vec<Document>,
-    current_document_path: Option<PathBuf>,
-    recent_document_paths: Vec<RecentDocument>,
-    clipboard_manifest: Option<ClipboardManifest>,
-    is_release_build: bool,
-    error: Option<UserFacingError>,
+    pub documents: Vec<Document>,
+    pub current_document_path: Option<PathBuf>,
+    pub recent_document_paths: Vec<RecentDocument>,
+    pub clipboard_manifest: Option<ClipboardManifest>,
+    pub is_release_build: bool,
+    pub error: Option<UserFacingError>,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecentDocument {
-    path: PathBuf,
-    name: String,
+    pub path: PathBuf,
+    pub name: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum ClipboardManifest {
     Animations,
     Keyframes,
     Hitboxes,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserFacingError {
-    key: String,
-    title: String,
-    summary: String,
-    details: String,
+    pub key: String,
+    pub title: String,
+    pub summary: String,
+    pub details: String,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
-    animation_being_renamed: Option<String>,
-    animations_filter: String,
-    animations_list_offset: u32,
-    current_animation_name: Option<String>,
-    current_keyframe_index: Option<usize>,
-    current_sequence_direction: Option<Direction>,
-    darken_sprites: bool,
-    export_settings_being_edited: Option<ExportSettings>,
-    export_settings_validation: Option<ExportSettingsValidation>,
-    frames_being_relocated: Option<HashMap<PathBuf, PathBuf>>,
-    frames_being_dragged: HashSet<PathBuf>,
-    frames_filter: String,
-    frames_list_mode: ListMode,
-    frames_list_offset: u32,
-    has_unsaved_changes: bool,
-    hide_hitboxes: bool,
-    hide_origin: bool,
-    hide_sprite: bool,
-    hitbox_being_renamed: Option<String>,
-    hitboxes_being_nudged: HashSet<String>,
-    hitboxes_being_resized: HashSet<String>,
-    hitboxes_list_offset: u32,
-    is_dragging_keyframe_duration: bool,
-    keyframe_snapping_base_duration_millis: u64,
-    keyframes_being_dragged: HashSet<(Direction, usize)>,
-    last_interacted_animation: Option<String>,
-    last_interacted_frame: Option<PathBuf>,
-    last_interacted_hitbox: Option<String>,
-    lock_hitboxes: bool,
-    name: String,
-    path: PathBuf,
-    preserve_aspect_ratio: bool,
-    redo_effect: Option<String>,
-    sheet: Sheet,
-    snap_keyframe_durations: bool,
-    snap_keyframes_to_multiples_of_duration: bool,
-    snap_keyframes_to_other_keyframes: bool,
-    timeline_clock_millis: u64,
-    timeline_is_playing: bool,
-    timeline_offset_millis: f32,
-    timeline_zoom_amount: f32,
-    timeline_zoom_factor: f32,
-    undo_effect: Option<String>,
-    was_close_requested: bool,
-    workbench_offset: (f32, f32),
-    workbench_zoom: f32,
+    pub animation_being_renamed: Option<String>,
+    pub animations_filter: String,
+    pub animations_list_offset: u32,
+    pub current_animation_name: Option<String>,
+    pub current_keyframe_index: Option<usize>,
+    pub current_sequence_direction: Option<Direction>,
+    pub darken_sprites: bool,
+    pub export_settings_being_edited: Option<ExportSettings>,
+    pub export_settings_validation: Option<ExportSettingsValidation>,
+    pub frames_being_relocated: Option<HashMap<PathBuf, PathBuf>>,
+    pub frames_being_dragged: HashSet<PathBuf>,
+    pub frames_filter: String,
+    pub frames_list_mode: ListMode,
+    pub frames_list_offset: u32,
+    pub has_unsaved_changes: bool,
+    pub hide_hitboxes: bool,
+    pub hide_origin: bool,
+    pub hide_sprite: bool,
+    pub hitbox_being_renamed: Option<String>,
+    pub hitboxes_being_nudged: HashSet<String>,
+    pub hitboxes_being_resized: HashSet<String>,
+    pub hitboxes_list_offset: u32,
+    pub is_dragging_keyframe_duration: bool,
+    pub keyframe_snapping_base_duration_millis: u64,
+    pub keyframes_being_dragged: HashSet<(Direction, usize)>,
+    pub last_interacted_animation: Option<String>,
+    pub last_interacted_frame: Option<PathBuf>,
+    pub last_interacted_hitbox: Option<String>,
+    pub lock_hitboxes: bool,
+    pub name: String,
+    pub path: PathBuf,
+    pub preserve_aspect_ratio: bool,
+    pub redo_effect: Option<String>,
+    pub sheet: Sheet,
+    pub snap_keyframe_durations: bool,
+    pub snap_keyframes_to_multiples_of_duration: bool,
+    pub snap_keyframes_to_other_keyframes: bool,
+    pub timeline_clock_millis: u64,
+    pub timeline_is_playing: bool,
+    pub timeline_offset_millis: f32,
+    pub timeline_zoom_amount: f32,
+    pub timeline_zoom_factor: f32,
+    pub undo_effect: Option<String>,
+    pub was_close_requested: bool,
+    pub workbench_offset: (f32, f32),
+    pub workbench_zoom: f32,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
-    frames: Vec<Frame>,
-    animations: Vec<Animation>,
+    pub frames: Vec<Frame>,
+    pub animations: Vec<Animation>,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Frame {
-    path: PathBuf,
-    name: String,
-    selected: bool,
-    filtered_out: bool,
-    missing_on_disk: bool,
+    pub path: PathBuf,
+    pub name: String,
+    pub selected: bool,
+    pub filtered_out: bool,
+    pub missing_on_disk: bool,
 }
 
-#[derive(Clone, Default, Serialize)]
+#[derive(Clone, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Animation {
-    name: String,
-    selected: bool,
-    filtered_out: bool,
-    sequences: HashMap<Direction, Sequence>,
-    direction_preset: Option<DirectionPreset>,
-    is_looping: bool,
-    key: Uuid,
+    pub name: String,
+    pub selected: bool,
+    pub filtered_out: bool,
+    pub sequences: HashMap<Direction, Sequence>,
+    pub direction_preset: Option<DirectionPreset>,
+    pub is_looping: bool,
+    pub key: Uuid,
 }
 
 #[derive(Clone, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
@@ -146,34 +146,34 @@ pub enum DirectionPreset {
     FixedAngle,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sequence {
-    keyframes: Vec<Keyframe>,
-    duration_millis: Option<u64>,
+    pub keyframes: Vec<Keyframe>,
+    pub duration_millis: Option<u64>,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Keyframe {
-    frame: PathBuf,
-    name: String,
-    selected: bool,
-    start_time_millis: u64,
-    duration_millis: u64,
-    offset: (i32, i32),
-    hitboxes: Vec<Hitbox>,
-    key: Uuid,
+    pub frame: PathBuf,
+    pub name: String,
+    pub selected: bool,
+    pub start_time_millis: u64,
+    pub duration_millis: u64,
+    pub offset: (i32, i32),
+    pub hitboxes: Vec<Hitbox>,
+    pub key: Uuid,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hitbox {
-    name: String,
-    selected: bool,
-    top_left: (i32, i32),
-    size: (u32, u32),
-    key: Uuid,
+    pub name: String,
+    pub selected: bool,
+    pub top_left: (i32, i32),
+    pub size: (u32, u32),
+    pub key: Uuid,
 }
 
 #[derive(Clone, Deserialize, Serialize)]
@@ -210,7 +210,7 @@ pub enum BrowseDirection {
     Right,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
     template_file: PathBuf,
@@ -219,7 +219,7 @@ pub struct ExportSettings {
     metadata_paths_root: PathBuf,
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 pub enum ExportSettingsError {
     ExpectedAbsolutePath,
     ExpectedDirectory,
@@ -229,14 +229,14 @@ pub enum ExportSettingsError {
     TemplateError(String),
 }
 
-#[derive(Clone, Serialize)]
+#[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettingsValidation {
-    valid_settings: bool,
-    template_file_error: Option<ExportSettingsError>,
-    texture_file_error: Option<ExportSettingsError>,
-    metadata_file_error: Option<ExportSettingsError>,
-    metadata_paths_root_error: Option<ExportSettingsError>,
+    pub valid_settings: bool,
+    pub template_file_error: Option<ExportSettingsError>,
+    pub texture_file_error: Option<ExportSettingsError>,
+    pub metadata_file_error: Option<ExportSettingsError>,
+    pub metadata_paths_root_error: Option<ExportSettingsError>,
 }
 
 #[derive(Clone, Copy)]
