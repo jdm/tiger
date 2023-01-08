@@ -111,7 +111,7 @@ mod test {
     use crate::{mock::TigerAppMock, TigerApp};
 
     #[tokio::test]
-    async fn adds_and_removes_textures() {
+    async fn follows_frame_additions_and_removals() {
         let dir = std::env::current_dir().unwrap();
         let frame_path = dir.join("test-data/samurai-dead-all.png");
 
@@ -126,5 +126,32 @@ mod test {
 
         app.wait_for_periodic_scans();
         assert!(!app.texture_cache().lock().contains_key(&frame_path));
+    }
+
+    #[tokio::test]
+    async fn detects_texture_changes() {
+        let dir = std::env::current_dir().unwrap();
+        let frame = dir.join("test-output/detects_texture_changes.png");
+        let before_frame = dir.join("test-data/samurai-dead-all.png");
+        let after_frame = dir.join("test-data/samurai-attack-north.png");
+
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger".into()])
+            .await;
+        app.import_frames(vec![frame.clone()]);
+
+        std::fs::copy(&before_frame, &frame).unwrap();
+        app.wait_for_periodic_scans();
+        assert_eq!(
+            app.texture_cache().lock().get(&frame).unwrap(),
+            &image::open(before_frame).unwrap()
+        );
+
+        std::fs::copy(&after_frame, &frame).unwrap();
+        app.wait_for_periodic_scans();
+        assert_eq!(
+            app.texture_cache().lock().get(&frame).unwrap(),
+            &image::open(after_frame).unwrap()
+        );
     }
 }
