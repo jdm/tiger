@@ -35,7 +35,7 @@ jobs:
           key: ${{ github.workflow }}-cargo-${{ github.ref }}-${{ github.sha }}
           restore-keys: ${{ github.workflow }}-cargo-${{ github.ref }}
       - name: Install grcov
-        run: cargo install grcov --force
+        run: cargo install grcov
       - name: Build Frontend
         run: npm install && npm run build
       - name: Run Tests
