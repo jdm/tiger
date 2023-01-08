@@ -24,6 +24,6 @@ impl<T> Clone for Handle<T> {
 
 impl<T: Default> Default for Handle<T> {
     fn default() -> Self {
-        Self(Default::default())
+        Self::new(Default::default())
     }
 }
