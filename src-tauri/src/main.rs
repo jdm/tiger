@@ -54,7 +54,7 @@ fn main() {
                 .init(tauri_app.handle(), Duration::from_millis(1_000));
             features::missing_textures::init(tauri_app.handle(), Duration::from_millis(500));
             features::recent_documents::init(tauri_app);
-            features::template_hot_reload::init(tauri_app);
+            features::template_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
             features::texture_hot_reload::init(tauri_app);
             features::clipboard_analysis::init(tauri_app);
             Ok(())

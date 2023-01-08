@@ -6,12 +6,12 @@ use crate::dto::StateTrim;
 use crate::utils::texture_list::TextureList;
 use crate::TigerApp;
 
-pub fn init<A: TigerApp + Send + Clone + 'static>(tiger_app: A, period: Duration) {
+pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
     std::thread::spawn(move || loop {
         std::thread::sleep(period);
 
         let (all_textures, old_missing_textures) = {
-            let state_handle = tiger_app.state();
+            let state_handle = app.state();
             let state = state_handle.0.lock();
             let mut all_textures = HashMap::new();
             let mut old_missing_textures = HashMap::new();
@@ -31,7 +31,7 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(tiger_app: A, period: Duration
             .collect();
 
         if old_missing_textures != new_missing_textures {
-            tiger_app.patch_state(StateTrim::Full, |state| {
+            app.patch_state(StateTrim::Full, |state| {
                 for document in state.documents_iter_mut() {
                     if let Some(textures) = new_missing_textures.remove(document.path()) {
                         document.set_missing_textures(textures);

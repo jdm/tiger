@@ -213,13 +213,13 @@ pub enum BrowseDirection {
 #[derive(Clone, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
-    template_file: PathBuf,
-    texture_file: PathBuf,
-    metadata_file: PathBuf,
-    metadata_paths_root: PathBuf,
+    pub template_file: PathBuf,
+    pub texture_file: PathBuf,
+    pub metadata_file: PathBuf,
+    pub metadata_paths_root: PathBuf,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
 pub enum ExportSettingsError {
     ExpectedAbsolutePath,
     ExpectedDirectory,

@@ -12,11 +12,11 @@ use crate::TigerApp;
 pub type Handle = handle::Handle<HashMap<PathBuf, DynamicImage>>;
 
 impl Handle {
-    pub fn init<A: TigerApp + Send + Clone + 'static>(&self, tauri_app: A, period: Duration) {
+    pub fn init<A: TigerApp + Send + Clone + 'static>(&self, app: A, period: Duration) {
         let (mut file_watcher, events_receiver) = FileWatcher::new({
-            let tauri_app = tauri_app.clone();
+            let app = app.clone();
             move || {
-                let state_handle = tauri_app.state();
+                let state_handle = app.state();
                 let state = state_handle.0.lock();
                 state.list_textures()
             }
@@ -47,7 +47,7 @@ impl Handle {
                     cache.keys().cloned().collect()
                 };
                 let desired_entries = {
-                    let state_handle = tauri_app.state();
+                    let state_handle = app.state();
                     let state = state_handle.0.lock();
                     state.list_textures()
                 };

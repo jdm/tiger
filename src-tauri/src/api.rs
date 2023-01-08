@@ -40,15 +40,35 @@ impl state::Handle {
 
 #[async_trait]
 pub trait Api {
+    fn begin_export_as(&self) -> Result<Patch, ()>;
     fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
     fn new_document(&self, path: PathBuf) -> Result<Patch, ()>;
     async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
+    fn set_export_template_file(&self, file: PathBuf) -> Result<Patch, ()>;
 }
 
 #[async_trait]
 impl<T: TigerApp + Sync> Api for T {
+    fn begin_export_as(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::BeginExportAs).ok();
+            }
+        }))
+    }
+
+    fn set_export_template_file(&self, path: PathBuf) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportTemplateFile(path))
+                    .ok();
+            }
+        }))
+    }
+
     fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1763,26 +1783,13 @@ pub async fn export(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn begin_export_as(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::BeginExportAs).ok();
-        }
-    }))
+pub fn begin_export_as(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.begin_export_as()
 }
 
 #[tauri::command]
-pub fn set_export_template_file(
-    state_handle: tauri::State<'_, state::Handle>,
-    file: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetExportTemplateFile(file))
-                .ok();
-        }
-    }))
+pub fn set_export_template_file(app: tauri::AppHandle, file: PathBuf) -> Result<Patch, ()> {
+    app.set_export_template_file(file)
 }
 
 #[tauri::command]

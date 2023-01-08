@@ -28,6 +28,7 @@ impl TigerAppMock {
         };
         app.texture_cache.init(app.clone(), Self::PERIOD);
         features::missing_textures::init(app.clone(), Self::PERIOD);
+        features::template_hot_reload::init(app.clone(), Self::PERIOD);
         app
     }
 
@@ -47,6 +48,10 @@ impl TigerAppMock {
 }
 
 impl TigerAppMock {
+    pub fn begin_export_as(&self) {
+        self.apply_patch(Api::begin_export_as(self).unwrap());
+    }
+
     pub fn delete_frame(&self, path: PathBuf) {
         self.apply_patch(Api::delete_frame(self, path).unwrap());
     }
@@ -65,6 +70,10 @@ impl TigerAppMock {
 
     pub async fn open_documents(&self, paths: Vec<PathBuf>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
+    }
+
+    pub fn set_export_template_file(&self, path: PathBuf) {
+        self.apply_patch(Api::set_export_template_file(self, path).unwrap());
     }
 }
 

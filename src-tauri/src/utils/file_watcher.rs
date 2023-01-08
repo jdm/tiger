@@ -14,7 +14,8 @@ impl<F: Fn() -> HashSet<PathBuf>> FileWatcher<F> {
     pub fn new(list_files_to_watch: F) -> (Self, Receiver<DebounceEventResult>) {
         let (sender, receiver) = channel();
 
-        let debouncer = new_debouncer(Duration::from_millis(200), None, sender).unwrap();
+        let delay = Duration::from_millis(if cfg!(test) { 0 } else { 200 });
+        let debouncer = new_debouncer(delay, None, sender).unwrap();
         let file_watcher = FileWatcher {
             debouncer,
             list_files_to_watch,
