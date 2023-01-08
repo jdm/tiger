@@ -1,16 +1,16 @@
 use std::{collections::HashSet, path::PathBuf};
 
 use crate::{
-    app::App,
     document::Document,
     sheet::{Paths, Sheet},
+    state::State,
 };
 
 pub trait TextureList {
     fn list_textures(&self) -> HashSet<PathBuf>;
 }
 
-impl TextureList for App {
+impl TextureList for State {
     fn list_textures(&self) -> HashSet<PathBuf> {
         self.documents_iter()
             .flat_map(|d| d.list_textures())

@@ -79,11 +79,11 @@ mod test {
 
     #[test]
     fn can_relocate_frames() {
-        let tiger_app = TigerAppMock::new();
-        let app_state = tiger_app.app_state();
+        let app = TigerAppMock::new();
+        let state_handle = app.state();
 
         {
-            let mut state = app_state.0.lock();
+            let mut state = state_handle.0.lock();
             state.new_document("tmp.tiger");
             state
                 .current_document_mut()
@@ -96,9 +96,9 @@ mod test {
                 ]);
         }
 
-        tiger_app.wait_for_periodic_scans();
+        app.wait_for_periodic_scans();
 
-        let mut state = app_state.0.lock();
+        let mut state = state_handle.0.lock();
         let d = state.current_document_mut().unwrap();
         d.begin_relocate_frames();
         d.relocate_frame(

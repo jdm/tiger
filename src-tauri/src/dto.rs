@@ -4,9 +4,9 @@ use std::path::Path;
 use std::path::PathBuf;
 use uuid::Uuid;
 
-use crate::app;
 use crate::document::{self};
 use crate::sheet::{self, Paths};
+use crate::state;
 
 // Typescript: @/stores/app
 
@@ -285,7 +285,7 @@ impl<T: AsRef<Path>> ToFileName for T {
     }
 }
 
-impl app::App {
+impl state::State {
     pub fn to_dto(&self, trim: AppTrim) -> App {
         App {
             documents: self
@@ -318,8 +318,8 @@ impl app::App {
     }
 }
 
-impl From<&app::UserFacingError> for UserFacingError {
-    fn from(error: &app::UserFacingError) -> Self {
+impl From<&state::UserFacingError> for UserFacingError {
+    fn from(error: &state::UserFacingError) -> Self {
         Self {
             key: error.key.to_string(),
             title: error.title.clone(),
@@ -714,10 +714,10 @@ mod test {
 
     #[test]
     fn can_preserve_all() {
-        let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
-        app.open_document(document::Document::open("test-data/flame.tiger").unwrap());
-        let dto = app.to_dto(AppTrim::Full);
+        let mut state = state::State::default();
+        state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(document::Document::open("test-data/flame.tiger").unwrap());
+        let dto = state.to_dto(AppTrim::Full);
         assert_eq!(dto.documents.len(), 2);
         assert!(!dto.documents[0].sheet.animations.is_empty());
         assert!(!dto.documents[1].sheet.animations.is_empty());
@@ -725,10 +725,10 @@ mod test {
 
     #[test]
     fn can_trim_inactive_documents() {
-        let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
-        app.open_document(document::Document::open("test-data/flame.tiger").unwrap());
-        let dto = app.to_dto(AppTrim::OnlyCurrentDocument);
+        let mut state = state::State::default();
+        state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(document::Document::open("test-data/flame.tiger").unwrap());
+        let dto = state.to_dto(AppTrim::OnlyCurrentDocument);
         assert_eq!(dto.documents.len(), 2);
         assert!(dto.documents[0].sheet.animations.is_empty());
         assert!(!dto.documents[1].sheet.animations.is_empty());
@@ -736,23 +736,24 @@ mod test {
 
     #[test]
     fn can_trim_all_except_workbench() {
-        let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
-        app.open_document(document::Document::open("test-data/flame.tiger").unwrap());
-        let animation_name = app
+        let mut state = state::State::default();
+        state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(document::Document::open("test-data/flame.tiger").unwrap());
+        let animation_name = state
             .current_document()
             .unwrap()
             .current_animation()
             .as_ref()
             .cloned()
             .unwrap();
-        let dto = app.to_dto(AppTrim::OnlyWorkbench);
+        let dto = state.to_dto(AppTrim::OnlyWorkbench);
         assert_eq!(dto.documents.len(), 2);
         assert!(dto.documents[0].sheet.animations.is_empty());
         // Must preserve size of animations array to avoid patching incorrect array entries
         assert_eq!(
             dto.documents[1].sheet.animations.len(),
-            app.current_document()
+            state
+                .current_document()
                 .unwrap()
                 .sheet()
                 .animations_iter()
@@ -765,9 +766,9 @@ mod test {
 
     #[test]
     fn can_trim_all_documents() {
-        let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
-        let dto = app.to_dto(AppTrim::NoDocuments);
+        let mut state = state::State::default();
+        state.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+        let dto = state.to_dto(AppTrim::NoDocuments);
         assert!(!dto.documents.is_empty());
         assert!(dto.documents[0].sheet.animations.is_empty());
     }

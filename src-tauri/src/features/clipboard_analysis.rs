@@ -30,14 +30,14 @@ fn update_clipboard_manifest(app_handle: &tauri::AppHandle) {
     };
 
     {
-        let app_state = app_handle.app_state();
-        let app = app_state.0.lock();
-        if *app.clipboard_manifest() == new_manifest {
+        let state_handle = app_handle.state();
+        let state = state_handle.0.lock();
+        if *state.clipboard_manifest() == new_manifest {
             return;
         }
     }
 
-    app_handle.patch_state(AppTrim::NoDocuments, |app| {
-        app.set_clipboard_manifest(new_manifest);
+    app_handle.patch_state(AppTrim::NoDocuments, |state| {
+        state.set_clipboard_manifest(new_manifest);
     });
 }

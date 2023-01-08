@@ -16,9 +16,9 @@ impl Handle {
         let (mut file_watcher, events_receiver) = FileWatcher::new({
             let tauri_app = tauri_app.clone();
             move || {
-                let app_state = tauri_app.app_state();
-                let app = app_state.0.lock();
-                app.list_textures()
+                let state_handle = tauri_app.state();
+                let state = state_handle.0.lock();
+                state.list_textures()
             }
         });
 
@@ -47,9 +47,9 @@ impl Handle {
                     cache.keys().cloned().collect()
                 };
                 let desired_entries = {
-                    let app_state = tauri_app.app_state();
-                    let app = app_state.0.lock();
-                    app.list_textures()
+                    let state_handle = tauri_app.state();
+                    let state = state_handle.0.lock();
+                    state.list_textures()
                 };
                 let missing_entries = desired_entries
                     .iter()

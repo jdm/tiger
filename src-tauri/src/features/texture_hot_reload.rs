@@ -2,16 +2,16 @@ use std::path::PathBuf;
 use std::time::Duration;
 use tauri::Manager;
 
-use crate::app::AppState;
+use crate::state;
 use crate::utils::file_watcher::FileWatcher;
 use crate::utils::texture_list::TextureList;
 
 pub fn init(tauri_app: &tauri::App) {
     let tauri_app_handle = tauri_app.handle();
     let (mut file_watcher, events_receiver) = FileWatcher::new(move || {
-        let app_state = tauri_app_handle.state::<AppState>();
-        let app = app_state.0.lock();
-        app.list_textures()
+        let state_handle = tauri_app_handle.state::<state::Handle>();
+        let state = state_handle.0.lock();
+        state.list_textures()
     });
 
     std::thread::spawn(move || loop {

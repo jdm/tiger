@@ -7,9 +7,10 @@ use crate::TigerApp;
 pub fn init(tauri_app: &tauri::App) {
     let tauri_app_handle = tauri_app.handle();
     let (mut file_watcher, events_receiver) = FileWatcher::new(move || {
-        let app_state = tauri_app_handle.app_state();
-        let app = app_state.0.lock();
-        app.documents_iter()
+        let state_handle = tauri_app_handle.state();
+        let state = state_handle.0.lock();
+        state
+            .documents_iter()
             .flat_map(|d| d.export_settings_edit())
             .map(|s| match s {
                 sheet::ExportSettings::Template(s) => s.template_file().to_owned(),

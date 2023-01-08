@@ -1,12 +1,9 @@
-use parking_lot::Mutex;
 use squeak::{Delegate, Observable};
-use std::{
-    path::{Path, PathBuf},
-    sync::Arc,
-};
+use std::path::{Path, PathBuf};
 use thiserror::Error;
 
 use crate::document::{ClipboardManifest, Document, DocumentError};
+use crate::utils::handle;
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -16,10 +13,10 @@ pub enum AppError {
     DocumentError(#[from] DocumentError),
 }
 
-#[derive(Clone)]
-pub struct AppState(pub Arc<Mutex<App>>);
+pub type Handle = handle::Handle<State>;
+
 #[derive(Debug, Default)]
-pub struct App {
+pub struct State {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
     recent_documents: Observable<'static, Vec<PathBuf>>,
@@ -36,7 +33,7 @@ pub struct UserFacingError {
     pub details: String,
 }
 
-impl App {
+impl State {
     pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
         self.documents.iter()
     }
@@ -218,91 +215,91 @@ mod test {
 
     #[test]
     fn can_open_and_close_documents() {
-        let mut app = App::default();
+        let mut state = State::default();
 
-        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
-        assert_eq!(app.documents_iter().count(), 1);
-        assert!(app.document("test-data/samurai.tiger").is_some());
-        assert!(app.document_mut("test-data/samurai.tiger").is_some());
+        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        assert_eq!(state.documents_iter().count(), 1);
+        assert!(state.document("test-data/samurai.tiger").is_some());
+        assert!(state.document_mut("test-data/samurai.tiger").is_some());
 
-        app.open_document(Document::open("test-data/flame.tiger").unwrap());
-        assert_eq!(app.documents_iter().count(), 2);
-        assert!(app.document("test-data/flame.tiger").is_some());
-        assert!(app.document_mut("test-data/flame.tiger").is_some());
+        state.open_document(Document::open("test-data/flame.tiger").unwrap());
+        assert_eq!(state.documents_iter().count(), 2);
+        assert!(state.document("test-data/flame.tiger").is_some());
+        assert!(state.document_mut("test-data/flame.tiger").is_some());
 
-        app.close_document("test-data/flame.tiger");
-        assert_eq!(app.documents_iter().count(), 1);
-        assert!(app.document("test-data/flame.tiger").is_none());
-        assert!(app.document_mut("test-data/flame.tiger").is_none());
+        state.close_document("test-data/flame.tiger");
+        assert_eq!(state.documents_iter().count(), 1);
+        assert!(state.document("test-data/flame.tiger").is_none());
+        assert!(state.document_mut("test-data/flame.tiger").is_none());
     }
 
     #[test]
     fn open_and_close_updates_focused_document() {
-        let mut app = App::default();
+        let mut state = State::default();
 
-        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(
-            app.current_document().unwrap().path(),
+            state.current_document().unwrap().path(),
             Path::new("test-data/samurai.tiger")
         );
 
-        app.open_document(Document::open("test-data/flame.tiger").unwrap());
+        state.open_document(Document::open("test-data/flame.tiger").unwrap());
         assert_eq!(
-            app.current_document().unwrap().path(),
+            state.current_document().unwrap().path(),
             Path::new("test-data/flame.tiger")
         );
 
-        app.close_document("test-data/flame.tiger");
+        state.close_document("test-data/flame.tiger");
         assert_eq!(
-            app.current_document().unwrap().path(),
+            state.current_document().unwrap().path(),
             Path::new("test-data/samurai.tiger")
         );
     }
 
     #[test]
     fn can_manually_focus_a_document() {
-        let mut app = App::default();
+        let mut state = State::default();
 
-        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
-        app.open_document(Document::open("test-data/flame.tiger").unwrap());
-        app.focus_document("test-data/samurai.tiger").unwrap();
+        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(Document::open("test-data/flame.tiger").unwrap());
+        state.focus_document("test-data/samurai.tiger").unwrap();
         assert_eq!(
-            app.current_document().unwrap().path(),
+            state.current_document().unwrap().path(),
             Path::new("test-data/samurai.tiger")
         );
     }
 
     #[test]
     fn keeps_track_of_recently_opened_documents() {
-        let mut app = App::default();
+        let mut state = State::default();
 
-        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(
-            *app.recent_documents,
+            *state.recent_documents,
             vec![PathBuf::from("test-data/samurai.tiger")]
         );
 
-        app.open_document(Document::open("test-data/flame.tiger").unwrap());
+        state.open_document(Document::open("test-data/flame.tiger").unwrap());
         assert_eq!(
-            *app.recent_documents,
+            *state.recent_documents,
             vec![
                 PathBuf::from("test-data/flame.tiger"),
                 PathBuf::from("test-data/samurai.tiger")
             ]
         );
 
-        app.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(
-            *app.recent_documents,
+            *state.recent_documents,
             vec![
                 PathBuf::from("test-data/samurai.tiger"),
                 PathBuf::from("test-data/flame.tiger"),
             ]
         );
 
-        app.relocate_document("test-data/samurai.tiger", "relocated");
+        state.relocate_document("test-data/samurai.tiger", "relocated");
         assert_eq!(
-            *app.recent_documents,
+            *state.recent_documents,
             vec![
                 PathBuf::from("relocated"),
                 PathBuf::from("test-data/samurai.tiger"),
@@ -310,9 +307,9 @@ mod test {
             ]
         );
 
-        app.new_document("new");
+        state.new_document("new");
         assert_eq!(
-            *app.recent_documents,
+            *state.recent_documents,
             vec![
                 PathBuf::from("new"),
                 PathBuf::from("relocated"),
@@ -324,14 +321,14 @@ mod test {
 
     #[test]
     fn limits_list_of_recent_documents() {
-        let mut app = App::default();
+        let mut state = State::default();
 
         for i in 0..100 {
-            app.add_recent_document(PathBuf::from(format!("doc_{i}")));
+            state.add_recent_document(PathBuf::from(format!("doc_{i}")));
         }
 
         assert_eq!(
-            *app.recent_documents,
+            *state.recent_documents,
             (90..=99)
                 .rev()
                 .map(|i| PathBuf::from(format!("doc_{i}")))

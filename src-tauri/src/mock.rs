@@ -4,15 +4,15 @@ use std::{ops::Deref, path::PathBuf, sync::Arc, time::Duration};
 
 use crate::{
     api::Api,
-    app::{App, AppState},
     dto,
     features::{self, texture_cache},
+    state::{self, State},
     TigerApp,
 };
 
 #[derive(Clone)]
 pub struct TigerAppMock {
-    app_state: AppState,
+    state: state::Handle,
     texture_cache: texture_cache::Handle,
     client_state: Arc<Mutex<dto::App>>,
 }
@@ -22,9 +22,9 @@ impl TigerAppMock {
 
     pub fn new() -> Self {
         let app = Self {
-            app_state: AppState(Arc::new(Mutex::new(App::default()))),
+            state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
-            client_state: Arc::new(Mutex::new(App::default().to_dto(dto::AppTrim::Full))),
+            client_state: Arc::new(Mutex::new(State::default().to_dto(dto::AppTrim::Full))),
         };
         app.texture_cache.init(app.clone(), Self::PERIOD);
         features::missing_textures::init(app.clone(), Self::PERIOD);
@@ -69,23 +69,23 @@ impl TigerAppMock {
 }
 
 impl TigerApp for TigerAppMock {
-    fn app_state(&self) -> AppState {
-        self.app_state.clone()
+    fn state(&self) -> state::Handle {
+        self.state.clone()
     }
 
     fn texture_cache(&self) -> texture_cache::Handle {
         self.texture_cache.clone()
     }
 
-    fn patch_state<F: FnOnce(&mut App)>(&self, app_trim: dto::AppTrim, operation: F) {
-        let app_state = self.app_state();
-        let patch = app_state.mutate(app_trim, operation);
+    fn patch_state<F: FnOnce(&mut State)>(&self, app_trim: dto::AppTrim, operation: F) {
+        let state_handle = self.state();
+        let patch = state_handle.mutate(app_trim, operation);
         self.apply_patch(patch);
     }
 
     fn replace_state(&self) {
-        let app_state = self.app_state();
-        let app = app_state.0.lock();
-        *self.client_state.lock() = app.to_dto(dto::AppTrim::Full);
+        let state_handle = self.state();
+        let state = state_handle.0.lock();
+        *self.client_state.lock() = state.to_dto(dto::AppTrim::Full);
     }
 }

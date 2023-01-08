@@ -5,23 +5,24 @@ use std::path::PathBuf;
 use std::sync::mpsc::channel;
 use tauri::Manager;
 
-use crate::app::AppState;
+use crate::state;
 use crate::utils::paths;
 
 pub fn init(tauri_app: &tauri::App) {
-    let app_state = tauri_app.state::<AppState>();
-    let mut app = app_state.0.lock();
+    let state_handle = tauri_app.state::<state::Handle>();
+    let mut state = state_handle.0.lock();
 
     match read_from_disk() {
         Ok(mut documents) => {
             documents.retain(|d| d.exists());
-            app.set_recent_documents(documents);
+            state.set_recent_documents(documents);
         }
         Err(e) => error!("Error while reading list of recently opened documents: {e}"),
     };
 
     let (tx, rx) = channel();
-    app.recent_documents_delegate()
+    state
+        .recent_documents_delegate()
         .subscribe(move |recent_documents| {
             tx.send(recent_documents.clone()).ok();
             Response::StaySubscribed

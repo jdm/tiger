@@ -90,9 +90,10 @@ mod test {
             .await;
 
         let ExportSettings::Template(export_settings) = {
-            let app_state = app.app_state();
-            let app = app_state.0.lock();
-            app.current_document()
+            let state_handle = app.state();
+            let state = state_handle.0.lock();
+            state
+                .current_document()
                 .unwrap()
                 .sheet()
                 .export_settings()
