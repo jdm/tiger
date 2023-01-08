@@ -36,7 +36,7 @@ impl PackedSheet {
 
 pub(super) fn pack_sheet(
     sheet: &Sheet<Absolute>,
-    texture_cache: texture_cache::CacheHandle,
+    texture_cache: texture_cache::Handle,
 ) -> Result<PackedSheet, PackError> {
     let mut bitmaps = HashMap::new();
     {

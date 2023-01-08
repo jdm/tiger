@@ -31,7 +31,7 @@ pub enum ExportError {
 
 pub fn export_sheet(
     sheet: &Sheet<Absolute>,
-    texture_cache: texture_cache::CacheHandle,
+    texture_cache: texture_cache::Handle,
 ) -> Result<(), ExportError> {
     let export_settings = sheet
         .export_settings()
@@ -80,26 +80,30 @@ fn create_dir(path: &Path) -> Result<(), ExportError> {
 #[cfg(test)]
 mod test {
 
-    use parking_lot::Mutex;
-    use std::collections::HashMap;
-    use std::sync::Arc;
-
     use super::*;
-    use crate::{app, document};
+    use crate::{mock::TigerAppMock, TigerApp};
 
-    #[test]
-    fn export_matches_known_output() {
-        let texture_cache = Arc::new(Mutex::new(HashMap::new()));
-        let mut app = app::App::default();
-        app.open_document(document::Document::open("test-data/samurai.tiger").unwrap());
+    #[tokio::test]
+    async fn export_matches_known_output() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger".into()])
+            .await;
 
-        let document = app.current_document().unwrap();
-        let ExportSettings::Template(export_settings) =
-            document.sheet().export_settings().as_ref().unwrap();
+        let ExportSettings::Template(export_settings) = {
+            let app_state = app.app_state();
+            let app = app_state.0.lock();
+            app.current_document()
+                .unwrap()
+                .sheet()
+                .export_settings()
+                .as_ref()
+                .unwrap()
+                .to_owned()
+        };
 
         std::fs::remove_file(export_settings.texture_file()).ok();
         std::fs::remove_file(export_settings.metadata_file()).ok();
-        export_sheet(document.sheet(), texture_cache).unwrap();
+        app.export().await;
 
         assert_eq!(
             std::fs::read_to_string(export_settings.metadata_file()).unwrap(),

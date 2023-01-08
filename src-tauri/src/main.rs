@@ -10,7 +10,7 @@ use tauri::Manager;
 
 use app::{App, AppState};
 use dto::AppTrim;
-use features::texture_cache::TextureCache;
+use features::texture_cache;
 
 mod api;
 mod app;
@@ -46,7 +46,7 @@ fn main() {
 
     tauri::Builder::default()
         .manage(app::AppState(Default::default()))
-        .manage(features::texture_cache::TextureCache::default())
+        .manage(texture_cache::Handle::default())
         .setup(|tauri_app| {
             init_window_shadow(tauri_app);
             tauri_app
@@ -228,7 +228,7 @@ fn init_window_shadow(tauri_app: &mut tauri::App) {
 
 pub trait TigerApp {
     fn app_state(&self) -> AppState;
-    fn texture_cache(&self) -> TextureCache;
+    fn texture_cache(&self) -> texture_cache::Handle;
     fn patch_state<F: FnOnce(&mut App)>(&self, app_trim: AppTrim, operation: F);
     fn replace_state(&self);
 }
@@ -238,7 +238,7 @@ impl TigerApp for tauri::App {
         self.handle().app_state()
     }
 
-    fn texture_cache(&self) -> TextureCache {
+    fn texture_cache(&self) -> texture_cache::Handle {
         self.handle().texture_cache()
     }
 
@@ -257,8 +257,8 @@ impl TigerApp for tauri::AppHandle {
         state.deref().clone()
     }
 
-    fn texture_cache(&self) -> TextureCache {
-        let cache = self.state::<TextureCache>();
+    fn texture_cache(&self) -> texture_cache::Handle {
+        let cache = self.state::<texture_cache::Handle>();
         cache.deref().clone()
     }
 

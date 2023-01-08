@@ -6,14 +6,14 @@ use crate::{
     api::Api,
     app::{App, AppState},
     dto,
-    features::{self, texture_cache::TextureCache},
+    features::{self, texture_cache},
     TigerApp,
 };
 
 #[derive(Clone)]
 pub struct TigerAppMock {
     app_state: AppState,
-    texture_cache: TextureCache,
+    texture_cache: texture_cache::Handle,
     client_state: Arc<Mutex<dto::App>>,
 }
 
@@ -23,7 +23,7 @@ impl TigerAppMock {
     pub fn new() -> Self {
         let app = Self {
             app_state: AppState(Arc::new(Mutex::new(App::default()))),
-            texture_cache: TextureCache::default(),
+            texture_cache: texture_cache::Handle::default(),
             client_state: Arc::new(Mutex::new(App::default().to_dto(dto::AppTrim::Full))),
         };
         app.texture_cache.init(app.clone(), Self::PERIOD);
@@ -51,6 +51,10 @@ impl TigerAppMock {
         self.apply_patch(Api::delete_frame(self, path).unwrap());
     }
 
+    pub async fn export(&self) {
+        self.apply_patch(Api::export(self).await.unwrap());
+    }
+
     pub fn import_frames(&self, paths: Vec<PathBuf>) {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
     }
@@ -69,7 +73,7 @@ impl TigerApp for TigerAppMock {
         self.app_state.clone()
     }
 
-    fn texture_cache(&self) -> TextureCache {
+    fn texture_cache(&self) -> texture_cache::Handle {
         self.texture_cache.clone()
     }
 

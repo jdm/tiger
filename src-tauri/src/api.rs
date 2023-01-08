@@ -9,8 +9,9 @@ use crate::app::{App, AppState};
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, AppTrim, ToFileName};
 use crate::export::export_sheet;
-use crate::features::texture_cache::{self, TextureCache};
+use crate::features::texture_cache;
 use crate::sheet::{Absolute, Sheet};
+use crate::utils::handle::Handle;
 use crate::TigerApp;
 
 impl AppState {
@@ -40,6 +41,7 @@ impl AppState {
 #[async_trait]
 pub trait Api {
     fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()>;
+    async fn export(&self) -> Result<Patch, ()>;
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
     fn new_document(&self, path: PathBuf) -> Result<Patch, ()>;
     async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
@@ -53,6 +55,37 @@ impl<T: TigerApp + Sync> Api for T {
                 document.process_command(Command::DeleteFrame(path)).ok();
             }
         }))
+    }
+
+    async fn export(&self) -> Result<Patch, ()> {
+        let (sheet, document_name) = {
+            let app_state = self.app_state();
+            let app = app_state.0.lock();
+            match app.current_document() {
+                Some(d) => (d.sheet().clone(), d.path().to_file_name()),
+                _ => return Ok(Patch(Vec::new())),
+            }
+        };
+
+        match tauri::async_runtime::spawn_blocking({
+            let texture_cache = self.texture_cache();
+            move || export_sheet(&sheet, texture_cache)
+        })
+        .await
+        .unwrap()
+        {
+            Ok(_) => Ok(Patch(Vec::new())),
+            Err(e) => Ok(self.app_state().mutate(AppTrim::Full, |app| {
+                app.show_error_message(
+                    "Export Error".to_owned(),
+                    format!(
+                        "An error occured while trying to export `{}`",
+                        document_name.to_file_name(),
+                    ),
+                    e.to_string(),
+                )
+            })),
+        }
     }
 
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()> {
@@ -1666,35 +1699,8 @@ pub fn end_resize_hitbox(app_state: tauri::State<'_, AppState>) -> Result<Patch,
 }
 
 #[tauri::command]
-pub async fn export(
-    app_state: tauri::State<'_, AppState>,
-    texture_cache: tauri::State<'_, TextureCache>,
-) -> Result<Patch, ()> {
-    let (sheet, document_name) = {
-        let app = app_state.0.lock();
-        match app.current_document() {
-            Some(d) => (d.sheet().clone(), d.path().to_file_name()),
-            _ => return Ok(Patch(Vec::new())),
-        }
-    };
-
-    let texture_cache: texture_cache::CacheHandle = texture_cache.handle();
-    match tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet, texture_cache))
-        .await
-        .unwrap()
-    {
-        Ok(_) => Ok(Patch(Vec::new())),
-        Err(e) => Ok(app_state.mutate(AppTrim::Full, |app| {
-            app.show_error_message(
-                "Export Error".to_owned(),
-                format!(
-                    "An error occured while trying to export `{}`",
-                    document_name.to_file_name(),
-                ),
-                e.to_string(),
-            )
-        })),
-    }
+pub async fn export(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.export().await
 }
 
 #[tauri::command]
@@ -1774,7 +1780,7 @@ pub fn cancel_export_as(app_state: tauri::State<'_, AppState>) -> Result<Patch, 
 #[tauri::command]
 pub async fn end_export_as(
     app_state: tauri::State<'_, AppState>,
-    texture_cache: tauri::State<'_, TextureCache>,
+    texture_cache: tauri::State<'_, texture_cache::Handle>,
 ) -> Result<Patch, ()> {
     let mut patch = app_state.mutate(AppTrim::Full, |app| {
         if let Some(document) = app.current_document_mut() {
@@ -1790,10 +1796,12 @@ pub async fn end_export_as(
         }
     };
 
-    let texture_cache: texture_cache::CacheHandle = texture_cache.handle();
-    let result = tauri::async_runtime::spawn_blocking(move || export_sheet(&sheet, texture_cache))
-        .await
-        .unwrap();
+    let result = tauri::async_runtime::spawn_blocking({
+        let texture_cache = texture_cache.0.clone();
+        move || export_sheet(&sheet, Handle(texture_cache))
+    })
+    .await
+    .unwrap();
 
     let mut additional_patch = app_state.mutate(AppTrim::Full, |app| {
         if let Err(e) = result {
