@@ -39,17 +39,40 @@ impl state::Handle {
 
 #[async_trait]
 pub trait Api {
+    fn begin_drag_and_drop_frame(&self, frame: PathBuf) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
+    fn create_animation(&self) -> Result<Patch, ()>;
+    fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
     fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()>;
+    fn delete_hitbox(&self, name: String) -> Result<Patch, ()>;
+    fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
     fn new_document(&self, path: PathBuf) -> Result<Patch, ()>;
     async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
     fn set_export_template_file(&self, file: PathBuf) -> Result<Patch, ()>;
+    fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
+    fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
+    fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
+    fn set_hitbox_width(&self, width: u32) -> Result<Patch, ()>;
+    fn set_keyframe_duration(&self, duration_millies: u64) -> Result<Patch, ()>;
+    fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()>;
+    fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
+    fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
 }
 
 #[async_trait]
 impl<T: TigerApp + Sync> Api for T {
+    fn begin_drag_and_drop_frame(&self, frame: PathBuf) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginDragAndDropFrame(frame))
+                    .ok();
+            }
+        }))
+    }
+
     fn begin_export_as(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -58,11 +81,19 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn set_export_template_file(&self, path: PathBuf) -> Result<Patch, ()> {
+    fn create_animation(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::CreateAnimation).ok();
+            }
+        }))
+    }
+
+    fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SetExportTemplateFile(path))
+                    .process_command(Command::CreateHitbox(position.map(|p| p.into())))
                     .ok();
             }
         }))
@@ -72,6 +103,23 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::DeleteFrame(path)).ok();
+            }
+        }))
+    }
+    fn delete_hitbox(&self, name: String) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::DeleteHitbox(name)).ok();
+            }
+        }))
+    }
+
+    fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DropFrameOnTimeline(direction.into(), index))
+                    .ok();
             }
         }))
     }
@@ -150,6 +198,98 @@ impl<T: TigerApp + Sync> Api for T {
                         );
                     }
                 }
+            }
+        }))
+    }
+
+    fn set_export_template_file(&self, path: PathBuf) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportTemplateFile(path))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetHitboxHeight(height))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetHitboxPositionX(x))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetHitboxPositionY(y))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_hitbox_width(&self, width: u32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetHitboxWidth(width))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetKeyframeOffsetX(x))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_keyframe_duration(&self, duration_millis: u64) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetKeyframeDuration(Duration::from_millis(
+                        duration_millis,
+                    )))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetKeyframeOffsetY(y))
+                    .ok();
+            }
+        }))
+    }
+
+    fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::TogglePreserveAspectRatio)
+                    .ok();
             }
         }))
     }
@@ -943,12 +1083,8 @@ pub fn show_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patc
 }
 
 #[tauri::command]
-pub fn create_animation(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::CreateAnimation).ok();
-        }
-    }))
+pub fn create_animation(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.create_animation()
 }
 
 #[tauri::command]
@@ -1352,32 +1488,17 @@ pub fn select_direction(
 }
 
 #[tauri::command]
-pub fn begin_drag_and_drop_frame(
-    state_handle: tauri::State<'_, state::Handle>,
-    frame: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginDragAndDropFrame(frame))
-                .ok();
-        }
-    }))
+pub fn begin_drag_and_drop_frame(app: tauri::AppHandle, frame: PathBuf) -> Result<Patch, ()> {
+    app.begin_drag_and_drop_frame(frame)
 }
 
 #[tauri::command]
 pub fn drop_frame_on_timeline(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DropFrameOnTimeline(direction.into(), index))
-                .ok();
-        }
-    }))
+    app.drop_frame_on_timeline(direction, index)
 }
 
 #[tauri::command]
@@ -1403,47 +1524,18 @@ pub fn delete_selected_keyframes(
 }
 
 #[tauri::command]
-pub fn set_keyframe_duration(
-    state_handle: tauri::State<'_, state::Handle>,
-    duration_millis: u64,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetKeyframeDuration(Duration::from_millis(
-                    duration_millis,
-                )))
-                .ok();
-        }
-    }))
+pub fn set_keyframe_duration(app: tauri::AppHandle, duration_millis: u64) -> Result<Patch, ()> {
+    app.set_keyframe_duration(duration_millis)
 }
 
 #[tauri::command]
-pub fn set_keyframe_offset_x(
-    state_handle: tauri::State<'_, state::Handle>,
-    x: i32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetKeyframeOffsetX(x))
-                .ok();
-        }
-    }))
+pub fn set_keyframe_offset_x(app: tauri::AppHandle, x: i32) -> Result<Patch, ()> {
+    app.set_keyframe_offset_x(x)
 }
 
 #[tauri::command]
-pub fn set_keyframe_offset_y(
-    state_handle: tauri::State<'_, state::Handle>,
-    y: i32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetKeyframeOffsetY(y))
-                .ok();
-        }
-    }))
+pub fn set_keyframe_offset_y(app: tauri::AppHandle, y: i32) -> Result<Patch, ()> {
+    app.set_keyframe_offset_x(y)
 }
 
 #[tauri::command]
@@ -1571,29 +1663,13 @@ pub fn end_nudge_keyframe(state_handle: tauri::State<'_, state::Handle>) -> Resu
 }
 
 #[tauri::command]
-pub fn create_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
-    position: Option<(i32, i32)>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::CreateHitbox(position.map(|p| p.into())))
-                .ok();
-        }
-    }))
+pub fn create_hitbox(app: tauri::AppHandle, position: Option<(i32, i32)>) -> Result<Patch, ()> {
+    app.create_hitbox(position)
 }
 
 #[tauri::command]
-pub fn delete_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
-    name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::DeleteHitbox(name)).ok();
-        }
-    }))
+pub fn delete_hitbox(app: tauri::AppHandle, name: String) -> Result<Patch, ()> {
+    app.delete_hitbox(name)
 }
 
 #[tauri::command]
@@ -1628,72 +1704,28 @@ pub fn unlock_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<
 }
 
 #[tauri::command]
-pub fn set_hitbox_position_x(
-    state_handle: tauri::State<'_, state::Handle>,
-    x: i32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetHitboxPositionX(x))
-                .ok();
-        }
-    }))
+pub fn set_hitbox_height(app: tauri::AppHandle, height: u32) -> Result<Patch, ()> {
+    app.set_hitbox_height(height)
 }
 
 #[tauri::command]
-pub fn set_hitbox_position_y(
-    state_handle: tauri::State<'_, state::Handle>,
-    y: i32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetHitboxPositionY(y))
-                .ok();
-        }
-    }))
+pub fn set_hitbox_width(app: tauri::AppHandle, width: u32) -> Result<Patch, ()> {
+    app.set_hitbox_width(width)
 }
 
 #[tauri::command]
-pub fn set_hitbox_width(
-    state_handle: tauri::State<'_, state::Handle>,
-    width: u32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetHitboxWidth(width))
-                .ok();
-        }
-    }))
+pub fn set_hitbox_position_x(app: tauri::AppHandle, x: i32) -> Result<Patch, ()> {
+    app.set_hitbox_position_x(x)
 }
 
 #[tauri::command]
-pub fn set_hitbox_height(
-    state_handle: tauri::State<'_, state::Handle>,
-    height: u32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetHitboxHeight(height))
-                .ok();
-        }
-    }))
+pub fn set_hitbox_position_y(app: tauri::AppHandle, y: i32) -> Result<Patch, ()> {
+    app.set_hitbox_position_y(y)
 }
 
 #[tauri::command]
-pub fn toggle_preserve_aspect_ratio(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::TogglePreserveAspectRatio)
-                .ok();
-        }
-    }))
+pub fn toggle_preserve_aspect_ratio(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.toggle_preserve_aspect_ratio()
 }
 
 #[tauri::command]

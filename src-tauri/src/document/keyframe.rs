@@ -114,3 +114,153 @@ impl Document {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod test {
+
+    use crate::dto;
+    use crate::mock::TigerAppMock;
+
+    #[test]
+    fn can_move_keyframe() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp".into());
+        app.import_frames(vec!["frame".into()]);
+        app.create_animation();
+        app.begin_drag_and_drop_frame("frame".into());
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+
+        app.set_keyframe_offset_x(10);
+        app.set_keyframe_offset_y(20);
+
+        let keyframe = app.client_state().documents[0].sheet.animations[0]
+            .sequences
+            .get(&dto::Direction::North)
+            .unwrap()
+            .keyframes[0]
+            .clone();
+        assert_eq!(keyframe.offset, (10, 20));
+    }
+
+    #[test]
+    fn can_change_keyframe_duration() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp".into());
+        app.import_frames(vec!["frame".into()]);
+        app.create_animation();
+        app.begin_drag_and_drop_frame("frame".into());
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+
+        app.set_keyframe_duration(205);
+
+        let keyframe = app.client_state().documents[0].sheet.animations[0]
+            .sequences
+            .get(&dto::Direction::North)
+            .unwrap()
+            .keyframes[0]
+            .clone();
+        assert_eq!(keyframe.duration_millis, 205);
+    }
+
+    #[test]
+    fn can_move_hitbox() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp".into());
+        app.import_frames(vec!["frame".into()]);
+        app.create_animation();
+        app.begin_drag_and_drop_frame("frame".into());
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+        app.create_hitbox(Some((0, 0)));
+
+        app.set_hitbox_position_x(10);
+        app.set_hitbox_position_y(20);
+
+        let hitbox = app.client_state().documents[0].sheet.animations[0]
+            .sequences
+            .get(&dto::Direction::North)
+            .unwrap()
+            .keyframes[0]
+            .hitboxes[0]
+            .clone();
+        assert_eq!(hitbox.top_left, (10, 20));
+    }
+
+    #[test]
+    fn can_resize_hitbox() {
+        let app = TigerAppMock::new();
+
+        let get_hitbox = {
+            let app = app.clone();
+            move || {
+                app.client_state().documents[0].sheet.animations[0]
+                    .sequences
+                    .get(&dto::Direction::North)
+                    .unwrap()
+                    .keyframes[0]
+                    .hitboxes[0]
+                    .clone()
+            }
+        };
+
+        app.new_document("tmp".into());
+        app.import_frames(vec!["frame".into()]);
+        app.create_animation();
+        app.begin_drag_and_drop_frame("frame".into());
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+        app.create_hitbox(Some((0, 0)));
+
+        app.set_hitbox_width(10);
+        app.set_hitbox_height(20);
+        assert_eq!(get_hitbox().size, (10, 20));
+
+        app.toggle_preserve_aspect_ratio();
+        app.set_hitbox_width(12);
+        assert_eq!(get_hitbox().size, (12, 24));
+        app.set_hitbox_height(8);
+        assert_eq!(get_hitbox().size, (4, 8));
+
+        app.toggle_preserve_aspect_ratio();
+        app.set_hitbox_width(0);
+        app.toggle_preserve_aspect_ratio();
+        app.set_hitbox_width(15);
+        assert_eq!(get_hitbox().size, (15, 8));
+
+        app.toggle_preserve_aspect_ratio();
+        app.set_hitbox_height(0);
+        app.toggle_preserve_aspect_ratio();
+        app.set_hitbox_height(18);
+        assert_eq!(get_hitbox().size, (15, 18));
+    }
+
+    #[test]
+    fn can_create_and_delete_hitbox() {
+        let app = TigerAppMock::new();
+
+        let hitbox_names = {
+            let app = app.clone();
+            move || {
+                app.client_state().documents[0].sheet.animations[0]
+                    .sequences
+                    .get(&dto::Direction::North)
+                    .unwrap()
+                    .keyframes[0]
+                    .hitboxes
+                    .iter()
+                    .map(|h| h.name.clone())
+                    .collect::<Vec<_>>()
+            }
+        };
+
+        app.new_document("tmp".into());
+        app.import_frames(vec!["frame".into()]);
+        app.create_animation();
+        app.begin_drag_and_drop_frame("frame".into());
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+
+        app.create_hitbox(Some((0, 0)));
+        assert_eq!(hitbox_names().len(), 1);
+
+        app.delete_hitbox(hitbox_names()[0].clone());
+        assert!(hitbox_names().is_empty());
+    }
+}

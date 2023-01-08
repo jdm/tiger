@@ -47,6 +47,17 @@ impl TigerAppMock {
         self.events.lock().clone()
     }
 
+    pub fn assert_eventually<F: Fn() -> bool>(&self, test: F) {
+        let start = std::time::Instant::now();
+        while std::time::Instant::now().duration_since(start) < Duration::from_secs(5) {
+            if test() {
+                return;
+            }
+            self.wait_for_periodic_scans();
+        }
+        panic!("Assertion failed");
+    }
+
     fn apply_patch(&self, patch: Patch) {
         let mut client_state = serde_json::to_value(self.client_state.lock().deref()).unwrap();
         json_patch::patch(&mut client_state, &patch).unwrap();
@@ -55,12 +66,32 @@ impl TigerAppMock {
 }
 
 impl TigerAppMock {
+    pub fn begin_drag_and_drop_frame(&self, frame: PathBuf) {
+        self.apply_patch(Api::begin_drag_and_drop_frame(self, frame).unwrap());
+    }
+
     pub fn begin_export_as(&self) {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
 
+    pub fn create_animation(&self) {
+        self.apply_patch(Api::create_animation(self).unwrap());
+    }
+
+    pub fn create_hitbox(&self, position: Option<(i32, i32)>) {
+        self.apply_patch(Api::create_hitbox(self, position).unwrap());
+    }
+
     pub fn delete_frame(&self, path: PathBuf) {
         self.apply_patch(Api::delete_frame(self, path).unwrap());
+    }
+
+    pub fn delete_hitbox(&self, name: String) {
+        self.apply_patch(Api::delete_hitbox(self, name).unwrap());
+    }
+
+    pub fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) {
+        self.apply_patch(Api::drop_frame_on_timeline(self, direction, index).unwrap());
     }
 
     pub async fn export(&self) {
@@ -81,6 +112,38 @@ impl TigerAppMock {
 
     pub fn set_export_template_file(&self, path: PathBuf) {
         self.apply_patch(Api::set_export_template_file(self, path).unwrap());
+    }
+
+    pub fn set_hitbox_height(&self, height: u32) {
+        self.apply_patch(Api::set_hitbox_height(self, height).unwrap());
+    }
+
+    pub fn set_hitbox_position_x(&self, x: i32) {
+        self.apply_patch(Api::set_hitbox_position_x(self, x).unwrap());
+    }
+
+    pub fn set_hitbox_position_y(&self, y: i32) {
+        self.apply_patch(Api::set_hitbox_position_y(self, y).unwrap());
+    }
+
+    pub fn set_hitbox_width(&self, width: u32) {
+        self.apply_patch(Api::set_hitbox_width(self, width).unwrap());
+    }
+
+    pub fn set_keyframe_duration(&self, duration_millis: u64) {
+        self.apply_patch(Api::set_keyframe_duration(self, duration_millis).unwrap());
+    }
+
+    pub fn set_keyframe_offset_x(&self, x: i32) {
+        self.apply_patch(Api::set_keyframe_offset_x(self, x).unwrap());
+    }
+
+    pub fn set_keyframe_offset_y(&self, y: i32) {
+        self.apply_patch(Api::set_keyframe_offset_y(self, y).unwrap());
+    }
+
+    pub fn toggle_preserve_aspect_ratio(&self) {
+        self.apply_patch(Api::toggle_preserve_aspect_ratio(self).unwrap());
     }
 }
 

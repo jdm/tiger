@@ -51,7 +51,7 @@ mod test {
 
     #[test]
     fn detects_texture_addition_and_removal() {
-        let filename = "test-output/detects_removed_texture.png";
+        let filename = "test-output/detects_texture_addition_and_removal.png";
         std::fs::remove_file(filename).ok();
 
         let is_missing =
@@ -61,15 +61,12 @@ mod test {
 
         app.new_document("tmp.tiger".into());
         app.import_frames(vec![PathBuf::from(filename)]);
-        app.wait_for_periodic_scans();
-        assert!(is_missing(&app));
+        app.assert_eventually(|| is_missing(&app));
 
         File::create(filename).unwrap();
-        app.wait_for_periodic_scans();
-        assert!(!is_missing(&app));
+        app.assert_eventually(|| !is_missing(&app));
 
         std::fs::remove_file(filename).ok();
-        app.wait_for_periodic_scans();
-        assert!(is_missing(&app));
+        app.assert_eventually(|| is_missing(&app));
     }
 }
