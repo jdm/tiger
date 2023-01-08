@@ -29,6 +29,8 @@ jobs:
             ~/.cargo/registry/index/
             ~/.cargo/registry/cache/
             ~/.cargo/git/db/
+            ~/.cargo/.crates.toml
+            ~/.cargo/.crates2.json
             src-tauri/target/
           key: ${{ github.workflow }}-cargo-${{ github.ref }}-${{ github.sha }}
           restore-keys: ${{ github.workflow }}-cargo-${{ github.ref }}
