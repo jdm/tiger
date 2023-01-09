@@ -51,7 +51,7 @@ pub trait Api {
     async fn export(&self) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
-    async fn open_documents<P: AsRef<Path> + Send + Sync>(
+    async fn open_documents<P: Into<PathBuf> + Send + Sync>(
         &self,
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
@@ -236,13 +236,13 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    async fn open_documents<P: AsRef<Path> + Send + Sync>(
+    async fn open_documents<P: Into<PathBuf> + Send + Sync>(
         &self,
         paths: Vec<P>,
     ) -> Result<Patch, ()> {
         let mut documents: Vec<(PathBuf, DocumentResult<Document>)> = Vec::new();
-        for path in &paths {
-            let open_path = path.as_ref().to_path_buf();
+        for path in paths {
+            let open_path: PathBuf = path.into();
             documents.push((
                 open_path.clone(),
                 tauri::async_runtime::spawn_blocking(move || Document::open(open_path))

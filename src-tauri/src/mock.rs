@@ -1,9 +1,5 @@
 use json_patch::Patch;
-use std::{
-    ops::Deref,
-    path::{Path, PathBuf},
-    time::Duration,
-};
+use std::{ops::Deref, path::PathBuf, time::Duration};
 
 use crate::{
     api::Api,
@@ -126,7 +122,7 @@ impl TigerAppMock {
         self.apply_patch(Api::new_document(self, path).unwrap());
     }
 
-    pub async fn open_documents<P: AsRef<Path> + Send + Sync>(&self, paths: Vec<P>) {
+    pub async fn open_documents<P: Into<PathBuf> + Send + Sync>(&self, paths: Vec<P>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
     }
 
