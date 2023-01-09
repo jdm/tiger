@@ -1,5 +1,9 @@
 use json_patch::Patch;
-use std::{ops::Deref, path::PathBuf, time::Duration};
+use std::{
+    ops::Deref,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use crate::{
     api::Api,
@@ -16,6 +20,7 @@ pub struct TigerAppMock {
     texture_cache: texture_cache::Handle,
     client_state: handle::Handle<dto::State>,
     events: handle::Handle<Vec<(String, serde_json::Value)>>,
+    clipboard: handle::Handle<Option<String>>,
 }
 
 impl TigerAppMock {
@@ -26,9 +31,11 @@ impl TigerAppMock {
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
             client_state: handle::Handle::new(State::default().to_dto(dto::StateTrim::Full)),
-            events: handle::Handle::new(vec![]),
+            events: handle::Handle::default(),
+            clipboard: handle::Handle::default(),
         };
         app.texture_cache.init(app.clone(), Self::PERIOD);
+        features::clipboard_analysis::init(app.clone(), Self::PERIOD);
         features::missing_textures::init(app.clone(), Self::PERIOD);
         features::template_hot_reload::init(app.clone(), Self::PERIOD);
         features::texture_hot_reload::init(app.clone(), Self::PERIOD);
@@ -65,6 +72,7 @@ impl TigerAppMock {
     }
 }
 
+#[allow(dead_code)]
 impl TigerAppMock {
     pub fn begin_drag_and_drop_frame(&self, frame: PathBuf) {
         self.apply_patch(Api::begin_drag_and_drop_frame(self, frame).unwrap());
@@ -72,6 +80,14 @@ impl TigerAppMock {
 
     pub fn begin_export_as(&self) {
         self.apply_patch(Api::begin_export_as(self).unwrap());
+    }
+
+    pub fn copy(&self) {
+        self.apply_patch(Api::copy(self).unwrap());
+    }
+
+    pub fn cut(&self) {
+        self.apply_patch(Api::cut(self).unwrap());
     }
 
     pub fn create_animation(&self) {
@@ -94,6 +110,10 @@ impl TigerAppMock {
         self.apply_patch(Api::drop_frame_on_timeline(self, direction, index).unwrap());
     }
 
+    pub fn edit_animation(&self, name: &str) {
+        self.apply_patch(Api::edit_animation(self, name).unwrap());
+    }
+
     pub async fn export(&self) {
         self.apply_patch(Api::export(self).await.unwrap());
     }
@@ -106,8 +126,34 @@ impl TigerAppMock {
         self.apply_patch(Api::new_document(self, path).unwrap());
     }
 
-    pub async fn open_documents(&self, paths: Vec<PathBuf>) {
+    pub async fn open_documents<P: AsRef<Path> + Send + Sync>(&self, paths: Vec<P>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
+    }
+
+    pub fn paste(&self) {
+        self.apply_patch(Api::paste(self).unwrap());
+    }
+
+    pub fn select_animation(&self, name: &str, shift: bool, ctrl: bool) {
+        self.apply_patch(Api::select_animation(self, name, shift, ctrl).unwrap());
+    }
+
+    pub fn select_frame(&self, path: PathBuf, shift: bool, ctrl: bool) {
+        self.apply_patch(Api::select_frame(self, path, shift, ctrl).unwrap());
+    }
+
+    pub fn select_hitbox(&self, name: &str, shift: bool, ctrl: bool) {
+        self.apply_patch(Api::select_hitbox(self, name, shift, ctrl).unwrap());
+    }
+
+    pub fn select_keyframe(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+        shift: bool,
+        ctrl: bool,
+    ) {
+        self.apply_patch(Api::select_keyframe(self, direction, index, shift, ctrl).unwrap());
     }
 
     pub fn set_export_template_file(&self, path: PathBuf) {
@@ -172,5 +218,13 @@ impl TigerApp for TigerAppMock {
         self.events
             .lock()
             .push((event.to_owned(), serde_json::to_value(payload).unwrap()));
+    }
+
+    fn read_clipboard(&self) -> Option<String> {
+        self.clipboard.lock().clone()
+    }
+
+    fn write_clipboard<S: Into<String>>(&self, content: S) {
+        *self.clipboard.lock() = Some(content.into())
     }
 }

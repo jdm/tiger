@@ -86,8 +86,7 @@ mod test {
     #[tokio::test]
     async fn export_matches_known_output() {
         let app = TigerAppMock::new();
-        app.open_documents(vec!["test-data/samurai.tiger".into()])
-            .await;
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
         let ExportSettings::Template(export_settings) = {
             let state_handle = app.state();

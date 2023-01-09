@@ -7,7 +7,7 @@ use log::{error, LevelFilter};
 use serde::Serialize;
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
 use std::time::Duration;
-use tauri::Manager;
+use tauri::{ClipboardManager, Manager};
 
 use dto::StateTrim;
 use features::texture_cache;
@@ -57,7 +57,7 @@ fn main() {
             features::recent_documents::init(tauri_app);
             features::template_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
             features::texture_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
-            features::clipboard_analysis::init(tauri_app);
+            features::clipboard_analysis::init(tauri_app.handle(), Duration::from_millis(100));
             Ok(())
         })
         .on_window_event(handle_window_event)
@@ -233,6 +233,8 @@ pub trait TigerApp {
     fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F);
     fn replace_state(&self);
     fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S);
+    fn read_clipboard(&self) -> Option<String>;
+    fn write_clipboard<S: Into<String>>(&self, content: S);
 }
 
 impl TigerApp for tauri::App {
@@ -254,6 +256,14 @@ impl TigerApp for tauri::App {
 
     fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S) {
         TigerApp::emit_all(&self.handle(), event, payload)
+    }
+
+    fn read_clipboard(&self) -> Option<String> {
+        self.handle().read_clipboard()
+    }
+
+    fn write_clipboard<S: Into<String>>(&self, content: S) {
+        self.handle().write_clipboard(content)
     }
 }
 
@@ -292,5 +302,21 @@ impl TigerApp for tauri::AppHandle {
 
     fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S) {
         tauri::Manager::emit_all(self, event, payload).ok();
+    }
+
+    fn read_clipboard(&self) -> Option<String> {
+        match self.clipboard_manager().read_text() {
+            Ok(t) => t,
+            Err(e) => {
+                error!("Failed to read clipboard content: `{e}`");
+                None
+            }
+        }
+    }
+
+    fn write_clipboard<S: Into<String>>(&self, content: S) {
+        if let Err(e) = self.clipboard_manager().write_text(content.into()) {
+            error!("Failed to write clipboard content: `{e}`");
+        }
     }
 }

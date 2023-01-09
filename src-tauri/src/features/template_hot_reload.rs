@@ -46,8 +46,7 @@ mod test {
             .unwrap();
 
         let app = TigerAppMock::new();
-        app.open_documents(vec!["test-data/samurai.tiger".into()])
-            .await;
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
         app.begin_export_as();
         let good_template_path = app.client_state().documents[0]

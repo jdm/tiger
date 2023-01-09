@@ -116,8 +116,7 @@ mod test {
         let frame_path = dir.join("test-data/samurai-dead-all.png");
 
         let app = TigerAppMock::new();
-        app.open_documents(vec!["test-data/samurai.tiger".into()])
-            .await;
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
         app.wait_for_periodic_scans();
         assert!(app.texture_cache().lock().contains_key(&frame_path));
@@ -136,8 +135,7 @@ mod test {
         let after_frame = dir.join("test-data/samurai-attack-north.png");
 
         let app = TigerAppMock::new();
-        app.open_documents(vec!["test-data/samurai.tiger".into()])
-            .await;
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.import_frames(vec![frame.clone()]);
 
         std::fs::copy(&before_frame, &frame).unwrap();

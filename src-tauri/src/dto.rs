@@ -10,7 +10,7 @@ use crate::state;
 
 // Typescript: @/stores/state
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct State {
     pub documents: Vec<Document>,
@@ -21,21 +21,21 @@ pub struct State {
     pub error: Option<UserFacingError>,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecentDocument {
     pub path: PathBuf,
     pub name: String,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 pub enum ClipboardManifest {
     Animations,
     Keyframes,
     Hitboxes,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UserFacingError {
     pub key: String,
@@ -44,7 +44,7 @@ pub struct UserFacingError {
     pub details: String,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Document {
     pub animation_being_renamed: Option<String>,
@@ -95,14 +95,14 @@ pub struct Document {
     pub workbench_zoom: f32,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sheet {
     pub frames: Vec<Frame>,
     pub animations: Vec<Animation>,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Frame {
     pub path: PathBuf,
@@ -112,7 +112,7 @@ pub struct Frame {
     pub missing_on_disk: bool,
 }
 
-#[derive(Clone, Default, Deserialize, Serialize)]
+#[derive(Clone, Debug, Default, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Animation {
     pub name: String,
@@ -124,7 +124,7 @@ pub struct Animation {
     pub key: Uuid,
 }
 
-#[derive(Clone, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
+#[derive(Clone, Debug, Copy, Deserialize, Eq, PartialEq, Hash, Serialize)]
 pub enum Direction {
     East,
     NorthEast,
@@ -136,7 +136,7 @@ pub enum Direction {
     SouthEast,
 }
 
-#[derive(Clone, Copy, Deserialize, Eq, PartialEq, Serialize)]
+#[derive(Clone, Debug, Copy, Deserialize, Eq, PartialEq, Serialize)]
 pub enum DirectionPreset {
     FourDirections,
     EightDirections,
@@ -146,14 +146,14 @@ pub enum DirectionPreset {
     FixedAngle,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Sequence {
     pub keyframes: Vec<Keyframe>,
     pub duration_millis: Option<u64>,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Keyframe {
     pub frame: PathBuf,
@@ -166,7 +166,7 @@ pub struct Keyframe {
     pub key: Uuid,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Hitbox {
     pub name: String,
@@ -176,7 +176,7 @@ pub struct Hitbox {
     pub key: Uuid,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum ListMode {
     Linear,
     Grid4xN,
@@ -210,7 +210,7 @@ pub enum BrowseDirection {
     Right,
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
     pub template_file: PathBuf,
@@ -219,7 +219,7 @@ pub struct ExportSettings {
     pub metadata_paths_root: PathBuf,
 }
 
-#[derive(Debug, Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 pub enum ExportSettingsError {
     ExpectedAbsolutePath,
     ExpectedDirectory,
@@ -229,7 +229,7 @@ pub enum ExportSettingsError {
     TemplateError(String),
 }
 
-#[derive(Clone, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettingsValidation {
     pub valid_settings: bool,

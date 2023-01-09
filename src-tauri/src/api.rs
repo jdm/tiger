@@ -1,9 +1,8 @@
 use async_trait::async_trait;
 use json_patch::Patch;
 use log::error;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::time::Duration;
-use tauri::ClipboardManager;
 
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
@@ -41,15 +40,32 @@ impl state::Handle {
 pub trait Api {
     fn begin_drag_and_drop_frame(&self, frame: PathBuf) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
+    fn copy(&self) -> Result<Patch, ()>;
     fn create_animation(&self) -> Result<Patch, ()>;
     fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
+    fn cut(&self) -> Result<Patch, ()>;
     fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()>;
     fn delete_hitbox(&self, name: String) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
+    fn edit_animation(&self, name: &str) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
     fn new_document(&self, path: PathBuf) -> Result<Patch, ()>;
-    async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
+    async fn open_documents<P: AsRef<Path> + Send + Sync>(
+        &self,
+        paths: Vec<P>,
+    ) -> Result<Patch, ()>;
+    fn paste(&self) -> Result<Patch, ()>;
+    fn select_animation(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()>;
+    fn select_frame<P: AsRef<Path>>(&self, path: P, shift: bool, ctrl: bool) -> Result<Patch, ()>;
+    fn select_hitbox(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()>;
+    fn select_keyframe(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<Patch, ()>;
     fn set_export_template_file(&self, file: PathBuf) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
@@ -81,6 +97,17 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn copy(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(data) = state.current_document().and_then(|d| d.copy()) {
+                if let Ok(serialized) = serde_json::to_string(&data) {
+                    self.write_clipboard(serialized);
+                    state.set_clipboard_manifest(Some(data.manifest()));
+                }
+            }
+        }))
+    }
+
     fn create_animation(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -95,6 +122,20 @@ impl<T: TigerApp + Sync> Api for T {
                 document
                     .process_command(Command::CreateHitbox(position.map(|p| p.into())))
                     .ok();
+            }
+        }))
+    }
+
+    fn cut(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(data) = state.current_document().and_then(|d| d.copy()) {
+                if let Ok(serialized) = serde_json::to_string(&data) {
+                    self.write_clipboard(serialized);
+                    state.set_clipboard_manifest(Some(data.manifest()));
+                }
+            }
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::DeleteSelection).ok();
             }
         }))
     }
@@ -119,6 +160,16 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DropFrameOnTimeline(direction.into(), index))
+                    .ok();
+            }
+        }))
+    }
+
+    fn edit_animation(&self, name: &str) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EditAnimation(name.to_owned()))
                     .ok();
             }
         }))
@@ -169,10 +220,13 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    async fn open_documents(&self, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+    async fn open_documents<P: AsRef<Path> + Send + Sync>(
+        &self,
+        paths: Vec<P>,
+    ) -> Result<Patch, ()> {
         let mut documents: Vec<(PathBuf, DocumentResult<Document>)> = Vec::new();
         for path in &paths {
-            let open_path = path.to_owned();
+            let open_path = path.as_ref().to_path_buf();
             documents.push((
                 open_path.clone(),
                 tauri::async_runtime::spawn_blocking(move || Document::open(open_path))
@@ -198,6 +252,73 @@ impl<T: TigerApp + Sync> Api for T {
                         );
                     }
                 }
+            }
+        }))
+    }
+
+    fn paste(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(serialized) = self.read_clipboard() {
+                if let Ok(data) = serde_json::from_str(&serialized) {
+                    if let Some(document) = state.current_document_mut() {
+                        document.process_command(Command::Paste(data)).ok();
+                    }
+                }
+            }
+        }))
+    }
+
+    fn select_animation(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SelectAnimation(name.to_owned(), shift, ctrl))
+                    .ok();
+            }
+        }))
+    }
+
+    fn select_frame<P: AsRef<Path>>(&self, path: P, shift: bool, ctrl: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SelectFrame(
+                        path.as_ref().to_path_buf(),
+                        shift,
+                        ctrl,
+                    ))
+                    .ok();
+            }
+        }))
+    }
+
+    fn select_hitbox(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SelectHitbox(name.to_owned(), shift, ctrl))
+                    .ok();
+            }
+        }))
+    }
+
+    fn select_keyframe(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SelectKeyframe(
+                        direction.into(),
+                        index,
+                        shift,
+                        ctrl,
+                    ))
+                    .ok();
             }
         }))
     }
@@ -326,7 +447,7 @@ pub fn new_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub async fn open_documents(app: tauri::AppHandle, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+pub async fn open_documents(app: tauri::AppHandle, paths: Vec<&Path>) -> Result<Patch, ()> {
     app.open_documents(paths).await
 }
 
@@ -568,57 +689,18 @@ pub fn redo(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> 
 }
 
 #[tauri::command]
-pub fn cut(
-    tauri_app: tauri::AppHandle,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(data) = state.current_document().and_then(|d| d.copy()) {
-            if let Ok(serialized) = serde_json::to_string(&data) {
-                let mut clipboard = tauri_app.clipboard_manager();
-                if clipboard.write_text(serialized).is_ok() {
-                    state.set_clipboard_manifest(Some(data.manifest()));
-                }
-            }
-        }
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::DeleteSelection).ok();
-        }
-    }))
+pub fn copy(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.copy()
 }
 
 #[tauri::command]
-pub fn copy(
-    tauri_app: tauri::AppHandle,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(data) = state.current_document().and_then(|d| d.copy()) {
-            if let Ok(serialized) = serde_json::to_string(&data) {
-                let mut clipboard = tauri_app.clipboard_manager();
-                if clipboard.write_text(serialized).is_ok() {
-                    state.set_clipboard_manifest(Some(data.manifest()));
-                }
-            }
-        }
-    }))
+pub fn cut(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.cut()
 }
 
 #[tauri::command]
-pub fn paste(
-    tauri_app: tauri::AppHandle,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        let clipboard = tauri_app.clipboard_manager();
-        if let Ok(Some(serialized)) = clipboard.read_text() {
-            if let Ok(data) = serde_json::from_str(&serialized) {
-                if let Some(document) = state.current_document_mut() {
-                    document.process_command(Command::Paste(data)).ok();
-                }
-            }
-        }
-    }))
+pub fn paste(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.paste()
 }
 
 #[tauri::command]
@@ -839,22 +921,6 @@ pub fn clear_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<
 }
 
 #[tauri::command]
-pub fn select_frame(
-    state_handle: tauri::State<'_, state::Handle>,
-    path: PathBuf,
-    shift: bool,
-    ctrl: bool,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SelectFrame(path, shift, ctrl))
-                .ok();
-        }
-    }))
-}
-
-#[tauri::command]
 pub fn select_all(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
     Ok(state_handle.mutate(StateTrim::Full, |state| {
         if let Some(document) = state.current_document_mut() {
@@ -865,56 +931,43 @@ pub fn select_all(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch
 
 #[tauri::command]
 pub fn select_animation(
-    state_handle: tauri::State<'_, state::Handle>,
-    name: String,
+    app: tauri::AppHandle,
+    name: &str,
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SelectAnimation(name, shift, ctrl))
-                .ok();
-        }
-    }))
+    app.select_animation(name, shift, ctrl)
+}
+
+#[tauri::command]
+pub fn select_frame(
+    app: tauri::AppHandle,
+    path: PathBuf,
+    shift: bool,
+    ctrl: bool,
+) -> Result<Patch, ()> {
+    app.select_frame(path, shift, ctrl)
+}
+
+#[tauri::command]
+pub fn select_hitbox(
+    app: tauri::AppHandle,
+    name: &str,
+    shift: bool,
+    ctrl: bool,
+) -> Result<Patch, ()> {
+    app.select_hitbox(name, shift, ctrl)
 }
 
 #[tauri::command]
 pub fn select_keyframe(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::Direction,
     index: usize,
     shift: bool,
     ctrl: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SelectKeyframe(
-                    direction.into(),
-                    index,
-                    shift,
-                    ctrl,
-                ))
-                .ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn select_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
-    name: String,
-    shift: bool,
-    ctrl: bool,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SelectHitbox(name, shift, ctrl))
-                .ok();
-        }
-    }))
+    app.select_keyframe(direction, index, shift, ctrl)
 }
 
 #[tauri::command]
@@ -1088,15 +1141,8 @@ pub fn create_animation(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn edit_animation(
-    state_handle: tauri::State<'_, state::Handle>,
-    name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EditAnimation(name)).ok();
-        }
-    }))
+pub fn edit_animation(app: tauri::AppHandle, name: &str) -> Result<Patch, ()> {
+    app.edit_animation(name)
 }
 
 #[tauri::command]
