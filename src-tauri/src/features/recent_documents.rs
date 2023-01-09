@@ -103,7 +103,9 @@ mod test {
             let Ok(file_content) = std::fs::read_to_string(&recent_documents_file) else {
                 return false
             };
-            let recent_documents = serde_json::from_str::<Vec<PathBuf>>(&file_content).unwrap();
+            let Ok(recent_documents) = serde_json::from_str::<Vec<PathBuf>>(&file_content) else {
+                return false
+            };
             assert_eq!(
                 recent_documents,
                 vec![flame_file.clone(), samurai_file.clone()]
