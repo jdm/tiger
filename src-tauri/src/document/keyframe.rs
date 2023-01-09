@@ -125,7 +125,7 @@ mod test {
     fn can_move_keyframe() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
-        app.import_frames(vec!["frame".into()]);
+        app.import_frames(vec!["frame"]);
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
@@ -146,7 +146,7 @@ mod test {
     fn can_change_keyframe_duration() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
-        app.import_frames(vec!["frame".into()]);
+        app.import_frames(vec!["frame"]);
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
@@ -166,7 +166,7 @@ mod test {
     fn can_move_hitbox() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
-        app.import_frames(vec!["frame".into()]);
+        app.import_frames(vec!["frame"]);
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
@@ -203,7 +203,7 @@ mod test {
         };
 
         app.new_document("tmp");
-        app.import_frames(vec!["frame".into()]);
+        app.import_frames(vec!["frame"]);
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
@@ -252,7 +252,7 @@ mod test {
         };
 
         app.new_document("tmp");
-        app.import_frames(vec!["frame".into()]);
+        app.import_frames(vec!["frame"]);
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);

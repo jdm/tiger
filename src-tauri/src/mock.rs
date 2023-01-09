@@ -118,7 +118,7 @@ impl TigerAppMock {
         self.apply_patch(Api::export(self).await.unwrap());
     }
 
-    pub fn import_frames(&self, paths: Vec<PathBuf>) {
+    pub fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
     }
 

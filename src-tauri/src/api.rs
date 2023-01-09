@@ -49,7 +49,7 @@ pub trait Api {
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
-    fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
+    fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     async fn open_documents<P: AsRef<Path> + Send + Sync>(
         &self,
@@ -218,10 +218,14 @@ impl<T: TigerApp + Sync> Api for T {
         }
     }
 
-    fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()> {
+    fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
-                document.process_command(Command::ImportFrames(paths)).ok();
+                document
+                    .process_command(Command::ImportFrames(
+                        paths.into_iter().map(|p| p.into()).collect(),
+                    ))
+                    .ok();
             }
         }))
     }
