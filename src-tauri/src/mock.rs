@@ -148,6 +148,10 @@ impl TigerAppMock {
         self.apply_patch(Api::paste(self).unwrap());
     }
 
+    pub fn reset_workbench_zoom(&self) {
+        self.apply_patch(Api::reset_workbench_zoom(self).unwrap());
+    }
+
     pub fn select_animation<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool) {
         self.apply_patch(Api::select_animation(self, name, shift, ctrl).unwrap());
     }
@@ -202,8 +206,28 @@ impl TigerAppMock {
         self.apply_patch(Api::set_keyframe_offset_y(self, y).unwrap());
     }
 
+    pub fn set_workbench_zoom_factor(&self, zoom_factor: u32) {
+        self.apply_patch(Api::set_workbench_zoom_factor(self, zoom_factor).unwrap());
+    }
+
     pub fn toggle_preserve_aspect_ratio(&self) {
         self.apply_patch(Api::toggle_preserve_aspect_ratio(self).unwrap());
+    }
+
+    pub fn zoom_in_workbench(&self) {
+        self.apply_patch(Api::zoom_in_workbench(self).unwrap());
+    }
+
+    pub fn zoom_out_workbench(&self) {
+        self.apply_patch(Api::zoom_out_workbench(self).unwrap());
+    }
+
+    pub fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) {
+        self.apply_patch(Api::zoom_in_workbench_around(self, fixed_point).unwrap());
+    }
+
+    pub fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) {
+        self.apply_patch(Api::zoom_out_workbench_around(self, fixed_point).unwrap());
     }
 }
 

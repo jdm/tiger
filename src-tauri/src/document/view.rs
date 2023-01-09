@@ -314,3 +314,36 @@ impl Document {
             .all(|search_term| animation_name.as_ref().to_lowercase().contains(search_term))
     }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::mock::TigerAppMock;
+
+    #[tokio::test]
+    async fn can_zoom_workbench_in_out() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.set_workbench_zoom_factor(16);
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 16.0);
+        app.reset_workbench_zoom();
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        app.zoom_in_workbench();
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 2.0);
+        app.zoom_out_workbench();
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+    }
+
+    #[tokio::test]
+    async fn can_zoom_workbench_around_fixed_point() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.reset_workbench_zoom();
+        app.zoom_in_workbench_around((10.0, 20.0));
+        assert_eq!(
+            app.client_state().documents[0].workbench_offset,
+            (-5.0, -10.0)
+        );
+        app.zoom_out_workbench_around((10.0, 20.0));
+        assert_eq!(app.client_state().documents[0].workbench_offset, (0.0, 0.0));
+    }
+}

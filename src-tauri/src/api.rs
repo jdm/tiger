@@ -56,6 +56,7 @@ pub trait Api {
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
+    fn reset_workbench_zoom(&self) -> Result<Patch, ()>;
     fn select_animation<S: Into<String>>(
         &self,
         name: S,
@@ -81,7 +82,12 @@ pub trait Api {
     fn set_keyframe_duration(&self, duration_millies: u64) -> Result<Patch, ()>;
     fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
+    fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
+    fn zoom_in_workbench(&self) -> Result<Patch, ()>;
+    fn zoom_out_workbench(&self) -> Result<Patch, ()>;
+    fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
+    fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
 }
 
 #[async_trait]
@@ -284,6 +290,14 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn reset_workbench_zoom(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ResetWorkbenchZoom).ok();
+            }
+        }))
+    }
+
     fn select_animation<S: Into<String>>(
         &self,
         name: S,
@@ -432,11 +446,57 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
+                    .ok();
+            }
+        }))
+    }
+
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::TogglePreserveAspectRatio)
+                    .ok();
+            }
+        }))
+    }
+
+    fn zoom_in_workbench(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ZoomInWorkbench).ok();
+            }
+        }))
+    }
+
+    fn zoom_out_workbench(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ZoomOutWorkbench).ok();
+            }
+        }))
+    }
+
+    fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
                     .ok();
             }
         }))
@@ -1016,72 +1076,39 @@ pub fn center_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result
 }
 
 #[tauri::command]
-pub fn zoom_in_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ZoomInWorkbench).ok();
-        }
-    }))
+pub fn zoom_in_workbench(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.zoom_in_workbench()
 }
 
 #[tauri::command]
-pub fn zoom_out_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ZoomOutWorkbench).ok();
-        }
-    }))
+pub fn zoom_out_workbench(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.zoom_out_workbench()
 }
 
 #[tauri::command]
 pub fn zoom_in_workbench_around(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     fixed_point: (f32, f32),
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
-                .ok();
-        }
-    }))
+    app.zoom_in_workbench_around(fixed_point)
 }
 
 #[tauri::command]
 pub fn zoom_out_workbench_around(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     fixed_point: (f32, f32),
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
-                .ok();
-        }
-    }))
+    app.zoom_out_workbench_around(fixed_point)
 }
 
 #[tauri::command]
-pub fn set_workbench_zoom_factor(
-    state_handle: tauri::State<'_, state::Handle>,
-    zoom_factor: u32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
-                .ok();
-        }
-    }))
+pub fn set_workbench_zoom_factor(app: tauri::AppHandle, zoom_factor: u32) -> Result<Patch, ()> {
+    app.set_workbench_zoom_factor(zoom_factor)
 }
 
 #[tauri::command]
-pub fn reset_workbench_zoom(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ResetWorkbenchZoom).ok();
-        }
-    }))
+pub fn reset_workbench_zoom(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.reset_workbench_zoom()
 }
 
 #[tauri::command]
