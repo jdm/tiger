@@ -21,7 +21,7 @@ pub struct State {
     pub error: Option<UserFacingError>,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct RecentDocument {
     pub path: PathBuf,

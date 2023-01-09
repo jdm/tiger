@@ -1,5 +1,6 @@
 use squeak::{Delegate, Observable};
 use std::path::{Path, PathBuf};
+use sugar_path::SugarPath;
 use thiserror::Error;
 
 use crate::document::{ClipboardManifest, Document, DocumentError};
@@ -177,9 +178,10 @@ impl State {
     }
 
     fn add_recent_document<T: AsRef<Path>>(&mut self, path: T) {
+        let path = path.as_ref().resolve();
         self.recent_documents.mutate(|d| {
-            d.retain(|p| p.as_path() != path.as_ref());
-            d.insert(0, path.as_ref().to_owned());
+            d.retain(|p| p.as_path() != path);
+            d.insert(0, path);
             d.truncate(10);
         });
     }
@@ -272,38 +274,32 @@ mod test {
     #[test]
     fn keeps_track_of_recently_opened_documents() {
         let mut state = State::default();
+        let flame_file = PathBuf::from("test-data/flame.tiger").resolve();
+        let samurai_file = PathBuf::from("test-data/samurai.tiger").resolve();
+        let relocated_file = PathBuf::from("relocated").resolve();
 
         state.open_document(Document::open("test-data/samurai.tiger").unwrap());
-        assert_eq!(
-            *state.recent_documents,
-            vec![PathBuf::from("test-data/samurai.tiger")]
-        );
+        assert_eq!(*state.recent_documents, vec![samurai_file.clone()]);
 
         state.open_document(Document::open("test-data/flame.tiger").unwrap());
         assert_eq!(
             *state.recent_documents,
-            vec![
-                PathBuf::from("test-data/flame.tiger"),
-                PathBuf::from("test-data/samurai.tiger")
-            ]
+            vec![flame_file.clone(), samurai_file.clone()]
         );
 
         state.open_document(Document::open("test-data/samurai.tiger").unwrap());
         assert_eq!(
             *state.recent_documents,
-            vec![
-                PathBuf::from("test-data/samurai.tiger"),
-                PathBuf::from("test-data/flame.tiger"),
-            ]
+            vec![samurai_file.clone(), flame_file.clone(),]
         );
 
         state.relocate_document("test-data/samurai.tiger", "relocated");
         assert_eq!(
             *state.recent_documents,
             vec![
-                PathBuf::from("relocated"),
-                PathBuf::from("test-data/samurai.tiger"),
-                PathBuf::from("test-data/flame.tiger"),
+                relocated_file.clone(),
+                samurai_file.clone(),
+                flame_file.clone(),
             ]
         );
 
@@ -311,10 +307,10 @@ mod test {
         assert_eq!(
             *state.recent_documents,
             vec![
-                PathBuf::from("new"),
-                PathBuf::from("relocated"),
-                PathBuf::from("test-data/samurai.tiger"),
-                PathBuf::from("test-data/flame.tiger"),
+                PathBuf::from("new").resolve(),
+                relocated_file,
+                samurai_file,
+                flame_file,
             ]
         );
     }
@@ -331,7 +327,7 @@ mod test {
             *state.recent_documents,
             (90..=99)
                 .rev()
-                .map(|i| PathBuf::from(format!("doc_{i}")))
+                .map(|i| PathBuf::from(format!("doc_{i}")).resolve())
                 .collect::<Vec<_>>()
         );
     }

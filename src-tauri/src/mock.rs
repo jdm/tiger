@@ -6,7 +6,10 @@ use crate::{
     dto,
     features::{self, texture_cache},
     state::{self, State},
-    utils::handle,
+    utils::{
+        handle,
+        paths::{self, Paths},
+    },
     TigerApp,
 };
 
@@ -14,6 +17,7 @@ use crate::{
 pub struct TigerAppMock {
     state: state::Handle,
     texture_cache: texture_cache::Handle,
+    paths: paths::Handle,
     client_state: handle::Handle<dto::State>,
     events: handle::Handle<Vec<(String, serde_json::Value)>>,
     clipboard: handle::Handle<Option<String>>,
@@ -23,19 +27,33 @@ impl TigerAppMock {
     const PERIOD: Duration = Duration::from_millis(50);
 
     pub fn new() -> Self {
-        let app = Self {
+        let app = Self::new_uninitialized();
+        app.init();
+        app
+    }
+
+    pub fn new_uninitialized() -> Self {
+        let paths = Paths::test_outputs();
+        std::fs::remove_file(&paths.log_file).ok();
+        std::fs::remove_file(&paths.recent_documents_file).ok();
+        Self {
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
+            paths: handle::Handle::new(paths),
             client_state: handle::Handle::new(State::default().to_dto(dto::StateTrim::Full)),
             events: handle::Handle::default(),
             clipboard: handle::Handle::default(),
-        };
-        app.texture_cache.init(app.clone(), Self::PERIOD);
-        features::clipboard_analysis::init(app.clone(), Self::PERIOD);
-        features::missing_textures::init(app.clone(), Self::PERIOD);
-        features::template_hot_reload::init(app.clone(), Self::PERIOD);
-        features::texture_hot_reload::init(app.clone(), Self::PERIOD);
-        app
+        }
+    }
+
+    pub fn init(&self) {
+        self.texture_cache.init(self.clone(), Self::PERIOD);
+        features::clipboard_analysis::init(self.clone(), Self::PERIOD);
+        features::missing_textures::init(self.clone(), Self::PERIOD);
+        features::recent_documents::init(self.clone());
+        features::template_hot_reload::init(self.clone(), Self::PERIOD);
+        features::texture_hot_reload::init(self.clone(), Self::PERIOD);
+        self.replace_state();
     }
 
     pub fn wait_for_periodic_scans(&self) {
@@ -196,6 +214,10 @@ impl TigerApp for TigerAppMock {
 
     fn texture_cache(&self) -> texture_cache::Handle {
         self.texture_cache.clone()
+    }
+
+    fn paths(&self) -> paths::Handle {
+        self.paths.clone()
     }
 
     fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: dto::StateTrim, operation: F) {

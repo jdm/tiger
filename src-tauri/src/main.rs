@@ -12,6 +12,7 @@ use tauri::{ClipboardManager, Manager};
 use dto::StateTrim;
 use features::texture_cache;
 use state::State;
+use utils::paths;
 
 mod api;
 mod document;
@@ -28,7 +29,7 @@ static EVENT_PATCH_STATE: &str = "patch-state";
 static EVENT_REPLACE_STATE: &str = "replace-state";
 
 fn main() {
-    utils::paths::init();
+    let paths = paths::Paths::default();
 
     CombinedLogger::init(vec![
         TermLogger::new(
@@ -40,7 +41,7 @@ fn main() {
         WriteLogger::new(
             LevelFilter::Info,
             Config::default(),
-            std::fs::File::create(utils::paths::log_file()).unwrap(),
+            std::fs::File::create(&paths.log_file).unwrap(),
         ),
     ])
     .unwrap();
@@ -48,13 +49,14 @@ fn main() {
     tauri::Builder::default()
         .manage(state::Handle::default())
         .manage(texture_cache::Handle::default())
+        .manage(paths::Handle::new(paths))
         .setup(|tauri_app| {
             init_window_shadow(tauri_app);
             tauri_app
                 .texture_cache()
                 .init(tauri_app.handle(), Duration::from_millis(1_000));
             features::missing_textures::init(tauri_app.handle(), Duration::from_millis(500));
-            features::recent_documents::init(tauri_app);
+            features::recent_documents::init(tauri_app.handle());
             features::template_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
             features::texture_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
             features::clipboard_analysis::init(tauri_app.handle(), Duration::from_millis(100));
@@ -230,6 +232,7 @@ fn init_window_shadow(tauri_app: &mut tauri::App) {
 pub trait TigerApp {
     fn state(&self) -> state::Handle;
     fn texture_cache(&self) -> texture_cache::Handle;
+    fn paths(&self) -> paths::Handle;
     fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F);
     fn replace_state(&self);
     fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S);
@@ -244,6 +247,10 @@ impl TigerApp for tauri::App {
 
     fn texture_cache(&self) -> texture_cache::Handle {
         self.handle().texture_cache()
+    }
+
+    fn paths(&self) -> paths::Handle {
+        self.handle().paths()
     }
 
     fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F) {
@@ -276,6 +283,11 @@ impl TigerApp for tauri::AppHandle {
     fn texture_cache(&self) -> texture_cache::Handle {
         let cache = tauri::Manager::state::<texture_cache::Handle>(self);
         texture_cache::Handle::clone(&cache)
+    }
+
+    fn paths(&self) -> paths::Handle {
+        let paths = tauri::Manager::state::<paths::Handle>(self);
+        paths::Handle::clone(&paths)
     }
 
     fn patch_state<F>(&self, state_trim: StateTrim, operation: F)
