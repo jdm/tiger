@@ -74,7 +74,7 @@ impl TigerAppMock {
 
 #[allow(dead_code)]
 impl TigerAppMock {
-    pub fn begin_drag_and_drop_frame<P: AsRef<Path>>(&self, frame: P) {
+    pub fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) {
         self.apply_patch(Api::begin_drag_and_drop_frame(self, frame).unwrap());
     }
 
@@ -98,11 +98,11 @@ impl TigerAppMock {
         self.apply_patch(Api::create_hitbox(self, position).unwrap());
     }
 
-    pub fn delete_frame(&self, path: PathBuf) {
+    pub fn delete_frame<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::delete_frame(self, path).unwrap());
     }
 
-    pub fn delete_hitbox(&self, name: String) {
+    pub fn delete_hitbox<S: Into<String>>(&self, name: S) {
         self.apply_patch(Api::delete_hitbox(self, name).unwrap());
     }
 
@@ -110,7 +110,7 @@ impl TigerAppMock {
         self.apply_patch(Api::drop_frame_on_timeline(self, direction, index).unwrap());
     }
 
-    pub fn edit_animation(&self, name: &str) {
+    pub fn edit_animation<S: Into<String>>(&self, name: S) {
         self.apply_patch(Api::edit_animation(self, name).unwrap());
     }
 
@@ -122,7 +122,7 @@ impl TigerAppMock {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
     }
 
-    pub fn new_document<P: AsRef<Path>>(&self, path: P) {
+    pub fn new_document<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::new_document(self, path).unwrap());
     }
 
@@ -134,15 +134,15 @@ impl TigerAppMock {
         self.apply_patch(Api::paste(self).unwrap());
     }
 
-    pub fn select_animation(&self, name: &str, shift: bool, ctrl: bool) {
+    pub fn select_animation<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool) {
         self.apply_patch(Api::select_animation(self, name, shift, ctrl).unwrap());
     }
 
-    pub fn select_frame(&self, path: PathBuf, shift: bool, ctrl: bool) {
+    pub fn select_frame<P: Into<PathBuf>>(&self, path: P, shift: bool, ctrl: bool) {
         self.apply_patch(Api::select_frame(self, path, shift, ctrl).unwrap());
     }
 
-    pub fn select_hitbox(&self, name: &str, shift: bool, ctrl: bool) {
+    pub fn select_hitbox<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool) {
         self.apply_patch(Api::select_hitbox(self, name, shift, ctrl).unwrap());
     }
 
@@ -156,7 +156,7 @@ impl TigerAppMock {
         self.apply_patch(Api::select_keyframe(self, direction, index, shift, ctrl).unwrap());
     }
 
-    pub fn set_export_template_file(&self, path: PathBuf) {
+    pub fn set_export_template_file<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::set_export_template_file(self, path).unwrap());
     }
 

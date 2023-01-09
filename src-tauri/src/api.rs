@@ -38,27 +38,34 @@ impl state::Handle {
 
 #[async_trait]
 pub trait Api {
-    fn begin_drag_and_drop_frame<P: AsRef<Path>>(&self, frame: P) -> Result<Patch, ()>;
+    fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn copy(&self) -> Result<Patch, ()>;
     fn create_animation(&self) -> Result<Patch, ()>;
     fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
     fn cut(&self) -> Result<Patch, ()>;
-    fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()>;
-    fn delete_hitbox(&self, name: String) -> Result<Patch, ()>;
+    fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
+    fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
-    fn edit_animation(&self, name: &str) -> Result<Patch, ()>;
+    fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
-    fn new_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
+    fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     async fn open_documents<P: AsRef<Path> + Send + Sync>(
         &self,
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
-    fn select_animation(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()>;
-    fn select_frame<P: AsRef<Path>>(&self, path: P, shift: bool, ctrl: bool) -> Result<Patch, ()>;
-    fn select_hitbox(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()>;
+    fn select_animation<S: Into<String>>(
+        &self,
+        name: S,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<Patch, ()>;
+    fn select_frame<P: Into<PathBuf>>(&self, path: P, shift: bool, ctrl: bool)
+        -> Result<Patch, ()>;
+    fn select_hitbox<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool)
+        -> Result<Patch, ()>;
     fn select_keyframe(
         &self,
         direction: dto::Direction,
@@ -66,7 +73,7 @@ pub trait Api {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()>;
-    fn set_export_template_file(&self, file: PathBuf) -> Result<Patch, ()>;
+    fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
@@ -79,11 +86,11 @@ pub trait Api {
 
 #[async_trait]
 impl<T: TigerApp + Sync> Api for T {
-    fn begin_drag_and_drop_frame<P: AsRef<Path>>(&self, frame: P) -> Result<Patch, ()> {
+    fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BeginDragAndDropFrame(frame.as_ref().to_path_buf()))
+                    .process_command(Command::BeginDragAndDropFrame(frame.into()))
                     .ok();
             }
         }))
@@ -140,17 +147,22 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn delete_frame(&self, path: PathBuf) -> Result<Patch, ()> {
+    fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
-                document.process_command(Command::DeleteFrame(path)).ok();
+                document
+                    .process_command(Command::DeleteFrame(path.into()))
+                    .ok();
             }
         }))
     }
-    fn delete_hitbox(&self, name: String) -> Result<Patch, ()> {
+
+    fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
-                document.process_command(Command::DeleteHitbox(name)).ok();
+                document
+                    .process_command(Command::DeleteHitbox(name.into()))
+                    .ok();
             }
         }))
     }
@@ -165,11 +177,11 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn edit_animation(&self, name: &str) -> Result<Patch, ()> {
+    fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::EditAnimation(name.to_owned()))
+                    .process_command(Command::EditAnimation(name.into()))
                     .ok();
             }
         }))
@@ -214,9 +226,9 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn new_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
+    fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
-            state.new_document(path);
+            state.new_document(path.into());
         }))
     }
 
@@ -268,35 +280,46 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn select_animation(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()> {
+    fn select_animation<S: Into<String>>(
+        &self,
+        name: S,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectAnimation(name.to_owned(), shift, ctrl))
+                    .process_command(Command::SelectAnimation(name.into(), shift, ctrl))
                     .ok();
             }
         }))
     }
 
-    fn select_frame<P: AsRef<Path>>(&self, path: P, shift: bool, ctrl: bool) -> Result<Patch, ()> {
+    fn select_frame<P: Into<PathBuf>>(
+        &self,
+        path: P,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectFrame(
-                        path.as_ref().to_path_buf(),
-                        shift,
-                        ctrl,
-                    ))
+                    .process_command(Command::SelectFrame(path.into(), shift, ctrl))
                     .ok();
             }
         }))
     }
 
-    fn select_hitbox(&self, name: &str, shift: bool, ctrl: bool) -> Result<Patch, ()> {
+    fn select_hitbox<S: Into<String>>(
+        &self,
+        name: S,
+        shift: bool,
+        ctrl: bool,
+    ) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectHitbox(name.to_owned(), shift, ctrl))
+                    .process_command(Command::SelectHitbox(name.into(), shift, ctrl))
                     .ok();
             }
         }))
@@ -323,11 +346,11 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn set_export_template_file(&self, path: PathBuf) -> Result<Patch, ()> {
+    fn set_export_template_file<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SetExportTemplateFile(path))
+                    .process_command(Command::SetExportTemplateFile(path.into()))
                     .ok();
             }
         }))
