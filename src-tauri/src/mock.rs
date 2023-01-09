@@ -148,6 +148,10 @@ impl TigerAppMock {
         self.apply_patch(Api::paste(self).unwrap());
     }
 
+    pub fn reset_timeline_zoom(&self) {
+        self.apply_patch(Api::reset_timeline_zoom(self).unwrap());
+    }
+
     pub fn reset_workbench_zoom(&self) {
         self.apply_patch(Api::reset_workbench_zoom(self).unwrap());
     }
@@ -202,6 +206,10 @@ impl TigerAppMock {
         self.apply_patch(Api::set_keyframe_offset_x(self, x).unwrap());
     }
 
+    pub fn set_timeline_zoom_amount(&self, amount: f32) {
+        self.apply_patch(Api::set_timeline_zoom_amount(self, amount).unwrap());
+    }
+
     pub fn set_keyframe_offset_y(&self, y: i32) {
         self.apply_patch(Api::set_keyframe_offset_y(self, y).unwrap());
     }
@@ -214,8 +222,24 @@ impl TigerAppMock {
         self.apply_patch(Api::toggle_preserve_aspect_ratio(self).unwrap());
     }
 
+    pub fn zoom_in_timeline(&self) {
+        self.apply_patch(Api::zoom_in_timeline(self).unwrap());
+    }
+
+    pub fn zoom_in_timeline_around(&self, fixed_point: f32) {
+        self.apply_patch(Api::zoom_in_timeline_around(self, fixed_point).unwrap());
+    }
+
     pub fn zoom_in_workbench(&self) {
         self.apply_patch(Api::zoom_in_workbench(self).unwrap());
+    }
+
+    pub fn zoom_out_timeline(&self) {
+        self.apply_patch(Api::zoom_out_timeline(self).unwrap());
+    }
+
+    pub fn zoom_out_timeline_around(&self, fixed_point: f32) {
+        self.apply_patch(Api::zoom_out_timeline_around(self, fixed_point).unwrap());
     }
 
     pub fn zoom_out_workbench(&self) {

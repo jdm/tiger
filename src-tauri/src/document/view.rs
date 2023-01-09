@@ -346,4 +346,36 @@ mod test {
         app.zoom_out_workbench_around((10.0, 20.0));
         assert_eq!(app.client_state().documents[0].workbench_offset, (0.0, 0.0));
     }
+
+    #[tokio::test]
+    async fn can_zoom_timeline_in_out() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.set_timeline_zoom_amount(0.1);
+        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.1);
+        app.reset_timeline_zoom();
+        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.5);
+        app.zoom_in_timeline();
+        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.7);
+        app.zoom_out_timeline();
+        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.5);
+    }
+
+    #[tokio::test]
+    async fn can_zoom_timeline_around_fixed_point() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.reset_timeline_zoom();
+
+        let fixed_point = 1_000.0;
+        let visible_position = || {
+            (fixed_point - app.client_state().documents[0].timeline_offset_millis)
+                * app.client_state().documents[0].timeline_zoom_factor
+        };
+        let reference = visible_position();
+        app.zoom_in_timeline_around(1_000.0);
+        assert!((visible_position() - reference).abs() < 1.0);
+        app.zoom_out_timeline_around(1_000.0);
+        assert!((visible_position() - reference).abs() < 1.0);
+    }
 }

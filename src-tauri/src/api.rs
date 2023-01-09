@@ -56,6 +56,7 @@ pub trait Api {
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
+    fn reset_timeline_zoom(&self) -> Result<Patch, ()>;
     fn reset_workbench_zoom(&self) -> Result<Patch, ()>;
     fn select_animation<S: Into<String>>(
         &self,
@@ -82,9 +83,14 @@ pub trait Api {
     fn set_keyframe_duration(&self, duration_millies: u64) -> Result<Patch, ()>;
     fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
+    fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
+    fn zoom_in_timeline(&self) -> Result<Patch, ()>;
+    fn zoom_in_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()>;
     fn zoom_in_workbench(&self) -> Result<Patch, ()>;
+    fn zoom_out_timeline(&self) -> Result<Patch, ()>;
+    fn zoom_out_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()>;
     fn zoom_out_workbench(&self) -> Result<Patch, ()>;
     fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
     fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
@@ -290,6 +296,14 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn reset_timeline_zoom(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ResetTimelineZoom).ok();
+            }
+        }))
+    }
+
     fn reset_workbench_zoom(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -446,6 +460,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetTimelineZoomAmount(amount))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -466,10 +490,50 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn zoom_in_timeline(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ZoomInTimeline).ok();
+            }
+        }))
+    }
+
+    fn zoom_in_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ZoomInTimelineAround(Duration::from_secs_f32(
+                        fixed_point.max(0.0) / 1_000.0,
+                    )))
+                    .ok();
+            }
+        }))
+    }
+
     fn zoom_in_workbench(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ZoomInWorkbench).ok();
+            }
+        }))
+    }
+
+    fn zoom_out_timeline(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ZoomOutTimeline).ok();
+            }
+        }))
+    }
+
+    fn zoom_out_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ZoomOutTimelineAround(Duration::from_secs_f32(
+                        fixed_point.max(0.0) / 1_000.0,
+                    )))
+                    .ok();
             }
         }))
     }
@@ -1445,76 +1509,33 @@ pub fn set_keyframe_snapping_base_duration(
 }
 
 #[tauri::command]
-pub fn zoom_in_timeline(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ZoomInTimeline).ok();
-        }
-    }))
+pub fn zoom_in_timeline(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.zoom_in_timeline()
 }
 
 #[tauri::command]
-pub fn zoom_out_timeline(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ZoomOutTimeline).ok();
-        }
-    }))
+pub fn zoom_out_timeline(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.zoom_out_timeline()
 }
 
 #[tauri::command]
-pub fn zoom_in_timeline_around(
-    state_handle: tauri::State<'_, state::Handle>,
-    fixed_point: f32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::ZoomInTimelineAround(Duration::from_secs_f32(
-                    fixed_point.max(0.0) / 1_000.0,
-                )))
-                .ok();
-        }
-    }))
+pub fn zoom_in_timeline_around(app: tauri::AppHandle, fixed_point: f32) -> Result<Patch, ()> {
+    app.zoom_in_timeline_around(fixed_point)
 }
 
 #[tauri::command]
-pub fn zoom_out_timeline_around(
-    state_handle: tauri::State<'_, state::Handle>,
-    fixed_point: f32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::ZoomOutTimelineAround(Duration::from_secs_f32(
-                    fixed_point.max(0.0) / 1_000.0,
-                )))
-                .ok();
-        }
-    }))
+pub fn zoom_out_timeline_around(app: tauri::AppHandle, fixed_point: f32) -> Result<Patch, ()> {
+    app.zoom_out_timeline_around(fixed_point)
 }
 
 #[tauri::command]
-pub fn set_timeline_zoom_amount(
-    state_handle: tauri::State<'_, state::Handle>,
-    amount: f32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetTimelineZoomAmount(amount))
-                .ok();
-        }
-    }))
+pub fn set_timeline_zoom_amount(app: tauri::AppHandle, amount: f32) -> Result<Patch, ()> {
+    app.set_timeline_zoom_amount(amount)
 }
 
 #[tauri::command]
-pub fn reset_timeline_zoom(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ResetTimelineZoom).ok();
-        }
-    }))
+pub fn reset_timeline_zoom(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.reset_timeline_zoom()
 }
 
 #[tauri::command]
