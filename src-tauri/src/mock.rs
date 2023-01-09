@@ -1,5 +1,9 @@
 use json_patch::Patch;
-use std::{ops::Deref, path::PathBuf, time::Duration};
+use std::{
+    ops::Deref,
+    path::{Path, PathBuf},
+    time::Duration,
+};
 
 use crate::{
     api::Api,
@@ -21,6 +25,7 @@ pub struct TigerAppMock {
     client_state: handle::Handle<dto::State>,
     events: handle::Handle<Vec<(String, serde_json::Value)>>,
     clipboard: handle::Handle<Option<String>>,
+    closed: handle::Handle<bool>,
 }
 
 impl TigerAppMock {
@@ -43,6 +48,7 @@ impl TigerAppMock {
             client_state: handle::Handle::new(State::default().to_dto(dto::StateTrim::Full)),
             events: handle::Handle::default(),
             clipboard: handle::Handle::default(),
+            closed: handle::Handle::default(),
         }
     }
 
@@ -96,6 +102,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
 
+    pub fn close_document<P: AsRef<Path>>(&self, path: P) {
+        self.apply_patch(Api::close_document(self, path).unwrap());
+    }
+
     pub fn copy(&self) {
         self.apply_patch(Api::copy(self).unwrap());
     }
@@ -130,6 +140,10 @@ impl TigerAppMock {
 
     pub async fn export(&self) {
         self.apply_patch(Api::export(self).await.unwrap());
+    }
+
+    pub fn focus_document<P: AsRef<Path>>(&self, path: P) {
+        self.apply_patch(Api::focus_document(self, path).unwrap());
     }
 
     pub fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) {
@@ -292,5 +306,9 @@ impl TigerApp for TigerAppMock {
 
     fn write_clipboard<S: Into<String>>(&self, content: S) {
         *self.clipboard.lock() = Some(content.into())
+    }
+
+    fn close_window(&self) {
+        *self.closed.lock() = true;
     }
 }

@@ -40,6 +40,7 @@ impl state::Handle {
 pub trait Api {
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
+    fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn copy(&self) -> Result<Patch, ()>;
     fn create_animation(&self) -> Result<Patch, ()>;
     fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
@@ -49,6 +50,7 @@ pub trait Api {
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
+    fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     async fn open_documents<P: Into<PathBuf> + Send + Sync>(
@@ -56,6 +58,7 @@ pub trait Api {
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
+    fn request_exit(&self) -> Result<Patch, ()>;
     fn reset_timeline_zoom(&self) -> Result<Patch, ()>;
     fn reset_workbench_zoom(&self) -> Result<Patch, ()>;
     fn select_animation<S: Into<String>>(
@@ -112,6 +115,18 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginExportAs).ok();
+            }
+        }))
+    }
+
+    fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.document_mut(path.as_ref()) {
+                document.request_close();
+            }
+            state.advance_exit();
+            if state.should_exit() {
+                self.close_window();
             }
         }))
     }
@@ -230,6 +245,12 @@ impl<T: TigerApp + Sync> Api for T {
         }
     }
 
+    fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            state.focus_document(path.as_ref()).ok();
+        }))
+    }
+
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -292,6 +313,15 @@ impl<T: TigerApp + Sync> Api for T {
                         document.process_command(Command::Paste(data)).ok();
                     }
                 }
+            }
+        }))
+    }
+
+    fn request_exit(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            state.request_exit();
+            if state.should_exit() {
+                self.close_window();
             }
         }))
     }
@@ -603,30 +633,13 @@ pub async fn open_documents(app: tauri::AppHandle, paths: Vec<&Path>) -> Result<
 }
 
 #[tauri::command]
-pub fn focus_document(
-    state_handle: tauri::State<'_, state::Handle>,
-    path: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        state.focus_document(&path).ok();
-    }))
+pub fn focus_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
+    app.focus_document(path)
 }
 
 #[tauri::command]
-pub fn close_document(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-    path: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.document_mut(&path) {
-            document.request_close();
-        }
-        state.advance_exit();
-        if state.should_exit() {
-            window.close().ok();
-        }
-    }))
+pub fn close_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
+    app.close_document(path)
 }
 
 #[tauri::command]
@@ -662,16 +675,8 @@ pub fn close_all_documents(
 }
 
 #[tauri::command]
-pub fn request_exit(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        state.request_exit();
-        if state.should_exit() {
-            window.close().ok();
-        }
-    }))
+pub fn request_exit(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.request_exit()
 }
 
 #[tauri::command]

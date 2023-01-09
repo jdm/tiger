@@ -238,6 +238,7 @@ pub trait TigerApp {
     fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S);
     fn read_clipboard(&self) -> Option<String>;
     fn write_clipboard<S: Into<String>>(&self, content: S);
+    fn close_window(&self);
 }
 
 impl TigerApp for tauri::App {
@@ -271,6 +272,10 @@ impl TigerApp for tauri::App {
 
     fn write_clipboard<S: Into<String>>(&self, content: S) {
         self.handle().write_clipboard(content)
+    }
+
+    fn close_window(&self) {
+        self.handle().close_window()
     }
 }
 
@@ -329,6 +334,14 @@ impl TigerApp for tauri::AppHandle {
     fn write_clipboard<S: Into<String>>(&self, content: S) {
         if let Err(e) = self.clipboard_manager().write_text(content.into()) {
             error!("Failed to write clipboard content: `{e}`");
+        }
+    }
+
+    fn close_window(&self) {
+        if let Some(window) = self.get_window("main") {
+            window.close().ok();
+        } else {
+            error!("Could not access app window to close it");
         }
     }
 }

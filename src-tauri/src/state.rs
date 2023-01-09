@@ -212,62 +212,61 @@ impl State {
 #[cfg(test)]
 mod test {
 
-    use super::*;
     use std::path::PathBuf;
 
-    #[test]
-    fn can_open_and_close_documents() {
-        let mut state = State::default();
+    use super::*;
+    use crate::mock::TigerAppMock;
 
-        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
-        assert_eq!(state.documents_iter().count(), 1);
-        assert!(state.document("test-data/samurai.tiger").is_some());
-        assert!(state.document_mut("test-data/samurai.tiger").is_some());
+    #[tokio::test]
+    async fn can_open_and_close_documents() {
+        let app = TigerAppMock::new();
 
-        state.open_document(Document::open("test-data/flame.tiger").unwrap());
-        assert_eq!(state.documents_iter().count(), 2);
-        assert!(state.document("test-data/flame.tiger").is_some());
-        assert!(state.document_mut("test-data/flame.tiger").is_some());
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        assert_eq!(app.client_state().documents.len(), 1);
+        assert_eq!(app.client_state().documents[0].name, "samurai.tiger");
 
-        state.close_document("test-data/flame.tiger");
-        assert_eq!(state.documents_iter().count(), 1);
-        assert!(state.document("test-data/flame.tiger").is_none());
-        assert!(state.document_mut("test-data/flame.tiger").is_none());
+        app.open_documents(vec!["test-data/flame.tiger"]).await;
+        assert_eq!(app.client_state().documents.len(), 2);
+        assert_eq!(app.client_state().documents[0].name, "samurai.tiger");
+        assert_eq!(app.client_state().documents[1].name, "flame.tiger");
+
+        app.close_document("test-data/flame.tiger");
+        assert_eq!(app.client_state().documents.len(), 1);
+        assert_eq!(app.client_state().documents[0].name, "samurai.tiger");
     }
 
-    #[test]
-    fn open_and_close_updates_focused_document() {
-        let mut state = State::default();
+    #[tokio::test]
+    async fn open_and_close_updates_focused_document() {
+        let app = TigerAppMock::new();
 
-        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
         assert_eq!(
-            state.current_document().unwrap().path(),
-            Path::new("test-data/samurai.tiger")
+            app.client_state().current_document_path,
+            Some("test-data/samurai.tiger".into())
         );
 
-        state.open_document(Document::open("test-data/flame.tiger").unwrap());
+        app.open_documents(vec!["test-data/flame.tiger"]).await;
         assert_eq!(
-            state.current_document().unwrap().path(),
-            Path::new("test-data/flame.tiger")
+            app.client_state().current_document_path,
+            Some("test-data/flame.tiger".into())
         );
 
-        state.close_document("test-data/flame.tiger");
+        app.close_document("test-data/flame.tiger");
         assert_eq!(
-            state.current_document().unwrap().path(),
-            Path::new("test-data/samurai.tiger")
+            app.client_state().current_document_path,
+            Some("test-data/samurai.tiger".into())
         );
     }
 
-    #[test]
-    fn can_manually_focus_a_document() {
-        let mut state = State::default();
-
-        state.open_document(Document::open("test-data/samurai.tiger").unwrap());
-        state.open_document(Document::open("test-data/flame.tiger").unwrap());
-        state.focus_document("test-data/samurai.tiger").unwrap();
+    #[tokio::test]
+    async fn can_manually_focus_a_document() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.open_documents(vec!["test-data/flame.tiger"]).await;
+        app.focus_document("test-data/samurai.tiger");
         assert_eq!(
-            state.current_document().unwrap().path(),
-            Path::new("test-data/samurai.tiger")
+            app.client_state().current_document_path,
+            Some("test-data/samurai.tiger".into())
         );
     }
 
