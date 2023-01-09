@@ -53,6 +53,7 @@ jobs:
           --llvm
           --branch
           --ignore-not-existing
+          --ignore src/mock.rs
           --keep-only src/**
           --binary-path ./target/debug
           --excl-line "#\[derive\("
