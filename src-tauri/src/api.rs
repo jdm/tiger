@@ -38,7 +38,7 @@ impl state::Handle {
 
 #[async_trait]
 pub trait Api {
-    fn begin_drag_and_drop_frame(&self, frame: PathBuf) -> Result<Patch, ()>;
+    fn begin_drag_and_drop_frame<P: AsRef<Path>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn copy(&self) -> Result<Patch, ()>;
     fn create_animation(&self) -> Result<Patch, ()>;
@@ -50,7 +50,7 @@ pub trait Api {
     fn edit_animation(&self, name: &str) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn import_frames(&self, paths: Vec<PathBuf>) -> Result<Patch, ()>;
-    fn new_document(&self, path: PathBuf) -> Result<Patch, ()>;
+    fn new_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     async fn open_documents<P: AsRef<Path> + Send + Sync>(
         &self,
         paths: Vec<P>,
@@ -79,11 +79,11 @@ pub trait Api {
 
 #[async_trait]
 impl<T: TigerApp + Sync> Api for T {
-    fn begin_drag_and_drop_frame(&self, frame: PathBuf) -> Result<Patch, ()> {
+    fn begin_drag_and_drop_frame<P: AsRef<Path>>(&self, frame: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BeginDragAndDropFrame(frame))
+                    .process_command(Command::BeginDragAndDropFrame(frame.as_ref().to_path_buf()))
                     .ok();
             }
         }))
@@ -214,7 +214,7 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn new_document(&self, path: PathBuf) -> Result<Patch, ()> {
+    fn new_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.new_document(path);
         }))

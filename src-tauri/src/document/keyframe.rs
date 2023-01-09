@@ -124,10 +124,10 @@ mod test {
     #[test]
     fn can_move_keyframe() {
         let app = TigerAppMock::new();
-        app.new_document("tmp".into());
+        app.new_document("tmp");
         app.import_frames(vec!["frame".into()]);
         app.create_animation();
-        app.begin_drag_and_drop_frame("frame".into());
+        app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
 
         app.set_keyframe_offset_x(10);
@@ -145,10 +145,10 @@ mod test {
     #[test]
     fn can_change_keyframe_duration() {
         let app = TigerAppMock::new();
-        app.new_document("tmp".into());
+        app.new_document("tmp");
         app.import_frames(vec!["frame".into()]);
         app.create_animation();
-        app.begin_drag_and_drop_frame("frame".into());
+        app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
 
         app.set_keyframe_duration(205);
@@ -165,10 +165,10 @@ mod test {
     #[test]
     fn can_move_hitbox() {
         let app = TigerAppMock::new();
-        app.new_document("tmp".into());
+        app.new_document("tmp");
         app.import_frames(vec!["frame".into()]);
         app.create_animation();
-        app.begin_drag_and_drop_frame("frame".into());
+        app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
         app.create_hitbox(Some((0, 0)));
 
@@ -202,10 +202,10 @@ mod test {
             }
         };
 
-        app.new_document("tmp".into());
+        app.new_document("tmp");
         app.import_frames(vec!["frame".into()]);
         app.create_animation();
-        app.begin_drag_and_drop_frame("frame".into());
+        app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
         app.create_hitbox(Some((0, 0)));
 
@@ -251,10 +251,10 @@ mod test {
             }
         };
 
-        app.new_document("tmp".into());
+        app.new_document("tmp");
         app.import_frames(vec!["frame".into()]);
         app.create_animation();
-        app.begin_drag_and_drop_frame("frame".into());
+        app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
 
         app.create_hitbox(Some((0, 0)));

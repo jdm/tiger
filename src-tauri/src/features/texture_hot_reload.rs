@@ -51,7 +51,7 @@ mod test {
         let after_frame = dir.join("test-data/samurai-attack-north.png");
 
         let app = TigerAppMock::new();
-        app.new_document("test.tiger".into());
+        app.new_document("test.tiger");
 
         std::fs::copy(before_frame, &frame).unwrap();
         app.import_frames(vec![frame.clone()]);

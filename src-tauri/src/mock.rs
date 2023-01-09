@@ -74,7 +74,7 @@ impl TigerAppMock {
 
 #[allow(dead_code)]
 impl TigerAppMock {
-    pub fn begin_drag_and_drop_frame(&self, frame: PathBuf) {
+    pub fn begin_drag_and_drop_frame<P: AsRef<Path>>(&self, frame: P) {
         self.apply_patch(Api::begin_drag_and_drop_frame(self, frame).unwrap());
     }
 
@@ -122,7 +122,7 @@ impl TigerAppMock {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
     }
 
-    pub fn new_document(&self, path: PathBuf) {
+    pub fn new_document<P: AsRef<Path>>(&self, path: P) {
         self.apply_patch(Api::new_document(self, path).unwrap());
     }
 

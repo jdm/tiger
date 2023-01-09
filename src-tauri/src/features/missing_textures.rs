@@ -59,7 +59,7 @@ mod test {
 
         let app = TigerAppMock::new();
 
-        app.new_document("tmp.tiger".into());
+        app.new_document("tmp.tiger");
         app.import_frames(vec![PathBuf::from(filename)]);
         app.assert_eventually(|| is_missing(&app));
 
