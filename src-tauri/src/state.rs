@@ -259,6 +259,33 @@ mod test {
     }
 
     #[tokio::test]
+    async fn can_close_all_documents() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger", "test-data/flame.tiger"])
+            .await;
+        assert_eq!(app.client_state().documents.len(), 2);
+        app.close_all_documents();
+        assert_eq!(app.client_state().documents.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn can_close_current_document() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger", "test-data/flame.tiger"])
+            .await;
+        assert_eq!(
+            app.client_state().current_document_path,
+            Some("test-data/flame.tiger".into())
+        );
+        app.close_current_document();
+        assert_eq!(app.client_state().documents.len(), 1);
+        assert_eq!(
+            app.client_state().current_document_path,
+            Some("test-data/samurai.tiger".into())
+        );
+    }
+
+    #[tokio::test]
     async fn can_request_exit_and_cancel() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;

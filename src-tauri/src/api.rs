@@ -41,6 +41,8 @@ pub trait Api {
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
+    fn close_all_documents(&self) -> Result<Patch, ()>;
+    fn close_current_document(&self) -> Result<Patch, ()>;
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn close_without_saving(&self) -> Result<Patch, ()>;
     fn copy(&self) -> Result<Patch, ()>;
@@ -127,6 +129,30 @@ impl<T: TigerApp + Sync> Api for T {
     fn cancel_exit(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.cancel_exit();
+        }))
+    }
+
+    fn close_all_documents(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            for document in state.documents_iter_mut() {
+                document.request_close();
+            }
+            state.advance_exit();
+            if state.should_exit() {
+                self.close_window();
+            }
+        }))
+    }
+
+    fn close_current_document(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.request_close();
+            }
+            state.advance_exit();
+            if state.should_exit() {
+                self.close_window();
+            }
         }))
     }
 
@@ -757,40 +783,18 @@ pub fn focus_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()>
 }
 
 #[tauri::command]
+pub fn close_all_documents(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.close_all_documents()
+}
+
+#[tauri::command]
+pub fn close_current_document(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.close_current_document()
+}
+
+#[tauri::command]
 pub fn close_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
     app.close_document(path)
-}
-
-#[tauri::command]
-pub fn close_current_document(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.request_close();
-        }
-        state.advance_exit();
-        if state.should_exit() {
-            window.close().ok();
-        }
-    }))
-}
-
-#[tauri::command]
-pub fn close_all_documents(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        for document in state.documents_iter_mut() {
-            document.request_close();
-        }
-        state.advance_exit();
-        if state.should_exit() {
-            window.close().ok();
-        }
-    }))
 }
 
 #[tauri::command]

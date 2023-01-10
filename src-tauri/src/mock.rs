@@ -110,6 +110,14 @@ impl TigerAppMock {
         self.apply_patch(Api::cancel_exit(self).unwrap());
     }
 
+    pub fn close_all_documents(&self) {
+        self.apply_patch(Api::close_all_documents(self).unwrap());
+    }
+
+    pub fn close_current_document(&self) {
+        self.apply_patch(Api::close_current_document(self).unwrap());
+    }
+
     pub fn close_document<P: AsRef<Path>>(&self, path: P) {
         self.apply_patch(Api::close_document(self, path).unwrap());
     }
