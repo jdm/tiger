@@ -74,6 +74,10 @@ impl TigerAppMock {
         self.events.lock().clone()
     }
 
+    pub fn is_closed(&self) -> bool {
+        *self.closed.lock()
+    }
+
     pub fn assert_eventually<F: Fn() -> bool>(&self, test: F) {
         let start = std::time::Instant::now();
         while std::time::Instant::now().duration_since(start) < Duration::from_secs(5) {
@@ -102,8 +106,16 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
 
+    pub fn cancel_exit(&self) {
+        self.apply_patch(Api::cancel_exit(self).unwrap());
+    }
+
     pub fn close_document<P: AsRef<Path>>(&self, path: P) {
         self.apply_patch(Api::close_document(self, path).unwrap());
+    }
+
+    pub fn close_without_saving(&self) {
+        self.apply_patch(Api::close_without_saving(self).unwrap());
     }
 
     pub fn copy(&self) {
@@ -162,12 +174,28 @@ impl TigerAppMock {
         self.apply_patch(Api::paste(self).unwrap());
     }
 
+    pub fn request_exit(&self) {
+        self.apply_patch(Api::request_exit(self).unwrap());
+    }
+
     pub fn reset_timeline_zoom(&self) {
         self.apply_patch(Api::reset_timeline_zoom(self).unwrap());
     }
 
     pub fn reset_workbench_zoom(&self) {
         self.apply_patch(Api::reset_workbench_zoom(self).unwrap());
+    }
+
+    pub async fn save(&self) {
+        self.apply_patch(Api::save(self).await.unwrap());
+    }
+
+    pub async fn save_all(&self) {
+        self.apply_patch(Api::save_all(self).await.unwrap());
+    }
+
+    pub async fn save_as<P: Into<PathBuf> + Send + Sync>(&self, new_path: P) {
+        self.apply_patch(Api::save_as(self, new_path).await.unwrap());
     }
 
     pub fn select_animation<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool) {

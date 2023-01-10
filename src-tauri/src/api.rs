@@ -40,7 +40,9 @@ impl state::Handle {
 pub trait Api {
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
+    fn cancel_exit(&self) -> Result<Patch, ()>;
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
+    fn close_without_saving(&self) -> Result<Patch, ()>;
     fn copy(&self) -> Result<Patch, ()>;
     fn create_animation(&self) -> Result<Patch, ()>;
     fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
@@ -61,6 +63,9 @@ pub trait Api {
     fn request_exit(&self) -> Result<Patch, ()>;
     fn reset_timeline_zoom(&self) -> Result<Patch, ()>;
     fn reset_workbench_zoom(&self) -> Result<Patch, ()>;
+    async fn save(&self) -> Result<Patch, ()>;
+    async fn save_all(&self) -> Result<Patch, ()>;
+    async fn save_as<P: Into<PathBuf> + Send + Sync>(&self, path: P) -> Result<Patch, ()>;
     fn select_animation<S: Into<String>>(
         &self,
         name: S,
@@ -119,6 +124,12 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn cancel_exit(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            state.cancel_exit();
+        }))
+    }
+
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.document_mut(path.as_ref()) {
@@ -127,6 +138,19 @@ impl<T: TigerApp + Sync> Api for T {
             state.advance_exit();
             if state.should_exit() {
                 self.close_window();
+            }
+        }))
+    }
+
+    fn close_without_saving(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            let path = state.current_document().map(|d| d.path().to_owned());
+            if let Some(path) = path {
+                state.close_document(path);
+                state.advance_exit();
+                if state.should_exit() {
+                    self.close_window();
+                }
             }
         }))
     }
@@ -340,6 +364,57 @@ impl<T: TigerApp + Sync> Api for T {
                 document.process_command(Command::ResetWorkbenchZoom).ok();
             }
         }))
+    }
+
+    async fn save(&self) -> Result<Patch, ()> {
+        let documents_to_save: Vec<DocumentToSave> = {
+            let state_handle = self.state();
+            let state = state_handle.lock();
+            let Some(document) = state.current_document() else {
+                return Ok(Patch(Vec::new()))
+            };
+            vec![DocumentToSave {
+                sheet: document.sheet().clone(),
+                source: document.path().to_owned(),
+                destination: document.path().to_owned(),
+                version: document.version(),
+            }]
+        };
+        save_documents(self, documents_to_save).await
+    }
+
+    async fn save_all(&self) -> Result<Patch, ()> {
+        let documents_to_save: Vec<DocumentToSave> = {
+            let state_handle = self.state();
+            let state = state_handle.lock();
+            state
+                .documents_iter()
+                .map(|d| DocumentToSave {
+                    sheet: d.sheet().clone(),
+                    source: d.path().to_owned(),
+                    destination: d.path().to_owned(),
+                    version: d.version(),
+                })
+                .collect()
+        };
+        save_documents(self, documents_to_save).await
+    }
+
+    async fn save_as<P: Into<PathBuf> + Send + Sync>(&self, new_path: P) -> Result<Patch, ()> {
+        let documents_to_save: Vec<DocumentToSave> = {
+            let state_handle = self.state();
+            let state = state_handle.lock();
+            let Some(document) = state.current_document() else {
+                return Ok(Patch(Vec::new()))
+            };
+            vec![DocumentToSave {
+                sheet: document.sheet().clone(),
+                source: document.path().to_owned(),
+                destination: new_path.into(),
+                version: document.version(),
+            }]
+        };
+        save_documents(self, documents_to_save).await
     }
 
     fn select_animation<S: Into<String>>(
@@ -597,6 +672,50 @@ impl<T: TigerApp + Sync> Api for T {
     }
 }
 
+async fn save_documents<A: TigerApp>(
+    app: &A,
+    mut documents: Vec<DocumentToSave>,
+) -> Result<Patch, ()> {
+    let mut work = Vec::new();
+    for document in &mut documents {
+        let sheet = std::mem::take(&mut document.sheet);
+        let write_destination = document.destination.clone();
+        work.push(tauri::async_runtime::spawn_blocking(move || {
+            sheet.write(&write_destination)
+        }));
+    }
+    let results = futures::future::join_all(work)
+        .await
+        .into_iter()
+        .map(|r| r.unwrap());
+
+    Ok(app.state().mutate(StateTrim::Full, |state| {
+        for (document, result) in documents.iter().zip(results) {
+            match result {
+                Ok(_) => {
+                    state.relocate_document(&document.source, &document.destination);
+                    if let Some(d) = state.document_mut(&document.destination) {
+                        d.mark_as_saved(document.version);
+                    }
+                }
+                Err(e) => state.show_error_message(
+                    "Error".to_owned(),
+                    format!(
+                        "An error occured while trying to save `{}`",
+                        document.destination.to_file_name()
+                    ),
+                    e.to_string(),
+                ),
+            }
+        }
+
+        state.advance_exit();
+        if state.should_exit() {
+            app.close_window();
+        }
+    }))
+}
+
 #[tauri::command]
 pub fn get_state(state_handle: tauri::State<'_, state::Handle>) -> Result<dto::State, ()> {
     let state = state_handle.lock();
@@ -680,10 +799,8 @@ pub fn request_exit(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn cancel_exit(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        state.cancel_exit();
-    }))
+pub fn cancel_exit(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.cancel_exit()
 }
 
 #[tauri::command]
@@ -697,20 +814,8 @@ pub fn reveal_in_explorer(path: PathBuf) {
 }
 
 #[tauri::command]
-pub fn close_without_saving(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        let path = state.current_document().map(|d| d.path().to_owned());
-        if let Some(path) = path {
-            state.close_document(path);
-            state.advance_exit();
-            if state.should_exit() {
-                window.close().ok();
-            }
-        }
-    }))
+pub fn close_without_saving(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.close_without_saving()
 }
 
 struct DocumentToSave {
@@ -720,110 +825,19 @@ struct DocumentToSave {
     version: i32,
 }
 
-async fn save_documents(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-    mut documents: Vec<DocumentToSave>,
-) -> Result<Patch, ()> {
-    let mut work = Vec::new();
-    for document in &mut documents {
-        let sheet = std::mem::take(&mut document.sheet);
-        let write_destination = document.destination.clone();
-        work.push(tauri::async_runtime::spawn_blocking(move || {
-            sheet.write(&write_destination)
-        }));
-    }
-    let results = futures::future::join_all(work)
-        .await
-        .into_iter()
-        .map(|r| r.unwrap());
-
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        for (document, result) in documents.iter().zip(results) {
-            match result {
-                Ok(_) => {
-                    state.relocate_document(&document.source, &document.destination);
-                    if let Some(d) = state.document_mut(&document.destination) {
-                        d.mark_as_saved(document.version);
-                    }
-                }
-                Err(e) => state.show_error_message(
-                    "Error".to_owned(),
-                    format!(
-                        "An error occured while trying to save `{}`",
-                        document.destination.to_file_name()
-                    ),
-                    e.to_string(),
-                ),
-            }
-        }
-
-        state.advance_exit();
-        if state.should_exit() {
-            window.close().ok();
-        }
-    }))
+#[tauri::command]
+pub async fn save(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.save().await
 }
 
 #[tauri::command]
-pub async fn save(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    let documents_to_save: Vec<DocumentToSave> = {
-        let state = state_handle.lock();
-        let Some(document) = state.current_document() else {
-            return Ok(Patch(Vec::new()))
-        };
-        vec![DocumentToSave {
-            sheet: document.sheet().clone(),
-            source: document.path().to_owned(),
-            destination: document.path().to_owned(),
-            version: document.version(),
-        }]
-    };
-    save_documents(window, state_handle, documents_to_save).await
+pub async fn save_all(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.save_all().await
 }
 
 #[tauri::command]
-pub async fn save_as(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-    new_path: PathBuf,
-) -> Result<Patch, ()> {
-    let documents_to_save: Vec<DocumentToSave> = {
-        let state = state_handle.lock();
-        let Some(document) = state.current_document() else {
-            return Ok(Patch(Vec::new()))
-        };
-        vec![DocumentToSave {
-            sheet: document.sheet().clone(),
-            source: document.path().to_owned(),
-            destination: new_path,
-            version: document.version(),
-        }]
-    };
-    save_documents(window, state_handle, documents_to_save).await
-}
-
-#[tauri::command]
-pub async fn save_all(
-    window: tauri::Window,
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    let documents_to_save: Vec<DocumentToSave> = {
-        let state = state_handle.lock();
-        state
-            .documents_iter()
-            .map(|d| DocumentToSave {
-                sheet: d.sheet().clone(),
-                source: d.path().to_owned(),
-                destination: d.path().to_owned(),
-                version: d.version(),
-            })
-            .collect()
-    };
-    save_documents(window, state_handle, documents_to_save).await
+pub async fn save_as(app: tauri::AppHandle, new_path: PathBuf) -> Result<Patch, ()> {
+    app.save_as(new_path).await
 }
 
 #[tauri::command]
