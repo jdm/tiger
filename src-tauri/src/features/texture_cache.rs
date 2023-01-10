@@ -4,10 +4,10 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::{collections::HashSet, time::Duration};
 
-use crate::utils::file_watcher::FileWatcher;
-use crate::utils::handle;
-use crate::utils::texture_list::TextureList;
-use crate::TigerApp;
+use crate::{
+    app::TigerApp,
+    utils::{file_watcher::FileWatcher, handle, texture_list::TextureList},
+};
 
 pub type Handle = handle::Handle<HashMap<PathBuf, DynamicImage>>;
 
@@ -108,7 +108,7 @@ fn add<P: AsRef<Path>>(textures: &HashSet<P>, texture_cache: &Handle) {
 #[cfg(test)]
 mod test {
 
-    use crate::{mock::TigerAppMock, TigerApp};
+    use crate::{app::TigerApp, mock::TigerAppMock};
 
     #[tokio::test]
     async fn follows_frame_additions_and_removals() {

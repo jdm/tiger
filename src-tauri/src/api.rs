@@ -4,13 +4,13 @@ use log::error;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
+use crate::app::TigerApp;
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
 use crate::export::export_sheet;
 use crate::features::texture_cache;
 use crate::sheet::{Absolute, Sheet};
 use crate::state::{self, State};
-use crate::TigerApp;
 
 impl state::Handle {
     pub fn mutate<F>(&self, state_trim: StateTrim, operation: F) -> Patch

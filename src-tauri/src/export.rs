@@ -81,7 +81,7 @@ fn create_dir(path: &Path) -> Result<(), ExportError> {
 mod test {
 
     use super::*;
-    use crate::{mock::TigerAppMock, TigerApp};
+    use crate::{app::TigerApp, mock::TigerAppMock};
 
     #[tokio::test]
     async fn export_matches_known_output() {

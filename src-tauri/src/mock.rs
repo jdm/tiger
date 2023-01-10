@@ -7,6 +7,7 @@ use std::{
 
 use crate::{
     api::Api,
+    app::TigerApp,
     dto,
     features::{self, texture_cache},
     state::{self, State},
@@ -14,7 +15,6 @@ use crate::{
         handle,
         paths::{self, Paths},
     },
-    TigerApp,
 };
 
 #[derive(Clone)]

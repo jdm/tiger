@@ -4,7 +4,7 @@ use std::fs::File;
 use std::path::{Path, PathBuf};
 use std::sync::mpsc::channel;
 
-use crate::TigerApp;
+use crate::app::TigerApp;
 
 pub fn init<A: TigerApp + Send>(app: A) {
     let state_handle = app.state();

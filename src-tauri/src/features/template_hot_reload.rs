@@ -1,8 +1,6 @@
 use std::{collections::HashSet, time::Duration};
 
-use crate::sheet;
-use crate::utils::file_watcher::FileWatcher;
-use crate::TigerApp;
+use crate::{app::TigerApp, sheet, utils::file_watcher::FileWatcher};
 
 pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
     let (mut file_watcher, events_receiver) = FileWatcher::new({

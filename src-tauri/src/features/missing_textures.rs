@@ -2,9 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::dto::StateTrim;
-use crate::utils::texture_list::TextureList;
-use crate::TigerApp;
+use crate::{app::TigerApp, dto::StateTrim, utils::texture_list::TextureList};
 
 pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
     std::thread::spawn(move || loop {

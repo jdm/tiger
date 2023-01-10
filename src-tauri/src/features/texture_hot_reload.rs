@@ -2,9 +2,10 @@ use serde::{Deserialize, Serialize};
 use std::path::PathBuf;
 use std::time::Duration;
 
-use crate::utils::file_watcher::FileWatcher;
-use crate::utils::texture_list::TextureList;
-use crate::TigerApp;
+use crate::{
+    app::TigerApp,
+    utils::{file_watcher::FileWatcher, texture_list::TextureList},
+};
 
 static EVENT_INVALIDATE_TEXTURE: &str = "invalidate-texture";
 

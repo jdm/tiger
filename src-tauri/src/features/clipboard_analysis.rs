@@ -1,8 +1,6 @@
 use std::time::Duration;
 
-use crate::document::clipboard_manifest;
-use crate::dto::StateTrim;
-use crate::TigerApp;
+use crate::{app::TigerApp, document::clipboard_manifest, dto::StateTrim};
 
 pub fn init<A: TigerApp + Send + 'static>(app: A, period: Duration) {
     std::thread::spawn(move || loop {
@@ -32,9 +30,9 @@ pub fn init<A: TigerApp + Send + 'static>(app: A, period: Duration) {
 #[cfg(test)]
 mod test {
     use crate::{
+        app::TigerApp,
         dto::{ClipboardManifest, Direction},
         mock::TigerAppMock,
-        TigerApp,
     };
 
     #[tokio::test]

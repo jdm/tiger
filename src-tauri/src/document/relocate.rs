@@ -73,7 +73,7 @@ impl Document {
 #[cfg(test)]
 mod test {
 
-    use crate::{mock::TigerAppMock, TigerApp};
+    use crate::{app::TigerApp, mock::TigerAppMock};
 
     use super::*;
 
