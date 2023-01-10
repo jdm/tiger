@@ -108,48 +108,47 @@ fn add<P: AsRef<Path>>(textures: &HashSet<P>, texture_cache: &Handle) {
 #[cfg(test)]
 mod test {
 
+    use std::path::PathBuf;
+    use sugar_path::SugarPath;
+
     use crate::{app::TigerApp, mock::TigerAppMock};
 
     #[tokio::test]
     async fn follows_frame_additions_and_removals() {
-        let dir = std::env::current_dir().unwrap();
-        let frame_path = dir.join("test-data/samurai-dead-all.png");
-
+        let frame_path = PathBuf::from("test-data/samurai-dead-all.png").resolve();
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-
-        app.wait_for_periodic_scans();
-        assert!(app.texture_cache().lock().contains_key(&frame_path));
-
+        app.assert_eventually(|| app.texture_cache().lock().contains_key(&frame_path));
         app.delete_frame(frame_path.clone());
-
-        app.wait_for_periodic_scans();
-        assert!(!app.texture_cache().lock().contains_key(&frame_path));
+        app.assert_eventually(|| !app.texture_cache().lock().contains_key(&frame_path));
     }
 
     #[tokio::test]
     async fn detects_texture_changes() {
-        let dir = std::env::current_dir().unwrap();
-        let frame = dir.join("test-output/detects_texture_changes.png");
-        let before_frame = dir.join("test-data/samurai-dead-all.png");
-        let after_frame = dir.join("test-data/samurai-attack-north.png");
+        let frame = PathBuf::from("test-output/detects_texture_changes.png").resolve();
+        let before_frame = PathBuf::from("test-data/samurai-dead-all.png").resolve();
+        let after_frame = PathBuf::from("test-data/samurai-attack-north.png").resolve();
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.import_frames(vec![frame.clone()]);
 
         std::fs::copy(&before_frame, &frame).unwrap();
-        app.wait_for_periodic_scans();
-        assert_eq!(
-            app.texture_cache().lock().get(&frame).unwrap(),
-            &image::open(before_frame).unwrap()
-        );
+        app.assert_eventually({
+            let app = app.clone();
+            let frame = frame.clone();
+            move || {
+                app.texture_cache().lock().get(&frame) == Some(&image::open(&before_frame).unwrap())
+            }
+        });
 
         std::fs::copy(&after_frame, &frame).unwrap();
-        app.wait_for_periodic_scans();
-        assert_eq!(
-            app.texture_cache().lock().get(&frame).unwrap(),
-            &image::open(after_frame).unwrap()
-        );
+        app.assert_eventually({
+            let app = app.clone();
+            let frame = frame.clone();
+            move || {
+                app.texture_cache().lock().get(&frame) == Some(&image::open(&after_frame).unwrap())
+            }
+        });
     }
 }

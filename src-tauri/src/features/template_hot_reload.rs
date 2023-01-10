@@ -33,15 +33,15 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
 #[cfg(test)]
 mod test {
     use std::path::PathBuf;
+    use sugar_path::SugarPath;
 
     use crate::{dto::ExportSettingsError, mock::TigerAppMock};
 
     #[tokio::test]
     async fn detects_template_errors() {
-        let test_template_path = PathBuf::from("test-output/detects_template_errors.template");
-        let bad_template_path = PathBuf::from("test-data/malformed.template")
-            .canonicalize()
-            .unwrap();
+        let test_template_path =
+            PathBuf::from("test-output/detects_template_errors.template").resolve();
+        let bad_template_path = PathBuf::from("test-data/malformed.template").resolve();
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
@@ -64,7 +64,7 @@ mod test {
             .is_none());
 
         std::fs::copy(good_template_path, &test_template_path).unwrap();
-        app.set_export_template_file(test_template_path.canonicalize().unwrap());
+        app.set_export_template_file(&test_template_path);
         app.wait_for_periodic_scans();
         assert!(app.client_state().documents[0]
             .export_settings_validation
@@ -74,14 +74,15 @@ mod test {
             .is_none());
 
         std::fs::copy(bad_template_path, &test_template_path).unwrap();
-        app.wait_for_periodic_scans();
-        assert!(matches!(
-            app.client_state().documents[0]
-                .export_settings_validation
-                .as_ref()
-                .unwrap()
-                .template_file_error,
-            Some(ExportSettingsError::TemplateError(_))
-        ));
+        app.assert_eventually(|| {
+            matches!(
+                app.client_state().documents[0]
+                    .export_settings_validation
+                    .as_ref()
+                    .unwrap()
+                    .template_file_error,
+                Some(ExportSettingsError::TemplateError(_))
+            )
+        });
     }
 }

@@ -63,7 +63,7 @@ impl TigerAppMock {
     }
 
     pub fn wait_for_periodic_scans(&self) {
-        std::thread::sleep(2 * Self::PERIOD);
+        std::thread::sleep(2 * Self::PERIOD + Duration::from_millis(200));
     }
 
     pub fn client_state(&self) -> dto::State {
