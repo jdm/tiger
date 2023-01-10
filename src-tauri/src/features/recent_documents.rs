@@ -97,8 +97,7 @@ mod test {
 
         let app = TigerAppMock::new();
         let recent_documents_file = app.paths().lock().recent_documents_file.clone();
-        app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        app.open_documents(vec!["test-data/flame.tiger"]).await;
+        app.open_documents(vec![&samurai_file, &flame_file]).await;
         app.assert_eventually(|| {
             let Ok(file_content) = std::fs::read_to_string(&recent_documents_file) else {
                 return false
@@ -106,11 +105,7 @@ mod test {
             let Ok(recent_documents) = serde_json::from_str::<Vec<PathBuf>>(&file_content) else {
                 return false
             };
-            assert_eq!(
-                recent_documents,
-                vec![flame_file.clone(), samurai_file.clone()]
-            );
-            true
+            recent_documents == vec![flame_file.clone(), samurai_file.clone()]
         });
     }
 }
