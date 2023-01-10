@@ -273,6 +273,15 @@ mod test {
     }
 
     #[tokio::test]
+    async fn can_close_app() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        assert!(!app.is_closed());
+        app.request_exit();
+        assert!(app.is_closed());
+    }
+
+    #[tokio::test]
     async fn can_request_exit_and_discard_changes() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
