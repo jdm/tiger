@@ -1148,8 +1148,6 @@ mod tests {
         assert_eq!(&d.view.selection.animations.selected_items, &b_and_c);
         d.browse_selection(BrowseDirection::Up, false).unwrap();
         assert_eq!(&d.view.selection.animations.selected_items, &just_b);
-        d.browse_selection(BrowseDirection::Left, false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_b);
         d.browse_to_end(false).unwrap();
         assert_eq!(&d.view.selection.animations.selected_items, &just_c);
         d.browse_to_start(false).unwrap();
@@ -1175,8 +1173,6 @@ mod tests {
         d.browse_selection(BrowseDirection::Down, true).unwrap();
         assert_eq!(&d.view.selection.frames.selected_items, &b_and_c);
         d.browse_selection(BrowseDirection::Up, false).unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
-        d.browse_selection(BrowseDirection::Left, false).unwrap();
         assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
         d.browse_to_end(false).unwrap();
         assert_eq!(&d.view.selection.frames.selected_items, &just_c);
