@@ -8,7 +8,6 @@ use crate::app::TigerApp;
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
 use crate::export::export_sheet;
-use crate::features::texture_cache;
 use crate::sheet::{Absolute, Sheet};
 use crate::state::{self, State};
 
@@ -53,6 +52,7 @@ pub trait Api {
     fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
+    async fn end_export_as(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
@@ -85,7 +85,10 @@ pub trait Api {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()>;
+    fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
+    fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
+    fn set_export_texture_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
@@ -262,6 +265,46 @@ impl<T: TigerApp + Sync> Api for T {
                     .ok();
             }
         }))
+    }
+
+    async fn end_export_as(&self) -> Result<Patch, ()> {
+        let mut patch = self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndExportAs).ok();
+            }
+        });
+
+        let (sheet, document_name) = {
+            let state_handle = self.state();
+            let state = state_handle.lock();
+            match state.current_document() {
+                Some(d) => (d.sheet().clone(), d.path().to_file_name()),
+                _ => return Ok(patch),
+            }
+        };
+
+        let result = tauri::async_runtime::spawn_blocking({
+            let texture_cache = self.texture_cache();
+            move || export_sheet(&sheet, texture_cache)
+        })
+        .await
+        .unwrap();
+
+        let mut additional_patch = self.state().mutate(StateTrim::Full, |state| {
+            if let Err(e) = result {
+                state.show_error_message(
+                    "Export Error".to_owned(),
+                    format!(
+                        "An error occured while trying to export `{}`",
+                        document_name.to_file_name(),
+                    ),
+                    e.to_string(),
+                );
+            }
+        });
+
+        patch.0.append(&mut additional_patch.0);
+        Ok(patch)
     }
 
     async fn export(&self) -> Result<Patch, ()> {
@@ -509,11 +552,41 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, directory: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportMetadataPathsRoot(directory.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportMetadataFile(file.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_export_template_file<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportTemplateFile(path.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_export_texture_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportTextureFile(file.into()))
                     .ok();
             }
         }))
@@ -1968,45 +2041,21 @@ pub fn set_export_template_file(app: tauri::AppHandle, file: PathBuf) -> Result<
 }
 
 #[tauri::command]
-pub fn set_export_texture_file(
-    state_handle: tauri::State<'_, state::Handle>,
-    file: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetExportTextureFile(file))
-                .ok();
-        }
-    }))
+pub fn set_export_texture_file(app: tauri::AppHandle, file: PathBuf) -> Result<Patch, ()> {
+    app.set_export_texture_file(file)
 }
 
 #[tauri::command]
-pub fn set_export_metadata_file(
-    state_handle: tauri::State<'_, state::Handle>,
-    file: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetExportMetadataFile(file))
-                .ok();
-        }
-    }))
+pub fn set_export_metadata_file(app: tauri::AppHandle, file: PathBuf) -> Result<Patch, ()> {
+    app.set_export_metadata_file(file)
 }
 
 #[tauri::command]
 pub fn set_export_metadata_paths_root(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     directory: PathBuf,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetExportMetadataPathsRoot(directory))
-                .ok();
-        }
-    }))
+    app.set_export_metadata_paths_root(directory)
 }
 
 #[tauri::command]
@@ -2019,44 +2068,6 @@ pub fn cancel_export_as(state_handle: tauri::State<'_, state::Handle>) -> Result
 }
 
 #[tauri::command]
-pub async fn end_export_as(
-    state_handle: tauri::State<'_, state::Handle>,
-    texture_cache: tauri::State<'_, texture_cache::Handle>,
-) -> Result<Patch, ()> {
-    let mut patch = state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EndExportAs).ok();
-        }
-    });
-
-    let (sheet, document_name) = {
-        let state = state_handle.lock();
-        match state.current_document() {
-            Some(d) => (d.sheet().clone(), d.path().to_file_name()),
-            _ => return Ok(patch),
-        }
-    };
-
-    let result = tauri::async_runtime::spawn_blocking({
-        let texture_cache = texture_cache::Handle::clone(&texture_cache);
-        move || export_sheet(&sheet, texture_cache)
-    })
-    .await
-    .unwrap();
-
-    let mut additional_patch = state_handle.mutate(StateTrim::Full, |state| {
-        if let Err(e) = result {
-            state.show_error_message(
-                "Export Error".to_owned(),
-                format!(
-                    "An error occured while trying to export `{}`",
-                    document_name.to_file_name(),
-                ),
-                e.to_string(),
-            );
-        }
-    });
-
-    patch.0.append(&mut additional_patch.0);
-    Ok(patch)
+pub async fn end_export_as(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_export_as().await
 }

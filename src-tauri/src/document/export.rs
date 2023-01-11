@@ -184,7 +184,70 @@ fn validate_output_directory_path(p: &Path) -> Option<ExportSettingsError> {
 #[cfg(test)]
 mod tests {
 
+    use sugar_path::SugarPath;
+
     use super::*;
+    use crate::{app::TigerApp, mock::TigerAppMock};
+
+    #[tokio::test]
+    async fn export_matches_known_output() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+
+        let ExportSettings::Template(export_settings) = {
+            let state_handle = app.state();
+            let state = state_handle.lock();
+            state
+                .current_document()
+                .unwrap()
+                .sheet()
+                .export_settings()
+                .as_ref()
+                .unwrap()
+                .to_owned()
+        };
+
+        std::fs::remove_file(export_settings.texture_file()).ok();
+        std::fs::remove_file(export_settings.metadata_file()).ok();
+        app.export().await;
+
+        assert_eq!(
+            std::fs::read_to_string(export_settings.metadata_file()).unwrap(),
+            std::fs::read_to_string("test-data/samurai.export").unwrap()
+        );
+
+        assert_eq!(
+            std::fs::read(export_settings.texture_file()).unwrap(),
+            std::fs::read("test-data/samurai.png").unwrap()
+        );
+    }
+
+    #[tokio::test]
+    async fn can_adjust_export_settings() {
+        let template_file = PathBuf::from("test-data/lua.template").resolve();
+        let metadata_root = PathBuf::from("test-output/root").resolve();
+        let output_texture = PathBuf::from("test-output/can_adjust_export_settings.png").resolve();
+        let output_metadata = PathBuf::from("test-output/can_adjust_export_settings.lua").resolve();
+
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.begin_export_as();
+        app.set_export_template_file(template_file);
+        app.set_export_metadata_paths_root(metadata_root);
+        app.set_export_texture_file(&output_texture);
+        app.set_export_metadata_file(&output_metadata);
+        app.end_export_as().await;
+
+        assert_eq!(
+            std::fs::read_to_string(output_metadata).unwrap(),
+            std::fs::read_to_string("test-data/can_adjust_export_settings.lua").unwrap()
+        );
+
+        assert_eq!(
+            std::fs::read(output_texture).unwrap(),
+            std::fs::read("test-data/samurai.png").unwrap()
+        );
+    }
 
     #[test]
     fn validates_empty_paths_in_export_settings() {

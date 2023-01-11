@@ -158,6 +158,10 @@ impl TigerAppMock {
         self.apply_patch(Api::edit_animation(self, name).unwrap());
     }
 
+    pub async fn end_export_as(&self) {
+        self.apply_patch(Api::end_export_as(self).await.unwrap());
+    }
+
     pub async fn export(&self) {
         self.apply_patch(Api::export(self).await.unwrap());
     }
@@ -228,8 +232,20 @@ impl TigerAppMock {
         self.apply_patch(Api::select_keyframe(self, direction, index, shift, ctrl).unwrap());
     }
 
+    pub fn set_export_metadata_file<P: Into<PathBuf>>(&self, path: P) {
+        self.apply_patch(Api::set_export_metadata_file(self, path).unwrap());
+    }
+
+    pub fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, path: P) {
+        self.apply_patch(Api::set_export_metadata_paths_root(self, path).unwrap());
+    }
+
     pub fn set_export_template_file<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::set_export_template_file(self, path).unwrap());
+    }
+
+    pub fn set_export_texture_file<P: Into<PathBuf>>(&self, path: P) {
+        self.apply_patch(Api::set_export_texture_file(self, path).unwrap());
     }
 
     pub fn set_hitbox_height(&self, height: u32) {
