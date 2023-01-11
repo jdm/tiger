@@ -51,7 +51,7 @@ fn read_from_disk(source: &Path) -> Result<Vec<PathBuf>, std::io::Error> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use sugar_path::SugarPath;
 

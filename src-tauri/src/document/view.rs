@@ -316,7 +316,7 @@ impl Document {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::mock::TigerAppMock;
 
     #[tokio::test]

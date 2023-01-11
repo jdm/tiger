@@ -994,7 +994,7 @@ impl<'a> Borrow<dyn HitboxID + 'a> for (&'a str, Direction, usize, &'a str) {
 impl Eq for dyn HitboxID + '_ {}
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
     use std::collections::HashMap;

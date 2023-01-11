@@ -71,7 +71,7 @@ impl Document {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use crate::{app::TigerApp, mock::TigerAppMock};
 

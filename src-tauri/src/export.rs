@@ -78,7 +78,7 @@ fn create_dir(path: &Path) -> Result<(), ExportError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
     use crate::{app::TigerApp, mock::TigerAppMock};

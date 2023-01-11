@@ -139,7 +139,7 @@ pub fn clipboard_manifest<S: AsRef<str>>(clipboard_content: S) -> Option<Clipboa
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
 

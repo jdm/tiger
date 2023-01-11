@@ -106,7 +106,7 @@ fn add<P: AsRef<Path>>(textures: &HashSet<P>, texture_cache: &Handle) {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use std::path::PathBuf;
     use sugar_path::SugarPath;

@@ -28,7 +28,7 @@ pub fn init<A: TigerApp + Send + 'static>(app: A, period: Duration) {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
     use crate::{
         app::TigerApp,
         dto::{ClipboardManifest, Direction},

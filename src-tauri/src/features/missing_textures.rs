@@ -41,7 +41,7 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use std::{fs::File, path::PathBuf};
 

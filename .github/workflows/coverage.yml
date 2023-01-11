@@ -58,8 +58,8 @@ jobs:
           --binary-path ./target/debug
           --excl-line "#\[derive\("
           --excl-br-line "#\[derive\("
-          --excl-start "mod test \{"
-          --excl-br-start "mod test \{"
+          --excl-start "mod tests \{"
+          --excl-br-start "mod tests \{"
         working-directory: src-tauri
       - name: Upload Results
         uses: codecov/codecov-action@v2

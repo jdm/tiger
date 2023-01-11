@@ -709,7 +709,7 @@ impl From<&document::ExportSettingsError> for ExportSettingsError {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
     use crate::document;

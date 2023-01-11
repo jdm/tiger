@@ -1116,7 +1116,7 @@ fn portable_path<S: serde::Serializer>(value: &Path, serializer: S) -> Result<S:
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
 

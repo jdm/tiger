@@ -182,7 +182,7 @@ fn validate_output_directory_path(p: &Path) -> Option<ExportSettingsError> {
 }
 
 #[cfg(test)]
-mod test {
+mod tests {
 
     use super::*;
 
