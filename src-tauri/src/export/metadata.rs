@@ -85,6 +85,7 @@ struct Frame {
     width: i32,
     height: i32,
 }
+
 impl Frame {
     fn new(
         sheet: &sheet::Sheet<Absolute>,
@@ -211,7 +212,7 @@ impl Animation {
 struct Sheet {
     frames: Vec<Frame>,
     animations: Vec<Animation>,
-    sheet_image: String,
+    sheet_image: PathBuf,
 }
 
 impl Sheet {
@@ -240,13 +241,13 @@ impl Sheet {
 
         let sheet_image = {
             let relative_to = settings.metadata_paths_root();
-            let image_path = diff_paths(settings.texture_file(), relative_to).ok_or_else(|| {
+            let path = diff_paths(settings.texture_file(), relative_to).ok_or_else(|| {
                 MetadataError::AbsoluteToRelativePath(
                     settings.texture_file().to_owned(),
                     relative_to.to_owned(),
                 )
             })?;
-            image_path.to_string_lossy().into_owned()
+            path.with_forward_slashes()
         };
 
         Ok(Self {
@@ -268,5 +269,15 @@ pub(super) fn generate_sheet_metadata(
             let globals = Sheet::new(sheet, template_settings, texture_layout)?;
             template.render(&globals)
         }
+    }
+}
+
+trait WithForwardSlashes {
+    fn with_forward_slashes(&self) -> PathBuf;
+}
+
+impl<T: AsRef<Path>> WithForwardSlashes for T {
+    fn with_forward_slashes(&self) -> PathBuf {
+        self.as_ref().to_string_lossy().replace('\\', "/").into()
     }
 }
