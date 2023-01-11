@@ -1,5 +1,7 @@
 TEXTURE
 samurai.png
+128
+64
 
 FRAMES
 0 x = 96, y = 16, w = 16, h = 16

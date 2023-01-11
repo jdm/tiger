@@ -40,8 +40,8 @@ pub fn export_sheet(
 
     match export_settings {
         ExportSettings::Template(template_settings) => {
-            let packed_sheet = pack_sheet(sheet, texture_cache)?;
-            let metadata = generate_sheet_metadata(sheet, export_settings, packed_sheet.layout())?;
+            let atlas = pack_sheet(sheet, texture_cache)?;
+            let metadata = generate_sheet_metadata(sheet, export_settings, &atlas)?;
 
             {
                 let path = template_settings.metadata_file();
@@ -59,9 +59,7 @@ pub fn export_sheet(
                     create_dir(directory)?;
                 }
                 let mut file = create_file(path)?;
-                packed_sheet
-                    .texture()
-                    .write_to(&mut file, image::ImageFormat::Png)?;
+                atlas.image().write_to(&mut file, image::ImageFormat::Png)?;
             }
         }
     }

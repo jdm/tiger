@@ -1,5 +1,7 @@
 TEXTURE
-{{ replace sheet_image "\\" "/" }}
+{{ atlas_image.path }}
+{{ atlas_image.width }}
+{{ atlas_image.height }}
 
 FRAMES
 {{ #each frames as |frame| }}

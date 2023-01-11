@@ -5,10 +5,12 @@ use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 
-use crate::export::PackedFrame;
-use crate::sheet::{self, Absolute};
+use crate::{
+    export::{Atlas, AtlasFrame},
+    sheet::{self, Absolute},
+};
 
-type TextureLayout = HashMap<PathBuf, PackedFrame>;
+type AtlasLayout = HashMap<PathBuf, AtlasFrame>;
 
 #[derive(Error, Debug)]
 pub enum MetadataError {
@@ -90,7 +92,7 @@ impl Frame {
     fn new(
         sheet: &sheet::Sheet<Absolute>,
         frame: &sheet::Frame<Absolute>,
-        texture_layout: &TextureLayout,
+        atlas_layout: &AtlasLayout,
     ) -> Result<Self, MetadataError> {
         let index = sheet
             .sorted_frames()
@@ -98,7 +100,7 @@ impl Frame {
             .position(|f| std::ptr::eq(f, frame))
             .ok_or(MetadataError::InvalidFrameReference)?;
 
-        let frame_layout = texture_layout
+        let frame_layout = atlas_layout
             .get(frame.source())
             .ok_or(MetadataError::FrameWasNotPacked)?;
 
@@ -125,19 +127,19 @@ impl Keyframe {
     fn new(
         sheet: &sheet::Sheet<Absolute>,
         keyframe: &sheet::Keyframe<Absolute>,
-        texture_layout: &TextureLayout,
+        atlas_layout: &AtlasLayout,
     ) -> Result<Self, MetadataError> {
-        let packed_frame = texture_layout
+        let atlas_frame = atlas_layout
             .get(keyframe.frame())
             .ok_or(MetadataError::FrameWasNotPacked)?;
 
-        let frame_size: Vector2D<u32> = packed_frame.size_in_sheet.into();
+        let frame_size: Vector2D<u32> = atlas_frame.size_in_sheet.into();
         let position = keyframe.offset() - (frame_size.to_f32() / 2.0).floor().to_i32();
 
         let frame = sheet
             .frame(keyframe.frame())
             .ok_or(MetadataError::InvalidFrameReference)?;
-        let frame_data = Frame::new(sheet, frame, texture_layout)?;
+        let frame_data = Frame::new(sheet, frame, atlas_layout)?;
 
         let mut hitboxes = Vec::new();
         for (hitbox_name, hitbox) in keyframe.sorted_hitboxes() {
@@ -165,11 +167,11 @@ impl Sequence {
         sheet: &sheet::Sheet<Absolute>,
         direction: sheet::Direction,
         sequence: &sheet::Sequence<Absolute>,
-        texture_layout: &TextureLayout,
+        atlas_layout: &AtlasLayout,
     ) -> Result<Self, MetadataError> {
         let mut keyframes = Vec::new();
         for keyframe in sequence.keyframes_iter() {
-            let frame = Keyframe::new(sheet, keyframe, texture_layout)?;
+            let frame = Keyframe::new(sheet, keyframe, atlas_layout)?;
             keyframes.push(frame);
         }
 
@@ -192,11 +194,11 @@ impl Animation {
         sheet: &sheet::Sheet<Absolute>,
         animation_name: String,
         animation: &sheet::Animation<Absolute>,
-        texture_layout: &TextureLayout,
+        atlas_layout: &AtlasLayout,
     ) -> Result<Self, MetadataError> {
         let mut sequences = Vec::new();
         for (direction, sequence) in animation.sequences_iter() {
-            let sequence = Sequence::new(sheet, *direction, sequence, texture_layout)?;
+            let sequence = Sequence::new(sheet, *direction, sequence, atlas_layout)?;
             sequences.push(sequence);
         }
 
@@ -209,22 +211,39 @@ impl Animation {
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
+struct Image {
+    path: PathBuf,
+    width: u32,
+    height: u32,
+}
+
+impl Image {
+    fn new<P: Into<PathBuf>>(path: P, width: u32, height: u32) -> Self {
+        Self {
+            path: path.into(),
+            width,
+            height,
+        }
+    }
+}
+
+#[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct Sheet {
     frames: Vec<Frame>,
     animations: Vec<Animation>,
-    sheet_image: PathBuf,
+    atlas_image: Image,
 }
 
 impl Sheet {
     fn new(
         sheet: &sheet::Sheet<Absolute>,
         settings: &sheet::TemplateExportSettings<Absolute>,
-        texture_layout: &TextureLayout,
+        atlas: &Atlas,
     ) -> Result<Self, MetadataError> {
         let frames = {
             let mut frames = Vec::new();
             for frame in sheet.sorted_frames() {
-                frames.push(Frame::new(sheet, frame, texture_layout)?);
+                frames.push(Frame::new(sheet, frame, atlas.layout())?);
             }
             frames
         };
@@ -233,27 +252,31 @@ impl Sheet {
             let mut animations = Vec::new();
             for (animation_name, animation) in sheet.sorted_animations() {
                 let animation_data =
-                    Animation::new(sheet, animation_name.clone(), animation, texture_layout)?;
+                    Animation::new(sheet, animation_name.clone(), animation, atlas.layout())?;
                 animations.push(animation_data);
             }
             animations
         };
 
-        let sheet_image = {
-            let relative_to = settings.metadata_paths_root();
-            let path = diff_paths(settings.texture_file(), relative_to).ok_or_else(|| {
-                MetadataError::AbsoluteToRelativePath(
-                    settings.texture_file().to_owned(),
-                    relative_to.to_owned(),
-                )
-            })?;
-            path.with_forward_slashes()
+        let atlas_image = {
+            let path = {
+                let relative_to = settings.metadata_paths_root();
+                let path = diff_paths(settings.texture_file(), relative_to).ok_or_else(|| {
+                    MetadataError::AbsoluteToRelativePath(
+                        settings.texture_file().to_owned(),
+                        relative_to.to_owned(),
+                    )
+                })?;
+                path.with_forward_slashes()
+            };
+
+            Image::new(path, atlas.image().width(), atlas.image().height())
         };
 
         Ok(Self {
             frames,
             animations,
-            sheet_image,
+            atlas_image,
         })
     }
 }
@@ -261,12 +284,12 @@ impl Sheet {
 pub(super) fn generate_sheet_metadata(
     sheet: &sheet::Sheet<Absolute>,
     export_settings: &sheet::ExportSettings<Absolute>,
-    texture_layout: &TextureLayout,
+    atlas: &Atlas,
 ) -> Result<String, MetadataError> {
     match export_settings {
         sheet::ExportSettings::Template(template_settings) => {
             let template = Template::new(template_settings.template_file())?;
-            let globals = Sheet::new(sheet, template_settings, texture_layout)?;
+            let globals = Sheet::new(sheet, template_settings, atlas)?;
             template.render(&globals)
         }
     }

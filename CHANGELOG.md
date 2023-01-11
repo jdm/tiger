@@ -151,7 +151,6 @@
 - [x] Multiple selections
 - [x] Jump to next/previous frame
 - [x] Auto reload images on frame edit
-- ~~[ ] Visible handles for adjusting frame durations (instead of invisible buttons)~~
 
 ## Tiger 0.2.0
 

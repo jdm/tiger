@@ -14,22 +14,22 @@ pub enum PackError {
     Packing,
 }
 
-pub(super) struct PackedFrame {
+pub(super) struct AtlasFrame {
     pub position_in_sheet: (u32, u32),
     pub size_in_sheet: (u32, u32),
 }
 
-pub(super) struct PackedSheet {
-    texture: DynamicImage,
-    layout: HashMap<PathBuf, PackedFrame>,
+pub(super) struct Atlas {
+    image: DynamicImage,
+    layout: HashMap<PathBuf, AtlasFrame>,
 }
 
-impl PackedSheet {
-    pub fn texture(&self) -> &DynamicImage {
-        &self.texture
+impl Atlas {
+    pub fn image(&self) -> &DynamicImage {
+        &self.image
     }
 
-    pub fn layout(&self) -> &HashMap<PathBuf, PackedFrame> {
+    pub fn layout(&self) -> &HashMap<PathBuf, AtlasFrame> {
         &self.layout
     }
 }
@@ -37,7 +37,7 @@ impl PackedSheet {
 pub(super) fn pack_sheet(
     sheet: &Sheet<Absolute>,
     texture_cache: texture_cache::Handle,
-) -> Result<PackedSheet, PackError> {
+) -> Result<Atlas, PackError> {
     let mut bitmaps = HashMap::new();
     {
         let cache = texture_cache.lock();
@@ -71,7 +71,7 @@ pub(super) fn pack_sheet(
         .map(|(r, p)| {
             (
                 p.to_path_buf(),
-                PackedFrame {
+                AtlasFrame {
                     position_in_sheet: (r.x as u32, r.y as u32),
                     size_in_sheet: (r.w as u32, r.h as u32),
                 },
@@ -79,12 +79,12 @@ pub(super) fn pack_sheet(
         })
         .collect::<HashMap<_, _>>();
 
-    let mut texture = DynamicImage::new_rgba8(width as u32, height as u32);
+    let mut image = DynamicImage::new_rgba8(width as u32, height as u32);
     layout.iter().for_each(|(path, frame)| {
         let bitmap = bitmaps.get(path.as_path()).unwrap();
         let (x, y) = (frame.position_in_sheet.0, frame.position_in_sheet.1);
-        texture.copy_from(bitmap, x, y).unwrap();
+        image.copy_from(bitmap, x, y).unwrap();
     });
 
-    Ok(PackedSheet { texture, layout })
+    Ok(Atlas { image, layout })
 }

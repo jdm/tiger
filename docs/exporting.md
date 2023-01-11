@@ -84,21 +84,29 @@ In the context of boolean operators, the following operands evaluate as `false`:
 
 The spritesheet data that can be referenced in the template is described in the following tables:
 
-| Field       | Type                      | Description                                                                                                                                                                             |
-| :---------- | :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| sheet_image | String                    | Path to the atlas image file containing all the fames in the spritesheet. This path is relative to the directory selected in the `Metadata Root Directory` option of the Export dialog. |
-| frames      | [Frame](#frame)[]         | List of all the frames in the spritesheet.                                                                                                                                              |
-| animations  | [Animation](#animation)[] | List of all the animations in the spritesheet.                                                                                                                                          |
+| Field       | Type                      | Description                                              |
+| :---------- | :------------------------ | :------------------------------------------------------- |
+| atlas_image | [Image](#image)           | Image file containing all the frames in the spritesheet. |
+| frames      | [Frame](#frame)[]         | List of frames in the spritesheet.                       |
+| animations  | [Animation](#animation)[] | List of animations in the spritesheet.                   |
+
+### Image
+
+| Field  | Type   | Description                                                                                                                           |
+| :----- | :----- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| path   | Number | Path to the image file. This path is relative to the directory selected in the `Metadata Root Directory` option of the Export dialog. |
+| width  | Number | Image width in pixels.                                                                                                                |
+| height | Number | Image height in pixels.                                                                                                               |
 
 ### Frame
 
-| Field  | Type   | Description                                                                            |
-| :----- | :----- | :------------------------------------------------------------------------------------- |
-| index  | Number | Arbitrary frame identifier.                                                            |
-| x      | Number | Horizontal position of the frame in the atlas image file, measured from the left edge. |
-| y      | Number | Vertical position of the frame in the atlas image file, measured from the top edge.    |
-| width  | Number | Frame width in pixels.                                                                 |
-| height | Number | Frame height in pixels.                                                                |
+| Field  | Type   | Description                                                                       |
+| :----- | :----- | :-------------------------------------------------------------------------------- |
+| index  | Number | Arbitrary frame identifier.                                                       |
+| x      | Number | Horizontal position of the frame in the atlas image, measured from the left edge. |
+| y      | Number | Vertical position of the frame in the atlas image, measured from the top edge.    |
+| width  | Number | Frame width in pixels.                                                            |
+| height | Number | Frame height in pixels.                                                           |
 
 ### Animation
 
@@ -117,23 +125,23 @@ The spritesheet data that can be referenced in the template is described in the 
 
 ### Keyframe
 
-| Field    | Type                | Description                                                                                                                                                        |
-| :------- | :------------------ | :----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| frame    | [Frame](#frame)     | Frame to display during this keyframe.                                                                                                                             |
-| hitboxes | [Hitbox](#hitbox)[] | List of hitboxes in this keyframe.                                                                                                                                 |
-| duration | Number              | Duration in milliseconds.                                                                                                                                          |
-| x        | Number              | Horizontal position of this keyframe, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
-| y        | Number              | Vertical position of this keyframe, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.             |
+| Field    | Type                | Description                                                                                                                                                         |
+| :------- | :------------------ | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| frame    | [Frame](#frame)     | Frame to display during this keyframe.                                                                                                                              |
+| hitboxes | [Hitbox](#hitbox)[] | List of hitboxes in this keyframe.                                                                                                                                  |
+| duration | Number              | Duration in milliseconds.                                                                                                                                           |
+| x        | Number              | Position of this keyframe's left edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
+| y        | Number              | Position of this keyframe's top edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.            |
 
 ### Hitbox
 
-| Field  | Type   | Description                                                                                                                                                      |
-| :----- | :----- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| name   | String | Name of the hitbox.                                                                                                                                              |
-| x      | Number | Horizontal position of this hitbox, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
-| y      | Number | Vertical position of this hitbox, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.             |
-| width  | Number | Hitbox width in pixels.                                                                                                                                          |
-| height | Number | Hitbox height in pixels.                                                                                                                                         |
+| Field  | Type   | Description                                                                                                                                                       |
+| :----- | :----- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| name   | String | Name of the hitbox.                                                                                                                                               |
+| x      | Number | Position of this hitbox's left edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
+| y      | Number | Vosition of this hitbox's top edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.            |
+| width  | Number | Hitbox width in pixels.                                                                                                                                           |
+| height | Number | Hitbox height in pixels.                                                                                                                                          |
 
 ### Direction
 
