@@ -92,14 +92,13 @@ The spritesheet data that can be referenced in the template is described in the 
 
 ### Frame
 
-| Field  | Type   | Description                                                                                                                                                           |
-| :----- | :----- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| source | String | Path to the source image file of this individual frame. This path is relative to the directory selected in the `Metadata Root Directory` option of the Export dialog. |
-| index  | Number | Arbitrary frame identifier.                                                                                                                                           |
-| x      | Number | Horizontal position of the frame in the atlas image file, measured from the left edge.                                                                                |
-| y      | Number | Vertical position of the frame in the atlas image file, measured from the top edge.                                                                                   |
-| width  | Number | Frame width in pixels.                                                                                                                                                |
-| height | Number | Frame height in pixels.                                                                                                                                               |
+| Field  | Type   | Description                                                                            |
+| :----- | :----- | :------------------------------------------------------------------------------------- |
+| index  | Number | Arbitrary frame identifier.                                                            |
+| x      | Number | Horizontal position of the frame in the atlas image file, measured from the left edge. |
+| y      | Number | Vertical position of the frame in the atlas image file, measured from the top edge.    |
+| width  | Number | Frame width in pixels.                                                                 |
+| height | Number | Frame height in pixels.                                                                |
 
 ### Animation
 

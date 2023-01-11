@@ -18,6 +18,7 @@
 - [x] Can close directions dropdown menu by clicking it again
 - [x] Can press escape to close modals / export overlay
 - [ ] Export complete notification
+- [x] Fixed export documentation referencing a non-existing source field on `Frame`
 - [x] Fixed a bug where timeline would not fill entire panel after resizing the program window
 
 ## Tiger 0.9
