@@ -306,7 +306,18 @@ impl Document {
     }
 
     pub fn is_saved(&self) -> bool {
-        self.persistent.disk_version == Some(self.version())
+        if self.persistent.disk_version == Some(self.version()) {
+            true
+        } else {
+            // Special case to not mark document dirty after initial navigation change.
+            // This mirrors the logic in can_merge_view() which does not allow merging
+            // on top of version 0.
+            self.version() == 1
+                && self.persistent.disk_version == Some(0)
+                && self.history_index > 0
+                && self.history[self.history_index - 1].sheet
+                    == self.history[self.history_index].sheet
+        }
     }
 
     pub fn mark_as_saved(&mut self, saved_version: i32) {
@@ -385,8 +396,10 @@ impl Document {
     }
 
     fn can_merge_view(&self) -> bool {
-        self.history_index > 0
-            && self.history[self.history_index - 1].sheet == self.history[self.history_index].sheet
+        let is_at_tail = self.history[self.history_index].version == 0;
+        let on_top_of_view_change = self.history_index > 0
+            && self.history[self.history_index - 1].sheet == self.history[self.history_index].sheet;
+        !is_at_tail && on_top_of_view_change
     }
 
     pub fn undo(&mut self) -> DocumentResult<()> {
@@ -576,6 +589,7 @@ impl Display for Command {
 mod tests {
 
     use super::*;
+    use crate::mock::TigerAppMock;
 
     fn list_frames(d: &Document) -> Vec<String> {
         d.sheet
@@ -613,6 +627,26 @@ mod tests {
         assert_eq!(list_frames(&d), one_and_two);
         run(&mut d, Command::Redo);
         assert_eq!(list_frames(&d), all_three);
+    }
+
+    #[tokio::test]
+    async fn view_changes_do_not_dirty_document() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        app.select_animation("dead", false, false);
+        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        app.select_animation("walk", false, false);
+        assert!(!app.client_state().documents[0].has_unsaved_changes);
+    }
+
+    #[tokio::test]
+    async fn sheet_changes_do_dirty_document() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        app.import_frames(vec!["some-frame.png"]);
+        assert!(app.client_state().documents[0].has_unsaved_changes);
     }
 
     #[test]
