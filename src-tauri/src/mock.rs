@@ -106,6 +106,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_drag_and_drop_keyframe(self, direction, index).unwrap());
     }
 
+    pub fn begin_drag_keyframe_duration(&self, direction: dto::Direction, index: usize) {
+        self.apply_patch(Api::begin_drag_keyframe_duration(self, direction, index).unwrap());
+    }
+
     pub fn begin_export_as(&self) {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
@@ -176,6 +180,10 @@ impl TigerAppMock {
 
     pub fn end_drag_and_drop_keyframe(&self) {
         self.apply_patch(Api::end_drag_and_drop_keyframe(self).unwrap());
+    }
+
+    pub fn end_drag_keyframe_duration(&self) {
+        self.apply_patch(Api::end_drag_keyframe_duration(self).unwrap());
     }
 
     pub async fn end_export_as(&self) {
@@ -296,12 +304,28 @@ impl TigerAppMock {
         self.apply_patch(Api::set_keyframe_offset_x(self, x).unwrap());
     }
 
-    pub fn set_timeline_zoom_amount(&self, amount: f32) {
-        self.apply_patch(Api::set_timeline_zoom_amount(self, amount).unwrap());
-    }
-
     pub fn set_keyframe_offset_y(&self, y: i32) {
         self.apply_patch(Api::set_keyframe_offset_y(self, y).unwrap());
+    }
+
+    pub fn set_keyframe_snapping_base_duration(&self, duration_millis: u64) {
+        self.apply_patch(Api::set_keyframe_snapping_base_duration(self, duration_millis).unwrap());
+    }
+
+    pub fn set_snap_keyframe_durations(&self, snap: bool) {
+        self.apply_patch(Api::set_snap_keyframe_durations(self, snap).unwrap());
+    }
+
+    pub fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) {
+        self.apply_patch(Api::set_snap_keyframes_to_other_keyframes(self, snap).unwrap());
+    }
+
+    pub fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) {
+        self.apply_patch(Api::set_snap_keyframes_to_multiples_of_duration(self, snap).unwrap());
+    }
+
+    pub fn set_timeline_zoom_amount(&self, amount: f32) {
+        self.apply_patch(Api::set_timeline_zoom_amount(self, amount).unwrap());
     }
 
     pub fn set_workbench_zoom_factor(&self, zoom_factor: u32) {
@@ -314,6 +338,10 @@ impl TigerAppMock {
 
     pub fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool) {
         self.apply_patch(Api::update_nudge_keyframe(self, displacement, both_axis).unwrap());
+    }
+
+    pub fn update_drag_keyframe_duration(&self, duration_millis: i64) {
+        self.apply_patch(Api::update_drag_keyframe_duration(self, duration_millis).unwrap());
     }
 
     pub fn zoom_in_timeline(&self) {

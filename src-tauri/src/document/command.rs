@@ -97,10 +97,10 @@ pub enum Command {
     EndDragAndDropKeyframe,
     BeginDragKeyframeDuration(Direction, usize),
     UpdateDragKeyframeDuration(i64),
-    EndDragKeyframeDuration(),
+    EndDragKeyframeDuration,
     BeginNudgeKeyframe(Direction, usize),
     UpdateNudgeKeyframe(Vector2D<i32>, bool),
-    EndNudgeKeyframe(),
+    EndNudgeKeyframe,
     CreateHitbox(Option<Vector2D<i32>>),
     DeleteHitbox(String),
     DeleteSelectedHitboxes,
@@ -237,10 +237,10 @@ impl Document {
             Command::EndDragAndDropKeyframe => self.end_drag_and_drop_keyframe(),
             Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
-            Command::EndDragKeyframeDuration() => self.end_drag_keyframe_duration(),
+            Command::EndDragKeyframeDuration => self.end_drag_keyframe_duration(),
             Command::BeginNudgeKeyframe(d, i) => self.begin_nudge_keyframe(d, i)?,
             Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
-            Command::EndNudgeKeyframe() => self.end_nudge_keyframe(),
+            Command::EndNudgeKeyframe => self.end_nudge_keyframe(),
             Command::CreateHitbox(p) => self.create_hitbox(p)?,
             Command::DeleteHitbox(ref name) => self.delete_hitbox(name)?,
             Command::DeleteSelectedHitboxes => self.delete_selected_hitboxes()?,
@@ -547,11 +547,11 @@ impl Display for Command {
 
             Command::BeginDragKeyframeDuration(_, _)
             | Command::UpdateDragKeyframeDuration(_)
-            | Command::EndDragKeyframeDuration() => f.write_str("Adjust Keyframe Duration"),
+            | Command::EndDragKeyframeDuration => f.write_str("Adjust Keyframe Duration"),
 
             Command::BeginNudgeKeyframe(_, _)
             | Command::UpdateNudgeKeyframe(_, _)
-            | Command::EndNudgeKeyframe() => f.write_str("Nudge Keyframe"),
+            | Command::EndNudgeKeyframe => f.write_str("Nudge Keyframe"),
 
             Command::BeginNudgeHitbox(_)
             | Command::UpdateNudgeHitbox(_, _)

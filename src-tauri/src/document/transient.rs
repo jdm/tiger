@@ -1007,158 +1007,130 @@ mod tests {
             .is_empty());
     }
 
-    #[test]
-    fn can_drag_keyframe_duration() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
+    #[tokio::test]
+    async fn can_drag_keyframe_duration() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-        d.update_drag_keyframe_duration(50).unwrap();
-        d.end_drag_keyframe_duration();
-
-        let new_duration = d
-            .sheet
-            .keyframe("walk_cycle", Direction::North, 1)
-            .duration_millis();
-        assert_eq!(new_duration, 150);
-    }
-
-    #[test]
-    fn drag_keyframe_duration_can_snap_to_other_keyframe() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([
-                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-            ]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-        d.update_drag_keyframe_duration(99).unwrap();
-        d.end_drag_keyframe_duration();
-        let new_duration = d
-            .sheet
-            .keyframe("walk_cycle", Direction::North, 1)
-            .duration_millis();
-
-        assert_eq!(new_duration, 200);
-    }
-
-    #[test]
-    fn drag_keyframe_duration_does_not_snap_to_moving_keyframes() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([
-                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-            ]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_keyframes_only(vec![
-            ("walk_cycle".to_owned(), Direction::North, 0),
-            ("walk_cycle".to_owned(), Direction::South, 2),
-        ]);
-        d.begin_drag_keyframe_duration(Direction::South, 2).unwrap();
-        d.update_drag_keyframe_duration(49).unwrap();
-        d.update_drag_keyframe_duration(50).unwrap();
-        d.end_drag_keyframe_duration();
-        let new_duration = d
-            .sheet
-            .keyframe("walk_cycle", Direction::South, 2)
-            .duration_millis();
-
-        assert_eq!(new_duration, 150);
-    }
-
-    #[test]
-    fn drag_keyframe_duration_can_snap_to_duration() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-
-        d.view.snap_keyframes_to_multiples_of_duration = true;
-        d.view.keyframe_snapping_base_duration = Duration::from_millis(50);
-        d.edit_animation("walk_cycle").unwrap();
-        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-        d.update_drag_keyframe_duration(49).unwrap();
-        d.end_drag_keyframe_duration();
-        let new_duration = d
-            .sheet
-            .keyframe("walk_cycle", Direction::North, 1)
-            .duration_millis();
-
-        assert_eq!(new_duration, 150);
-    }
-
-    #[test]
-    fn can_drag_multiple_keyframe_durations() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_keyframes_only([
-            ("walk_cycle".to_owned(), Direction::North, 0),
-            ("walk_cycle".to_owned(), Direction::North, 1),
-        ]);
-        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-        d.update_drag_keyframe_duration(50).unwrap();
-        d.end_drag_keyframe_duration();
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        app.update_drag_keyframe_duration(50);
+        app.end_drag_keyframe_duration();
 
         assert_eq!(
-            d.sheet
-                .keyframe("walk_cycle", Direction::North, 0)
-                .duration_millis(),
+            app.client_state().documents[0]
+                .keyframe("walk", dto::Direction::North, 1)
+                .duration_millis,
+            150
+        );
+    }
+
+    #[tokio::test]
+    async fn drag_keyframe_duration_can_snap_to_other_keyframe() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        app.update_drag_keyframe_duration(99);
+        app.end_drag_keyframe_duration();
+
+        assert_eq!(
+            app.client_state().documents[0]
+                .keyframe("walk", dto::Direction::North, 1)
+                .duration_millis,
+            200
+        );
+    }
+
+    #[tokio::test]
+    async fn drag_keyframe_duration_does_not_snap_to_moving_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.select_keyframe(dto::Direction::North, 0, false, false);
+        app.select_keyframe(dto::Direction::South, 2, false, true);
+        app.begin_drag_keyframe_duration(dto::Direction::South, 2);
+        app.update_drag_keyframe_duration(49);
+        app.update_drag_keyframe_duration(50);
+        app.end_drag_keyframe_duration();
+
+        assert_eq!(
+            app.client_state().documents[0]
+                .keyframe("walk", dto::Direction::South, 2)
+                .duration_millis,
+            150
+        );
+    }
+
+    #[tokio::test]
+    async fn drag_keyframe_duration_can_snap_to_duration() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.set_snap_keyframes_to_multiples_of_duration(true);
+        app.set_keyframe_snapping_base_duration(50);
+
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        app.update_drag_keyframe_duration(49);
+        app.end_drag_keyframe_duration();
+
+        assert_eq!(
+            app.client_state().documents[0]
+                .keyframe("walk", dto::Direction::North, 1)
+                .duration_millis,
+            150
+        );
+    }
+
+    #[tokio::test]
+    async fn can_drag_multiple_keyframe_durations() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.select_keyframe(dto::Direction::North, 0, false, false);
+        app.select_keyframe(dto::Direction::North, 1, false, true);
+
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        app.update_drag_keyframe_duration(50);
+        app.end_drag_keyframe_duration();
+
+        let document = &app.client_state().documents[0];
+
+        assert_eq!(
+            document
+                .keyframe("walk", dto::Direction::North, 0)
+                .duration_millis,
             125
         );
 
         assert_eq!(
-            d.sheet
-                .keyframe("walk_cycle", Direction::North, 1)
-                .duration_millis(),
+            document
+                .keyframe("walk", dto::Direction::North, 1)
+                .duration_millis,
             125
         );
     }
 
-    #[test]
-    fn keeps_track_of_keyframe_durations_being_dragged() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
+    #[tokio::test]
+    async fn keeps_track_of_keyframe_durations_being_dragged() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.select_keyframes_only([
-            ("walk_cycle".to_owned(), Direction::North, 0),
-            ("walk_cycle".to_owned(), Direction::North, 1),
-        ]);
+        app.select_keyframe(dto::Direction::North, 0, false, false);
+        app.select_keyframe(dto::Direction::North, 1, false, true);
 
-        assert!(!d.is_dragging_keyframe_duration());
-        d.begin_drag_keyframe_duration(Direction::North, 1).unwrap();
-        assert!(d.is_dragging_keyframe_duration());
-        d.update_drag_keyframe_duration(50).unwrap();
-        assert!(d.is_dragging_keyframe_duration());
-        d.end_drag_keyframe_duration();
-        assert!(!d.is_dragging_keyframe_duration());
+        assert!(!app.client_state().documents[0].is_dragging_keyframe_duration);
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        assert!(app.client_state().documents[0].is_dragging_keyframe_duration);
+        app.update_drag_keyframe_duration(50);
+        assert!(app.client_state().documents[0].is_dragging_keyframe_duration);
+        app.end_drag_keyframe_duration();
+        assert!(!app.client_state().documents[0].is_dragging_keyframe_duration);
     }
 
     #[tokio::test]
@@ -1177,6 +1149,7 @@ mod tests {
         app.update_nudge_keyframe((5, 10), false);
 
         let document = &app.client_state().documents[0];
+
         assert_eq!(
             document.keyframe("walk", dto::Direction::North, 0).offset,
             (initial_keyframe.offset.0, initial_keyframe.offset.1 + 10),
@@ -1217,6 +1190,7 @@ mod tests {
         app.update_nudge_keyframe((5, 10), false);
 
         let document = &app.client_state().documents[0];
+
         assert_eq!(
             document.keyframe("walk", dto::Direction::North, 0).offset,
             (initial_offset_0.0, initial_offset_0.1 + 10),

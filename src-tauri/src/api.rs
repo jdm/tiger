@@ -50,6 +50,11 @@ pub trait Api {
         direction: dto::Direction,
         index: usize,
     ) -> Result<Patch, ()>;
+    fn begin_drag_keyframe_duration(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+    ) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
@@ -70,6 +75,7 @@ pub trait Api {
         index: usize,
     ) -> Result<Patch, ()>;
     fn end_drag_and_drop_frame(&self) -> Result<Patch, ()>;
+    fn end_drag_keyframe_duration(&self) -> Result<Patch, ()>;
     fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
     fn end_nudge_keyframe(&self) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
@@ -117,9 +123,14 @@ pub trait Api {
     fn set_keyframe_duration(&self, duration_millies: u64) -> Result<Patch, ()>;
     fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
+    fn set_keyframe_snapping_base_duration(&self, duration_millis: u64) -> Result<Patch, ()>;
+    fn set_snap_keyframe_durations(&self, snap: bool) -> Result<Patch, ()>;
+    fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()>;
+    fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) -> Result<Patch, ()>;
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
+    fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()>;
     fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool)
         -> Result<Patch, ()>;
     fn zoom_in_timeline(&self) -> Result<Patch, ()>;
@@ -153,6 +164,20 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
+                    .ok();
+            }
+        }))
+    }
+
+    fn begin_drag_keyframe_duration(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
                     .ok();
             }
         }))
@@ -336,10 +361,20 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn end_drag_keyframe_duration(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EndDragKeyframeDuration)
+                    .ok();
+            }
+        }))
+    }
+
     fn end_nudge_keyframe(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
-                document.process_command(Command::EndNudgeKeyframe()).ok();
+                document.process_command(Command::EndNudgeKeyframe).ok();
             }
         }))
     }
@@ -751,6 +786,48 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_keyframe_snapping_base_duration(&self, duration_millis: u64) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetKeyframeSnappingBaseDuration(
+                        Duration::from_millis(duration_millis),
+                    ))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_snap_keyframe_durations(&self, snap: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetSnapKeyframeDurations(snap))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetSnapKeyframeToMultiplesOfDuration(snap))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -776,6 +853,16 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::TogglePreserveAspectRatio)
+                    .ok();
+            }
+        }))
+    }
+
+    fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::UpdateDragKeyframeDuration(delta_millis))
                     .ok();
             }
         }))
@@ -1641,61 +1728,32 @@ pub fn jump_to_next_frame(state_handle: tauri::State<'_, state::Handle>) -> Resu
 }
 
 #[tauri::command]
-pub fn set_snap_keyframe_durations(
-    state_handle: tauri::State<'_, state::Handle>,
-    snap: bool,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetSnapKeyframeDurations(snap))
-                .ok();
-        }
-    }))
+pub fn set_snap_keyframe_durations(app: tauri::AppHandle, snap: bool) -> Result<Patch, ()> {
+    app.set_snap_keyframe_durations(snap)
 }
 
 #[tauri::command]
 pub fn set_snap_keyframes_to_other_keyframes(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     snap: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
-                .ok();
-        }
-    }))
+    app.set_snap_keyframes_to_other_keyframes(snap)
 }
 
 #[tauri::command]
 pub fn set_snap_keyframes_to_multiples_of_duration(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     snap: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetSnapKeyframeToMultiplesOfDuration(snap))
-                .ok();
-        }
-    }))
+    app.set_snap_keyframes_to_multiples_of_duration(snap)
 }
 
 #[tauri::command]
 pub fn set_keyframe_snapping_base_duration(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     duration_millis: u64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetKeyframeSnappingBaseDuration(
-                    Duration::from_millis(duration_millis),
-                ))
-                .ok();
-        }
-    }))
+    app.set_keyframe_snapping_base_duration(duration_millis)
 }
 
 #[tauri::command]
@@ -1870,44 +1928,24 @@ pub fn end_drag_and_drop_keyframe(app: tauri::AppHandle) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn begin_drag_keyframe_duration(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
-                .ok();
-        }
-    }))
+    app.begin_drag_keyframe_duration(direction, index)
 }
 
 #[tauri::command]
 pub fn update_drag_keyframe_duration(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     delta_millis: i64,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::UpdateDragKeyframeDuration(delta_millis))
-                .ok();
-        }
-    }))
+    app.update_drag_keyframe_duration(delta_millis)
 }
 
 #[tauri::command]
-pub fn end_drag_keyframe_duration(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::EndDragKeyframeDuration())
-                .ok();
-        }
-    }))
+pub fn end_drag_keyframe_duration(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_drag_keyframe_duration()
 }
 
 #[tauri::command]
