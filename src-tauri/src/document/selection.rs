@@ -290,11 +290,14 @@ impl Document {
         direction: BrowseDirection,
         shift: bool,
     ) -> DocumentResult<()> {
-        if !self.view.selection.frames.is_empty() {
+        let vertical = matches!(direction, BrowseDirection::Up | BrowseDirection::Down);
+        let uses_frames_grid = self.view.frames_list_mode == ListMode::Grid4xN;
+
+        if !self.view.selection.frames.is_empty() && (vertical || uses_frames_grid) {
             self.browse_frames(direction, shift);
-        } else if !self.view.selection.animations.is_empty() {
+        } else if !self.view.selection.animations.is_empty() && vertical {
             self.browse_animations(direction, shift);
-        } else if !self.view.selection.hitboxes.is_empty() {
+        } else if !self.view.selection.hitboxes.is_empty() && vertical {
             self.browse_hitboxes(direction, shift)?;
         } else if shift {
             self.browse_keyframes(direction, shift)?;
@@ -306,6 +309,7 @@ impl Document {
                 BrowseDirection::Down => self.cycle_directions_forward()?,
             };
         }
+
         Ok(())
     }
 
