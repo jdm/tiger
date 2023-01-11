@@ -63,6 +63,8 @@ impl TigerAppMock {
     }
 
     pub fn wait_for_periodic_scans(&self) {
+        // TODO Use a condvar setup for tests that need to wait
+        // until file watches have been added (texture_hot_reload, template_hot_reload)
         std::thread::sleep(2 * Self::PERIOD + Duration::from_millis(200));
     }
 

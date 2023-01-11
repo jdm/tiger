@@ -227,6 +227,7 @@ mod tests {
         let template_file = PathBuf::from("test-data/lua.template").resolve();
         let metadata_root = PathBuf::from("test-output/root").resolve();
         let output_texture = PathBuf::from("test-output/can_adjust_export_settings.png").resolve();
+        // TODO make a non-descript export format to avoid polluting Github language stats
         let output_metadata = PathBuf::from("test-output/can_adjust_export_settings.lua").resolve();
 
         let app = TigerAppMock::new();
