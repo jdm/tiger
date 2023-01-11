@@ -1161,68 +1161,70 @@ mod tests {
         assert!(!d.is_dragging_keyframe_duration());
     }
 
-    #[test]
-    fn can_nudge_keyframe() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-        d.view.set_workbench_zoom_factor(1);
+    #[tokio::test]
+    async fn can_nudge_keyframe() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.set_workbench_zoom_factor(1);
 
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("my_hitbox");
-        let initial = d
-            .sheet
-            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-            .rectangle();
+        let initial_keyframe = app.client_state().documents[0]
+            .keyframe("walk", dto::Direction::North, 0)
+            .clone();
+        let initial_hitbox = initial_keyframe.hitbox("weak").clone();
 
-        d.begin_nudge_keyframe(Direction::North, 0).unwrap();
-        d.update_nudge_keyframe(vec2(5, 10), false).unwrap();
+        app.begin_nudge_keyframe(dto::Direction::North, 0);
+        app.update_nudge_keyframe((5, 10), false);
+
+        let document = &app.client_state().documents[0];
         assert_eq!(
-            d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
-            vec2(0, 10),
+            document.keyframe("walk", dto::Direction::North, 0).offset,
+            (initial_keyframe.offset.0, initial_keyframe.offset.1 + 10),
         );
+
         assert_eq!(
-            d.sheet
-                .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-                .rectangle(),
-            euclid::rect(
-                initial.origin.x,
-                initial.origin.y + 10,
-                initial.size.width,
-                initial.size.height
-            ),
+            document
+                .hitbox("walk", dto::Direction::North, 0, "weak")
+                .top_left,
+            (initial_hitbox.top_left.0, initial_hitbox.top_left.1 + 10),
+        );
+
+        assert_eq!(
+            document
+                .hitbox("walk", dto::Direction::North, 0, "weak")
+                .size,
+            (initial_hitbox.size.0, initial_hitbox.size.1),
         );
     }
 
-    #[test]
-    fn can_nudge_multiple_keyframes() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-        d.view.set_workbench_zoom_factor(1);
+    #[tokio::test]
+    async fn can_nudge_multiple_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.set_workbench_zoom_factor(1);
 
-        d.select_keyframes_only([
-            ("walk_cycle".to_owned(), Direction::North, 0),
-            ("walk_cycle".to_owned(), Direction::North, 1),
-        ]);
+        let initial_offset_0 = app.client_state().documents[0]
+            .keyframe("walk", dto::Direction::North, 0)
+            .offset;
+        let initial_offset_1 = app.client_state().documents[0]
+            .keyframe("walk", dto::Direction::North, 1)
+            .offset;
 
-        d.begin_nudge_keyframe(Direction::North, 0).unwrap();
-        d.update_nudge_keyframe(vec2(5, 10), true).unwrap();
+        app.select_keyframe(dto::Direction::North, 0, false, false);
+        app.select_keyframe(dto::Direction::North, 1, false, true);
+        app.begin_nudge_keyframe(dto::Direction::North, 0);
+        app.update_nudge_keyframe((5, 10), false);
+
+        let document = &app.client_state().documents[0];
         assert_eq!(
-            d.sheet.keyframe("walk_cycle", Direction::North, 0).offset(),
-            vec2(5, 10),
+            document.keyframe("walk", dto::Direction::North, 0).offset,
+            (initial_offset_0.0, initial_offset_0.1 + 10),
         );
+
         assert_eq!(
-            d.sheet.keyframe("walk_cycle", Direction::North, 1).offset(),
-            vec2(5, 10),
+            document.keyframe("walk", dto::Direction::North, 1).offset,
+            (initial_offset_1.0, initial_offset_1.1 + 10),
         );
     }
 

@@ -51,6 +51,7 @@ pub trait Api {
         index: usize,
     ) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
+    fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
     fn close_current_document(&self) -> Result<Patch, ()>;
@@ -70,6 +71,7 @@ pub trait Api {
     ) -> Result<Patch, ()>;
     fn end_drag_and_drop_frame(&self) -> Result<Patch, ()>;
     fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
+    fn end_nudge_keyframe(&self) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     async fn end_export_as(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
@@ -118,6 +120,8 @@ pub trait Api {
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
+    fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool)
+        -> Result<Patch, ()>;
     fn zoom_in_timeline(&self) -> Result<Patch, ()>;
     fn zoom_in_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()>;
     fn zoom_in_workbench(&self) -> Result<Patch, ()>;
@@ -158,6 +162,16 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginExportAs).ok();
+            }
+        }))
+    }
+
+    fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
+                    .ok();
             }
         }))
     }
@@ -318,6 +332,14 @@ impl<T: TigerApp + Sync> Api for T {
                 document
                     .process_command(Command::EndDragAndDropKeyframe)
                     .ok();
+            }
+        }))
+    }
+
+    fn end_nudge_keyframe(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndNudgeKeyframe()).ok();
             }
         }))
     }
@@ -754,6 +776,20 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::TogglePreserveAspectRatio)
+                    .ok();
+            }
+        }))
+    }
+
+    fn update_nudge_keyframe(
+        &self,
+        displacement: (i32, i32),
+        both_axis: bool,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
                     .ok();
             }
         }))
@@ -1876,41 +1912,25 @@ pub fn end_drag_keyframe_duration(
 
 #[tauri::command]
 pub fn begin_nudge_keyframe(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
-                .ok();
-        }
-    }))
+    app.begin_nudge_keyframe(direction, index)
 }
 
 #[tauri::command]
 pub fn update_nudge_keyframe(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     displacement: (i32, i32),
     both_axis: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
-                .ok();
-        }
-    }))
+    app.update_nudge_keyframe(displacement, both_axis)
 }
 
 #[tauri::command]
-pub fn end_nudge_keyframe(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EndNudgeKeyframe()).ok();
-        }
-    }))
+pub fn end_nudge_keyframe(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_nudge_keyframe()
 }
 
 #[tauri::command]

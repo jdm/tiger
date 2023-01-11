@@ -468,8 +468,34 @@ impl Document {
     }
 
     #[cfg(test)]
+    pub fn sequence<S: AsRef<str>>(&self, animation: S, direction: Direction) -> &Sequence {
+        self.animation(animation).sequence(direction)
+    }
+
+    #[cfg(test)]
     pub fn keyframes<S: AsRef<str>>(&self, animation: S, direction: Direction) -> &Vec<Keyframe> {
         self.animation(animation).keyframes(direction)
+    }
+
+    #[cfg(test)]
+    pub fn keyframe<S: AsRef<str>>(
+        &self,
+        animation: S,
+        direction: Direction,
+        index: usize,
+    ) -> &Keyframe {
+        self.sequence(animation, direction).keyframe(index)
+    }
+
+    #[cfg(test)]
+    pub fn hitbox<S: AsRef<str>, T: AsRef<str>>(
+        &self,
+        animation: S,
+        direction: Direction,
+        index: usize,
+        hitbox: T,
+    ) -> &Hitbox {
+        self.keyframe(animation, direction, index).hitbox(hitbox)
     }
 }
 
@@ -530,8 +556,13 @@ impl<P: Paths> sheet::Animation<P> {
 
 impl Animation {
     #[cfg(test)]
+    pub fn sequence(&self, direction: Direction) -> &Sequence {
+        self.sequences.get(&direction).unwrap()
+    }
+
+    #[cfg(test)]
     pub fn keyframes(&self, direction: Direction) -> &Vec<Keyframe> {
-        &self.sequences.get(&direction).unwrap().keyframes
+        &self.sequence(direction).keyframes
     }
 }
 
@@ -600,6 +631,13 @@ impl<P: Paths> From<&sheet::Sequence<P>> for Sequence {
     }
 }
 
+impl Sequence {
+    #[cfg(test)]
+    pub fn keyframe(&self, index: usize) -> &Keyframe {
+        self.keyframes.get(index).unwrap()
+    }
+}
+
 impl<P: Paths> From<&sheet::Keyframe<P>> for Keyframe {
     fn from(keyframe: &sheet::Keyframe<P>) -> Self {
         Self {
@@ -616,6 +654,16 @@ impl<P: Paths> From<&sheet::Keyframe<P>> for Keyframe {
                 .collect(),
             key: keyframe.key(),
         }
+    }
+}
+
+impl Keyframe {
+    #[cfg(test)]
+    pub fn hitbox<S: AsRef<str>>(&self, name: S) -> &Hitbox {
+        self.hitboxes
+            .iter()
+            .find(|h| h.name == name.as_ref())
+            .unwrap()
     }
 }
 

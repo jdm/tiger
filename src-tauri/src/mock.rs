@@ -110,6 +110,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
 
+    pub fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) {
+        self.apply_patch(Api::begin_nudge_keyframe(self, direction, index).unwrap());
+    }
+
     pub fn cancel_exit(&self) {
         self.apply_patch(Api::cancel_exit(self).unwrap());
     }
@@ -176,6 +180,10 @@ impl TigerAppMock {
 
     pub async fn end_export_as(&self) {
         self.apply_patch(Api::end_export_as(self).await.unwrap());
+    }
+
+    pub fn end_nudge_keyframe(&self) {
+        self.apply_patch(Api::end_nudge_keyframe(self).unwrap());
     }
 
     pub async fn export(&self) {
@@ -302,6 +310,10 @@ impl TigerAppMock {
 
     pub fn toggle_preserve_aspect_ratio(&self) {
         self.apply_patch(Api::toggle_preserve_aspect_ratio(self).unwrap());
+    }
+
+    pub fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool) {
+        self.apply_patch(Api::update_nudge_keyframe(self, displacement, both_axis).unwrap());
     }
 
     pub fn zoom_in_timeline(&self) {

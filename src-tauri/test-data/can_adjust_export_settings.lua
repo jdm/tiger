@@ -137,15 +137,27 @@ return {
 						frames = {
 							{
 								id = "frame_9", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_10", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_11", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_12", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 						},
 					},
@@ -154,15 +166,27 @@ return {
 						frames = {
 							{
 								id = "frame_13", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_14", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_15", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_16", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 						},
 					},
@@ -171,15 +195,27 @@ return {
 						frames = {
 							{
 								id = "frame_21", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_22", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_23", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_24", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 						},
 					},
@@ -188,15 +224,27 @@ return {
 						frames = {
 							{
 								id = "frame_17", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_18", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_19", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 							{
 								id = "frame_20", duration = 0.1, ox = 8.0, oy = 16.0,
+								tags = {
+									["weak"] = { rect = { x = -5, y = -12, w = 10, h = 10 } },
+								},
 							},
 						},
 					},

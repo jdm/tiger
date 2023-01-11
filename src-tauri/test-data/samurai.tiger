@@ -277,7 +277,22 @@
             "keyframes": [
               {
                 "frame": "samurai-walk-east-0.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -286,7 +301,22 @@
               },
               {
                 "frame": "samurai-walk-east-1.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -295,7 +325,22 @@
               },
               {
                 "frame": "samurai-walk-east-2.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -304,7 +349,22 @@
               },
               {
                 "frame": "samurai-walk-east-3.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -317,7 +377,22 @@
             "keyframes": [
               {
                 "frame": "samurai-walk-north-0.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -326,7 +401,22 @@
               },
               {
                 "frame": "samurai-walk-north-1.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -335,7 +425,22 @@
               },
               {
                 "frame": "samurai-walk-north-2.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -344,7 +449,22 @@
               },
               {
                 "frame": "samurai-walk-north-3.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -357,7 +477,22 @@
             "keyframes": [
               {
                 "frame": "samurai-walk-west-0.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -366,7 +501,22 @@
               },
               {
                 "frame": "samurai-walk-west-1.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -375,7 +525,22 @@
               },
               {
                 "frame": "samurai-walk-west-2.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -384,7 +549,22 @@
               },
               {
                 "frame": "samurai-walk-west-3.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -397,7 +577,22 @@
             "keyframes": [
               {
                 "frame": "samurai-walk-south-0.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -406,7 +601,22 @@
               },
               {
                 "frame": "samurai-walk-south-1.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -415,7 +625,22 @@
               },
               {
                 "frame": "samurai-walk-south-2.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
@@ -424,7 +649,22 @@
               },
               {
                 "frame": "samurai-walk-south-3.png",
-                "hitboxes": {},
+                "hitboxes": {
+                  "weak": {
+                    "geometry": {
+                      "Rectangle": {
+                        "top_left": [
+                          -5,
+                          -12
+                        ],
+                        "size": [
+                          10,
+                          10
+                        ]
+                      }
+                    }
+                  }
+                },
                 "duration_millis": 100,
                 "offset": [
                   0,
