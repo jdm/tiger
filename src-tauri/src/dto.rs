@@ -457,6 +457,22 @@ impl document::Document {
     }
 }
 
+impl Document {
+    #[cfg(test)]
+    pub fn animation<S: AsRef<str>>(&self, animation: S) -> &Animation {
+        self.sheet
+            .animations
+            .iter()
+            .find(|a| a.name == animation.as_ref())
+            .unwrap()
+    }
+
+    #[cfg(test)]
+    pub fn keyframes<S: AsRef<str>>(&self, animation: S, direction: Direction) -> &Vec<Keyframe> {
+        self.animation(animation).keyframes(direction)
+    }
+}
+
 impl<P: Paths> sheet::Sheet<P> {
     fn to_dto(&self, trim: SheetTrim) -> Sheet {
         Sheet {
@@ -509,6 +525,13 @@ impl<P: Paths> sheet::Animation<P> {
             is_looping: self.looping(),
             key: self.key(),
         }
+    }
+}
+
+impl Animation {
+    #[cfg(test)]
+    pub fn keyframes(&self, direction: Direction) -> &Vec<Keyframe> {
+        &self.sequences.get(&direction).unwrap().keyframes
     }
 }
 

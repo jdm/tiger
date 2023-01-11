@@ -35,9 +35,21 @@ impl state::Handle {
     }
 }
 
+struct DocumentToSave {
+    sheet: Sheet<Absolute>,
+    source: PathBuf,
+    destination: PathBuf,
+    version: i32,
+}
+
 #[async_trait]
 pub trait Api {
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
+    fn begin_drag_and_drop_keyframe(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+    ) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
@@ -51,6 +63,13 @@ pub trait Api {
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
+    fn drop_keyframe_on_timeline(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+    ) -> Result<Patch, ()>;
+    fn end_drag_and_drop_frame(&self) -> Result<Patch, ()>;
+    fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     async fn end_export_as(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
@@ -116,6 +135,20 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginDragAndDropFrame(frame.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn begin_drag_and_drop_keyframe(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
                     .ok();
             }
         }))
@@ -252,6 +285,38 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DropFrameOnTimeline(direction.into(), index))
+                    .ok();
+            }
+        }))
+    }
+
+    fn drop_keyframe_on_timeline(
+        &self,
+        direction: dto::Direction,
+        index: usize,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
+                    .ok();
+            }
+        }))
+    }
+
+    fn end_drag_and_drop_frame(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndDragAndDropFrame).ok();
+            }
+        }))
+    }
+
+    fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EndDragAndDropKeyframe)
                     .ok();
             }
         }))
@@ -893,13 +958,6 @@ pub fn reveal_in_explorer(path: PathBuf) {
 #[tauri::command]
 pub fn close_without_saving(app: tauri::AppHandle) -> Result<Patch, ()> {
     app.close_without_saving()
-}
-
-struct DocumentToSave {
-    sheet: Sheet<Absolute>,
-    source: PathBuf,
-    destination: PathBuf,
-    version: i32,
 }
 
 #[tauri::command]
@@ -1719,12 +1777,8 @@ pub fn drop_frame_on_timeline(
 }
 
 #[tauri::command]
-pub fn end_drag_and_drop_frame(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EndDragAndDropFrame).ok();
-        }
-    }))
+pub fn end_drag_and_drop_frame(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_drag_and_drop_frame()
 }
 
 #[tauri::command]
@@ -1757,45 +1811,25 @@ pub fn set_keyframe_offset_y(app: tauri::AppHandle, y: i32) -> Result<Patch, ()>
 
 #[tauri::command]
 pub fn begin_drag_and_drop_keyframe(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
-                .ok();
-        }
-    }))
+    app.begin_drag_and_drop_keyframe(direction, index)
 }
 
 #[tauri::command]
 pub fn drop_keyframe_on_timeline(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::Direction,
     index: usize,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
-                .ok();
-        }
-    }))
+    app.drop_keyframe_on_timeline(direction, index)
 }
 
 #[tauri::command]
-pub fn end_drag_and_drop_keyframe(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::EndDragAndDropKeyframe)
-                .ok();
-        }
-    }))
+pub fn end_drag_and_drop_keyframe(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_drag_and_drop_keyframe()
 }
 
 #[tauri::command]

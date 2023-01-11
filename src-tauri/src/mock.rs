@@ -102,6 +102,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_drag_and_drop_frame(self, frame).unwrap());
     }
 
+    pub fn begin_drag_and_drop_keyframe(&self, direction: dto::Direction, index: usize) {
+        self.apply_patch(Api::begin_drag_and_drop_keyframe(self, direction, index).unwrap());
+    }
+
     pub fn begin_export_as(&self) {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
@@ -154,8 +158,20 @@ impl TigerAppMock {
         self.apply_patch(Api::drop_frame_on_timeline(self, direction, index).unwrap());
     }
 
+    pub fn drop_keyframe_on_timeline(&self, direction: dto::Direction, index: usize) {
+        self.apply_patch(Api::drop_keyframe_on_timeline(self, direction, index).unwrap());
+    }
+
     pub fn edit_animation<S: Into<String>>(&self, name: S) {
         self.apply_patch(Api::edit_animation(self, name).unwrap());
+    }
+
+    pub fn end_drag_and_drop_frame(&self) {
+        self.apply_patch(Api::end_drag_and_drop_frame(self).unwrap());
+    }
+
+    pub fn end_drag_and_drop_keyframe(&self) {
+        self.apply_patch(Api::end_drag_and_drop_keyframe(self).unwrap());
     }
 
     pub async fn end_export_as(&self) {

@@ -760,7 +760,11 @@ impl ResizeAxis {
 #[cfg(test)]
 mod tests {
 
+    use sugar_path::SugarPath;
+
     use super::*;
+    use crate::dto;
+    use crate::mock::TigerAppMock;
 
     #[test]
     fn can_rename_animations() {
@@ -807,27 +811,23 @@ mod tests {
 
     #[test]
     fn can_drag_and_drop_frame_to_timeline() {
-        use std::path::Path;
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["walk_0", "walk_1", "walk_2"]);
+        app.create_animation();
+        app.begin_drag_and_drop_frame("walk_1");
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+        app.begin_drag_and_drop_frame("walk_0");
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
+        app.begin_drag_and_drop_frame("walk_2");
+        app.drop_frame_on_timeline(dto::Direction::North, 2);
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet
-            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-        d.edit_animation("walk_cycle").unwrap();
-
-        d.begin_drag_and_drop_frame(PathBuf::from("walk_1"));
-        d.drop_frame_on_timeline(Direction::North, 0).unwrap();
-        d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
-        d.drop_frame_on_timeline(Direction::North, 0).unwrap();
-        d.begin_drag_and_drop_frame(PathBuf::from("walk_2"));
-        d.drop_frame_on_timeline(Direction::North, 2).unwrap();
-
-        let animation = d.sheet.animation("walk_cycle").unwrap();
-        let sequence = animation.sequence(Direction::North).unwrap();
-        let keyframes = sequence
-            .keyframes_iter()
-            .map(|k| k.frame())
+        let keyframes = app.client_state().documents[0].sheet.animations[0]
+            .keyframes(dto::Direction::North)
+            .iter()
+            .map(|k| k.frame.to_owned())
             .collect::<Vec<_>>();
+
         assert_eq!(
             keyframes,
             vec![
@@ -840,179 +840,171 @@ mod tests {
 
     #[test]
     fn can_drag_and_drop_multiple_frames_to_timeline() {
-        use std::path::Path;
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["walk_0", "walk_2"]);
+        app.create_animation();
+        app.select_frame("walk_0", false, true);
+        app.select_frame("walk_2", false, true);
+        app.begin_drag_and_drop_frame("walk_0");
+        app.drop_frame_on_timeline(dto::Direction::North, 0);
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_2"]);
-        d.sheet
-            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-        d.edit_animation("walk_cycle").unwrap();
-
-        d.select_frame("walk_0", false, true);
-        d.select_frame("walk_2", false, true);
-        d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
-        d.drop_frame_on_timeline(Direction::North, 0).unwrap();
-
-        let animation = d.sheet.animation("walk_cycle").unwrap();
-        let sequence = animation.sequence(Direction::North).unwrap();
-        let keyframes = sequence
-            .keyframes_iter()
-            .map(|k| k.frame())
+        let keyframes = app.client_state().documents[0].sheet.animations[0]
+            .keyframes(dto::Direction::North)
+            .iter()
+            .map(|k| k.frame.to_owned())
             .collect::<Vec<_>>();
+
         assert_eq!(keyframes, vec![Path::new("walk_0"), Path::new("walk_2")]);
     }
 
-    #[test]
-    fn keeps_track_of_frames_being_dragged() {
-        use std::path::Path;
+    #[tokio::test]
+    async fn keeps_track_of_frames_being_dragged() {
+        let frame_0 = PathBuf::from("test-data/samurai-walk-south-0.png").resolve();
+        let frame_1 = PathBuf::from("test-data/samurai-walk-south-1.png").resolve();
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet
-            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-        d.edit_animation("walk_cycle").unwrap();
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
-        d.select_frame("walk_0", false, true);
-        d.select_frame("walk_2", false, true);
-        assert!(d.frames_being_dragged().is_empty());
-        d.begin_drag_and_drop_frame(PathBuf::from("walk_0"));
+        app.select_frame(&frame_0, false, true);
+        app.select_frame(&frame_1, false, true);
+        assert!(app.client_state().documents[0]
+            .frames_being_dragged
+            .is_empty());
+
+        app.begin_drag_and_drop_frame(&frame_0);
         assert_eq!(
-            d.frames_being_dragged(),
-            HashSet::from([PathBuf::from("walk_0"), PathBuf::from("walk_2")]),
+            app.client_state().documents[0].frames_being_dragged,
+            HashSet::from([frame_0, frame_1]),
         );
-        d.end_drag_and_drop_frame();
-        assert!(d.frames_being_dragged().is_empty());
+
+        app.end_drag_and_drop_frame();
+        assert!(app.client_state().documents[0]
+            .frames_being_dragged
+            .is_empty());
     }
 
-    #[test]
-    fn can_drag_and_drop_keyframe_to_reorder() {
-        use std::path::Path;
+    #[tokio::test]
+    async fn can_drag_and_drop_keyframe_to_reorder() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.begin_drag_and_drop_keyframe(dto::Direction::South, 1);
+        app.drop_keyframe_on_timeline(dto::Direction::South, 0);
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-
-        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-        d.drop_keyframe_on_timeline(Direction::North, 0).unwrap();
-
-        let animation = d.sheet.animation("walk_cycle").unwrap();
-        let sequence = animation.sequence(Direction::North).unwrap();
-        let keyframes = sequence
-            .keyframes_iter()
-            .map(|k| k.frame())
+        let keyframes = app.client_state().documents[0]
+            .keyframes("walk", dto::Direction::South)
+            .iter()
+            .map(|k| k.frame.to_owned())
             .collect::<Vec<_>>();
+
         assert_eq!(
             keyframes,
             vec![
-                Path::new("walk_1"),
-                Path::new("walk_0"),
-                Path::new("walk_2")
+                PathBuf::from("test-data/samurai-walk-south-1.png").resolve(),
+                PathBuf::from("test-data/samurai-walk-south-0.png").resolve(),
+                PathBuf::from("test-data/samurai-walk-south-2.png").resolve(),
+                PathBuf::from("test-data/samurai-walk-south-3.png").resolve()
             ]
         );
     }
 
-    #[test]
-    fn can_drag_and_drop_multiple_keyframes_to_reorder() {
-        use std::path::Path;
+    #[tokio::test]
+    async fn can_drag_and_drop_multiple_keyframes_to_reorder() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(dto::Direction::South, 0, false, false);
+        app.select_keyframe(dto::Direction::South, 1, false, true);
+        app.begin_drag_and_drop_keyframe(dto::Direction::South, 1);
+        app.drop_keyframe_on_timeline(dto::Direction::South, 3);
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-
-        d.select_keyframes_only([
-            ("walk_cycle".to_owned(), Direction::North, 0),
-            ("walk_cycle".to_owned(), Direction::North, 1),
-        ]);
-        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-        d.drop_keyframe_on_timeline(Direction::North, 3).unwrap();
-
-        let animation = d.sheet.animation("walk_cycle").unwrap();
-        let sequence = animation.sequence(Direction::North).unwrap();
-        let keyframes = sequence
-            .keyframes_iter()
-            .map(|k| k.frame())
+        let keyframes = app.client_state().documents[0]
+            .keyframes("walk", dto::Direction::South)
+            .iter()
+            .map(|k| k.frame.to_owned())
             .collect::<Vec<_>>();
+
         assert_eq!(
             keyframes,
             vec![
-                Path::new("walk_2"),
-                Path::new("walk_0"),
-                Path::new("walk_1")
+                PathBuf::from("test-data/samurai-walk-south-2.png").resolve(),
+                PathBuf::from("test-data/samurai-walk-south-0.png").resolve(),
+                PathBuf::from("test-data/samurai-walk-south-1.png").resolve(),
+                PathBuf::from("test-data/samurai-walk-south-3.png").resolve()
             ]
         );
     }
 
-    #[test]
-    fn can_drag_and_drop_keyframes_to_different_direction() {
-        use std::path::Path;
+    #[tokio::test]
+    async fn can_drag_and_drop_keyframes_to_different_direction() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(dto::Direction::North, 1, false, false);
+        app.select_keyframe(dto::Direction::North, 2, false, true);
+        app.begin_drag_and_drop_keyframe(dto::Direction::North, 1);
+        app.drop_keyframe_on_timeline(dto::Direction::South, 0);
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([
-                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::South, vec![]),
-            ]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-
-        d.select_keyframes_only([
-            ("walk_cycle".to_owned(), Direction::North, 1),
-            ("walk_cycle".to_owned(), Direction::North, 2),
-        ]);
-        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
-        d.drop_keyframe_on_timeline(Direction::South, 0).unwrap();
-
-        let animation = d.sheet.animation("walk_cycle").unwrap();
         {
-            let sequence = animation.sequence(Direction::North).unwrap();
-            let keyframes = sequence
-                .keyframes_iter()
-                .map(|k| k.frame())
+            let keyframes = app.client_state().documents[0]
+                .keyframes("walk", dto::Direction::North)
+                .iter()
+                .map(|k| k.frame.to_owned())
                 .collect::<Vec<_>>();
-            assert_eq!(keyframes, vec![Path::new("walk_0"),]);
+
+            assert_eq!(
+                keyframes,
+                vec![
+                    PathBuf::from("test-data/samurai-walk-north-0.png").resolve(),
+                    PathBuf::from("test-data/samurai-walk-north-3.png").resolve()
+                ]
+            );
         }
+
         {
-            let sequence = animation.sequence(Direction::South).unwrap();
-            let keyframes = sequence
-                .keyframes_iter()
-                .map(|k| k.frame())
+            let keyframes = app.client_state().documents[0]
+                .keyframes("walk", dto::Direction::South)
+                .iter()
+                .map(|k| k.frame.to_owned())
                 .collect::<Vec<_>>();
-            assert_eq!(keyframes, vec![Path::new("walk_1"), Path::new("walk_2")]);
+
+            assert_eq!(
+                keyframes,
+                vec![
+                    PathBuf::from("test-data/samurai-walk-north-1.png").resolve(),
+                    PathBuf::from("test-data/samurai-walk-north-2.png").resolve(),
+                    PathBuf::from("test-data/samurai-walk-south-0.png").resolve(),
+                    PathBuf::from("test-data/samurai-walk-south-1.png").resolve(),
+                    PathBuf::from("test-data/samurai-walk-south-2.png").resolve(),
+                    PathBuf::from("test-data/samurai-walk-south-3.png").resolve()
+                ]
+            );
         }
     }
 
-    #[test]
-    fn keeps_track_of_keyframes_being_dragged() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
+    #[tokio::test]
+    async fn keeps_track_of_keyframes_being_dragged() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.select_keyframes_only([
-            ("walk_cycle".to_owned(), Direction::North, 0),
-            ("walk_cycle".to_owned(), Direction::North, 1),
-        ]);
-        assert!(d.keyframes_being_dragged().is_empty());
-        d.begin_drag_and_drop_keyframe(Direction::North, 1).unwrap();
+        app.select_keyframe(dto::Direction::North, 0, false, false);
+        app.select_keyframe(dto::Direction::North, 1, false, true);
+        assert!(app.client_state().documents[0]
+            .keyframes_being_dragged
+            .is_empty());
+
+        app.begin_drag_and_drop_keyframe(dto::Direction::North, 1);
         assert_eq!(
-            d.keyframes_being_dragged(),
-            HashSet::from([(Direction::North, 0), (Direction::North, 1)])
+            app.client_state().documents[0].keyframes_being_dragged,
+            HashSet::from([(dto::Direction::North, 0), (dto::Direction::North, 1)])
         );
-        d.end_drag_and_drop_keyframe();
-        assert!(d.keyframes_being_dragged().is_empty());
+
+        app.end_drag_and_drop_keyframe();
+        assert!(app.client_state().documents[0]
+            .keyframes_being_dragged
+            .is_empty());
     }
 
     #[test]
