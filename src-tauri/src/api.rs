@@ -57,7 +57,9 @@ pub trait Api {
     ) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
+    fn begin_relocate_frames(&self) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
+    fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
     fn close_current_document(&self) -> Result<Patch, ()>;
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
@@ -74,12 +76,13 @@ pub trait Api {
         direction: dto::Direction,
         index: usize,
     ) -> Result<Patch, ()>;
-    fn end_drag_and_drop_frame(&self) -> Result<Patch, ()>;
-    fn end_drag_keyframe_duration(&self) -> Result<Patch, ()>;
-    fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
-    fn end_nudge_keyframe(&self) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
+    fn end_drag_and_drop_frame(&self) -> Result<Patch, ()>;
+    fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
+    fn end_drag_keyframe_duration(&self) -> Result<Patch, ()>;
     async fn end_export_as(&self) -> Result<Patch, ()>;
+    fn end_nudge_keyframe(&self) -> Result<Patch, ()>;
+    fn end_relocate_frames(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
@@ -89,6 +92,11 @@ pub trait Api {
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
+    fn relocate_frame<F: Into<PathBuf>, T: Into<PathBuf>>(
+        &self,
+        from: F,
+        to: T,
+    ) -> Result<Patch, ()>;
     fn request_exit(&self) -> Result<Patch, ()>;
     fn reset_timeline_zoom(&self) -> Result<Patch, ()>;
     fn reset_workbench_zoom(&self) -> Result<Patch, ()>;
@@ -112,8 +120,8 @@ pub trait Api {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()>;
-    fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
+    fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_texture_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
@@ -125,8 +133,8 @@ pub trait Api {
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
     fn set_keyframe_snapping_base_duration(&self, duration_millis: u64) -> Result<Patch, ()>;
     fn set_snap_keyframe_durations(&self, snap: bool) -> Result<Patch, ()>;
-    fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()>;
     fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) -> Result<Patch, ()>;
+    fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()>;
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
@@ -136,10 +144,10 @@ pub trait Api {
     fn zoom_in_timeline(&self) -> Result<Patch, ()>;
     fn zoom_in_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()>;
     fn zoom_in_workbench(&self) -> Result<Patch, ()>;
+    fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
     fn zoom_out_timeline(&self) -> Result<Patch, ()>;
     fn zoom_out_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()>;
     fn zoom_out_workbench(&self) -> Result<Patch, ()>;
-    fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
     fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()>;
 }
 
@@ -201,9 +209,25 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn begin_relocate_frames(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::BeginRelocateFrames).ok();
+            }
+        }))
+    }
+
     fn cancel_exit(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.cancel_exit();
+        }))
+    }
+
+    fn cancel_relocate_frames(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::CancelRelocateFrames).ok();
+            }
         }))
     }
 
@@ -343,6 +367,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EditAnimation(name.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn end_drag_and_drop_frame(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -366,24 +400,6 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EndDragKeyframeDuration)
-                    .ok();
-            }
-        }))
-    }
-
-    fn end_nudge_keyframe(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document.process_command(Command::EndNudgeKeyframe).ok();
-            }
-        }))
-    }
-
-    fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::EditAnimation(name.into()))
                     .ok();
             }
         }))
@@ -427,6 +443,22 @@ impl<T: TigerApp + Sync> Api for T {
 
         patch.0.append(&mut additional_patch.0);
         Ok(patch)
+    }
+
+    fn end_nudge_keyframe(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndNudgeKeyframe).ok();
+            }
+        }))
+    }
+
+    fn end_relocate_frames(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndRelocateFrames).ok();
+            }
+        }))
     }
 
     async fn export(&self) -> Result<Patch, ()> {
@@ -528,6 +560,20 @@ impl<T: TigerApp + Sync> Api for T {
                         document.process_command(Command::Paste(data)).ok();
                     }
                 }
+            }
+        }))
+    }
+
+    fn relocate_frame<P: Into<PathBuf>, Q: Into<PathBuf>>(
+        &self,
+        from: P,
+        to: Q,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::RelocateFrame(from.into(), to.into()))
+                    .ok();
             }
         }))
     }
@@ -674,21 +720,21 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, directory: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::SetExportMetadataPathsRoot(directory.into()))
-                    .ok();
-            }
-        }))
-    }
-
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportMetadataFile(file.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, directory: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportMetadataPathsRoot(directory.into()))
                     .ok();
             }
         }))
@@ -754,16 +800,6 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::SetKeyframeOffsetX(x))
-                    .ok();
-            }
-        }))
-    }
-
     fn set_keyframe_duration(&self, duration_millis: u64) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -771,6 +807,16 @@ impl<T: TigerApp + Sync> Api for T {
                     .process_command(Command::SetKeyframeDuration(Duration::from_millis(
                         duration_millis,
                     )))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetKeyframeOffsetX(x))
                     .ok();
             }
         }))
@@ -808,21 +854,21 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
-                    .ok();
-            }
-        }))
-    }
-
     fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetSnapKeyframeToMultiplesOfDuration(snap))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
                     .ok();
             }
         }))
@@ -910,6 +956,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn zoom_out_timeline(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -934,16 +990,6 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ZoomOutWorkbench).ok();
-            }
-        }))
-    }
-
-    fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
-                    .ok();
             }
         }))
     }
@@ -1221,45 +1267,23 @@ pub fn import_frames(app: tauri::AppHandle, paths: Vec<PathBuf>) -> Result<Patch
 }
 
 #[tauri::command]
-pub fn begin_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::BeginRelocateFrames).ok();
-        }
-    }))
+pub fn begin_relocate_frames(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.begin_relocate_frames()
 }
 
 #[tauri::command]
-pub fn relocate_frame(
-    state_handle: tauri::State<'_, state::Handle>,
-    from: PathBuf,
-    to: PathBuf,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::RelocateFrame(from, to))
-                .ok();
-        }
-    }))
+pub fn relocate_frame(app: tauri::AppHandle, from: PathBuf, to: PathBuf) -> Result<Patch, ()> {
+    app.relocate_frame(from, to)
 }
 
 #[tauri::command]
-pub fn cancel_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::CancelRelocateFrames).ok();
-        }
-    }))
+pub fn cancel_relocate_frames(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.cancel_relocate_frames()
 }
 
 #[tauri::command]
-pub fn end_relocate_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EndRelocateFrames).ok();
-        }
-    }))
+pub fn end_relocate_frames(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_relocate_frames()
 }
 
 #[tauri::command]

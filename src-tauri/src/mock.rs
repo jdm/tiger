@@ -118,6 +118,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_nudge_keyframe(self, direction, index).unwrap());
     }
 
+    pub fn begin_relocate_frames(&self) {
+        self.apply_patch(Api::begin_relocate_frames(self).unwrap());
+    }
+
     pub fn cancel_exit(&self) {
         self.apply_patch(Api::cancel_exit(self).unwrap());
     }
@@ -142,16 +146,16 @@ impl TigerAppMock {
         self.apply_patch(Api::copy(self).unwrap());
     }
 
-    pub fn cut(&self) {
-        self.apply_patch(Api::cut(self).unwrap());
-    }
-
     pub fn create_animation(&self) {
         self.apply_patch(Api::create_animation(self).unwrap());
     }
 
     pub fn create_hitbox(&self, position: Option<(i32, i32)>) {
         self.apply_patch(Api::create_hitbox(self, position).unwrap());
+    }
+
+    pub fn cut(&self) {
+        self.apply_patch(Api::cut(self).unwrap());
     }
 
     pub fn delete_frame<P: Into<PathBuf>>(&self, path: P) {
@@ -194,6 +198,10 @@ impl TigerAppMock {
         self.apply_patch(Api::end_nudge_keyframe(self).unwrap());
     }
 
+    pub fn end_relocate_frames(&self) {
+        self.apply_patch(Api::end_relocate_frames(self).unwrap());
+    }
+
     pub async fn export(&self) {
         self.apply_patch(Api::export(self).await.unwrap());
     }
@@ -216,6 +224,10 @@ impl TigerAppMock {
 
     pub fn paste(&self) {
         self.apply_patch(Api::paste(self).unwrap());
+    }
+
+    pub fn relocate_frame<P: Into<PathBuf>, Q: Into<PathBuf>>(&self, from: P, to: Q) {
+        self.apply_patch(Api::relocate_frame(self, from, to).unwrap());
     }
 
     pub fn request_exit(&self) {
@@ -316,12 +328,12 @@ impl TigerAppMock {
         self.apply_patch(Api::set_snap_keyframe_durations(self, snap).unwrap());
     }
 
-    pub fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) {
-        self.apply_patch(Api::set_snap_keyframes_to_other_keyframes(self, snap).unwrap());
-    }
-
     pub fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) {
         self.apply_patch(Api::set_snap_keyframes_to_multiples_of_duration(self, snap).unwrap());
+    }
+
+    pub fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) {
+        self.apply_patch(Api::set_snap_keyframes_to_other_keyframes(self, snap).unwrap());
     }
 
     pub fn set_timeline_zoom_amount(&self, amount: f32) {
@@ -336,12 +348,12 @@ impl TigerAppMock {
         self.apply_patch(Api::toggle_preserve_aspect_ratio(self).unwrap());
     }
 
-    pub fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool) {
-        self.apply_patch(Api::update_nudge_keyframe(self, displacement, both_axis).unwrap());
-    }
-
     pub fn update_drag_keyframe_duration(&self, duration_millis: i64) {
         self.apply_patch(Api::update_drag_keyframe_duration(self, duration_millis).unwrap());
+    }
+
+    pub fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool) {
+        self.apply_patch(Api::update_nudge_keyframe(self, displacement, both_axis).unwrap());
     }
 
     pub fn zoom_in_timeline(&self) {
@@ -356,6 +368,10 @@ impl TigerAppMock {
         self.apply_patch(Api::zoom_in_workbench(self).unwrap());
     }
 
+    pub fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) {
+        self.apply_patch(Api::zoom_in_workbench_around(self, fixed_point).unwrap());
+    }
+
     pub fn zoom_out_timeline(&self) {
         self.apply_patch(Api::zoom_out_timeline(self).unwrap());
     }
@@ -366,10 +382,6 @@ impl TigerAppMock {
 
     pub fn zoom_out_workbench(&self) {
         self.apply_patch(Api::zoom_out_workbench(self).unwrap());
-    }
-
-    pub fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) {
-        self.apply_patch(Api::zoom_in_workbench_around(self, fixed_point).unwrap());
     }
 
     pub fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) {

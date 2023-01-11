@@ -73,46 +73,40 @@ impl Document {
 #[cfg(test)]
 mod tests {
 
-    use crate::{app::TigerApp, mock::TigerAppMock};
+    use sugar_path::SugarPath;
 
     use super::*;
+    use crate::mock::TigerAppMock;
 
     #[test]
     fn can_relocate_frames() {
-        let app = TigerAppMock::new();
-        let state_handle = app.state();
+        let bad_dead = PathBuf::from("samurai-dead-all.png").resolve();
+        let bad_idle = PathBuf::from("samurai-idle-west.png").resolve();
+        let good_dead = PathBuf::from("test-data/samurai-dead-all.png").resolve();
+        let good_idle = PathBuf::from("test-data/samurai-idle-west.png").resolve();
+        let unrelated = PathBuf::from("unrelated.png").resolve();
 
-        {
-            let mut state = state_handle.lock();
-            state.new_document("tmp.tiger");
-            state
-                .current_document_mut()
-                .unwrap()
-                .sheet
-                .add_frames(&vec![
-                    "samurai-dead-all.png",
-                    "samurai-idle-west.png",
-                    "bad-frame.png",
-                ]);
-        }
+        let app = TigerAppMock::new();
+        app.new_document("tmp.tiger");
+        app.import_frames(vec![&bad_dead, &bad_idle, &unrelated]);
 
         app.wait_for_periodic_scans();
 
-        let mut state = state_handle.lock();
-        let d = state.current_document_mut().unwrap();
-        d.begin_relocate_frames();
-        d.relocate_frame(
-            PathBuf::from("samurai-dead-all.png"),
-            PathBuf::from("test-data/samurai-dead-all.png"),
-        )
-        .unwrap();
-        d.end_relocate_frames().unwrap();
+        app.begin_relocate_frames();
+        app.relocate_frame(&bad_dead, &good_dead);
+        app.end_relocate_frames();
 
-        assert!(!d.sheet.has_frame("samurai-dead-all.png"));
-        assert!(!d.sheet.has_frame("samurai-idle-west.png"));
-        assert!(d.sheet.has_frame("bad-frame.png"));
-        assert!(d.sheet.has_frame("test-data/samurai-dead-all.png"));
-        assert!(d.sheet.has_frame("test-data/samurai-idle-west.png"));
-        assert!(d.sheet.has_frame("bad-frame.png"));
+        let has_frame = |p: &PathBuf| {
+            app.client_state().documents[0]
+                .sheet
+                .frames
+                .iter()
+                .any(|f| &f.path == p)
+        };
+        assert!(!has_frame(&bad_dead));
+        assert!(!has_frame(&bad_idle));
+        assert!(has_frame(&good_dead));
+        assert!(has_frame(&good_idle));
+        assert!(has_frame(&unrelated));
     }
 }
