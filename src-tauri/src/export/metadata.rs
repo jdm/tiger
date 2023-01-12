@@ -218,12 +218,28 @@ struct Image {
 }
 
 impl Image {
-    fn new<P: Into<PathBuf>>(path: P, width: u32, height: u32) -> Self {
-        Self {
-            path: path.into(),
+    fn new<P: AsRef<Path>>(
+        settings: &sheet::TemplateExportSettings<Absolute>,
+        path: P,
+        width: u32,
+        height: u32,
+    ) -> Result<Self, MetadataError> {
+        let path = {
+            let relative_to = settings.metadata_paths_root();
+            let path = diff_paths(path.as_ref(), relative_to).ok_or_else(|| {
+                MetadataError::AbsoluteToRelativePath(
+                    settings.atlas_image_file().to_owned(),
+                    relative_to.to_owned(),
+                )
+            })?;
+            path.with_forward_slashes()
+        };
+
+        Ok(Self {
+            path,
             width,
             height,
-        }
+        })
     }
 }
 
@@ -258,21 +274,12 @@ impl Sheet {
             animations
         };
 
-        let atlas_image = {
-            let path = {
-                let relative_to = settings.metadata_paths_root();
-                let path =
-                    diff_paths(settings.atlas_image_file(), relative_to).ok_or_else(|| {
-                        MetadataError::AbsoluteToRelativePath(
-                            settings.atlas_image_file().to_owned(),
-                            relative_to.to_owned(),
-                        )
-                    })?;
-                path.with_forward_slashes()
-            };
-
-            Image::new(path, atlas.image().width(), atlas.image().height())
-        };
+        let atlas_image = Image::new(
+            settings,
+            settings.atlas_image_file(),
+            atlas.image().width(),
+            atlas.image().height(),
+        )?;
 
         Ok(Self {
             frames,
