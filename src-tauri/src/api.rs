@@ -58,8 +58,12 @@ pub trait Api {
     fn begin_export_as(&self) -> Result<Patch, ()>;
     fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn begin_relocate_frames(&self) -> Result<Patch, ()>;
+    fn begin_rename_animation<S: Into<String>>(&self, animation_name: S) -> Result<Patch, ()>;
+    fn begin_rename_hitbox<S: Into<String>>(&self, hitbox_name: S) -> Result<Patch, ()>;
+    fn begin_rename_selection(&self) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
     fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
+    fn cancel_rename(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
     fn close_current_document(&self) -> Result<Patch, ()>;
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
@@ -83,6 +87,8 @@ pub trait Api {
     async fn end_export_as(&self) -> Result<Patch, ()>;
     fn end_nudge_keyframe(&self) -> Result<Patch, ()>;
     fn end_relocate_frames(&self) -> Result<Patch, ()>;
+    fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()>;
+    fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
@@ -109,6 +115,7 @@ pub trait Api {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()>;
+    fn select_direction(&self, direction: dto::Direction) -> Result<Patch, ()>;
     fn select_frame<P: Into<PathBuf>>(&self, path: P, shift: bool, ctrl: bool)
         -> Result<Patch, ()>;
     fn select_hitbox<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool)
@@ -120,10 +127,10 @@ pub trait Api {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()>;
+    fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
-    fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
@@ -213,6 +220,34 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginRelocateFrames).ok();
+            }
+        }))
+    }
+
+    fn begin_rename_animation<S: Into<String>>(&self, animation_name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginRenameAnimation(animation_name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn begin_rename_hitbox<S: Into<String>>(&self, hitbox_name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginRenameHitbox(hitbox_name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn begin_rename_selection(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::BeginRenameSelection).ok();
             }
         }))
     }
@@ -669,6 +704,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn select_direction(&self, direction: dto::Direction) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SelectDirection(direction.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn select_frame<P: Into<PathBuf>>(
         &self,
         path: P,
@@ -720,6 +765,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetExportAtlasImageFile(file.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -745,16 +800,6 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportTemplateFile(path.into()))
-                    .ok();
-            }
-        }))
-    }
-
-    fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::SetExportAtlasImageFile(file.into()))
                     .ok();
             }
         }))
@@ -999,6 +1044,34 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn cancel_rename(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::CancelRename).ok();
+            }
+        }))
+    }
+
+    fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EndRenameAnimation(new_name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EndRenameHitbox(new_name.into()))
                     .ok();
             }
         }))
@@ -1565,77 +1638,33 @@ pub fn edit_animation(app: tauri::AppHandle, name: &str) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn begin_rename_animation(
-    state_handle: tauri::State<'_, state::Handle>,
-    animation_name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginRenameAnimation(animation_name))
-                .ok();
-        }
-    }))
+pub fn begin_rename_animation(app: tauri::AppHandle, animation_name: String) -> Result<Patch, ()> {
+    app.begin_rename_animation(animation_name)
 }
 
 #[tauri::command]
-pub fn begin_rename_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
-    hitbox_name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginRenameHitbox(hitbox_name))
-                .ok();
-        }
-    }))
+pub fn begin_rename_hitbox(app: tauri::AppHandle, hitbox_name: String) -> Result<Patch, ()> {
+    app.begin_rename_hitbox(hitbox_name)
 }
 
 #[tauri::command]
-pub fn begin_rename_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::BeginRenameSelection).ok();
-        }
-    }))
+pub fn begin_rename_selection(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.begin_rename_selection()
 }
 
 #[tauri::command]
-pub fn cancel_rename(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::CancelRename).ok();
-        }
-    }))
+pub fn cancel_rename(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.cancel_rename()
 }
 
 #[tauri::command]
-pub fn end_rename_animation(
-    state_handle: tauri::State<'_, state::Handle>,
-    new_name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::EndRenameAnimation(new_name))
-                .ok();
-        }
-    }))
+pub fn end_rename_animation(app: tauri::AppHandle, new_name: String) -> Result<Patch, ()> {
+    app.end_rename_animation(new_name)
 }
 
 #[tauri::command]
-pub fn end_rename_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
-    new_name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::EndRenameHitbox(new_name))
-                .ok();
-        }
-    }))
+pub fn end_rename_hitbox(app: tauri::AppHandle, new_name: String) -> Result<Patch, ()> {
+    app.end_rename_hitbox(new_name)
 }
 
 #[tauri::command]
@@ -1867,17 +1896,8 @@ pub fn apply_direction_preset(
 }
 
 #[tauri::command]
-pub fn select_direction(
-    state_handle: tauri::State<'_, state::Handle>,
-    direction: dto::Direction,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SelectDirection(direction.into()))
-                .ok();
-        }
-    }))
+pub fn select_direction(app: tauri::AppHandle, direction: dto::Direction) -> Result<Patch, ()> {
+    app.select_direction(direction)
 }
 
 #[tauri::command]

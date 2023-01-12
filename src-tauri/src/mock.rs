@@ -124,8 +124,24 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_relocate_frames(self).unwrap());
     }
 
+    pub fn begin_rename_animation<S: Into<String>>(&self, animation_name: S) {
+        self.apply_patch(Api::begin_rename_animation(self, animation_name).unwrap());
+    }
+
+    pub fn begin_rename_hitbox<S: Into<String>>(&self, hitbox_name: S) {
+        self.apply_patch(Api::begin_rename_hitbox(self, hitbox_name).unwrap());
+    }
+
+    pub fn begin_rename_selection(&self) {
+        self.apply_patch(Api::begin_rename_selection(self).unwrap());
+    }
+
     pub fn cancel_exit(&self) {
         self.apply_patch(Api::cancel_exit(self).unwrap());
+    }
+
+    pub fn cancel_rename(&self) {
+        self.apply_patch(Api::cancel_rename(self).unwrap());
     }
 
     pub fn close_all_documents(&self) {
@@ -204,6 +220,14 @@ impl TigerAppMock {
         self.apply_patch(Api::end_relocate_frames(self).unwrap());
     }
 
+    pub fn end_rename_animation<S: Into<String>>(&self, new_name: S) {
+        self.apply_patch(Api::end_rename_animation(self, new_name).unwrap());
+    }
+
+    pub fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) {
+        self.apply_patch(Api::end_rename_hitbox(self, new_name).unwrap());
+    }
+
     pub async fn export(&self) {
         self.apply_patch(Api::export(self).await.unwrap());
     }
@@ -260,6 +284,10 @@ impl TigerAppMock {
         self.apply_patch(Api::select_animation(self, name, shift, ctrl).unwrap());
     }
 
+    pub fn select_direction(&self, direction: dto::Direction) {
+        self.apply_patch(Api::select_direction(self, direction).unwrap());
+    }
+
     pub fn select_frame<P: Into<PathBuf>>(&self, path: P, shift: bool, ctrl: bool) {
         self.apply_patch(Api::select_frame(self, path, shift, ctrl).unwrap());
     }
@@ -278,6 +306,10 @@ impl TigerAppMock {
         self.apply_patch(Api::select_keyframe(self, direction, index, shift, ctrl).unwrap());
     }
 
+    pub fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, path: P) {
+        self.apply_patch(Api::set_export_atlas_image_file(self, path).unwrap());
+    }
+
     pub fn set_export_metadata_file<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::set_export_metadata_file(self, path).unwrap());
     }
@@ -288,10 +320,6 @@ impl TigerAppMock {
 
     pub fn set_export_template_file<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::set_export_template_file(self, path).unwrap());
-    }
-
-    pub fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, path: P) {
-        self.apply_patch(Api::set_export_atlas_image_file(self, path).unwrap());
     }
 
     pub fn set_hitbox_height(&self, height: u32) {

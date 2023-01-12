@@ -766,47 +766,66 @@ mod tests {
     use crate::dto;
     use crate::mock::TigerAppMock;
 
-    #[test]
-    fn can_rename_animations() {
-        let mut d = Document::new("tmp");
-        d.sheet
-            .add_test_animation::<_, &Path>("walk_cycle", HashMap::new());
-        d.select_animation("walk_cycle", false, false);
-        d.begin_rename_selection();
-        assert_eq!("walk_cycle", d.animation_being_renamed().unwrap().as_str());
-        d.end_rename_animation("renamed".to_owned()).unwrap();
-        assert_eq!(None, d.animation_being_renamed());
+    #[tokio::test]
+    async fn can_rename_animations() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
-        assert!(d.sheet().animation("renamed").is_some());
+        app.begin_rename_animation("walk");
+        assert_eq!(
+            Some("walk".into()),
+            app.client_state().documents[0].animation_being_renamed
+        );
+
+        app.end_rename_animation("renamed");
+        assert_eq!(
+            None,
+            app.client_state().documents[0].animation_being_renamed
+        );
+        assert!(app.client_state().documents[0]
+            .sheet
+            .animations
+            .iter()
+            .any(|a| a.name == "renamed"));
     }
 
-    #[test]
-    fn can_rename_hitboxes() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    #[tokio::test]
+    async fn can_rename_hitboxes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_direction(dto::Direction::South);
+        app.begin_rename_hitbox("weak");
+
+        assert_eq!(
+            Some("weak".into()),
+            app.client_state().documents[0].hitbox_being_renamed
         );
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("my_hitbox");
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_hitbox("my_hitbox", false, false).unwrap();
-        d.begin_rename_selection();
-        assert_eq!("my_hitbox", d.hitbox_being_renamed().unwrap().as_str());
-        d.end_rename_hitbox("renamed".to_owned()).unwrap();
-        assert_eq!(None, d.hitbox_being_renamed());
+        app.end_rename_hitbox("renamed");
+        assert_eq!(None, app.client_state().documents[0].hitbox_being_renamed);
+        assert!(app.client_state().documents[0]
+            .keyframe("walk", dto::Direction::South, 0)
+            .hitboxes
+            .iter()
+            .any(|h| h.name == "renamed"));
+    }
 
-        assert!(d
-            .sheet()
-            .animation("walk_cycle")
-            .unwrap()
-            .sequence(Direction::North)
-            .unwrap()
-            .keyframe(0)
-            .unwrap()
-            .has_hitbox("renamed"));
+    #[tokio::test]
+    async fn can_cancel_rename() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.select_animation("idle", false, false);
+        app.begin_rename_selection();
+        assert_eq!(
+            Some("idle".into()),
+            app.client_state().documents[0].animation_being_renamed
+        );
+        app.cancel_rename();
+        assert_eq!(
+            None,
+            app.client_state().documents[0].animation_being_renamed
+        );
     }
 
     #[test]
