@@ -116,6 +116,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_export_as(self).unwrap());
     }
 
+    pub fn begin_nudge_hitbox<S: Into<String>>(&self, name: S) {
+        self.apply_patch(Api::begin_nudge_hitbox(self, name).unwrap());
+    }
+
     pub fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) {
         self.apply_patch(Api::begin_nudge_keyframe(self, direction, index).unwrap());
     }
@@ -210,6 +214,10 @@ impl TigerAppMock {
 
     pub async fn end_export_as(&self) {
         self.apply_patch(Api::end_export_as(self).await.unwrap());
+    }
+
+    pub fn end_nudge_hitbox(&self) {
+        self.apply_patch(Api::end_nudge_hitbox(self).unwrap());
     }
 
     pub fn end_nudge_keyframe(&self) {
@@ -380,6 +388,10 @@ impl TigerAppMock {
 
     pub fn update_drag_keyframe_duration(&self, duration_millis: i64) {
         self.apply_patch(Api::update_drag_keyframe_duration(self, duration_millis).unwrap());
+    }
+
+    pub fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) {
+        self.apply_patch(Api::update_nudge_hitbox(self, displacement, both_axis).unwrap());
     }
 
     pub fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool) {

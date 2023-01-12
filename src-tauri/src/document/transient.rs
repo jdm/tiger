@@ -1221,62 +1221,52 @@ mod tests {
         );
     }
 
-    #[test]
-    fn can_nudge_hitbox() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-        d.view.set_workbench_zoom_factor(1);
+    #[tokio::test]
+    async fn can_nudge_hitbox() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_direction(dto::Direction::West);
+        app.set_workbench_zoom_factor(1);
 
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("my_hitbox");
-        let initial = d
-            .sheet
-            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-            .rectangle();
+        let initial_hitbox = app.client_state().documents[0]
+            .hitbox("walk", dto::Direction::West, 0, "weak")
+            .clone();
 
-        d.begin_nudge_hitbox("my_hitbox").unwrap();
-        d.update_nudge_hitbox(vec2(5, 10), false).unwrap();
-        d.end_nudge_hitbox();
-        let hitbox = d
-            .sheet
-            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+        app.begin_nudge_hitbox("weak");
+        app.update_nudge_hitbox((5, 10), false);
+        app.end_nudge_hitbox();
+
+        let nudged_hitbox = app.client_state().documents[0]
+            .hitbox("walk", dto::Direction::West, 0, "weak")
+            .clone();
+        assert_eq!(nudged_hitbox.size, initial_hitbox.size);
         assert_eq!(
-            hitbox.rectangle(),
-            euclid::rect(
-                initial.origin.x,
-                initial.origin.y + 10,
-                initial.size.width,
-                initial.size.height
-            )
+            nudged_hitbox.top_left,
+            (initial_hitbox.top_left.0, initial_hitbox.top_left.1 + 10),
         );
     }
 
-    #[test]
-    fn keeps_track_of_hitboxes_being_nudged() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    #[tokio::test]
+    async fn keeps_track_of_hitboxes_being_nudged() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        assert!(app.client_state().documents[0]
+            .hitboxes_being_nudged
+            .is_empty());
+
+        app.begin_nudge_hitbox("weak");
+        assert_eq!(
+            app.client_state().documents[0].hitboxes_being_nudged,
+            ["weak".into()].into()
         );
-        d.edit_animation("walk_cycle").unwrap();
-        d.view.set_workbench_zoom_factor(1);
 
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("my_hitbox");
-
-        assert!(d.hitboxes_being_nudged().is_empty());
-        d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-        d.begin_nudge_hitbox("my_hitbox").unwrap();
-        assert_eq!(d.hitboxes_being_nudged(), HashSet::from(["my_hitbox"]));
-        d.update_nudge_hitbox(vec2(5, 10), true).unwrap();
-        d.end_nudge_hitbox();
-        assert!(d.hitboxes_being_nudged().is_empty());
+        app.end_nudge_hitbox();
+        assert!(app.client_state().documents[0]
+            .hitboxes_being_nudged
+            .is_empty());
     }
 
     #[test]

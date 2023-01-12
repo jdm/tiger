@@ -56,6 +56,7 @@ pub trait Api {
         index: usize,
     ) -> Result<Patch, ()>;
     fn begin_export_as(&self) -> Result<Patch, ()>;
+    fn begin_nudge_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn begin_relocate_frames(&self) -> Result<Patch, ()>;
     fn begin_rename_animation<S: Into<String>>(&self, animation_name: S) -> Result<Patch, ()>;
@@ -85,6 +86,7 @@ pub trait Api {
     fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
     fn end_drag_keyframe_duration(&self) -> Result<Patch, ()>;
     async fn end_export_as(&self) -> Result<Patch, ()>;
+    fn end_nudge_hitbox(&self) -> Result<Patch, ()>;
     fn end_nudge_keyframe(&self) -> Result<Patch, ()>;
     fn end_relocate_frames(&self) -> Result<Patch, ()>;
     fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()>;
@@ -146,6 +148,7 @@ pub trait Api {
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
     fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()>;
+    fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) -> Result<Patch, ()>;
     fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool)
         -> Result<Patch, ()>;
     fn zoom_in_timeline(&self) -> Result<Patch, ()>;
@@ -206,6 +209,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn begin_nudge_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginNudgeHitbox(name.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -262,6 +275,14 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CancelRelocateFrames).ok();
+            }
+        }))
+    }
+
+    fn cancel_rename(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::CancelRename).ok();
             }
         }))
     }
@@ -480,6 +501,14 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(patch)
     }
 
+    fn end_nudge_hitbox(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndNudgeHitbox).ok();
+            }
+        }))
+    }
+
     fn end_nudge_keyframe(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -492,6 +521,26 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndRelocateFrames).ok();
+            }
+        }))
+    }
+
+    fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EndRenameAnimation(new_name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EndRenameHitbox(new_name.into()))
+                    .ok();
             }
         }))
     }
@@ -959,6 +1008,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
+                    .ok();
+            }
+        }))
+    }
+
     fn update_nudge_keyframe(
         &self,
         displacement: (i32, i32),
@@ -1044,34 +1103,6 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
-                    .ok();
-            }
-        }))
-    }
-
-    fn cancel_rename(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document.process_command(Command::CancelRename).ok();
-            }
-        }))
-    }
-
-    fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::EndRenameAnimation(new_name.into()))
-                    .ok();
-            }
-        }))
-    }
-
-    fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::EndRenameHitbox(new_name.into()))
                     .ok();
             }
         }))
@@ -2082,41 +2113,22 @@ pub fn toggle_preserve_aspect_ratio(app: tauri::AppHandle) -> Result<Patch, ()> 
 }
 
 #[tauri::command]
-pub fn begin_nudge_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
-    name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginNudgeHitbox(name))
-                .ok();
-        }
-    }))
+pub fn begin_nudge_hitbox(app: tauri::AppHandle, name: String) -> Result<Patch, ()> {
+    app.begin_nudge_hitbox(name)
 }
 
 #[tauri::command]
 pub fn update_nudge_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     displacement: (i32, i32),
     both_axis: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
-                .ok();
-        }
-    }))
+    app.update_nudge_hitbox(displacement, both_axis)
 }
 
 #[tauri::command]
-pub fn end_nudge_hitbox(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EndNudgeHitbox).ok();
-        }
-    }))
+pub fn end_nudge_hitbox(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_nudge_hitbox()
 }
 
 #[tauri::command]
