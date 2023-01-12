@@ -1,0 +1,4 @@
+FRAMES
+{{ #each frames as |frame| }}
+{{ frame.index }} x = {{ frame.x }}, y = {{ frame.y }}, w = {{ frame.width }}, h = {{ frame.height }}
+{{ /each }}

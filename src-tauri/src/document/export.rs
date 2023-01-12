@@ -225,12 +225,12 @@ mod tests {
 
     #[tokio::test]
     async fn can_adjust_export_settings() {
-        let template_file = PathBuf::from("test-data/lua.template").resolve();
+        let template_file = PathBuf::from("test-data/only-frames.template").resolve();
         let metadata_root = PathBuf::from("test-output/root").resolve();
         let atlas_image_file =
             PathBuf::from("test-output/can_adjust_export_settings.png").resolve();
-        // TODO make a non-descript export format to avoid polluting Github language stats
-        let output_metadata = PathBuf::from("test-output/can_adjust_export_settings.lua").resolve();
+        let output_metadata =
+            PathBuf::from("test-output/can_adjust_export_settings.export").resolve();
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
@@ -243,7 +243,7 @@ mod tests {
 
         assert_eq!(
             std::fs::read_to_string(output_metadata).unwrap(),
-            std::fs::read_to_string("test-data/can_adjust_export_settings.lua").unwrap()
+            std::fs::read_to_string("test-output/can_adjust_export_settings.export").unwrap()
         );
 
         assert_eq!(
