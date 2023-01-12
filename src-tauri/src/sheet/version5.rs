@@ -5,10 +5,10 @@ use std::io::Read;
 use std::path::PathBuf;
 use uuid::Uuid;
 
-use crate::sheet::version3 as previous_version;
+use crate::sheet::version4 as previous_version;
 use crate::sheet::{ordered_map, ordered_slice, portable_path, Any, Paths, SheetError, Version};
 
-const THIS_VERSION: Version = Version::Tiger4;
+const THIS_VERSION: Version = Version::Tiger5;
 
 #[derive(Serialize, Deserialize)]
 struct VersionedSheet {
@@ -40,7 +40,6 @@ pub struct Frame<P: Paths> {
 pub struct Animation<P: Paths> {
     pub(in crate::sheet) sequences: BTreeMap<Direction, Sequence<P>>,
     pub(in crate::sheet) is_looping: bool,
-    #[allow(dead_code)]
     #[derivative(PartialEq = "ignore")]
     #[serde(skip, default = "Uuid::new_v4")]
     pub(in crate::sheet) key: Uuid,
@@ -97,7 +96,6 @@ pub struct Keyframe<P: Paths> {
     pub(in crate::sheet) hitboxes: HashMap<String, Hitbox>,
     pub(in crate::sheet) duration_millis: u64,
     pub(in crate::sheet) offset: (i32, i32),
-    #[allow(dead_code)]
     #[derivative(PartialEq = "ignore")]
     #[serde(skip, default = "Uuid::new_v4")]
     pub(in crate::sheet) key: Uuid,
@@ -110,7 +108,6 @@ pub struct Keyframe<P: Paths> {
 #[derive(Clone, Debug, Eq, Serialize, Deserialize)]
 pub struct Hitbox {
     pub(in crate::sheet) geometry: Shape,
-    #[allow(dead_code)]
     #[derivative(PartialEq = "ignore")]
     #[serde(skip, default = "Uuid::new_v4")]
     pub(in crate::sheet) key: Uuid,
@@ -131,7 +128,7 @@ pub struct TemplateExportSettings<P: Paths> {
     #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) template_file: PathBuf,
     #[serde(serialize_with = "portable_path")]
-    pub(in crate::sheet) texture_file: PathBuf,
+    pub(in crate::sheet) atlas_image_file: PathBuf,
     #[serde(serialize_with = "portable_path")]
     pub(in crate::sheet) metadata_file: PathBuf,
     #[serde(serialize_with = "portable_path")]
@@ -156,14 +153,14 @@ pub(super) fn read_file<R: Read>(version: Version, reader: R) -> Result<Sheet<An
     }
 }
 
-impl From<previous_version::Sheet> for Sheet<Any> {
-    fn from(old: previous_version::Sheet) -> Sheet<Any> {
+impl From<previous_version::Sheet<Any>> for Sheet<Any> {
+    fn from(old: previous_version::Sheet<Any>) -> Sheet<Any> {
         Sheet {
             frames: old.frames.into_iter().map(|o| o.into()).collect(),
             animations: old
                 .animations
                 .into_iter()
-                .map(|o| (o.name.to_owned(), o.into()))
+                .map(|(n, a)| (n, a.into()))
                 .collect(),
             export_settings: old.export_settings.map(|o| o.into()),
             paths: Default::default(),
@@ -171,26 +168,45 @@ impl From<previous_version::Sheet> for Sheet<Any> {
     }
 }
 
-impl From<previous_version::Animation> for Animation<Any> {
-    fn from(old: previous_version::Animation) -> Animation<Any> {
+impl From<previous_version::Animation<Any>> for Animation<Any> {
+    fn from(old: previous_version::Animation<Any>) -> Animation<Any> {
         Self {
-            sequences: BTreeMap::from([(Direction::East, old.timeline.into())]),
+            sequences: old
+                .sequences
+                .into_iter()
+                .map(|(d, s)| (d.into(), s.into()))
+                .collect(),
             is_looping: old.is_looping,
             key: Uuid::new_v4(),
         }
     }
 }
 
-impl From<Vec<previous_version::Keyframe>> for Sequence<Any> {
-    fn from(keyframes: Vec<previous_version::Keyframe>) -> Sequence<Any> {
-        Self {
-            keyframes: keyframes.into_iter().map(|k| k.into()).collect(),
+impl From<previous_version::Direction> for Direction {
+    fn from(old: previous_version::Direction) -> Self {
+        match old {
+            previous_version::Direction::East => Direction::East,
+            previous_version::Direction::NorthEast => Direction::NorthEast,
+            previous_version::Direction::North => Direction::North,
+            previous_version::Direction::NorthWest => Direction::NorthWest,
+            previous_version::Direction::West => Direction::West,
+            previous_version::Direction::SouthWest => Direction::SouthWest,
+            previous_version::Direction::South => Direction::South,
+            previous_version::Direction::SouthEast => Direction::SouthEast,
         }
     }
 }
 
-impl From<previous_version::Frame> for Frame<Any> {
-    fn from(old: previous_version::Frame) -> Self {
+impl From<previous_version::Sequence<Any>> for Sequence<Any> {
+    fn from(old: previous_version::Sequence<Any>) -> Sequence<Any> {
+        Self {
+            keyframes: old.keyframes.into_iter().map(|k| k.into()).collect(),
+        }
+    }
+}
+
+impl From<previous_version::Frame<Any>> for Frame<Any> {
+    fn from(old: previous_version::Frame<Any>) -> Self {
         Self {
             source: old.source,
             paths: std::marker::PhantomData,
@@ -198,16 +214,16 @@ impl From<previous_version::Frame> for Frame<Any> {
     }
 }
 
-impl From<previous_version::Keyframe> for Keyframe<Any> {
-    fn from(old: previous_version::Keyframe) -> Keyframe<Any> {
+impl From<previous_version::Keyframe<Any>> for Keyframe<Any> {
+    fn from(old: previous_version::Keyframe<Any>) -> Keyframe<Any> {
         Self {
             frame: old.frame,
-            duration_millis: old.duration_millis as u64,
+            duration_millis: old.duration_millis,
             offset: old.offset,
             hitboxes: old
                 .hitboxes
                 .into_iter()
-                .map(|o| (o.name.to_owned(), o.into()))
+                .map(|(n, h)| (n, h.into()))
                 .collect(),
             key: Uuid::new_v4(),
             paths: std::marker::PhantomData,
@@ -241,15 +257,14 @@ impl From<previous_version::Rectangle> for Rectangle {
     }
 }
 
-impl From<previous_version::ExportSettings> for ExportSettings<Any> {
-    fn from(old: previous_version::ExportSettings) -> ExportSettings<Any> {
+impl From<previous_version::ExportSettings<Any>> for ExportSettings<Any> {
+    fn from(old: previous_version::ExportSettings<Any>) -> ExportSettings<Any> {
+        let previous_version::ExportSettings::Template(old_template_export_settings) = old;
         ExportSettings::Template(TemplateExportSettings {
-            template_file: match old.format {
-                previous_version::ExportFormat::Template(p) => p,
-            },
-            texture_file: old.texture_destination,
-            metadata_file: old.metadata_destination.clone(),
-            metadata_paths_root: old.metadata_destination,
+            template_file: old_template_export_settings.template_file,
+            atlas_image_file: old_template_export_settings.texture_file,
+            metadata_file: old_template_export_settings.metadata_file.clone(),
+            metadata_paths_root: old_template_export_settings.metadata_paths_root,
             paths: std::marker::PhantomData,
         })
     }

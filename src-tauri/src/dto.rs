@@ -214,7 +214,7 @@ pub enum BrowseDirection {
 #[serde(rename_all = "camelCase")]
 pub struct ExportSettings {
     pub template_file: PathBuf,
-    pub texture_file: PathBuf,
+    pub atlas_image_file: PathBuf,
     pub metadata_file: PathBuf,
     pub metadata_paths_root: PathBuf,
 }
@@ -234,7 +234,7 @@ pub enum ExportSettingsError {
 pub struct ExportSettingsValidation {
     pub valid_settings: bool,
     pub template_file_error: Option<ExportSettingsError>,
-    pub texture_file_error: Option<ExportSettingsError>,
+    pub atlas_image_file_error: Option<ExportSettingsError>,
     pub metadata_file_error: Option<ExportSettingsError>,
     pub metadata_paths_root_error: Option<ExportSettingsError>,
 }
@@ -739,7 +739,7 @@ impl<P: Paths> From<&sheet::ExportSettings<P>> for ExportSettings {
         match settings {
             sheet::ExportSettings::Template(template_settings) => Self {
                 template_file: template_settings.template_file().to_owned(),
-                texture_file: template_settings.texture_file().to_owned(),
+                atlas_image_file: template_settings.atlas_image_file().to_owned(),
                 metadata_file: template_settings.metadata_file().to_owned(),
                 metadata_paths_root: template_settings.metadata_paths_root().to_owned(),
             },
@@ -753,7 +753,7 @@ impl From<&document::ExportSettingsValidation> for ExportSettingsValidation {
             document::ExportSettingsValidation::Template(s) => Self {
                 valid_settings: *s == document::TemplateExportSettingsValidation::default(),
                 template_file_error: s.template_file_error().map(|e| e.into()),
-                texture_file_error: s.texture_file_error().map(|e| e.into()),
+                atlas_image_file_error: s.atlas_image_file_error().map(|e| e.into()),
                 metadata_file_error: s.metadata_file_error().map(|e| e.into()),
                 metadata_paths_root_error: s.metadata_paths_root_error().map(|e| e.into()),
             },

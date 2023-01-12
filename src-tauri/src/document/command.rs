@@ -119,7 +119,7 @@ pub enum Command {
     EndResizeHitbox,
     BeginExportAs,
     SetExportTemplateFile(PathBuf),
-    SetExportTextureFile(PathBuf),
+    SetExportAtlasImageFile(PathBuf),
     SetExportMetadataFile(PathBuf),
     SetExportMetadataPathsRoot(PathBuf),
     CancelExportAs,
@@ -261,7 +261,7 @@ impl Document {
             Command::EndResizeHitbox => self.end_resize_hitbox(),
             Command::BeginExportAs => self.begin_export_as(),
             Command::SetExportTemplateFile(ref p) => self.set_export_template_file(p)?,
-            Command::SetExportTextureFile(ref p) => self.set_export_texture_file(p)?,
+            Command::SetExportAtlasImageFile(ref p) => self.set_export_atlas_image_file(p)?,
             Command::SetExportMetadataFile(ref p) => self.set_export_metadata_file(p)?,
             Command::SetExportMetadataPathsRoot(ref p) => self.set_export_metadata_paths_root(p)?,
             Command::CancelExportAs => self.cancel_export_as(),
@@ -496,7 +496,7 @@ impl Display for Command {
 
             Command::BeginExportAs
             | Command::SetExportTemplateFile(_)
-            | Command::SetExportTextureFile(_)
+            | Command::SetExportAtlasImageFile(_)
             | Command::SetExportMetadataFile(_)
             | Command::SetExportMetadataPathsRoot(_)
             | Command::CancelExportAs

@@ -290,8 +290,8 @@ impl TigerAppMock {
         self.apply_patch(Api::set_export_template_file(self, path).unwrap());
     }
 
-    pub fn set_export_texture_file<P: Into<PathBuf>>(&self, path: P) {
-        self.apply_patch(Api::set_export_texture_file(self, path).unwrap());
+    pub fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, path: P) {
+        self.apply_patch(Api::set_export_atlas_image_file(self, path).unwrap());
     }
 
     pub fn set_hitbox_height(&self, height: u32) {

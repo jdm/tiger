@@ -7,14 +7,14 @@ nav_order: 2
 The spritesheet files with the `.tiger` extension being created and edited by Tiger are simple `json` files. You might be tempted to use them directly into your game engine of choice, but there are reasons not to:
 
 - The exact format may change between Tiger releases and could break your engine integration
-- The `.tiger` files refer to animation frames as individual files. For performance reasons, it is often preferable to combine frames into atlas textures
+- The `.tiger` files refer to animation frames as individual files. For performance reasons, it is often preferable to combine frames into atlas images
 
 The export process in Tiger is designed to solve these two issues. When exporting a spritesheet (from the `File` > `Export` menu), Tiger generates two files:
 
 1. An atlas image file (`.png`) containing all the individual frames of animation packed together
 2. A metadata text file describing the position of individual frames in the atlas image, and additional metadata like hitboxes, animation names and timings
 
-The `Texture File` and `Metadata File` options in the Export dialog tell Tiger where to save the corresponding files.
+The `Atlas Image File` and `Metadata File` options in the Export dialog tell Tiger where to save the corresponding files.
 
 ## Metadata Format
 

@@ -5,6 +5,7 @@
 - [x] Handle missing frame files (warning + offer to relocate)
 - [ ] In-place tutorials instead of blank data
 - [x] ⚠ The `sheet_image` field in template data was replaced by `atlas_image` and now includes atlas dimensions (issue #13)
+- [x] Bumped `.tiger` format version to `Tiger5`
 - [x] Merge redundant code between save(), save_as() and save_all()
 - [x] Automatically add extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected

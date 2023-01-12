@@ -7,16 +7,17 @@
 					<div class="h-full w-[40rem] p-10 flex flex-col gap-16 bg-plastic-700">
 						<div class="flex flex-col gap-4">
 							<h1 class="text-plastic-200 text-xl">Output Files</h1>
-							<InputField label="Texture File">
+							<InputField label="Atlas Image File">
 								<template #content>
-									<InputPath v-model="textureFile" class="mt-1"
+									<InputPath v-model="atlasImageFile" class="mt-1"
 										placeholder="C:\ExampleGame\Assets\Sprites\Hero.png"
-										:filters="[{ name: 'Texture', extensions: ['png'] }]" />
+										:filters="[{ name: 'Image', extensions: ['png'] }]" />
 								</template>
 								<template #error>
 									<Transition name="error-slide">
-										<InputError v-if="introComplete && textureFile && validation?.textureFileError"
-											:shortErrorText="shortErrorText(validation.textureFileError)" />
+										<InputError
+											v-if="introComplete && atlasImageFile && validation?.atlasImageFileError"
+											:shortErrorText="shortErrorText(validation.atlasImageFileError)" />
 									</Transition>
 								</template>
 							</InputField>
@@ -95,7 +96,7 @@
 <script setup lang="ts">
 import { computed, ref } from "vue"
 import { BookOpenIcon } from "@heroicons/vue/24/outline"
-import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportTextureFile } from "@/backend/api"
+import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPathsRoot, setExportTemplateFile, setExportAtlasImageFile } from "@/backend/api"
 import { ExportSettingsError } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import Button from "@/components/basic/Button.vue"
@@ -108,9 +109,9 @@ const state = useStateStore();
 const settings = computed(() => state.currentDocument?.exportSettingsBeingEdited);
 const validation = computed(() => state.currentDocument?.exportSettingsValidation);
 
-const textureFile = computed({
-	get: () => settings.value?.textureFile || "",
-	set: setExportTextureFile,
+const atlasImageFile = computed({
+	get: () => settings.value?.atlasImageFile || "",
+	set: setExportAtlasImageFile,
 });
 
 const metadataFile = computed({

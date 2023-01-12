@@ -1,5 +1,5 @@
 {
-  "version": "Tiger4",
+  "version": "Tiger5",
   "sheet": {
     "frames": [
       {
@@ -680,7 +680,7 @@
     "export_settings": {
       "Template": {
         "template_file": "export.template",
-        "texture_file": "../test-output/samurai.png",
+        "atlas_image_file": "../test-output/samurai.png",
         "metadata_file": "../test-output/samurai.export",
         "metadata_paths_root": "../test-output"
       }

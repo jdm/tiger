@@ -892,9 +892,9 @@ export async function setExportTemplateFile(file: string): Promise<void> {
   appStore.patch(await invoke("set_export_template_file", { file: file }));
 }
 
-export async function setExportTextureFile(file: string): Promise<void> {
+export async function setExportAtlasImageFile(file: string): Promise<void> {
   const appStore = useStateStore();
-  appStore.patch(await invoke("set_export_texture_file", { file: file }));
+  appStore.patch(await invoke("set_export_atlas_image_file", { file: file }));
 }
 
 export async function setExportMetadataFile(file: string): Promise<void> {

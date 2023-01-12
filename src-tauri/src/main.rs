@@ -159,7 +159,7 @@ fn main() {
             api::set_export_metadata_file,
             api::set_export_metadata_paths_root,
             api::set_export_template_file,
-            api::set_export_texture_file,
+            api::set_export_atlas_image_file,
             api::set_frames_list_mode,
             api::set_frames_list_offset,
             api::set_hitbox_height,

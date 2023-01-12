@@ -176,7 +176,7 @@ export enum BrowseDirection {
 
 export type ExportSettings = {
   templateFile: string;
-  textureFile: string;
+  atlasImageFile: string;
   metadataFile: string;
   metadataPathsRoot: string;
 };
@@ -195,7 +195,7 @@ export type ExportSettingsError =
 export type ExportSettingsValidation = {
   validSettings: boolean;
   templateFileError: ExportSettingsError | null;
-  textureFileError: ExportSettingsError | null;
+  atlasImageFileError: ExportSettingsError | null;
   metadataFileError: ExportSettingsError | null;
   metadataPathsRootError: ExportSettingsError | null;
 };

@@ -20,7 +20,7 @@ pub enum ExportSettingsError {
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct TemplateExportSettingsValidation {
     template_file_error: Option<ExportSettingsError>,
-    texture_file_error: Option<ExportSettingsError>,
+    atlas_image_file_error: Option<ExportSettingsError>,
     metadata_file_error: Option<ExportSettingsError>,
     metadata_paths_root_error: Option<ExportSettingsError>,
 }
@@ -70,11 +70,12 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn set_export_texture_file<T: AsRef<Path>>(
+    pub(super) fn set_export_atlas_image_file<T: AsRef<Path>>(
         &mut self,
         file: T,
     ) -> DocumentResult<()> {
-        self.template_export_settings_mut()?.set_texture_file(file);
+        self.template_export_settings_mut()?
+            .set_atlas_image_file(file);
         Ok(())
     }
 
@@ -110,7 +111,7 @@ impl Document {
     ) -> TemplateExportSettingsValidation {
         TemplateExportSettingsValidation {
             template_file_error: validate_template_path(settings.template_file()),
-            texture_file_error: validate_output_file_path(settings.texture_file()),
+            atlas_image_file_error: validate_output_file_path(settings.atlas_image_file()),
             metadata_file_error: validate_output_file_path(settings.metadata_file()),
             metadata_paths_root_error: validate_output_directory_path(
                 settings.metadata_paths_root(),
@@ -134,8 +135,8 @@ impl TemplateExportSettingsValidation {
         self.template_file_error.as_ref()
     }
 
-    pub fn texture_file_error(&self) -> Option<&ExportSettingsError> {
-        self.texture_file_error.as_ref()
+    pub fn atlas_image_file_error(&self) -> Option<&ExportSettingsError> {
+        self.atlas_image_file_error.as_ref()
     }
 
     pub fn metadata_file_error(&self) -> Option<&ExportSettingsError> {
@@ -207,7 +208,7 @@ mod tests {
                 .to_owned()
         };
 
-        std::fs::remove_file(export_settings.texture_file()).ok();
+        std::fs::remove_file(export_settings.atlas_image_file()).ok();
         std::fs::remove_file(export_settings.metadata_file()).ok();
         app.export().await;
 
@@ -217,7 +218,7 @@ mod tests {
         );
 
         assert_eq!(
-            std::fs::read(export_settings.texture_file()).unwrap(),
+            std::fs::read(export_settings.atlas_image_file()).unwrap(),
             std::fs::read("test-data/samurai.png").unwrap()
         );
     }
@@ -226,7 +227,8 @@ mod tests {
     async fn can_adjust_export_settings() {
         let template_file = PathBuf::from("test-data/lua.template").resolve();
         let metadata_root = PathBuf::from("test-output/root").resolve();
-        let output_texture = PathBuf::from("test-output/can_adjust_export_settings.png").resolve();
+        let atlas_image_file =
+            PathBuf::from("test-output/can_adjust_export_settings.png").resolve();
         // TODO make a non-descript export format to avoid polluting Github language stats
         let output_metadata = PathBuf::from("test-output/can_adjust_export_settings.lua").resolve();
 
@@ -235,7 +237,7 @@ mod tests {
         app.begin_export_as();
         app.set_export_template_file(template_file);
         app.set_export_metadata_paths_root(metadata_root);
-        app.set_export_texture_file(&output_texture);
+        app.set_export_atlas_image_file(&atlas_image_file);
         app.set_export_metadata_file(&output_metadata);
         app.end_export_as().await;
 
@@ -245,7 +247,7 @@ mod tests {
         );
 
         assert_eq!(
-            std::fs::read(output_texture).unwrap(),
+            std::fs::read(atlas_image_file).unwrap(),
             std::fs::read("test-data/samurai.png").unwrap()
         );
     }
@@ -258,7 +260,7 @@ mod tests {
             d.validate_export_settings().unwrap(),
             ExportSettingsValidation::Template(TemplateExportSettingsValidation {
                 template_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
-                texture_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                atlas_image_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
                 metadata_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
                 metadata_paths_root_error: Some(ExportSettingsError::ExpectedAbsolutePath)
             })
@@ -271,14 +273,14 @@ mod tests {
         d.begin_export_as();
         d.set_export_template_file("relative/path.template")
             .unwrap();
-        d.set_export_texture_file("relative/path.png").unwrap();
+        d.set_export_atlas_image_file("relative/path.png").unwrap();
         d.set_export_metadata_file("relative/path.json").unwrap();
         d.set_export_metadata_paths_root("relative/").unwrap();
         assert_eq!(
             d.validate_export_settings().unwrap(),
             ExportSettingsValidation::Template(TemplateExportSettingsValidation {
                 template_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
-                texture_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
+                atlas_image_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
                 metadata_file_error: Some(ExportSettingsError::ExpectedAbsolutePath),
                 metadata_paths_root_error: Some(ExportSettingsError::ExpectedAbsolutePath)
             })
@@ -294,14 +296,14 @@ mod tests {
             .unwrap();
         d.begin_export_as();
         d.set_export_template_file(&dir).unwrap();
-        d.set_export_texture_file(&dir).unwrap();
+        d.set_export_atlas_image_file(&dir).unwrap();
         d.set_export_metadata_file(&dir).unwrap();
         d.set_export_metadata_paths_root(file).unwrap();
         assert_eq!(
             d.validate_export_settings().unwrap(),
             ExportSettingsValidation::Template(TemplateExportSettingsValidation {
                 template_file_error: Some(ExportSettingsError::ExpectedFile),
-                texture_file_error: Some(ExportSettingsError::ExpectedFile),
+                atlas_image_file_error: Some(ExportSettingsError::ExpectedFile),
                 metadata_file_error: Some(ExportSettingsError::ExpectedFile),
                 metadata_paths_root_error: Some(ExportSettingsError::ExpectedDirectory)
             })

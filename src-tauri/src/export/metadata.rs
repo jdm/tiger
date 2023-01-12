@@ -261,12 +261,13 @@ impl Sheet {
         let atlas_image = {
             let path = {
                 let relative_to = settings.metadata_paths_root();
-                let path = diff_paths(settings.texture_file(), relative_to).ok_or_else(|| {
-                    MetadataError::AbsoluteToRelativePath(
-                        settings.texture_file().to_owned(),
-                        relative_to.to_owned(),
-                    )
-                })?;
+                let path =
+                    diff_paths(settings.atlas_image_file(), relative_to).ok_or_else(|| {
+                        MetadataError::AbsoluteToRelativePath(
+                            settings.atlas_image_file().to_owned(),
+                            relative_to.to_owned(),
+                        )
+                    })?;
                 path.with_forward_slashes()
             };
 

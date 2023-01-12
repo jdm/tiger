@@ -9,11 +9,11 @@ use thiserror::Error;
 use crate::features::texture_cache;
 use crate::sheet::*;
 
+mod atlas;
 mod metadata;
-mod texture;
 
+pub use atlas::*;
 pub use metadata::*;
-pub use texture::*;
 
 #[derive(Error, Debug)]
 pub enum ExportError {
@@ -54,7 +54,7 @@ pub fn export_sheet(
             }
 
             {
-                let path = template_settings.texture_file();
+                let path = template_settings.atlas_image_file();
                 if let Some(directory) = path.parent() {
                     create_dir(directory)?;
                 }

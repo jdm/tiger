@@ -123,7 +123,7 @@ pub trait Api {
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
-    fn set_export_texture_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
+    fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
@@ -750,11 +750,11 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
-    fn set_export_texture_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
+    fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SetExportTextureFile(file.into()))
+                    .process_command(Command::SetExportAtlasImageFile(file.into()))
                     .ok();
             }
         }))
@@ -2157,8 +2157,8 @@ pub fn set_export_template_file(app: tauri::AppHandle, file: PathBuf) -> Result<
 }
 
 #[tauri::command]
-pub fn set_export_texture_file(app: tauri::AppHandle, file: PathBuf) -> Result<Patch, ()> {
-    app.set_export_texture_file(file)
+pub fn set_export_atlas_image_file(app: tauri::AppHandle, file: PathBuf) -> Result<Patch, ()> {
+    app.set_export_atlas_image_file(file)
 }
 
 #[tauri::command]

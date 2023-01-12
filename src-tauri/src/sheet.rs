@@ -1,4 +1,3 @@
-use core::cmp::Ordering;
 use enum_iterator::all;
 use euclid::default::*;
 use euclid::rect;
@@ -22,6 +21,7 @@ pub(in crate::sheet) mod version1;
 pub(in crate::sheet) mod version2;
 pub(in crate::sheet) mod version3;
 pub(in crate::sheet) mod version4;
+pub(in crate::sheet) mod version5;
 
 #[derive(Serialize, Deserialize, PartialEq, Eq)]
 enum Version {
@@ -29,17 +29,19 @@ enum Version {
     Tiger2,
     Tiger3,
     Tiger4,
+    Tiger5,
 }
 
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Absolute;
-#[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Relative {
     base: PathBuf,
 }
-#[derive(Clone, Debug, Default, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 pub struct Any;
-pub trait Paths: Eq + PartialEq {}
+pub trait Paths: Eq + PartialEq + Ord + PartialOrd {}
+
 impl Paths for Absolute {}
 impl Paths for Relative {}
 impl Paths for Any {}
@@ -52,8 +54,8 @@ impl<P: AsRef<Path>> From<P> for Relative {
     }
 }
 
-const CURRENT_VERSION: Version = Version::Tiger4;
-pub use self::version4::*;
+const CURRENT_VERSION: Version = Version::Tiger5;
+pub use self::version5::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
@@ -367,20 +369,6 @@ impl Frame<Any> {
             source: relative_or_err(self.source)?,
             paths: std::marker::PhantomData,
         })
-    }
-}
-
-impl<P: Paths> Ord for Frame<P> {
-    fn cmp(&self, other: &Frame<P>) -> Ordering {
-        self.source
-            .to_string_lossy()
-            .cmp(&other.source.to_string_lossy())
-    }
-}
-
-impl<P: Paths> PartialOrd for Frame<P> {
-    fn partial_cmp(&self, other: &Frame<P>) -> Option<Ordering> {
-        Some(self.cmp(other))
     }
 }
 
@@ -943,8 +931,8 @@ impl<P: Paths> TemplateExportSettings<P> {
         self.template_file.as_path()
     }
 
-    pub fn texture_file(&self) -> &Path {
-        self.texture_file.as_path()
+    pub fn atlas_image_file(&self) -> &Path {
+        self.atlas_image_file.as_path()
     }
 
     pub fn metadata_file(&self) -> &Path {
@@ -963,7 +951,7 @@ impl TemplateExportSettings<Absolute> {
     ) -> Result<TemplateExportSettings<Relative>, SheetError> {
         Ok(TemplateExportSettings {
             template_file: absolute_to_relative(self.template_file, &relative_to)?,
-            texture_file: absolute_to_relative(self.texture_file, &relative_to)?,
+            atlas_image_file: absolute_to_relative(self.atlas_image_file, &relative_to)?,
             metadata_file: absolute_to_relative(self.metadata_file, &relative_to)?,
             metadata_paths_root: absolute_to_relative(self.metadata_paths_root, &relative_to)?,
             paths: std::marker::PhantomData,
@@ -973,7 +961,7 @@ impl TemplateExportSettings<Absolute> {
     pub fn with_any_paths(self) -> TemplateExportSettings<Any> {
         TemplateExportSettings {
             template_file: self.template_file,
-            texture_file: self.texture_file,
+            atlas_image_file: self.atlas_image_file,
             metadata_file: self.metadata_file,
             metadata_paths_root: self.metadata_paths_root,
             paths: std::marker::PhantomData,
@@ -988,7 +976,7 @@ impl TemplateExportSettings<Relative> {
     ) -> TemplateExportSettings<Absolute> {
         TemplateExportSettings {
             template_file: relative_to.as_ref().join(&self.template_file).resolve(),
-            texture_file: relative_to.as_ref().join(&self.texture_file).resolve(),
+            atlas_image_file: relative_to.as_ref().join(&self.atlas_image_file).resolve(),
             metadata_file: relative_to.as_ref().join(&self.metadata_file).resolve(),
             metadata_paths_root: relative_to
                 .as_ref()
@@ -1004,8 +992,8 @@ impl TemplateExportSettings<Any> {
         self.template_file = path.as_ref().to_owned();
     }
 
-    pub fn set_texture_file<T: AsRef<Path>>(&mut self, path: T) {
-        self.texture_file = path.as_ref().to_owned();
+    pub fn set_atlas_image_file<T: AsRef<Path>>(&mut self, path: T) {
+        self.atlas_image_file = path.as_ref().to_owned();
     }
 
     pub fn set_metadata_file<T: AsRef<Path>>(&mut self, path: T) {
@@ -1019,7 +1007,7 @@ impl TemplateExportSettings<Any> {
     pub fn with_absolute_paths(self) -> Result<TemplateExportSettings<Absolute>, SheetError> {
         Ok(TemplateExportSettings {
             template_file: absolute_or_err(self.template_file)?,
-            texture_file: absolute_or_err(self.texture_file)?,
+            atlas_image_file: absolute_or_err(self.atlas_image_file)?,
             metadata_file: absolute_or_err(self.metadata_file)?,
             metadata_paths_root: absolute_or_err(self.metadata_paths_root)?,
             paths: std::marker::PhantomData,
@@ -1029,7 +1017,7 @@ impl TemplateExportSettings<Any> {
     pub fn with_relative_paths(self) -> Result<TemplateExportSettings<Relative>, SheetError> {
         Ok(TemplateExportSettings {
             template_file: relative_or_err(self.template_file)?,
-            texture_file: relative_or_err(self.texture_file)?,
+            atlas_image_file: relative_or_err(self.atlas_image_file)?,
             metadata_file: relative_or_err(self.metadata_file)?,
             metadata_paths_root: relative_or_err(self.metadata_paths_root)?,
             paths: std::marker::PhantomData,
@@ -1106,7 +1094,7 @@ fn ordered_slice<V: Serialize + Ord, S: serde::Serializer>(
     serializer: S,
 ) -> Result<S::Ok, S::Error> {
     let mut sorted = value.iter().collect::<Vec<_>>();
-    sorted.sort();
+    sorted.sort_unstable();
     sorted.serialize(serializer)
 }
 
@@ -1590,7 +1578,7 @@ mod tests {
     fn template_export_settings_can_convert_relative_and_absolute_paths() {
         let absolute = TemplateExportSettings::<Any> {
             template_file: PathBuf::from("a/b/format.template").resolve(),
-            texture_file: PathBuf::from("a/b/c/sheet.png").resolve(),
+            atlas_image_file: PathBuf::from("a/b/c/sheet.png").resolve(),
             metadata_file: PathBuf::from("a/b/c/sheet.lua").resolve(),
             metadata_paths_root: PathBuf::from("a/b").resolve(),
             paths: std::marker::PhantomData,
@@ -1603,7 +1591,7 @@ mod tests {
             .with_relative_paths(PathBuf::from("a/b").resolve())
             .unwrap();
         assert_eq!(relative.template_file, Path::new("format.template"));
-        assert_eq!(&relative.texture_file, Path::new("c/sheet.png"));
+        assert_eq!(&relative.atlas_image_file, Path::new("c/sheet.png"));
         assert_eq!(&relative.metadata_file, Path::new("c/sheet.lua"));
         assert_eq!(&relative.metadata_paths_root, Path::new(""));
 
@@ -1619,9 +1607,9 @@ mod tests {
         settings.set_template_file(path);
         assert_eq!(settings.template_file(), path);
 
-        let path = Path::new("texture_file");
-        settings.set_texture_file(path);
-        assert_eq!(settings.texture_file(), path);
+        let path = Path::new("atlas_image_file");
+        settings.set_atlas_image_file(path);
+        assert_eq!(settings.atlas_image_file(), path);
 
         let path = Path::new("metadata_file");
         settings.set_metadata_file(path);
