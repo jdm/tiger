@@ -141,88 +141,63 @@ pub fn clipboard_manifest<S: AsRef<str>>(clipboard_content: S) -> Option<Clipboa
 #[cfg(test)]
 mod tests {
 
+    use sugar_path::SugarPath;
+
     use super::*;
+    use crate::{dto, mock::TigerAppMock};
 
-    #[test]
-    fn can_copy_paste_animation() {
-        let mut document = Document::new("tmp");
-        document.sheet.create_animation("animation");
-
-        document.select_animation_only("animation".to_owned());
-        let clipboard = document.copy().unwrap();
-        document.paste(clipboard).unwrap();
-
-        assert_eq!(document.sheet.animations_iter().count(), 2);
-        assert!(document.view.selection.is_animation_selected("animation 2"));
+    #[tokio::test]
+    async fn can_copy_paste_animation() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.select_animation("walk", false, false);
+        app.copy();
+        app.paste();
+        assert!(app.client_state().documents[0].animation("walk 2").selected);
     }
 
-    #[test]
-    fn can_copy_paste_keyframe() {
-        let mut document = Document::new("tmp");
-
-        document.sheet.add_test_animation(
-            "animation",
-            HashMap::from([
-                (Direction::East, vec!["frame.png"]),
-                (Direction::West, vec![]),
-            ]),
+    #[tokio::test]
+    async fn can_copy_paste_keyframe() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(dto::Direction::East, 0, false, false);
+        app.copy();
+        app.select_direction(dto::Direction::West);
+        app.paste();
+        assert_eq!(
+            app.client_state().documents[0]
+                .keyframe("walk", dto::Direction::West, 0)
+                .frame,
+            PathBuf::from("test-data/samurai-walk-east-0.png").resolve()
         );
-
-        let keyframe = document.sheet.keyframe_mut("animation", Direction::East, 0);
-        keyframe.create_hitbox("hitbox");
-
-        document.edit_animation("animation").unwrap();
-        document.select_keyframe_only("animation".to_owned(), Direction::East, 0);
-        let clipboard = document.copy().unwrap();
-
-        document.select_direction(Direction::West).unwrap();
-        document.paste(clipboard).unwrap();
-
-        assert!(document
-            .sheet
-            .animation("animation")
-            .unwrap()
-            .sequence(Direction::West)
-            .unwrap()
-            .keyframe(0)
-            .is_some());
     }
 
-    #[test]
-    fn can_copy_paste_hitbox() {
-        let mut document = Document::new("tmp");
+    #[tokio::test]
+    async fn can_copy_paste_hitbox() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        document.sheet.add_test_animation(
-            "animation",
-            HashMap::from([
-                (Direction::East, vec!["frame.png"]),
-                (Direction::West, vec!["frame.png"]),
-            ]),
+        app.select_direction(dto::Direction::West);
+        app.select_hitbox("weak", false, false);
+        app.delete_selection();
+        assert!(app.client_state().documents[0]
+            .keyframe("walk", dto::Direction::West, 0)
+            .hitboxes
+            .is_empty());
+
+        app.select_direction(dto::Direction::East);
+        app.select_hitbox("weak", false, false);
+        app.copy();
+
+        app.select_direction(dto::Direction::West);
+        app.paste();
+
+        assert!(
+            app.client_state().documents[0]
+                .hitbox("walk", dto::Direction::West, 0, "weak")
+                .selected
         );
-
-        let keyframe = document.sheet.keyframe_mut("animation", Direction::East, 0);
-        keyframe.create_hitbox("hitbox");
-
-        document.edit_animation("animation").unwrap();
-        document.select_hitbox_only("animation", Direction::East, 0, "hitbox");
-        let clipboard = document.copy().unwrap();
-
-        document.select_direction(Direction::West).unwrap();
-        document.paste(clipboard).unwrap();
-        assert!(document
-            .sheet
-            .animation("animation")
-            .unwrap()
-            .sequence(Direction::West)
-            .unwrap()
-            .keyframe(0)
-            .unwrap()
-            .has_hitbox("hitbox"));
-        assert!(document.view.selection.is_hitbox_selected(
-            "animation",
-            Direction::West,
-            0,
-            "hitbox"
-        ));
     }
 }
