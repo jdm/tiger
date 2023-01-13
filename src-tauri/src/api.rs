@@ -107,6 +107,8 @@ pub trait Api {
     fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()>;
     fn end_resize_hitbox(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
+    fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
+    fn filter_frames<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn get_state(&self) -> Result<dto::State, ()>;
     fn hide_hitboxes(&self) -> Result<Patch, ()>;
@@ -159,14 +161,18 @@ pub trait Api {
         ctrl: bool,
     ) -> Result<Patch, ()>;
     fn set_animation_looping(&self, is_looping: bool) -> Result<Patch, ()>;
+    fn set_animations_list_offset(&self, offset: u32) -> Result<Patch, ()>;
     fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
+    fn set_frames_list_mode(&self, list_mode: dto::ListMode) -> Result<Patch, ()>;
+    fn set_frames_list_offset(&self, offset: u32) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
     fn set_hitbox_width(&self, width: u32) -> Result<Patch, ()>;
+    fn set_hitboxes_list_offset(&self, offset: u32) -> Result<Patch, ()>;
     fn set_keyframe_duration(&self, duration_millies: u64) -> Result<Patch, ()>;
     fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
@@ -730,6 +736,26 @@ impl<A: TigerApp + Sync> Api for A {
         }
     }
 
+    fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::FilterAnimations(search_query.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn filter_frames<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::FilterFrames(search_query.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.focus_document(path.as_ref()).ok();
@@ -1088,6 +1114,16 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
+    fn set_animations_list_offset(&self, offset: u32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetAnimationsListOffset(offset))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1128,6 +1164,26 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
+    fn set_frames_list_mode(&self, list_mode: dto::ListMode) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetFramesListMode(list_mode.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_frames_list_offset(&self, offset: u32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetFramesListOffset(offset))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1163,6 +1219,16 @@ impl<A: TigerApp + Sync> Api for A {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxWidth(width))
+                    .ok();
+            }
+        }))
+    }
+
+    fn set_hitboxes_list_offset(&self, offset: u32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetHitboxesListOffset(offset))
                     .ok();
             }
         }))
@@ -1637,87 +1703,33 @@ pub fn paste(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn set_frames_list_mode(
-    state_handle: tauri::State<'_, state::Handle>,
-    list_mode: dto::ListMode,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetFramesListMode(list_mode.into()))
-                .ok();
-        }
-    }))
+pub fn set_frames_list_mode(app: tauri::AppHandle, list_mode: dto::ListMode) -> Result<Patch, ()> {
+    app.set_frames_list_mode(list_mode)
 }
 
 #[tauri::command]
-pub fn set_frames_list_offset(
-    state_handle: tauri::State<'_, state::Handle>,
-    offset: u32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetFramesListOffset(offset))
-                .ok();
-        }
-    }))
+pub fn set_frames_list_offset(app: tauri::AppHandle, offset: u32) -> Result<Patch, ()> {
+    app.set_frames_list_offset(offset)
 }
 
 #[tauri::command]
-pub fn set_hitboxes_list_offset(
-    state_handle: tauri::State<'_, state::Handle>,
-    offset: u32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetHitboxesListOffset(offset))
-                .ok();
-        }
-    }))
+pub fn set_hitboxes_list_offset(app: tauri::AppHandle, offset: u32) -> Result<Patch, ()> {
+    app.set_hitboxes_list_offset(offset)
 }
 
 #[tauri::command]
-pub fn filter_frames(
-    state_handle: tauri::State<'_, state::Handle>,
-    search_query: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::FilterFrames(search_query))
-                .ok();
-        }
-    }))
+pub fn filter_frames(app: tauri::AppHandle, search_query: String) -> Result<Patch, ()> {
+    app.filter_frames(search_query)
 }
 
 #[tauri::command]
-pub fn filter_animations(
-    state_handle: tauri::State<'_, state::Handle>,
-    search_query: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::FilterAnimations(search_query))
-                .ok();
-        }
-    }))
+pub fn filter_animations(app: tauri::AppHandle, search_query: String) -> Result<Patch, ()> {
+    app.filter_animations(search_query)
 }
 
 #[tauri::command]
-pub fn set_animations_list_offset(
-    state_handle: tauri::State<'_, state::Handle>,
-    offset: u32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetAnimationsListOffset(offset))
-                .ok();
-        }
-    }))
+pub fn set_animations_list_offset(app: tauri::AppHandle, offset: u32) -> Result<Patch, ()> {
+    app.set_animations_list_offset(offset)
 }
 
 #[tauri::command]

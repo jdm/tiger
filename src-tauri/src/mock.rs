@@ -280,6 +280,14 @@ impl TigerAppMock {
         self.apply_patch(Api::export(self).await.unwrap());
     }
 
+    pub fn filter_animations<S: Into<String>>(&self, search_query: S) {
+        self.apply_patch(Api::filter_animations(self, search_query).unwrap());
+    }
+
+    pub fn filter_frames<S: Into<String>>(&self, search_query: S) {
+        self.apply_patch(Api::filter_frames(self, search_query).unwrap());
+    }
+
     pub fn focus_document<P: AsRef<Path>>(&self, path: P) {
         self.apply_patch(Api::focus_document(self, path).unwrap());
     }
@@ -410,6 +418,10 @@ impl TigerAppMock {
         self.apply_patch(Api::set_animation_looping(self, is_looping).unwrap());
     }
 
+    pub fn set_animations_list_offset(&self, offset: u32) {
+        self.apply_patch(Api::set_animations_list_offset(self, offset).unwrap());
+    }
+
     pub fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::set_export_atlas_image_file(self, path).unwrap());
     }
@@ -426,6 +438,14 @@ impl TigerAppMock {
         self.apply_patch(Api::set_export_template_file(self, path).unwrap());
     }
 
+    pub fn set_frames_list_mode(&self, list_mode: dto::ListMode) {
+        self.apply_patch(Api::set_frames_list_mode(self, list_mode).unwrap());
+    }
+
+    pub fn set_frames_list_offset(&self, offset: u32) {
+        self.apply_patch(Api::set_frames_list_offset(self, offset).unwrap());
+    }
+
     pub fn set_hitbox_height(&self, height: u32) {
         self.apply_patch(Api::set_hitbox_height(self, height).unwrap());
     }
@@ -440,6 +460,10 @@ impl TigerAppMock {
 
     pub fn set_hitbox_width(&self, width: u32) {
         self.apply_patch(Api::set_hitbox_width(self, width).unwrap());
+    }
+
+    pub fn set_hitboxes_list_offset(&self, offset: u32) {
+        self.apply_patch(Api::set_hitboxes_list_offset(self, offset).unwrap());
     }
 
     pub fn set_keyframe_duration(&self, duration_millis: u64) {
