@@ -62,6 +62,11 @@ pub trait Api {
     fn begin_rename_animation<S: Into<String>>(&self, animation_name: S) -> Result<Patch, ()>;
     fn begin_rename_hitbox<S: Into<String>>(&self, hitbox_name: S) -> Result<Patch, ()>;
     fn begin_rename_selection(&self) -> Result<Patch, ()>;
+    fn begin_resize_hitbox<S: Into<String>>(
+        &self,
+        name: S,
+        axis: dto::ResizeAxis,
+    ) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
     fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
     fn cancel_rename(&self) -> Result<Patch, ()>;
@@ -91,6 +96,7 @@ pub trait Api {
     fn end_relocate_frames(&self) -> Result<Patch, ()>;
     fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()>;
     fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()>;
+    fn end_resize_hitbox(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
@@ -151,6 +157,11 @@ pub trait Api {
     fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) -> Result<Patch, ()>;
     fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool)
         -> Result<Patch, ()>;
+    fn update_resize_hitbox(
+        &self,
+        displacement: (i32, i32),
+        preserve_aspect_ratio: bool,
+    ) -> Result<Patch, ()>;
     fn zoom_in_timeline(&self) -> Result<Patch, ()>;
     fn zoom_in_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()>;
     fn zoom_in_workbench(&self) -> Result<Patch, ()>;
@@ -261,6 +272,20 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginRenameSelection).ok();
+            }
+        }))
+    }
+
+    fn begin_resize_hitbox<S: Into<String>>(
+        &self,
+        name: S,
+        axis: dto::ResizeAxis,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BeginResizeHitbox(name.into(), axis.into()))
+                    .ok();
             }
         }))
     }
@@ -541,6 +566,14 @@ impl<T: TigerApp + Sync> Api for T {
                 document
                     .process_command(Command::EndRenameHitbox(new_name.into()))
                     .ok();
+            }
+        }))
+    }
+
+    fn end_resize_hitbox(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::EndResizeHitbox).ok();
             }
         }))
     }
@@ -1027,6 +1060,23 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
+                    .ok();
+            }
+        }))
+    }
+
+    fn update_resize_hitbox(
+        &self,
+        displacement: (i32, i32),
+        preserve_aspect_ratio: bool,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::UpdateResizeHitbox(
+                        displacement.into(),
+                        preserve_aspect_ratio,
+                    ))
                     .ok();
             }
         }))
@@ -2133,44 +2183,25 @@ pub fn end_nudge_hitbox(app: tauri::AppHandle) -> Result<Patch, ()> {
 
 #[tauri::command]
 pub fn begin_resize_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     name: String,
     axis: dto::ResizeAxis,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BeginResizeHitbox(name, axis.into()))
-                .ok();
-        }
-    }))
+    app.begin_resize_hitbox(name, axis)
 }
 
 #[tauri::command]
 pub fn update_resize_hitbox(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     displacement: (i32, i32),
     preserve_aspect_ratio: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::UpdateResizeHitbox(
-                    displacement.into(),
-                    preserve_aspect_ratio,
-                ))
-                .ok();
-        }
-    }))
+    app.update_resize_hitbox(displacement, preserve_aspect_ratio)
 }
 
 #[tauri::command]
-pub fn end_resize_hitbox(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::EndResizeHitbox).ok();
-        }
-    }))
+pub fn end_resize_hitbox(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.end_resize_hitbox()
 }
 
 #[tauri::command]

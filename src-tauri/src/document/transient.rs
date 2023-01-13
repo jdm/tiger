@@ -1269,114 +1269,99 @@ mod tests {
             .is_empty());
     }
 
-    #[test]
-    fn can_resize_hitbox() {
+    #[tokio::test]
+    async fn can_resize_hitbox() {
         use euclid::rect;
 
-        let test_cases: Vec<(_, Vector2D<i32>, euclid::default::Rect<i32>)> = vec![
-            (ResizeAxis::NW, vec2(10, 10), rect(10, 10, 90, 90)),
-            (ResizeAxis::NE, vec2(10, 10), rect(0, 10, 110, 90)),
-            (ResizeAxis::SW, vec2(10, 10), rect(10, 0, 90, 110)),
-            (ResizeAxis::SE, vec2(10, 10), rect(0, 0, 110, 110)),
-            (ResizeAxis::N, vec2(10, 10), rect(0, 10, 100, 90)),
-            (ResizeAxis::W, vec2(10, 10), rect(10, 0, 90, 100)),
-            (ResizeAxis::S, vec2(10, 10), rect(0, 0, 100, 110)),
-            (ResizeAxis::E, vec2(10, 10), rect(0, 0, 110, 100)),
+        let test_cases: Vec<(_, _, euclid::default::Rect<i32>)> = vec![
+            (dto::ResizeAxis::NW, (10, 10), rect(10, 10, 90, 90)),
+            (dto::ResizeAxis::NE, (10, 10), rect(0, 10, 110, 90)),
+            (dto::ResizeAxis::SW, (10, 10), rect(10, 0, 90, 110)),
+            (dto::ResizeAxis::SE, (10, 10), rect(0, 0, 110, 110)),
+            (dto::ResizeAxis::N, (10, 10), rect(0, 10, 100, 90)),
+            (dto::ResizeAxis::W, (10, 10), rect(10, 0, 90, 100)),
+            (dto::ResizeAxis::S, (10, 10), rect(0, 0, 100, 110)),
+            (dto::ResizeAxis::E, (10, 10), rect(0, 0, 110, 100)),
         ];
 
         for (axis, delta, expected) in test_cases {
-            let mut d = Document::new("tmp");
-            d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-            d.sheet.add_test_animation(
-                "walk_cycle",
-                HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-            );
-            d.edit_animation("walk_cycle").unwrap();
-            d.view.set_workbench_zoom_factor(1);
+            let app = TigerAppMock::new();
+            app.open_documents(vec!["test-data/samurai.tiger"]).await;
+            app.set_workbench_zoom_factor(1);
+            app.edit_animation("walk");
+            app.select_direction(dto::Direction::West);
+            app.select_hitbox("weak", false, false);
+            app.set_hitbox_width(100);
+            app.set_hitbox_height(100);
+            app.set_hitbox_position_x(0);
+            app.set_hitbox_position_y(0);
 
-            let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-            keyframe.create_hitbox("my_hitbox");
-            let hitbox = d
-                .sheet
-                .hitbox_mut("walk_cycle", Direction::North, 0, "my_hitbox");
-            hitbox.set_position(vec2(0, 0));
-            hitbox.set_size(vec2(100, 100));
+            app.begin_resize_hitbox("weak", axis);
+            app.update_resize_hitbox(delta, false);
+            app.end_resize_hitbox();
 
-            d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-            d.begin_resize_hitbox("my_hitbox", axis).unwrap();
-            d.update_resize_hitbox(delta, false).unwrap();
-            d.end_resize_hitbox();
-            let hitbox = d
-                .sheet
-                .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
+            let hitbox = app.client_state().documents[0]
+                .hitbox("walk", dto::Direction::West, 0, "weak")
+                .clone();
             assert_eq!(
-                hitbox.rectangle(),
-                euclid::rect(
-                    expected.origin.x,
-                    expected.origin.y,
-                    expected.size.width,
-                    expected.size.height
-                )
+                hitbox.size,
+                (expected.size.width as u32, expected.size.height as u32)
             );
+            assert_eq!(hitbox.top_left, (expected.origin.x, expected.origin.y));
         }
     }
 
-    #[test]
-    fn can_resize_hitbox_while_preserving_aspect_ratio() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-        d.view.set_workbench_zoom_factor(1);
+    #[tokio::test]
+    async fn can_resize_hitbox_while_preserving_aspect_ratio() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.set_workbench_zoom_factor(1);
+        app.edit_animation("walk");
+        app.select_direction(dto::Direction::West);
+        app.select_hitbox("weak", false, false);
+        app.set_hitbox_width(100);
+        app.set_hitbox_height(100);
+        app.set_hitbox_position_x(0);
+        app.set_hitbox_position_y(0);
 
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("my_hitbox");
-        let initial = d
-            .sheet
-            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox")
-            .rectangle();
+        app.begin_resize_hitbox("weak", dto::ResizeAxis::SE);
+        app.update_resize_hitbox((40, 80), true);
+        app.end_resize_hitbox();
 
-        d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-        d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
-        d.update_resize_hitbox(vec2(40, 80), true).unwrap();
-        d.end_resize_hitbox();
-        let hitbox = d
-            .sheet
-            .hitbox("walk_cycle", Direction::North, 0, "my_hitbox");
-        assert_eq!(
-            hitbox.rectangle(),
-            euclid::rect(
-                initial.origin.x,
-                initial.origin.y,
-                initial.size.width + 80,
-                initial.size.height + 80
-            )
-        );
+        let hitbox = app.client_state().documents[0]
+            .hitbox("walk", dto::Direction::West, 0, "weak")
+            .clone();
+        assert_eq!(hitbox.size, (180, 180));
     }
 
-    #[test]
-    fn keeps_track_of_hitboxes_being_resized() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
+    #[tokio::test]
+    async fn keeps_track_of_hitboxes_being_resized() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.select_hitbox("weak", false, false);
+        assert_eq!(
+            app.client_state().documents[0].hitboxes_being_resized,
+            HashSet::new()
         );
-        d.edit_animation("walk_cycle").unwrap();
-        d.view.set_workbench_zoom_factor(1);
 
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("my_hitbox");
+        app.begin_resize_hitbox("weak", dto::ResizeAxis::SE);
+        assert_eq!(
+            app.client_state().documents[0].hitboxes_being_resized,
+            ["weak".into()].into()
+        );
 
-        assert!(d.hitboxes_being_resized().is_empty());
-        d.select_hitbox_only("walk_cycle", Direction::North, 0, "my_hitbox");
-        d.begin_resize_hitbox("my_hitbox", ResizeAxis::SE).unwrap();
-        assert_eq!(d.hitboxes_being_resized(), HashSet::from(["my_hitbox"]));
-        d.update_resize_hitbox(vec2(40, 80), false).unwrap();
-        d.end_resize_hitbox();
-        assert!(d.hitboxes_being_resized().is_empty());
+        app.update_resize_hitbox((40, 80), true);
+        assert_eq!(
+            app.client_state().documents[0].hitboxes_being_resized,
+            ["weak".into()].into()
+        );
+
+        app.end_resize_hitbox();
+        assert_eq!(
+            app.client_state().documents[0].hitboxes_being_resized,
+            HashSet::new()
+        );
     }
 }

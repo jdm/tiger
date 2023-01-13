@@ -140,6 +140,10 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_rename_selection(self).unwrap());
     }
 
+    pub fn begin_resize_hitbox<S: Into<String>>(&self, name: S, axis: dto::ResizeAxis) {
+        self.apply_patch(Api::begin_resize_hitbox(self, name, axis).unwrap());
+    }
+
     pub fn cancel_exit(&self) {
         self.apply_patch(Api::cancel_exit(self).unwrap());
     }
@@ -234,6 +238,10 @@ impl TigerAppMock {
 
     pub fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) {
         self.apply_patch(Api::end_rename_hitbox(self, new_name).unwrap());
+    }
+
+    pub fn end_resize_hitbox(&self) {
+        self.apply_patch(Api::end_resize_hitbox(self).unwrap());
     }
 
     pub async fn export(&self) {
@@ -396,6 +404,12 @@ impl TigerAppMock {
 
     pub fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool) {
         self.apply_patch(Api::update_nudge_keyframe(self, displacement, both_axis).unwrap());
+    }
+
+    pub fn update_resize_hitbox(&self, displacement: (i32, i32), preserve_aspect_ratio: bool) {
+        self.apply_patch(
+            Api::update_resize_hitbox(self, displacement, preserve_aspect_ratio).unwrap(),
+        );
     }
 
     pub fn zoom_in_timeline(&self) {
