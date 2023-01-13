@@ -588,27 +588,24 @@ impl Display for Command {
 #[cfg(test)]
 mod tests {
 
-    use super::*;
     use crate::mock::TigerAppMock;
 
-    fn list_frames(d: &Document) -> Vec<String> {
-        d.sheet
-            .frames_iter()
-            .map(|f| f.source().to_string_lossy().into_owned())
+    fn list_frames(app: &TigerAppMock) -> Vec<String> {
+        app.client_state().documents[0]
+            .sheet
+            .frames
+            .iter()
+            .map(|f| f.path.to_string_lossy().into_owned())
             .collect::<Vec<_>>()
-    }
-
-    fn run(document: &mut Document, command: Command) {
-        document.process_command(command).unwrap();
     }
 
     #[test]
     fn can_undo_and_redo() {
-        let mut d = Document::new("tmp");
-
-        run(&mut d, Command::ImportFrames(vec!["frame_1".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_2".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_3".into()]));
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["frame_1"]);
+        app.import_frames(vec!["frame_2"]);
+        app.import_frames(vec!["frame_3"]);
 
         let one = vec![String::from("frame_1")];
         let one_and_two = vec![String::from("frame_1"), String::from("frame_2")];
@@ -618,15 +615,15 @@ mod tests {
             String::from("frame_3"),
         ];
 
-        assert_eq!(list_frames(&d), all_three);
-        run(&mut d, Command::Undo);
-        assert_eq!(list_frames(&d), one_and_two);
-        run(&mut d, Command::Undo);
-        assert_eq!(list_frames(&d), one);
-        run(&mut d, Command::Redo);
-        assert_eq!(list_frames(&d), one_and_two);
-        run(&mut d, Command::Redo);
-        assert_eq!(list_frames(&d), all_three);
+        assert_eq!(list_frames(&app), all_three);
+        app.undo();
+        assert_eq!(list_frames(&app), one_and_two);
+        app.undo();
+        assert_eq!(list_frames(&app), one);
+        app.redo();
+        assert_eq!(list_frames(&app), one_and_two);
+        app.redo();
+        assert_eq!(list_frames(&app), all_three);
     }
 
     #[tokio::test]
@@ -651,49 +648,52 @@ mod tests {
 
     #[test]
     fn can_undo_multiple_view_changes_at_once() {
-        let mut d = Document::new("tmp");
-        run(&mut d, Command::SetWorkbenchZoomFactor(1));
-        run(&mut d, Command::ImportFrames(vec!["frame_1".into()]));
-        run(&mut d, Command::SetWorkbenchZoomFactor(2));
-        run(&mut d, Command::SetWorkbenchZoomFactor(4));
-        run(&mut d, Command::SetWorkbenchZoomFactor(8));
-        assert_eq!(d.view.workbench_zoom_factor, 8);
-        run(&mut d, Command::Undo);
-        assert_eq!(d.view.workbench_zoom_factor, 1);
-        run(&mut d, Command::Redo);
-        assert_eq!(d.view.workbench_zoom_factor, 8);
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.set_workbench_zoom_factor(1);
+        app.import_frames(vec!["frame_1"]);
+        app.set_workbench_zoom_factor(2);
+        app.set_workbench_zoom_factor(4);
+        app.set_workbench_zoom_factor(8);
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 8.0);
+        app.undo();
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        app.redo();
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 8.0);
     }
 
     #[test]
     fn truncates_undo_stack_when_editing_sheet() {
-        let mut d = Document::new("tmp");
-        run(&mut d, Command::ImportFrames(vec!["frame_1".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_2".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_3".into()]));
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::ImportFrames(vec!["frame_4".into()]));
-        run(&mut d, Command::Redo);
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["frame_1"]);
+        app.import_frames(vec!["frame_2"]);
+        app.import_frames(vec!["frame_3"]);
+        app.undo();
+        app.undo();
+        app.import_frames(vec!["frame_4"]);
+        app.redo();
         assert_eq!(
-            list_frames(&d),
+            list_frames(&app),
             vec![String::from("frame_1"), String::from("frame_4")]
         );
     }
 
     #[test]
     fn editing_view_while_browsing_history_does_not_truncate_history() {
-        let mut d = Document::new("tmp");
-        run(&mut d, Command::ImportFrames(vec!["frame_1".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_2".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_3".into()]));
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::SetWorkbenchZoomFactor(2));
-        run(&mut d, Command::SetWorkbenchZoomFactor(4));
-        run(&mut d, Command::Redo);
-        run(&mut d, Command::Redo);
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["frame_1"]);
+        app.import_frames(vec!["frame_2"]);
+        app.import_frames(vec!["frame_3"]);
+        app.undo();
+        app.undo();
+        app.set_workbench_zoom_factor(2);
+        app.set_workbench_zoom_factor(4);
+        app.redo();
+        app.redo();
         assert_eq!(
-            list_frames(&d),
+            list_frames(&app),
             vec![
                 String::from("frame_1"),
                 String::from("frame_2"),
@@ -704,40 +704,42 @@ mod tests {
 
     #[test]
     fn editing_sheet_while_browsing_can_insert_navigation_entry() {
-        let mut d = Document::new("tmp");
-        run(&mut d, Command::SetWorkbenchZoomFactor(1));
-        run(&mut d, Command::ImportFrames(vec!["frame_1".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_2".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_3".into()]));
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::SetWorkbenchZoomFactor(2));
-        run(&mut d, Command::ImportFrames(vec!["frame_4".into()]));
-        run(&mut d, Command::Undo);
-        assert_eq!(list_frames(&d), vec![String::from("frame_1"),]);
-        assert_eq!(d.view.workbench_zoom_factor, 2);
-        run(&mut d, Command::Undo);
-        assert_eq!(list_frames(&d), vec![String::from("frame_1"),]);
-        assert_eq!(d.view.workbench_zoom_factor, 1);
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.set_workbench_zoom_factor(1);
+        app.import_frames(vec!["frame_1"]);
+        app.import_frames(vec!["frame_2"]);
+        app.import_frames(vec!["frame_3"]);
+        app.undo();
+        app.undo();
+        app.set_workbench_zoom_factor(2);
+        app.import_frames(vec!["frame_4"]);
+        app.undo();
+        assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 2.0);
+        app.undo();
+        assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
     }
 
     #[test]
     fn editing_sheet_while_browsing_can_amend_navigation_entry() {
-        let mut d = Document::new("tmp");
-        run(&mut d, Command::SetWorkbenchZoomFactor(1));
-        run(&mut d, Command::ImportFrames(vec!["frame_1".into()]));
-        run(&mut d, Command::SetWorkbenchZoomFactor(8));
-        run(&mut d, Command::ImportFrames(vec!["frame_2".into()]));
-        run(&mut d, Command::ImportFrames(vec!["frame_3".into()]));
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::Undo);
-        run(&mut d, Command::SetWorkbenchZoomFactor(2));
-        run(&mut d, Command::ImportFrames(vec!["frame_4".into()]));
-        run(&mut d, Command::Undo);
-        assert_eq!(list_frames(&d), vec![String::from("frame_1"),]);
-        assert_eq!(d.view.workbench_zoom_factor, 2);
-        run(&mut d, Command::Undo);
-        assert_eq!(list_frames(&d), vec![String::from("frame_1"),]);
-        assert_eq!(d.view.workbench_zoom_factor, 1);
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.set_workbench_zoom_factor(1);
+        app.import_frames(vec!["frame_1"]);
+        app.set_workbench_zoom_factor(8);
+        app.import_frames(vec!["frame_2"]);
+        app.import_frames(vec!["frame_3"]);
+        app.undo();
+        app.undo();
+        app.set_workbench_zoom_factor(2);
+        app.import_frames(vec!["frame_4"]);
+        app.undo();
+        assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 2.0);
+        app.undo();
+        assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
+        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
     }
 }

@@ -268,6 +268,10 @@ impl TigerAppMock {
         self.apply_patch(Api::paste(self).unwrap());
     }
 
+    pub fn redo(&self) {
+        self.apply_patch(Api::redo(self).unwrap());
+    }
+
     pub fn relocate_frame<P: Into<PathBuf>, Q: Into<PathBuf>>(&self, from: P, to: Q) {
         self.apply_patch(Api::relocate_frame(self, from, to).unwrap());
     }
@@ -392,6 +396,10 @@ impl TigerAppMock {
 
     pub fn toggle_preserve_aspect_ratio(&self) {
         self.apply_patch(Api::toggle_preserve_aspect_ratio(self).unwrap());
+    }
+
+    pub fn undo(&self) {
+        self.apply_patch(Api::undo(self).unwrap());
     }
 
     pub fn update_drag_keyframe_duration(&self, duration_millis: i64) {

@@ -106,6 +106,7 @@ pub trait Api {
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
+    fn redo(&self) -> Result<Patch, ()>;
     fn relocate_frame<F: Into<PathBuf>, T: Into<PathBuf>>(
         &self,
         from: F,
@@ -153,6 +154,7 @@ pub trait Api {
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
+    fn undo(&self) -> Result<Patch, ()>;
     fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()>;
     fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) -> Result<Patch, ()>;
     fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool)
@@ -681,6 +683,14 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn redo(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::Redo).ok();
+            }
+        }))
+    }
+
     fn relocate_frame<P: Into<PathBuf>, Q: Into<PathBuf>>(
         &self,
         from: P,
@@ -1031,6 +1041,14 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn undo(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::Undo).ok();
+            }
+        }))
+    }
+
     fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1299,21 +1317,13 @@ pub async fn save_as(app: tauri::AppHandle, new_path: PathBuf) -> Result<Patch, 
 }
 
 #[tauri::command]
-pub fn undo(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::Undo).ok();
-        }
-    }))
+pub fn undo(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.undo()
 }
 
 #[tauri::command]
-pub fn redo(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::Redo).ok();
-        }
-    }))
+pub fn redo(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.redo()
 }
 
 #[tauri::command]
