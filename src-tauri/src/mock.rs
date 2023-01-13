@@ -100,6 +100,10 @@ impl TigerAppMock {
 
 #[allow(dead_code)]
 impl TigerAppMock {
+    pub fn acknowledge_error(&self) {
+        self.apply_patch(Api::acknowledge_error(self).unwrap());
+    }
+
     pub fn apply_direction_preset(&self, preset: dto::DirectionPreset) {
         self.apply_patch(Api::apply_direction_preset(self, preset).unwrap());
     }
@@ -476,6 +480,15 @@ impl TigerAppMock {
 
     pub fn set_workbench_zoom_factor(&self, zoom_factor: u32) {
         self.apply_patch(Api::set_workbench_zoom_factor(self, zoom_factor).unwrap());
+    }
+
+    pub fn show_error_message<S: Into<String>, T: Into<String>, U: Into<String>>(
+        &self,
+        title: S,
+        summary: T,
+        details: U,
+    ) {
+        self.apply_patch(Api::show_error_message(self, title, summary, details).unwrap());
     }
 
     pub fn show_hitboxes(&self) {

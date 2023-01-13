@@ -44,6 +44,7 @@ struct DocumentToSave {
 
 #[async_trait]
 pub trait Api {
+    fn acknowledge_error(&self) -> Result<Patch, ()>;
     fn apply_direction_preset(&self, preset: dto::DirectionPreset) -> Result<Patch, ()>;
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_drag_and_drop_keyframe(
@@ -107,6 +108,7 @@ pub trait Api {
     fn end_resize_hitbox(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
+    fn get_state(&self) -> Result<dto::State, ()>;
     fn hide_hitboxes(&self) -> Result<Patch, ()>;
     fn hide_origin(&self) -> Result<Patch, ()>;
     fn hide_sprite(&self) -> Result<Patch, ()>;
@@ -175,6 +177,12 @@ pub trait Api {
     fn set_timeline_offset(&self, offset_millis: f32) -> Result<Patch, ()>;
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
+    fn show_error_message<S: Into<String>, T: Into<String>, U: Into<String>>(
+        &self,
+        title: S,
+        summary: T,
+        details: U,
+    ) -> Result<Patch, ()>;
     fn show_hitboxes(&self) -> Result<Patch, ()>;
     fn show_origin(&self) -> Result<Patch, ()>;
     fn show_sprite(&self) -> Result<Patch, ()>;
@@ -202,7 +210,13 @@ pub trait Api {
 }
 
 #[async_trait]
-impl<T: TigerApp + Sync> Api for T {
+impl<A: TigerApp + Sync> Api for A {
+    fn acknowledge_error(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            state.acknowledge_error();
+        }))
+    }
+
     fn apply_direction_preset(&self, preset: dto::DirectionPreset) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -720,6 +734,10 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.focus_document(path.as_ref()).ok();
         }))
+    }
+
+    fn get_state(&self) -> Result<dto::State, ()> {
+        Ok(self.state().lock().to_dto(StateTrim::Full))
     }
 
     fn hide_hitboxes(&self) -> Result<Patch, ()> {
@@ -1256,6 +1274,17 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn show_error_message<S: Into<String>, T: Into<String>, U: Into<String>>(
+        &self,
+        title: S,
+        summary: T,
+        details: U,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            state.show_error_message(title.into(), summary.into(), details.into());
+        }))
+    }
+
     fn show_hitboxes(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1493,28 +1522,23 @@ async fn save_documents<A: TigerApp>(
 }
 
 #[tauri::command]
-pub fn get_state(state_handle: tauri::State<'_, state::Handle>) -> Result<dto::State, ()> {
-    let state = state_handle.lock();
-    Ok(state.to_dto(StateTrim::Full))
+pub fn get_state(app: tauri::AppHandle) -> Result<dto::State, ()> {
+    app.get_state()
 }
 
 #[tauri::command]
 pub fn show_error_message(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     title: String,
     summary: String,
     details: String,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        state.show_error_message(title, summary, details);
-    }))
+    app.show_error_message(title, summary, details)
 }
 
 #[tauri::command]
-pub fn acknowledge_error(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        state.acknowledge_error();
-    }))
+pub fn acknowledge_error(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.acknowledge_error()
 }
 
 #[tauri::command]
