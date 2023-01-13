@@ -80,8 +80,10 @@ pub trait Api {
     fn create_animation(&self) -> Result<Patch, ()>;
     fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
     fn cut(&self) -> Result<Patch, ()>;
+    fn delete_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
+    fn delete_selected_animations(&self) -> Result<Patch, ()>;
     fn delete_selected_hitboxes(&self) -> Result<Patch, ()>;
     fn delete_selected_keyframes(&self) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
@@ -104,6 +106,10 @@ pub trait Api {
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
+    fn jump_to_animation_end(&self) -> Result<Patch, ()>;
+    fn jump_to_animation_start(&self) -> Result<Patch, ()>;
+    fn jump_to_next_frame(&self) -> Result<Patch, ()>;
+    fn jump_to_previous_frame(&self) -> Result<Patch, ()>;
     fn lock_hitboxes(&self) -> Result<Patch, ()>;
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     async fn open_documents<P: Into<PathBuf> + Send + Sync>(
@@ -112,6 +118,8 @@ pub trait Api {
     ) -> Result<Patch, ()>;
     fn pan_timeline(&self, delta: f32) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
+    fn pause(&self) -> Result<Patch, ()>;
+    fn play(&self) -> Result<Patch, ()>;
     fn redo(&self) -> Result<Patch, ()>;
     fn relocate_frame<F: Into<PathBuf>, T: Into<PathBuf>>(
         &self,
@@ -124,6 +132,7 @@ pub trait Api {
     async fn save(&self) -> Result<Patch, ()>;
     async fn save_all(&self) -> Result<Patch, ()>;
     async fn save_as<P: Into<PathBuf> + Send + Sync>(&self, path: P) -> Result<Patch, ()>;
+    fn scrub_timeline(&self, time_millis: u64) -> Result<Patch, ()>;
     fn select_animation<S: Into<String>>(
         &self,
         name: S,
@@ -161,6 +170,7 @@ pub trait Api {
     fn set_timeline_offset(&self, offset_millis: f32) -> Result<Patch, ()>;
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
+    fn tick(&self, delta_time_millis: f64) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
     fn undo(&self) -> Result<Patch, ()>;
     fn unlock_hitboxes(&self) -> Result<Patch, ()>;
@@ -433,6 +443,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn delete_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DeleteAnimation(name.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -448,6 +468,16 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteHitbox(name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn delete_selected_animations(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DeleteSelectedAnimations)
                     .ok();
             }
         }))
@@ -676,6 +706,38 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn jump_to_animation_end(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::JumpToAnimationEnd).ok();
+            }
+        }))
+    }
+
+    fn jump_to_animation_start(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::JumpToAnimationStart).ok();
+            }
+        }))
+    }
+
+    fn jump_to_next_frame(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::JumpToNextFrame).ok();
+            }
+        }))
+    }
+
+    fn jump_to_previous_frame(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::JumpToPreviousFrame).ok();
+            }
+        }))
+    }
+
     fn lock_hitboxes(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -742,6 +804,22 @@ impl<T: TigerApp + Sync> Api for T {
                         document.process_command(Command::Paste(data)).ok();
                     }
                 }
+            }
+        }))
+    }
+
+    fn pause(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::Pause).ok();
+            }
+        }))
+    }
+
+    fn play(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::Play).ok();
             }
         }))
     }
@@ -842,6 +920,16 @@ impl<T: TigerApp + Sync> Api for T {
             }]
         };
         save_documents(self, documents_to_save).await
+    }
+
+    fn scrub_timeline(&self, time_millis: u64) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
+                    .ok();
+            }
+        }))
     }
 
     fn select_animation<S: Into<String>>(
@@ -1114,6 +1202,20 @@ impl<T: TigerApp + Sync> Api for T {
                     .ok();
             }
         }))
+    }
+
+    fn tick(&self, delta_time_millis: f64) -> Result<Patch, ()> {
+        Ok(self
+            .state()
+            .mutate(StateTrim::OnlyCurrentDocument, |state| {
+                if let Some(document) = state.current_document_mut() {
+                    document
+                        .process_command(Command::Tick(Duration::from_nanos(
+                            (delta_time_millis * 1_000_000.0) as u64,
+                        )))
+                        .ok();
+                }
+            }))
     }
 
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()> {
@@ -1852,116 +1954,53 @@ pub fn end_rename_hitbox(app: tauri::AppHandle, new_name: String) -> Result<Patc
 }
 
 #[tauri::command]
-pub fn delete_animation(
-    state_handle: tauri::State<'_, state::Handle>,
-    name: String,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DeleteAnimation(name))
-                .ok();
-        }
-    }))
+pub fn delete_animation(app: tauri::AppHandle, name: String) -> Result<Patch, ()> {
+    app.delete_animation(name)
 }
 
 #[tauri::command]
-pub fn delete_selected_animations(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DeleteSelectedAnimations)
-                .ok();
-        }
-    }))
+pub fn delete_selected_animations(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.delete_selected_animations()
 }
 
 #[tauri::command]
-pub fn tick(
-    state_handle: tauri::State<'_, state::Handle>,
-    delta_time_millis: f64,
-) -> Result<Patch, ()> {
-    Ok(
-        state_handle.mutate(StateTrim::OnlyCurrentDocument, |state| {
-            if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::Tick(Duration::from_nanos(
-                        (delta_time_millis * 1_000_000.0) as u64,
-                    )))
-                    .ok();
-            }
-        }),
-    )
+pub fn tick(app: tauri::AppHandle, delta_time_millis: f64) -> Result<Patch, ()> {
+    app.tick(delta_time_millis)
 }
 
 #[tauri::command]
-pub fn play(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::Play).ok();
-        }
-    }))
+pub fn play(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.play()
 }
 
 #[tauri::command]
-pub fn pause(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::Pause).ok();
-        }
-    }))
+pub fn pause(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.pause()
 }
 
 #[tauri::command]
-pub fn scrub_timeline(
-    state_handle: tauri::State<'_, state::Handle>,
-    time_millis: u64,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
-                .ok();
-        }
-    }))
+pub fn scrub_timeline(app: tauri::AppHandle, time_millis: u64) -> Result<Patch, ()> {
+    app.scrub_timeline(time_millis)
 }
 
 #[tauri::command]
-pub fn jump_to_animation_start(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::JumpToAnimationStart).ok();
-        }
-    }))
+pub fn jump_to_animation_start(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.jump_to_animation_start()
 }
 
 #[tauri::command]
-pub fn jump_to_animation_end(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::JumpToAnimationEnd).ok();
-        }
-    }))
+pub fn jump_to_animation_end(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.jump_to_animation_end()
 }
 
 #[tauri::command]
-pub fn jump_to_previous_frame(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::JumpToPreviousFrame).ok();
-        }
-    }))
+pub fn jump_to_previous_frame(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.jump_to_previous_frame()
 }
 
 #[tauri::command]
-pub fn jump_to_next_frame(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::JumpToNextFrame).ok();
-        }
-    }))
+pub fn jump_to_next_frame(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.jump_to_next_frame()
 }
 
 #[tauri::command]
