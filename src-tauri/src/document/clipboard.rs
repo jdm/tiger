@@ -153,7 +153,7 @@ mod tests {
         app.select_animation("walk", false, false);
         app.copy();
         app.paste();
-        assert!(app.client_state().documents[0].animation("walk 2").selected);
+        assert!(app.document().animation("walk 2").selected);
     }
 
     #[tokio::test]
@@ -166,7 +166,7 @@ mod tests {
         app.select_direction(dto::Direction::West);
         app.paste();
         assert_eq!(
-            app.client_state().documents[0]
+            app.document()
                 .keyframe("walk", dto::Direction::West, 0)
                 .frame,
             PathBuf::from("test-data/samurai-walk-east-0.png").resolve()
@@ -182,7 +182,8 @@ mod tests {
         app.select_direction(dto::Direction::West);
         app.select_hitbox("weak", false, false);
         app.delete_selection();
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .keyframe("walk", dto::Direction::West, 0)
             .hitboxes
             .is_empty());
@@ -195,7 +196,7 @@ mod tests {
         app.paste();
 
         assert!(
-            app.client_state().documents[0]
+            app.document()
                 .hitbox("walk", dto::Direction::West, 0, "weak")
                 .selected
         );

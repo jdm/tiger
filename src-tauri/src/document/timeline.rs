@@ -242,19 +242,19 @@ mod tests {
         app.edit_animation("walk");
 
         app.tick(50.0);
-        assert_eq!(app.client_state().documents[0].timeline_clock_millis, 0);
+        assert_eq!(app.document().timeline_clock_millis, 0);
 
         app.play();
-        assert!(app.client_state().documents[0].timeline_is_playing);
+        assert!(app.document().timeline_is_playing);
 
         app.tick(100.0);
-        assert_eq!(app.client_state().documents[0].timeline_clock_millis, 100);
+        assert_eq!(app.document().timeline_clock_millis, 100);
 
         app.pause();
-        assert!(!app.client_state().documents[0].timeline_is_playing);
+        assert!(!app.document().timeline_is_playing);
 
         app.tick(100.0);
-        assert_eq!(app.client_state().documents[0].timeline_clock_millis, 100);
+        assert_eq!(app.document().timeline_clock_millis, 100);
     }
 
     #[test]

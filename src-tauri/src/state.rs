@@ -311,14 +311,14 @@ mod tests {
     async fn can_request_exit_and_cancel() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        app.delete_frame(&app.client_state().documents[0].sheet.frames[0].path);
+        app.delete_frame(&app.document().sheet.frames[0].path);
         app.request_exit();
         assert!(!app.is_closed());
-        assert!(app.client_state().documents[0].was_close_requested);
+        assert!(app.document().was_close_requested);
         app.cancel_exit();
         assert!(!app.is_closed());
-        assert!(!app.client_state().documents[0].was_close_requested);
-        assert!(app.client_state().documents[0].has_unsaved_changes);
+        assert!(!app.document().was_close_requested);
+        assert!(app.document().has_unsaved_changes);
     }
 
     #[tokio::test]
@@ -334,19 +334,18 @@ mod tests {
     async fn can_request_exit_and_discard_changes() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        let deleted_frame = app.client_state().documents[0].sheet.frames[0]
-            .path
-            .to_owned();
-        app.delete_frame(&app.client_state().documents[0].sheet.frames[0].path);
+        let deleted_frame = app.document().sheet.frames[0].path.to_owned();
+        app.delete_frame(&app.document().sheet.frames[0].path);
         app.request_exit();
         assert!(!app.is_closed());
-        assert!(app.client_state().documents[0].was_close_requested);
+        assert!(app.document().was_close_requested);
         app.close_without_saving();
         assert!(app.is_closed());
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .sheet
             .frames
             .iter()
@@ -360,19 +359,18 @@ mod tests {
 
         let app = TigerAppMock::new();
         app.open_documents(vec![&sheet_file]).await;
-        let deleted_frame = app.client_state().documents[0].sheet.frames[0]
-            .path
-            .to_owned();
+        let deleted_frame = app.document().sheet.frames[0].path.to_owned();
         app.delete_frame(&deleted_frame);
         app.request_exit();
         assert!(!app.is_closed());
-        assert!(app.client_state().documents[0].was_close_requested);
+        assert!(app.document().was_close_requested);
         app.save().await;
         assert!(app.is_closed());
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .sheet
             .frames
             .iter()
@@ -388,13 +386,13 @@ mod tests {
         app.open_documents(vec![&samurai_file, &flame_file]).await;
 
         app.focus_document(&samurai_file);
-        app.delete_frame(&app.client_state().documents[0].sheet.frames[0].path);
+        app.delete_frame(&app.document().sheet.frames[0].path);
         app.focus_document(&flame_file);
         app.delete_frame(&app.client_state().documents[1].sheet.frames[0].path);
 
         app.request_exit();
         assert!(!app.is_closed());
-        assert!(app.client_state().documents[0].was_close_requested);
+        assert!(app.document().was_close_requested);
         assert!(app.client_state().documents[1].was_close_requested);
         app.close_without_saving();
         assert!(!app.is_closed());
@@ -416,14 +414,14 @@ mod tests {
         app.open_documents(vec![&samurai_file, &flame_file]).await;
 
         app.focus_document(&samurai_file);
-        app.delete_frame(&app.client_state().documents[0].sheet.frames[0].path);
+        app.delete_frame(&app.document().sheet.frames[0].path);
         app.focus_document(&flame_file);
         app.delete_frame(&app.client_state().documents[1].sheet.frames[0].path);
 
-        assert!(app.client_state().documents[0].has_unsaved_changes);
+        assert!(app.document().has_unsaved_changes);
         assert!(app.client_state().documents[1].has_unsaved_changes);
         app.save_all().await;
-        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        assert!(!app.document().has_unsaved_changes);
         assert!(!app.client_state().documents[1].has_unsaved_changes);
     }
 
@@ -434,15 +432,14 @@ mod tests {
 
         let app = TigerAppMock::new();
         app.open_documents(vec![&original_location]).await;
-        let deleted_frame = app.client_state().documents[0].sheet.frames[0]
-            .path
-            .to_owned();
+        let deleted_frame = app.document().sheet.frames[0].path.to_owned();
         app.delete_frame(&deleted_frame);
         app.save_as(&new_location).await;
 
         let app = TigerAppMock::new();
         app.open_documents(vec![&original_location]).await;
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .sheet
             .frames
             .iter()
@@ -450,7 +447,8 @@ mod tests {
 
         let app = TigerAppMock::new();
         app.open_documents(vec![&new_location]).await;
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .sheet
             .frames
             .iter()

@@ -80,6 +80,15 @@ impl TigerAppMock {
         *self.closed.lock()
     }
 
+    pub fn document(&self) -> dto::Document {
+        let state = self.client_state();
+        state
+            .documents
+            .into_iter()
+            .find(|d| &d.path == state.current_document_path.as_ref().unwrap())
+            .unwrap()
+    }
+
     pub fn assert_eventually<F: Fn() -> bool>(&self, test: F) {
         let start = std::time::Instant::now();
         while std::time::Instant::now().duration_since(start) < Duration::from_secs(5) {

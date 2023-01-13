@@ -96,13 +96,7 @@ mod tests {
         app.relocate_frame(&bad_dead, &good_dead);
         app.end_relocate_frames();
 
-        let has_frame = |p: &PathBuf| {
-            app.client_state().documents[0]
-                .sheet
-                .frames
-                .iter()
-                .any(|f| &f.path == p)
-        };
+        let has_frame = |p: &PathBuf| app.document().sheet.frames.iter().any(|f| &f.path == p);
         assert!(!has_frame(&bad_dead));
         assert!(!has_frame(&bad_idle));
         assert!(has_frame(&good_dead));

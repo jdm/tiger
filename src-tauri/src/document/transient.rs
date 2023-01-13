@@ -772,17 +772,12 @@ mod tests {
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
         app.begin_rename_animation("walk");
-        assert_eq!(
-            Some("walk".into()),
-            app.client_state().documents[0].animation_being_renamed
-        );
+        assert_eq!(Some("walk".into()), app.document().animation_being_renamed);
 
         app.end_rename_animation("renamed");
-        assert_eq!(
-            None,
-            app.client_state().documents[0].animation_being_renamed
-        );
-        assert!(app.client_state().documents[0]
+        assert_eq!(None, app.document().animation_being_renamed);
+        assert!(app
+            .document()
             .sheet
             .animations
             .iter()
@@ -797,14 +792,12 @@ mod tests {
         app.select_direction(dto::Direction::South);
         app.begin_rename_hitbox("weak");
 
-        assert_eq!(
-            Some("weak".into()),
-            app.client_state().documents[0].hitbox_being_renamed
-        );
+        assert_eq!(Some("weak".into()), app.document().hitbox_being_renamed);
 
         app.end_rename_hitbox("renamed");
-        assert_eq!(None, app.client_state().documents[0].hitbox_being_renamed);
-        assert!(app.client_state().documents[0]
+        assert_eq!(None, app.document().hitbox_being_renamed);
+        assert!(app
+            .document()
             .keyframe("walk", dto::Direction::South, 0)
             .hitboxes
             .iter()
@@ -817,15 +810,9 @@ mod tests {
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.select_animation("idle", false, false);
         app.begin_rename_selection();
-        assert_eq!(
-            Some("idle".into()),
-            app.client_state().documents[0].animation_being_renamed
-        );
+        assert_eq!(Some("idle".into()), app.document().animation_being_renamed);
         app.cancel_rename();
-        assert_eq!(
-            None,
-            app.client_state().documents[0].animation_being_renamed
-        );
+        assert_eq!(None, app.document().animation_being_renamed);
     }
 
     #[test]
@@ -841,7 +828,7 @@ mod tests {
         app.begin_drag_and_drop_frame("walk_2");
         app.drop_frame_on_timeline(dto::Direction::North, 2);
 
-        let keyframes = app.client_state().documents[0].sheet.animations[0]
+        let keyframes = app.document().sheet.animations[0]
             .keyframes(dto::Direction::North)
             .iter()
             .map(|k| k.frame.to_owned())
@@ -868,7 +855,7 @@ mod tests {
         app.begin_drag_and_drop_frame("walk_0");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
 
-        let keyframes = app.client_state().documents[0].sheet.animations[0]
+        let keyframes = app.document().sheet.animations[0]
             .keyframes(dto::Direction::North)
             .iter()
             .map(|k| k.frame.to_owned())
@@ -887,20 +874,16 @@ mod tests {
 
         app.select_frame(&frame_0, false, true);
         app.select_frame(&frame_1, false, true);
-        assert!(app.client_state().documents[0]
-            .frames_being_dragged
-            .is_empty());
+        assert!(app.document().frames_being_dragged.is_empty());
 
         app.begin_drag_and_drop_frame(&frame_0);
         assert_eq!(
-            app.client_state().documents[0].frames_being_dragged,
+            app.document().frames_being_dragged,
             HashSet::from([frame_0, frame_1]),
         );
 
         app.end_drag_and_drop_frame();
-        assert!(app.client_state().documents[0]
-            .frames_being_dragged
-            .is_empty());
+        assert!(app.document().frames_being_dragged.is_empty());
     }
 
     #[tokio::test]
@@ -911,7 +894,8 @@ mod tests {
         app.begin_drag_and_drop_keyframe(dto::Direction::South, 1);
         app.drop_keyframe_on_timeline(dto::Direction::South, 0);
 
-        let keyframes = app.client_state().documents[0]
+        let keyframes = app
+            .document()
             .keyframes("walk", dto::Direction::South)
             .iter()
             .map(|k| k.frame.to_owned())
@@ -938,7 +922,8 @@ mod tests {
         app.begin_drag_and_drop_keyframe(dto::Direction::South, 1);
         app.drop_keyframe_on_timeline(dto::Direction::South, 3);
 
-        let keyframes = app.client_state().documents[0]
+        let keyframes = app
+            .document()
             .keyframes("walk", dto::Direction::South)
             .iter()
             .map(|k| k.frame.to_owned())
@@ -966,7 +951,8 @@ mod tests {
         app.drop_keyframe_on_timeline(dto::Direction::South, 0);
 
         {
-            let keyframes = app.client_state().documents[0]
+            let keyframes = app
+                .document()
                 .keyframes("walk", dto::Direction::North)
                 .iter()
                 .map(|k| k.frame.to_owned())
@@ -982,7 +968,8 @@ mod tests {
         }
 
         {
-            let keyframes = app.client_state().documents[0]
+            let keyframes = app
+                .document()
                 .keyframes("walk", dto::Direction::South)
                 .iter()
                 .map(|k| k.frame.to_owned())
@@ -1010,20 +997,16 @@ mod tests {
 
         app.select_keyframe(dto::Direction::North, 0, false, false);
         app.select_keyframe(dto::Direction::North, 1, false, true);
-        assert!(app.client_state().documents[0]
-            .keyframes_being_dragged
-            .is_empty());
+        assert!(app.document().keyframes_being_dragged.is_empty());
 
         app.begin_drag_and_drop_keyframe(dto::Direction::North, 1);
         assert_eq!(
-            app.client_state().documents[0].keyframes_being_dragged,
+            app.document().keyframes_being_dragged,
             HashSet::from([(dto::Direction::North, 0), (dto::Direction::North, 1)])
         );
 
         app.end_drag_and_drop_keyframe();
-        assert!(app.client_state().documents[0]
-            .keyframes_being_dragged
-            .is_empty());
+        assert!(app.document().keyframes_being_dragged.is_empty());
     }
 
     #[tokio::test]
@@ -1037,7 +1020,7 @@ mod tests {
         app.end_drag_keyframe_duration();
 
         assert_eq!(
-            app.client_state().documents[0]
+            app.document()
                 .keyframe("walk", dto::Direction::North, 1)
                 .duration_millis,
             150
@@ -1055,7 +1038,7 @@ mod tests {
         app.end_drag_keyframe_duration();
 
         assert_eq!(
-            app.client_state().documents[0]
+            app.document()
                 .keyframe("walk", dto::Direction::North, 1)
                 .duration_millis,
             200
@@ -1076,7 +1059,7 @@ mod tests {
         app.end_drag_keyframe_duration();
 
         assert_eq!(
-            app.client_state().documents[0]
+            app.document()
                 .keyframe("walk", dto::Direction::South, 2)
                 .duration_millis,
             150
@@ -1097,7 +1080,7 @@ mod tests {
         app.end_drag_keyframe_duration();
 
         assert_eq!(
-            app.client_state().documents[0]
+            app.document()
                 .keyframe("walk", dto::Direction::North, 1)
                 .duration_millis,
             150
@@ -1117,17 +1100,15 @@ mod tests {
         app.update_drag_keyframe_duration(50);
         app.end_drag_keyframe_duration();
 
-        let document = &app.client_state().documents[0];
-
         assert_eq!(
-            document
+            app.document()
                 .keyframe("walk", dto::Direction::North, 0)
                 .duration_millis,
             125
         );
 
         assert_eq!(
-            document
+            app.document()
                 .keyframe("walk", dto::Direction::North, 1)
                 .duration_millis,
             125
@@ -1143,13 +1124,13 @@ mod tests {
         app.select_keyframe(dto::Direction::North, 0, false, false);
         app.select_keyframe(dto::Direction::North, 1, false, true);
 
-        assert!(!app.client_state().documents[0].is_dragging_keyframe_duration);
+        assert!(!app.document().is_dragging_keyframe_duration);
         app.begin_drag_keyframe_duration(dto::Direction::North, 1);
-        assert!(app.client_state().documents[0].is_dragging_keyframe_duration);
+        assert!(app.document().is_dragging_keyframe_duration);
         app.update_drag_keyframe_duration(50);
-        assert!(app.client_state().documents[0].is_dragging_keyframe_duration);
+        assert!(app.document().is_dragging_keyframe_duration);
         app.end_drag_keyframe_duration();
-        assert!(!app.client_state().documents[0].is_dragging_keyframe_duration);
+        assert!(!app.document().is_dragging_keyframe_duration);
     }
 
     #[tokio::test]
@@ -1159,7 +1140,8 @@ mod tests {
         app.edit_animation("walk");
         app.set_workbench_zoom_factor(1);
 
-        let initial_keyframe = app.client_state().documents[0]
+        let initial_keyframe = app
+            .document()
             .keyframe("walk", dto::Direction::North, 0)
             .clone();
         let initial_hitbox = initial_keyframe.hitbox("weak").clone();
@@ -1167,22 +1149,22 @@ mod tests {
         app.begin_nudge_keyframe(dto::Direction::North, 0);
         app.update_nudge_keyframe((5, 10), false);
 
-        let document = &app.client_state().documents[0];
-
         assert_eq!(
-            document.keyframe("walk", dto::Direction::North, 0).offset,
+            app.document()
+                .keyframe("walk", dto::Direction::North, 0)
+                .offset,
             (initial_keyframe.offset.0, initial_keyframe.offset.1 + 10),
         );
 
         assert_eq!(
-            document
+            app.document()
                 .hitbox("walk", dto::Direction::North, 0, "weak")
                 .top_left,
             (initial_hitbox.top_left.0, initial_hitbox.top_left.1 + 10),
         );
 
         assert_eq!(
-            document
+            app.document()
                 .hitbox("walk", dto::Direction::North, 0, "weak")
                 .size,
             (initial_hitbox.size.0, initial_hitbox.size.1),
@@ -1196,10 +1178,12 @@ mod tests {
         app.edit_animation("walk");
         app.set_workbench_zoom_factor(1);
 
-        let initial_offset_0 = app.client_state().documents[0]
+        let initial_offset_0 = app
+            .document()
             .keyframe("walk", dto::Direction::North, 0)
             .offset;
-        let initial_offset_1 = app.client_state().documents[0]
+        let initial_offset_1 = app
+            .document()
             .keyframe("walk", dto::Direction::North, 1)
             .offset;
 
@@ -1208,15 +1192,17 @@ mod tests {
         app.begin_nudge_keyframe(dto::Direction::North, 0);
         app.update_nudge_keyframe((5, 10), false);
 
-        let document = &app.client_state().documents[0];
-
         assert_eq!(
-            document.keyframe("walk", dto::Direction::North, 0).offset,
+            app.document()
+                .keyframe("walk", dto::Direction::North, 0)
+                .offset,
             (initial_offset_0.0, initial_offset_0.1 + 10),
         );
 
         assert_eq!(
-            document.keyframe("walk", dto::Direction::North, 1).offset,
+            app.document()
+                .keyframe("walk", dto::Direction::North, 1)
+                .offset,
             (initial_offset_1.0, initial_offset_1.1 + 10),
         );
     }
@@ -1229,7 +1215,8 @@ mod tests {
         app.select_direction(dto::Direction::West);
         app.set_workbench_zoom_factor(1);
 
-        let initial_hitbox = app.client_state().documents[0]
+        let initial_hitbox = app
+            .document()
             .hitbox("walk", dto::Direction::West, 0, "weak")
             .clone();
 
@@ -1237,7 +1224,8 @@ mod tests {
         app.update_nudge_hitbox((5, 10), false);
         app.end_nudge_hitbox();
 
-        let nudged_hitbox = app.client_state().documents[0]
+        let nudged_hitbox = app
+            .document()
             .hitbox("walk", dto::Direction::West, 0, "weak")
             .clone();
         assert_eq!(nudged_hitbox.size, initial_hitbox.size);
@@ -1253,20 +1241,13 @@ mod tests {
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.edit_animation("walk");
 
-        assert!(app.client_state().documents[0]
-            .hitboxes_being_nudged
-            .is_empty());
+        assert!(app.document().hitboxes_being_nudged.is_empty());
 
         app.begin_nudge_hitbox("weak");
-        assert_eq!(
-            app.client_state().documents[0].hitboxes_being_nudged,
-            ["weak".into()].into()
-        );
+        assert_eq!(app.document().hitboxes_being_nudged, ["weak".into()].into());
 
         app.end_nudge_hitbox();
-        assert!(app.client_state().documents[0]
-            .hitboxes_being_nudged
-            .is_empty());
+        assert!(app.document().hitboxes_being_nudged.is_empty());
     }
 
     #[tokio::test]
@@ -1300,7 +1281,8 @@ mod tests {
             app.update_resize_hitbox(delta, false);
             app.end_resize_hitbox();
 
-            let hitbox = app.client_state().documents[0]
+            let hitbox = app
+                .document()
                 .hitbox("walk", dto::Direction::West, 0, "weak")
                 .clone();
             assert_eq!(
@@ -1328,7 +1310,8 @@ mod tests {
         app.update_resize_hitbox((40, 80), true);
         app.end_resize_hitbox();
 
-        let hitbox = app.client_state().documents[0]
+        let hitbox = app
+            .document()
             .hitbox("walk", dto::Direction::West, 0, "weak")
             .clone();
         assert_eq!(hitbox.size, (180, 180));
@@ -1341,27 +1324,21 @@ mod tests {
         app.edit_animation("walk");
 
         app.select_hitbox("weak", false, false);
-        assert_eq!(
-            app.client_state().documents[0].hitboxes_being_resized,
-            HashSet::new()
-        );
+        assert_eq!(app.document().hitboxes_being_resized, HashSet::new());
 
         app.begin_resize_hitbox("weak", dto::ResizeAxis::SE);
         assert_eq!(
-            app.client_state().documents[0].hitboxes_being_resized,
+            app.document().hitboxes_being_resized,
             ["weak".into()].into()
         );
 
         app.update_resize_hitbox((40, 80), true);
         assert_eq!(
-            app.client_state().documents[0].hitboxes_being_resized,
+            app.document().hitboxes_being_resized,
             ["weak".into()].into()
         );
 
         app.end_resize_hitbox();
-        assert_eq!(
-            app.client_state().documents[0].hitboxes_being_resized,
-            HashSet::new()
-        );
+        assert_eq!(app.document().hitboxes_being_resized, HashSet::new());
     }
 }

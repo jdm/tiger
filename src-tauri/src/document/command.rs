@@ -591,7 +591,7 @@ mod tests {
     use crate::mock::TigerAppMock;
 
     fn list_frames(app: &TigerAppMock) -> Vec<String> {
-        app.client_state().documents[0]
+        app.document()
             .sheet
             .frames
             .iter()
@@ -630,20 +630,20 @@ mod tests {
     async fn view_changes_do_not_dirty_document() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        assert!(!app.document().has_unsaved_changes);
         app.select_animation("dead", false, false);
-        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        assert!(!app.document().has_unsaved_changes);
         app.select_animation("walk", false, false);
-        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        assert!(!app.document().has_unsaved_changes);
     }
 
     #[tokio::test]
     async fn sheet_changes_do_dirty_document() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        assert!(!app.client_state().documents[0].has_unsaved_changes);
+        assert!(!app.document().has_unsaved_changes);
         app.import_frames(vec!["some-frame.png"]);
-        assert!(app.client_state().documents[0].has_unsaved_changes);
+        assert!(app.document().has_unsaved_changes);
     }
 
     #[test]
@@ -655,11 +655,11 @@ mod tests {
         app.set_workbench_zoom_factor(2);
         app.set_workbench_zoom_factor(4);
         app.set_workbench_zoom_factor(8);
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 8.0);
+        assert_eq!(app.document().workbench_zoom, 8.0);
         app.undo();
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        assert_eq!(app.document().workbench_zoom, 1.0);
         app.redo();
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 8.0);
+        assert_eq!(app.document().workbench_zoom, 8.0);
     }
 
     #[test]
@@ -716,10 +716,10 @@ mod tests {
         app.import_frames(vec!["frame_4"]);
         app.undo();
         assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 2.0);
+        assert_eq!(app.document().workbench_zoom, 2.0);
         app.undo();
         assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        assert_eq!(app.document().workbench_zoom, 1.0);
     }
 
     #[test]
@@ -737,9 +737,9 @@ mod tests {
         app.import_frames(vec!["frame_4"]);
         app.undo();
         assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 2.0);
+        assert_eq!(app.document().workbench_zoom, 2.0);
         app.undo();
         assert_eq!(list_frames(&app), vec![String::from("frame_1"),]);
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        assert_eq!(app.document().workbench_zoom, 1.0);
     }
 }

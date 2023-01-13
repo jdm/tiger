@@ -47,7 +47,8 @@ mod tests {
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
 
         app.begin_export_as();
-        let good_template_path = app.client_state().documents[0]
+        let good_template_path = app
+            .document()
             .export_settings_being_edited
             .as_ref()
             .unwrap()
@@ -56,7 +57,8 @@ mod tests {
             .unwrap();
 
         app.wait_for_periodic_scans();
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .export_settings_validation
             .as_ref()
             .unwrap()
@@ -66,7 +68,8 @@ mod tests {
         std::fs::copy(good_template_path, &test_template_path).unwrap();
         app.set_export_template_file(&test_template_path);
         app.wait_for_periodic_scans();
-        assert!(app.client_state().documents[0]
+        assert!(app
+            .document()
             .export_settings_validation
             .as_ref()
             .unwrap()
@@ -76,7 +79,7 @@ mod tests {
         std::fs::copy(bad_template_path, &test_template_path).unwrap();
         app.assert_eventually(|| {
             matches!(
-                app.client_state().documents[0]
+                app.document()
                     .export_settings_validation
                     .as_ref()
                     .unwrap()

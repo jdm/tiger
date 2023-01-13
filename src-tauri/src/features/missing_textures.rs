@@ -52,8 +52,7 @@ mod tests {
         let filename = "test-output/detects_texture_addition_and_removal.png";
         std::fs::remove_file(filename).ok();
 
-        let is_missing =
-            |app: &TigerAppMock| app.client_state().documents[0].sheet.frames[0].missing_on_disk;
+        let is_missing = |app: &TigerAppMock| app.document().sheet.frames[0].missing_on_disk;
 
         let app = TigerAppMock::new();
 

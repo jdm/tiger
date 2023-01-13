@@ -324,13 +324,13 @@ mod tests {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.set_workbench_zoom_factor(16);
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 16.0);
+        assert_eq!(app.document().workbench_zoom, 16.0);
         app.reset_workbench_zoom();
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        assert_eq!(app.document().workbench_zoom, 1.0);
         app.zoom_in_workbench();
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 2.0);
+        assert_eq!(app.document().workbench_zoom, 2.0);
         app.zoom_out_workbench();
-        assert_eq!(app.client_state().documents[0].workbench_zoom, 1.0);
+        assert_eq!(app.document().workbench_zoom, 1.0);
     }
 
     #[tokio::test]
@@ -339,12 +339,9 @@ mod tests {
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.reset_workbench_zoom();
         app.zoom_in_workbench_around((10.0, 20.0));
-        assert_eq!(
-            app.client_state().documents[0].workbench_offset,
-            (-5.0, -10.0)
-        );
+        assert_eq!(app.document().workbench_offset, (-5.0, -10.0));
         app.zoom_out_workbench_around((10.0, 20.0));
-        assert_eq!(app.client_state().documents[0].workbench_offset, (0.0, 0.0));
+        assert_eq!(app.document().workbench_offset, (0.0, 0.0));
     }
 
     #[tokio::test]
@@ -352,13 +349,13 @@ mod tests {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.set_timeline_zoom_amount(0.1);
-        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.1);
+        assert_eq!(app.document().timeline_zoom_amount, 0.1);
         app.reset_timeline_zoom();
-        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.5);
+        assert_eq!(app.document().timeline_zoom_amount, 0.5);
         app.zoom_in_timeline();
-        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.7);
+        assert_eq!(app.document().timeline_zoom_amount, 0.7);
         app.zoom_out_timeline();
-        assert_eq!(app.client_state().documents[0].timeline_zoom_amount, 0.5);
+        assert_eq!(app.document().timeline_zoom_amount, 0.5);
     }
 
     #[tokio::test]
@@ -369,8 +366,8 @@ mod tests {
 
         let fixed_point = 1_000.0;
         let visible_position = || {
-            (fixed_point - app.client_state().documents[0].timeline_offset_millis)
-                * app.client_state().documents[0].timeline_zoom_factor
+            (fixed_point - app.document().timeline_offset_millis)
+                * app.document().timeline_zoom_factor
         };
         let reference = visible_position();
         app.zoom_in_timeline_around(1_000.0);

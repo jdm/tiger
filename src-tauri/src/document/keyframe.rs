@@ -133,7 +133,7 @@ mod tests {
         app.set_keyframe_offset_x(10);
         app.set_keyframe_offset_y(20);
 
-        let keyframe = app.client_state().documents[0].sheet.animations[0]
+        let keyframe = app.document().sheet.animations[0]
             .sequences
             .get(&dto::Direction::North)
             .unwrap()
@@ -153,7 +153,7 @@ mod tests {
 
         app.set_keyframe_duration(205);
 
-        let keyframe = app.client_state().documents[0].sheet.animations[0]
+        let keyframe = app.document().sheet.animations[0]
             .sequences
             .get(&dto::Direction::North)
             .unwrap()
@@ -175,7 +175,7 @@ mod tests {
         app.set_hitbox_position_x(10);
         app.set_hitbox_position_y(20);
 
-        let hitbox = app.client_state().documents[0].sheet.animations[0]
+        let hitbox = app.document().sheet.animations[0]
             .sequences
             .get(&dto::Direction::North)
             .unwrap()
@@ -192,7 +192,7 @@ mod tests {
         let get_hitbox = {
             let app = app.clone();
             move || {
-                app.client_state().documents[0].sheet.animations[0]
+                app.document().sheet.animations[0]
                     .sequences
                     .get(&dto::Direction::North)
                     .unwrap()
@@ -239,7 +239,7 @@ mod tests {
         let hitbox_names = {
             let app = app.clone();
             move || {
-                app.client_state().documents[0].sheet.animations[0]
+                app.document().sheet.animations[0]
                     .sequences
                     .get(&dto::Direction::North)
                     .unwrap()
