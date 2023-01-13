@@ -69,10 +69,14 @@ pub trait Api {
         name: S,
         axis: dto::ResizeAxis,
     ) -> Result<Patch, ()>;
+    fn browse_selection(&self, direction: dto::BrowseDirection, shift: bool) -> Result<Patch, ()>;
+    fn browse_to_end(&self, shift: bool) -> Result<Patch, ()>;
+    fn browse_to_start(&self, shift: bool) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
     fn cancel_export_as(&self) -> Result<Patch, ()>;
     fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
     fn cancel_rename(&self) -> Result<Patch, ()>;
+    fn clear_selection(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
     fn close_current_document(&self) -> Result<Patch, ()>;
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
@@ -85,8 +89,10 @@ pub trait Api {
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn delete_selected_animations(&self) -> Result<Patch, ()>;
+    fn delete_selected_frames(&self) -> Result<Patch, ()>;
     fn delete_selected_hitboxes(&self) -> Result<Patch, ()>;
     fn delete_selected_keyframes(&self) -> Result<Patch, ()>;
+    fn delete_selection(&self) -> Result<Patch, ()>;
     fn disable_sprite_darkening(&self) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn drop_keyframe_on_timeline(
@@ -121,6 +127,11 @@ pub trait Api {
     fn jump_to_previous_frame(&self) -> Result<Patch, ()>;
     fn lock_hitboxes(&self) -> Result<Patch, ()>;
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
+    fn nudge_selection(
+        &self,
+        direction: dto::NudgeDirection,
+        large_nudge: bool,
+    ) -> Result<Patch, ()>;
     async fn open_documents<P: Into<PathBuf> + Send + Sync>(
         &self,
         paths: Vec<P>,
@@ -142,6 +153,7 @@ pub trait Api {
     async fn save_all(&self) -> Result<Patch, ()>;
     async fn save_as<P: Into<PathBuf> + Send + Sync>(&self, path: P) -> Result<Patch, ()>;
     fn scrub_timeline(&self, time_millis: u64) -> Result<Patch, ()>;
+    fn select_all(&self) -> Result<Patch, ()>;
     fn select_animation<S: Into<String>>(
         &self,
         name: S,
@@ -349,6 +361,32 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
+    fn browse_selection(&self, direction: dto::BrowseDirection, shift: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::BrowseSelection(direction.into(), shift))
+                    .ok();
+            }
+        }))
+    }
+
+    fn browse_to_end(&self, shift: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::BrowseToEnd(shift)).ok();
+            }
+        }))
+    }
+
+    fn browse_to_start(&self, shift: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::BrowseToStart(shift)).ok();
+            }
+        }))
+    }
+
     fn cancel_exit(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.cancel_exit();
@@ -375,6 +413,14 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CancelRename).ok();
+            }
+        }))
+    }
+
+    fn clear_selection(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ClearSelection).ok();
             }
         }))
     }
@@ -511,6 +557,14 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
+    fn delete_selected_frames(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::DeleteSelectedFrames).ok();
+            }
+        }))
+    }
+
     fn delete_selected_hitboxes(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -527,6 +581,14 @@ impl<A: TigerApp + Sync> Api for A {
                 document
                     .process_command(Command::DeleteSelectedKeyframes)
                     .ok();
+            }
+        }))
+    }
+
+    fn delete_selection(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::DeleteSelection).ok();
             }
         }))
     }
@@ -848,6 +910,20 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
+    fn nudge_selection(
+        &self,
+        direction: dto::NudgeDirection,
+        large_nudge: bool,
+    ) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::NudgeSelection(direction.into(), large_nudge))
+                    .ok();
+            }
+        }))
+    }
+
     async fn open_documents<P: Into<PathBuf> + Send + Sync>(
         &self,
         paths: Vec<P>,
@@ -1024,6 +1100,14 @@ impl<A: TigerApp + Sync> Api for A {
                 document
                     .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
                     .ok();
+            }
+        }))
+    }
+
+    fn select_all(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::SelectAll).ok();
             }
         }))
     }
@@ -1763,93 +1847,51 @@ pub fn delete_frame(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn delete_selected_frames(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::DeleteSelectedFrames).ok();
-        }
-    }))
+pub fn delete_selected_frames(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.delete_selected_frames()
 }
 
 #[tauri::command]
-pub fn delete_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::DeleteSelection).ok();
-        }
-    }))
+pub fn delete_selection(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.delete_selection()
 }
 
 #[tauri::command]
 pub fn nudge_selection(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::NudgeDirection,
     large_nudge: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::NudgeSelection(direction.into(), large_nudge))
-                .ok();
-        }
-    }))
+    app.nudge_selection(direction, large_nudge)
 }
 
 #[tauri::command]
 pub fn browse_selection(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     direction: dto::BrowseDirection,
     shift: bool,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::BrowseSelection(direction.into(), shift))
-                .ok();
-        }
-    }))
+    app.browse_selection(direction, shift)
 }
 
 #[tauri::command]
-pub fn browse_to_end(
-    state_handle: tauri::State<'_, state::Handle>,
-    shift: bool,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::BrowseToEnd(shift)).ok();
-        }
-    }))
+pub fn browse_to_end(app: tauri::AppHandle, shift: bool) -> Result<Patch, ()> {
+    app.browse_to_end(shift)
 }
 
 #[tauri::command]
-pub fn browse_to_start(
-    state_handle: tauri::State<'_, state::Handle>,
-    shift: bool,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::BrowseToStart(shift)).ok();
-        }
-    }))
+pub fn browse_to_start(app: tauri::AppHandle, shift: bool) -> Result<Patch, ()> {
+    app.browse_to_start(shift)
 }
 
 #[tauri::command]
-pub fn clear_selection(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ClearSelection).ok();
-        }
-    }))
+pub fn clear_selection(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.clear_selection()
 }
 
 #[tauri::command]
-pub fn select_all(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::SelectAll).ok();
-        }
-    }))
+pub fn select_all(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.select_all()
 }
 
 #[tauri::command]

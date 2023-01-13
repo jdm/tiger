@@ -152,12 +152,28 @@ impl TigerAppMock {
         self.apply_patch(Api::begin_resize_hitbox(self, name, axis).unwrap());
     }
 
+    pub fn browse_selection(&self, direction: dto::BrowseDirection, shift: bool) {
+        self.apply_patch(Api::browse_selection(self, direction, shift).unwrap());
+    }
+
+    pub fn browse_to_end(&self, shift: bool) {
+        self.apply_patch(Api::browse_to_end(self, shift).unwrap());
+    }
+
+    pub fn browse_to_start(&self, shift: bool) {
+        self.apply_patch(Api::browse_to_start(self, shift).unwrap());
+    }
+
     pub fn cancel_exit(&self) {
         self.apply_patch(Api::cancel_exit(self).unwrap());
     }
 
     pub fn cancel_rename(&self) {
         self.apply_patch(Api::cancel_rename(self).unwrap());
+    }
+
+    pub fn clear_selection(&self) {
+        self.apply_patch(Api::clear_selection(self).unwrap());
     }
 
     pub fn close_all_documents(&self) {
@@ -208,12 +224,20 @@ impl TigerAppMock {
         self.apply_patch(Api::delete_selected_animations(self).unwrap());
     }
 
+    pub fn delete_selected_frames(&self) {
+        self.apply_patch(Api::delete_selected_frames(self).unwrap());
+    }
+
     pub fn delete_selected_hitboxes(&self) {
         self.apply_patch(Api::delete_selected_hitboxes(self).unwrap());
     }
 
     pub fn delete_selected_keyframes(&self) {
         self.apply_patch(Api::delete_selected_keyframes(self).unwrap());
+    }
+
+    pub fn delete_selection(&self) {
+        self.apply_patch(Api::delete_selection(self).unwrap());
     }
 
     pub fn disable_sprite_darkening(&self) {
@@ -332,6 +356,10 @@ impl TigerAppMock {
         self.apply_patch(Api::new_document(self, path).unwrap());
     }
 
+    pub fn nudge_selection(&self, direction: dto::NudgeDirection, large_nudge: bool) {
+        self.apply_patch(Api::nudge_selection(self, direction, large_nudge).unwrap());
+    }
+
     pub async fn open_documents<P: Into<PathBuf> + Send + Sync>(&self, paths: Vec<P>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
     }
@@ -386,6 +414,10 @@ impl TigerAppMock {
 
     pub fn scrub_timeline(&self, time_millis: u64) {
         self.apply_patch(Api::scrub_timeline(self, time_millis).unwrap());
+    }
+
+    pub fn select_all(&self) {
+        self.apply_patch(Api::select_all(self).unwrap());
     }
 
     pub fn select_animation<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool) {
