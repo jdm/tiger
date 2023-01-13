@@ -172,6 +172,10 @@ impl TigerAppMock {
         self.apply_patch(Api::cancel_rename(self).unwrap());
     }
 
+    pub fn center_workbench(&self) {
+        self.apply_patch(Api::center_workbench(self).unwrap());
+    }
+
     pub fn clear_selection(&self) {
         self.apply_patch(Api::clear_selection(self).unwrap());
     }
@@ -362,6 +366,10 @@ impl TigerAppMock {
 
     pub async fn open_documents<P: Into<PathBuf> + Send + Sync>(&self, paths: Vec<P>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
+    }
+
+    pub fn pan(&self, delta: (f32, f32)) {
+        self.apply_patch(Api::pan(self, delta).unwrap());
     }
 
     pub fn pan_timeline(&self, delta: f32) {

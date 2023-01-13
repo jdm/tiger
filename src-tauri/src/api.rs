@@ -76,6 +76,7 @@ pub trait Api {
     fn cancel_export_as(&self) -> Result<Patch, ()>;
     fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
     fn cancel_rename(&self) -> Result<Patch, ()>;
+    fn center_workbench(&self) -> Result<Patch, ()>;
     fn clear_selection(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
     fn close_current_document(&self) -> Result<Patch, ()>;
@@ -136,6 +137,7 @@ pub trait Api {
         &self,
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
+    fn pan(&self, delta: (f32, f32)) -> Result<Patch, ()>;
     fn pan_timeline(&self, delta: f32) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
     fn pause(&self) -> Result<Patch, ()>;
@@ -413,6 +415,14 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CancelRename).ok();
+            }
+        }))
+    }
+
+    fn center_workbench(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::CenterWorkbench).ok();
             }
         }))
     }
@@ -956,6 +966,14 @@ impl<A: TigerApp + Sync> Api for A {
                         );
                     }
                 }
+            }
+        }))
+    }
+
+    fn pan(&self, delta: (f32, f32)) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::Pan(delta.into())).ok();
             }
         }))
     }
@@ -1936,21 +1954,13 @@ pub fn select_keyframe(
 }
 
 #[tauri::command]
-pub fn pan(state_handle: tauri::State<'_, state::Handle>, delta: (f32, f32)) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::Pan(delta.into())).ok();
-        }
-    }))
+pub fn pan(app: tauri::AppHandle, delta: (f32, f32)) -> Result<Patch, ()> {
+    app.pan(delta)
 }
 
 #[tauri::command]
-pub fn center_workbench(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::CenterWorkbench).ok();
-        }
-    }))
+pub fn center_workbench(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.center_workbench()
 }
 
 #[tauri::command]
