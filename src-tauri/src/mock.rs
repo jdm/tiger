@@ -100,6 +100,10 @@ impl TigerAppMock {
 
 #[allow(dead_code)]
 impl TigerAppMock {
+    pub fn apply_direction_preset(&self, preset: dto::DirectionPreset) {
+        self.apply_patch(Api::apply_direction_preset(self, preset).unwrap());
+    }
+
     pub fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) {
         self.apply_patch(Api::begin_drag_and_drop_frame(self, frame).unwrap());
     }
@@ -192,6 +196,14 @@ impl TigerAppMock {
         self.apply_patch(Api::delete_hitbox(self, name).unwrap());
     }
 
+    pub fn delete_selected_hitboxes(&self) {
+        self.apply_patch(Api::delete_selected_hitboxes(self).unwrap());
+    }
+
+    pub fn delete_selected_keyframes(&self) {
+        self.apply_patch(Api::delete_selected_keyframes(self).unwrap());
+    }
+
     pub fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) {
         self.apply_patch(Api::drop_frame_on_timeline(self, direction, index).unwrap());
     }
@@ -256,12 +268,20 @@ impl TigerAppMock {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
     }
 
+    pub fn lock_hitboxes(&self) {
+        self.apply_patch(Api::lock_hitboxes(self).unwrap());
+    }
+
     pub fn new_document<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::new_document(self, path).unwrap());
     }
 
     pub async fn open_documents<P: Into<PathBuf> + Send + Sync>(&self, paths: Vec<P>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
+    }
+
+    pub fn pan_timeline(&self, delta: f32) {
+        self.apply_patch(Api::pan_timeline(self, delta).unwrap());
     }
 
     pub fn paste(&self) {
@@ -326,6 +346,10 @@ impl TigerAppMock {
         self.apply_patch(Api::select_keyframe(self, direction, index, shift, ctrl).unwrap());
     }
 
+    pub fn set_animation_looping(&self, is_looping: bool) {
+        self.apply_patch(Api::set_animation_looping(self, is_looping).unwrap());
+    }
+
     pub fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::set_export_atlas_image_file(self, path).unwrap());
     }
@@ -386,6 +410,10 @@ impl TigerAppMock {
         self.apply_patch(Api::set_snap_keyframes_to_other_keyframes(self, snap).unwrap());
     }
 
+    pub fn set_timeline_offset(&self, offset_millis: f32) {
+        self.apply_patch(Api::set_timeline_offset(self, offset_millis).unwrap());
+    }
+
     pub fn set_timeline_zoom_amount(&self, amount: f32) {
         self.apply_patch(Api::set_timeline_zoom_amount(self, amount).unwrap());
     }
@@ -400,6 +428,10 @@ impl TigerAppMock {
 
     pub fn undo(&self) {
         self.apply_patch(Api::undo(self).unwrap());
+    }
+
+    pub fn unlock_hitboxes(&self) {
+        self.apply_patch(Api::unlock_hitboxes(self).unwrap());
     }
 
     pub fn update_drag_keyframe_duration(&self, duration_millis: i64) {

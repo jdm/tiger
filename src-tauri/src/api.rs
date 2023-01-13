@@ -44,6 +44,7 @@ struct DocumentToSave {
 
 #[async_trait]
 pub trait Api {
+    fn apply_direction_preset(&self, preset: dto::DirectionPreset) -> Result<Patch, ()>;
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()>;
     fn begin_drag_and_drop_keyframe(
         &self,
@@ -68,6 +69,7 @@ pub trait Api {
         axis: dto::ResizeAxis,
     ) -> Result<Patch, ()>;
     fn cancel_exit(&self) -> Result<Patch, ()>;
+    fn cancel_export_as(&self) -> Result<Patch, ()>;
     fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
     fn cancel_rename(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
@@ -80,6 +82,8 @@ pub trait Api {
     fn cut(&self) -> Result<Patch, ()>;
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
+    fn delete_selected_hitboxes(&self) -> Result<Patch, ()>;
+    fn delete_selected_keyframes(&self) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn drop_keyframe_on_timeline(
         &self,
@@ -100,11 +104,13 @@ pub trait Api {
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
+    fn lock_hitboxes(&self) -> Result<Patch, ()>;
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
     async fn open_documents<P: Into<PathBuf> + Send + Sync>(
         &self,
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
+    fn pan_timeline(&self, delta: f32) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
     fn redo(&self) -> Result<Patch, ()>;
     fn relocate_frame<F: Into<PathBuf>, T: Into<PathBuf>>(
@@ -136,6 +142,7 @@ pub trait Api {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()>;
+    fn set_animation_looping(&self, is_looping: bool) -> Result<Patch, ()>;
     fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
@@ -151,10 +158,12 @@ pub trait Api {
     fn set_snap_keyframe_durations(&self, snap: bool) -> Result<Patch, ()>;
     fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) -> Result<Patch, ()>;
     fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()>;
+    fn set_timeline_offset(&self, offset_millis: f32) -> Result<Patch, ()>;
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
     fn undo(&self) -> Result<Patch, ()>;
+    fn unlock_hitboxes(&self) -> Result<Patch, ()>;
     fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()>;
     fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) -> Result<Patch, ()>;
     fn update_nudge_keyframe(&self, displacement: (i32, i32), both_axis: bool)
@@ -176,6 +185,16 @@ pub trait Api {
 
 #[async_trait]
 impl<T: TigerApp + Sync> Api for T {
+    fn apply_direction_preset(&self, preset: dto::DirectionPreset) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::ApplyDirectionPreset(preset.into()))
+                    .ok();
+            }
+        }))
+    }
+
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -295,6 +314,14 @@ impl<T: TigerApp + Sync> Api for T {
     fn cancel_exit(&self) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.cancel_exit();
+        }))
+    }
+
+    fn cancel_export_as(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::CancelExportAs).ok();
+            }
         }))
     }
 
@@ -421,6 +448,26 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteHitbox(name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn delete_selected_hitboxes(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DeleteSelectedHitboxes)
+                    .ok();
+            }
+        }))
+    }
+
+    fn delete_selected_keyframes(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DeleteSelectedKeyframes)
                     .ok();
             }
         }))
@@ -629,6 +676,14 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn lock_hitboxes(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::LockHitboxes).ok();
+            }
+        }))
+    }
+
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.new_document(path.into());
@@ -667,6 +722,14 @@ impl<T: TigerApp + Sync> Api for T {
                         );
                     }
                 }
+            }
+        }))
+    }
+
+    fn pan_timeline(&self, delta: f32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::PanTimeline(delta)).ok();
             }
         }))
     }
@@ -857,6 +920,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_animation_looping(&self, is_looping: bool) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetAnimationLooping(is_looping))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1011,6 +1084,18 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn set_timeline_offset(&self, offset_millis: f32) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::SetTimelineOffset(Duration::from_secs_f32(
+                        offset_millis.max(0.0) / 1_000.0,
+                    )))
+                    .ok();
+            }
+        }))
+    }
+
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1045,6 +1130,14 @@ impl<T: TigerApp + Sync> Api for T {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::Undo).ok();
+            }
+        }))
+    }
+
+    fn unlock_hitboxes(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::UnlockHitboxes).ok();
             }
         }))
     }
@@ -1931,59 +2024,26 @@ pub fn reset_timeline_zoom(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn set_timeline_offset(
-    state_handle: tauri::State<'_, state::Handle>,
-    offset_millis: f32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetTimelineOffset(Duration::from_secs_f32(
-                    offset_millis.max(0.0) / 1_000.0,
-                )))
-                .ok();
-        }
-    }))
+pub fn set_timeline_offset(app: tauri::AppHandle, offset_millis: f32) -> Result<Patch, ()> {
+    app.set_timeline_offset(offset_millis)
 }
 
 #[tauri::command]
-pub fn pan_timeline(
-    state_handle: tauri::State<'_, state::Handle>,
-    delta: f32,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::OnlyWorkbench, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::PanTimeline(delta)).ok();
-        }
-    }))
+pub fn pan_timeline(app: tauri::AppHandle, delta: f32) -> Result<Patch, ()> {
+    app.pan_timeline(delta)
 }
 
 #[tauri::command]
-pub fn set_animation_looping(
-    state_handle: tauri::State<'_, state::Handle>,
-    is_looping: bool,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::SetAnimationLooping(is_looping))
-                .ok();
-        }
-    }))
+pub fn set_animation_looping(app: tauri::AppHandle, is_looping: bool) -> Result<Patch, ()> {
+    app.set_animation_looping(is_looping)
 }
 
 #[tauri::command]
 pub fn apply_direction_preset(
-    state_handle: tauri::State<'_, state::Handle>,
+    app: tauri::AppHandle,
     preset: dto::DirectionPreset,
 ) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::ApplyDirectionPreset(preset.into()))
-                .ok();
-        }
-    }))
+    app.apply_direction_preset(preset)
 }
 
 #[tauri::command]
@@ -2011,16 +2071,8 @@ pub fn end_drag_and_drop_frame(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn delete_selected_keyframes(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DeleteSelectedKeyframes)
-                .ok();
-        }
-    }))
+pub fn delete_selected_keyframes(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.delete_selected_keyframes()
 }
 
 #[tauri::command]
@@ -2117,34 +2169,18 @@ pub fn delete_hitbox(app: tauri::AppHandle, name: String) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn delete_selected_hitboxes(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DeleteSelectedHitboxes)
-                .ok();
-        }
-    }))
+pub fn delete_selected_hitboxes(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.delete_selected_hitboxes()
 }
 
 #[tauri::command]
-pub fn lock_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::LockHitboxes).ok();
-        }
-    }))
+pub fn lock_hitboxes(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.lock_hitboxes()
 }
 
 #[tauri::command]
-pub fn unlock_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::UnlockHitboxes).ok();
-        }
-    }))
+pub fn unlock_hitboxes(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.unlock_hitboxes()
 }
 
 #[tauri::command]
@@ -2248,12 +2284,8 @@ pub fn set_export_metadata_paths_root(
 }
 
 #[tauri::command]
-pub fn cancel_export_as(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::CancelExportAs).ok();
-        }
-    }))
+pub fn cancel_export_as(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.cancel_export_as()
 }
 
 #[tauri::command]
