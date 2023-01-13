@@ -86,6 +86,7 @@ pub trait Api {
     fn delete_selected_animations(&self) -> Result<Patch, ()>;
     fn delete_selected_hitboxes(&self) -> Result<Patch, ()>;
     fn delete_selected_keyframes(&self) -> Result<Patch, ()>;
+    fn disable_sprite_darkening(&self) -> Result<Patch, ()>;
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()>;
     fn drop_keyframe_on_timeline(
         &self,
@@ -93,6 +94,7 @@ pub trait Api {
         index: usize,
     ) -> Result<Patch, ()>;
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
+    fn enable_sprite_darkening(&self) -> Result<Patch, ()>;
     fn end_drag_and_drop_frame(&self) -> Result<Patch, ()>;
     fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()>;
     fn end_drag_keyframe_duration(&self) -> Result<Patch, ()>;
@@ -105,6 +107,9 @@ pub trait Api {
     fn end_resize_hitbox(&self) -> Result<Patch, ()>;
     async fn export(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
+    fn hide_hitboxes(&self) -> Result<Patch, ()>;
+    fn hide_origin(&self) -> Result<Patch, ()>;
+    fn hide_sprite(&self) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
     fn jump_to_animation_end(&self) -> Result<Patch, ()>;
     fn jump_to_animation_start(&self) -> Result<Patch, ()>;
@@ -170,6 +175,9 @@ pub trait Api {
     fn set_timeline_offset(&self, offset_millis: f32) -> Result<Patch, ()>;
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()>;
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()>;
+    fn show_hitboxes(&self) -> Result<Patch, ()>;
+    fn show_origin(&self) -> Result<Patch, ()>;
+    fn show_sprite(&self) -> Result<Patch, ()>;
     fn tick(&self, delta_time_millis: f64) -> Result<Patch, ()>;
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()>;
     fn undo(&self) -> Result<Patch, ()>;
@@ -503,6 +511,16 @@ impl<T: TigerApp + Sync> Api for T {
         }))
     }
 
+    fn disable_sprite_darkening(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::DisableSpriteDarkening)
+                    .ok();
+            }
+        }))
+    }
+
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -532,6 +550,16 @@ impl<T: TigerApp + Sync> Api for T {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EditAnimation(name.into()))
+                    .ok();
+            }
+        }))
+    }
+
+    fn enable_sprite_darkening(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::EnableSpriteDarkening)
                     .ok();
             }
         }))
@@ -691,6 +719,30 @@ impl<T: TigerApp + Sync> Api for T {
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.state().mutate(StateTrim::Full, |state| {
             state.focus_document(path.as_ref()).ok();
+        }))
+    }
+
+    fn hide_hitboxes(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::HideHitboxes).ok();
+            }
+        }))
+    }
+
+    fn hide_origin(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::HideOrigin).ok();
+            }
+        }))
+    }
+
+    fn hide_sprite(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::HideSprite).ok();
+            }
         }))
     }
 
@@ -1200,6 +1252,30 @@ impl<T: TigerApp + Sync> Api for T {
                 document
                     .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
                     .ok();
+            }
+        }))
+    }
+
+    fn show_hitboxes(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ShowHitboxes).ok();
+            }
+        }))
+    }
+
+    fn show_origin(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ShowOrigin).ok();
+            }
+        }))
+    }
+
+    fn show_sprite(&self) -> Result<Patch, ()> {
+        Ok(self.state().mutate(StateTrim::Full, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document.process_command(Command::ShowSprite).ok();
             }
         }))
     }
@@ -1836,81 +1912,43 @@ pub fn reset_workbench_zoom(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn enable_sprite_darkening(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::EnableSpriteDarkening)
-                .ok();
-        }
-    }))
+pub fn enable_sprite_darkening(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.enable_sprite_darkening()
 }
 
 #[tauri::command]
-pub fn disable_sprite_darkening(
-    state_handle: tauri::State<'_, state::Handle>,
-) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document
-                .process_command(Command::DisableSpriteDarkening)
-                .ok();
-        }
-    }))
+pub fn disable_sprite_darkening(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.disable_sprite_darkening()
 }
 
 #[tauri::command]
-pub fn hide_sprite(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::HideSprite).ok();
-        }
-    }))
+pub fn hide_sprite(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.hide_sprite()
 }
 
 #[tauri::command]
-pub fn show_sprite(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ShowSprite).ok();
-        }
-    }))
+pub fn show_sprite(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.show_sprite()
 }
 
 #[tauri::command]
-pub fn hide_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::HideHitboxes).ok();
-        }
-    }))
+pub fn hide_hitboxes(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.hide_hitboxes()
 }
 
 #[tauri::command]
-pub fn show_hitboxes(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ShowHitboxes).ok();
-        }
-    }))
+pub fn show_hitboxes(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.show_hitboxes()
 }
 
 #[tauri::command]
-pub fn hide_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::HideOrigin).ok();
-        }
-    }))
+pub fn hide_origin(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.hide_origin()
 }
 
 #[tauri::command]
-pub fn show_origin(state_handle: tauri::State<'_, state::Handle>) -> Result<Patch, ()> {
-    Ok(state_handle.mutate(StateTrim::Full, |state| {
-        if let Some(document) = state.current_document_mut() {
-            document.process_command(Command::ShowOrigin).ok();
-        }
-    }))
+pub fn show_origin(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.show_origin()
 }
 
 #[tauri::command]

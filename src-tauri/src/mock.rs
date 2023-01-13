@@ -188,6 +188,10 @@ impl TigerAppMock {
         self.apply_patch(Api::cut(self).unwrap());
     }
 
+    pub fn delete_animation<S: Into<String>>(&self, name: S) {
+        self.apply_patch(Api::delete_animation(self, name).unwrap());
+    }
+
     pub fn delete_frame<P: Into<PathBuf>>(&self, path: P) {
         self.apply_patch(Api::delete_frame(self, path).unwrap());
     }
@@ -196,12 +200,20 @@ impl TigerAppMock {
         self.apply_patch(Api::delete_hitbox(self, name).unwrap());
     }
 
+    pub fn delete_selected_animations(&self) {
+        self.apply_patch(Api::delete_selected_animations(self).unwrap());
+    }
+
     pub fn delete_selected_hitboxes(&self) {
         self.apply_patch(Api::delete_selected_hitboxes(self).unwrap());
     }
 
     pub fn delete_selected_keyframes(&self) {
         self.apply_patch(Api::delete_selected_keyframes(self).unwrap());
+    }
+
+    pub fn disable_sprite_darkening(&self) {
+        self.apply_patch(Api::disable_sprite_darkening(self).unwrap());
     }
 
     pub fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) {
@@ -214,6 +226,10 @@ impl TigerAppMock {
 
     pub fn edit_animation<S: Into<String>>(&self, name: S) {
         self.apply_patch(Api::edit_animation(self, name).unwrap());
+    }
+
+    pub fn enable_sprite_darkening(&self) {
+        self.apply_patch(Api::enable_sprite_darkening(self).unwrap());
     }
 
     pub fn end_drag_and_drop_frame(&self) {
@@ -264,8 +280,36 @@ impl TigerAppMock {
         self.apply_patch(Api::focus_document(self, path).unwrap());
     }
 
+    pub fn hide_hitboxes(&self) {
+        self.apply_patch(Api::hide_hitboxes(self).unwrap());
+    }
+
+    pub fn hide_origin(&self) {
+        self.apply_patch(Api::hide_origin(self).unwrap());
+    }
+
+    pub fn hide_sprite(&self) {
+        self.apply_patch(Api::hide_sprite(self).unwrap());
+    }
+
     pub fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
+    }
+
+    pub fn jump_to_animation_end(&self) {
+        self.apply_patch(Api::jump_to_animation_end(self).unwrap());
+    }
+
+    pub fn jump_to_animation_start(&self) {
+        self.apply_patch(Api::jump_to_animation_start(self).unwrap());
+    }
+
+    pub fn jump_to_next_frame(&self) {
+        self.apply_patch(Api::jump_to_next_frame(self).unwrap());
+    }
+
+    pub fn jump_to_previous_frame(&self) {
+        self.apply_patch(Api::jump_to_previous_frame(self).unwrap());
     }
 
     pub fn lock_hitboxes(&self) {
@@ -286,6 +330,14 @@ impl TigerAppMock {
 
     pub fn paste(&self) {
         self.apply_patch(Api::paste(self).unwrap());
+    }
+
+    pub fn pause(&self) {
+        self.apply_patch(Api::pause(self).unwrap());
+    }
+
+    pub fn play(&self) {
+        self.apply_patch(Api::play(self).unwrap());
     }
 
     pub fn redo(&self) {
@@ -318,6 +370,10 @@ impl TigerAppMock {
 
     pub async fn save_as<P: Into<PathBuf> + Send + Sync>(&self, new_path: P) {
         self.apply_patch(Api::save_as(self, new_path).await.unwrap());
+    }
+
+    pub fn scrub_timeline(&self, time_millis: u64) {
+        self.apply_patch(Api::scrub_timeline(self, time_millis).unwrap());
     }
 
     pub fn select_animation<S: Into<String>>(&self, name: S, shift: bool, ctrl: bool) {
@@ -420,6 +476,22 @@ impl TigerAppMock {
 
     pub fn set_workbench_zoom_factor(&self, zoom_factor: u32) {
         self.apply_patch(Api::set_workbench_zoom_factor(self, zoom_factor).unwrap());
+    }
+
+    pub fn show_hitboxes(&self) {
+        self.apply_patch(Api::show_hitboxes(self).unwrap());
+    }
+
+    pub fn show_origin(&self) {
+        self.apply_patch(Api::show_origin(self).unwrap());
+    }
+
+    pub fn show_sprite(&self) {
+        self.apply_patch(Api::show_sprite(self).unwrap());
+    }
+
+    pub fn tick(&self, delta_time_millis: f64) {
+        self.apply_patch(Api::tick(self, delta_time_millis).unwrap());
     }
 
     pub fn toggle_preserve_aspect_ratio(&self) {
