@@ -231,28 +231,30 @@ mod tests {
 
     use std::collections::HashMap;
 
+    use crate::mock::TigerAppMock;
+
     use super::*;
 
-    #[test]
-    fn can_toggle_playback() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
+    #[tokio::test]
+    async fn can_toggle_playback() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.advance_timeline(Duration::from_millis(50));
-        assert_eq!(d.timeline_clock().as_millis(), 0);
-        d.play().unwrap();
-        assert!(d.is_timeline_playing());
-        d.advance_timeline(Duration::from_millis(100));
-        assert_eq!(d.timeline_clock().as_millis(), 100);
-        d.pause().unwrap();
-        assert!(!d.is_timeline_playing());
-        d.advance_timeline(Duration::from_millis(100));
-        assert_eq!(d.timeline_clock().as_millis(), 100);
+        app.tick(50.0);
+        assert_eq!(app.client_state().documents[0].timeline_clock_millis, 0);
+
+        app.play();
+        assert!(app.client_state().documents[0].timeline_is_playing);
+
+        app.tick(100.0);
+        assert_eq!(app.client_state().documents[0].timeline_clock_millis, 100);
+
+        app.pause();
+        assert!(!app.client_state().documents[0].timeline_is_playing);
+
+        app.tick(100.0);
+        assert_eq!(app.client_state().documents[0].timeline_clock_millis, 100);
     }
 
     #[test]
