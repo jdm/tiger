@@ -1,10 +1,15 @@
+use json_patch::Patch;
+use log::error;
 use squeak::{Delegate, Observable};
 use std::path::{Path, PathBuf};
 use sugar_path::SugarPath;
 use thiserror::Error;
 
-use crate::document::{ClipboardManifest, Document, DocumentError};
-use crate::utils::handle;
+use crate::{
+    document::{ClipboardManifest, Document, DocumentError},
+    dto::{self, StateTrim},
+    utils::handle,
+};
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -35,6 +40,23 @@ pub struct UserFacingError {
 }
 
 impl State {
+    pub fn patch<F: FnOnce(&mut State)>(&mut self, state_trim: StateTrim, operation: F) -> Patch {
+        let old_state: dto::State = self.to_dto(state_trim);
+        operation(self);
+        let new_state: dto::State = self.to_dto(state_trim);
+
+        let old_json = serde_json::to_value(old_state);
+        let new_json = serde_json::to_value(new_state);
+
+        match (old_json, new_json) {
+            (Ok(o), Ok(n)) => json_patch::diff(&o, &n),
+            _ => {
+                error!("App state serialization error");
+                Patch(Vec::new())
+            }
+        }
+    }
+
     pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
         self.documents.iter()
     }

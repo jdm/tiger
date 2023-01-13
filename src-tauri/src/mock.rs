@@ -648,8 +648,7 @@ impl TigerApp for TigerAppMock {
     }
 
     fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: dto::StateTrim, operation: F) {
-        let state_handle = self.state();
-        let patch = state_handle.mutate(state_trim, operation);
+        let patch = self.patch(state_trim, operation);
         self.apply_patch(patch);
     }
 

@@ -1,6 +1,5 @@
 use async_trait::async_trait;
 use json_patch::Patch;
-use log::error;
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
@@ -9,31 +8,6 @@ use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
 use crate::export::export_sheet;
 use crate::sheet::{Absolute, Sheet};
-use crate::state::{self, State};
-
-impl state::Handle {
-    pub fn mutate<F>(&self, state_trim: StateTrim, operation: F) -> Patch
-    where
-        F: FnOnce(&mut State),
-    {
-        let mut state = self.lock();
-
-        let old_state: dto::State = state.to_dto(state_trim);
-        operation(&mut state);
-        let new_state: dto::State = state.to_dto(state_trim);
-
-        let old_json = serde_json::to_value(old_state);
-        let new_json = serde_json::to_value(new_state);
-
-        match (old_json, new_json) {
-            (Ok(o), Ok(n)) => json_patch::diff(&o, &n),
-            _ => {
-                error!("App state serialization error");
-                Patch(Vec::new())
-            }
-        }
-    }
-}
 
 struct DocumentToSave {
     sheet: Sheet<Absolute>,
@@ -232,13 +206,13 @@ pub trait Api {
 #[async_trait]
 impl<A: TigerApp + Sync> Api for A {
     fn acknowledge_error(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             state.acknowledge_error();
         }))
     }
 
     fn apply_direction_preset(&self, preset: dto::DirectionPreset) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ApplyDirectionPreset(preset.into()))
@@ -248,7 +222,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_drag_and_drop_frame<P: Into<PathBuf>>(&self, frame: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginDragAndDropFrame(frame.into()))
@@ -262,7 +236,7 @@ impl<A: TigerApp + Sync> Api for A {
         direction: dto::Direction,
         index: usize,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
@@ -276,7 +250,7 @@ impl<A: TigerApp + Sync> Api for A {
         direction: dto::Direction,
         index: usize,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
@@ -286,7 +260,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_export_as(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginExportAs).ok();
             }
@@ -294,7 +268,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_nudge_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginNudgeHitbox(name.into()))
@@ -304,7 +278,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_nudge_keyframe(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
@@ -314,7 +288,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_relocate_frames(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginRelocateFrames).ok();
             }
@@ -322,7 +296,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_rename_animation<S: Into<String>>(&self, animation_name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginRenameAnimation(animation_name.into()))
@@ -332,7 +306,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_rename_hitbox<S: Into<String>>(&self, hitbox_name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginRenameHitbox(hitbox_name.into()))
@@ -342,7 +316,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn begin_rename_selection(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BeginRenameSelection).ok();
             }
@@ -354,7 +328,7 @@ impl<A: TigerApp + Sync> Api for A {
         name: S,
         axis: dto::ResizeAxis,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BeginResizeHitbox(name.into(), axis.into()))
@@ -364,7 +338,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn browse_selection(&self, direction: dto::BrowseDirection, shift: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::BrowseSelection(direction.into(), shift))
@@ -374,7 +348,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn browse_to_end(&self, shift: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BrowseToEnd(shift)).ok();
             }
@@ -382,7 +356,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn browse_to_start(&self, shift: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::BrowseToStart(shift)).ok();
             }
@@ -390,13 +364,13 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn cancel_exit(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             state.cancel_exit();
         }))
     }
 
     fn cancel_export_as(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CancelExportAs).ok();
             }
@@ -404,7 +378,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn cancel_relocate_frames(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CancelRelocateFrames).ok();
             }
@@ -412,7 +386,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn cancel_rename(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CancelRename).ok();
             }
@@ -420,7 +394,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn center_workbench(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CenterWorkbench).ok();
             }
@@ -428,7 +402,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn clear_selection(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ClearSelection).ok();
             }
@@ -436,7 +410,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn close_all_documents(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             for document in state.documents_iter_mut() {
                 document.request_close();
             }
@@ -448,7 +422,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn close_current_document(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.request_close();
             }
@@ -460,7 +434,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.document_mut(path.as_ref()) {
                 document.request_close();
             }
@@ -472,7 +446,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn close_without_saving(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             let path = state.current_document().map(|d| d.path().to_owned());
             if let Some(path) = path {
                 state.close_document(path);
@@ -485,7 +459,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn copy(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(data) = state.current_document().and_then(|d| d.copy()) {
                 if let Ok(serialized) = serde_json::to_string(&data) {
                     self.write_clipboard(serialized);
@@ -496,7 +470,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn create_animation(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::CreateAnimation).ok();
             }
@@ -504,7 +478,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::CreateHitbox(position.map(|p| p.into())))
@@ -514,7 +488,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn cut(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(data) = state.current_document().and_then(|d| d.copy()) {
                 if let Ok(serialized) = serde_json::to_string(&data) {
                     self.write_clipboard(serialized);
@@ -528,7 +502,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteAnimation(name.into()))
@@ -538,7 +512,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteFrame(path.into()))
@@ -548,7 +522,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_hitbox<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteHitbox(name.into()))
@@ -558,7 +532,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_selected_animations(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteSelectedAnimations)
@@ -568,7 +542,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_selected_frames(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::DeleteSelectedFrames).ok();
             }
@@ -576,7 +550,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_selected_hitboxes(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteSelectedHitboxes)
@@ -586,7 +560,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_selected_keyframes(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DeleteSelectedKeyframes)
@@ -596,7 +570,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn delete_selection(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::DeleteSelection).ok();
             }
@@ -604,7 +578,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn disable_sprite_darkening(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DisableSpriteDarkening)
@@ -614,7 +588,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn drop_frame_on_timeline(&self, direction: dto::Direction, index: usize) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DropFrameOnTimeline(direction.into(), index))
@@ -628,7 +602,7 @@ impl<A: TigerApp + Sync> Api for A {
         direction: dto::Direction,
         index: usize,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
@@ -638,7 +612,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn edit_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EditAnimation(name.into()))
@@ -648,7 +622,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn enable_sprite_darkening(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EnableSpriteDarkening)
@@ -658,7 +632,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_drag_and_drop_frame(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndDragAndDropFrame).ok();
             }
@@ -666,7 +640,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_drag_and_drop_keyframe(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EndDragAndDropKeyframe)
@@ -676,7 +650,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_drag_keyframe_duration(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EndDragKeyframeDuration)
@@ -686,7 +660,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     async fn end_export_as(&self) -> Result<Patch, ()> {
-        let mut patch = self.state().mutate(StateTrim::Full, |state| {
+        let mut patch = self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndExportAs).ok();
             }
@@ -708,7 +682,7 @@ impl<A: TigerApp + Sync> Api for A {
         .await
         .unwrap();
 
-        let mut additional_patch = self.state().mutate(StateTrim::Full, |state| {
+        let mut additional_patch = self.patch(StateTrim::Full, |state| {
             if let Err(e) = result {
                 state.show_error_message(
                     "Export Error".to_owned(),
@@ -726,7 +700,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_nudge_hitbox(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndNudgeHitbox).ok();
             }
@@ -734,7 +708,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_nudge_keyframe(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndNudgeKeyframe).ok();
             }
@@ -742,7 +716,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_relocate_frames(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndRelocateFrames).ok();
             }
@@ -750,7 +724,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_rename_animation<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EndRenameAnimation(new_name.into()))
@@ -760,7 +734,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_rename_hitbox<S: Into<String>>(&self, new_name: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::EndRenameHitbox(new_name.into()))
@@ -770,7 +744,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn end_resize_hitbox(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndResizeHitbox).ok();
             }
@@ -795,7 +769,7 @@ impl<A: TigerApp + Sync> Api for A {
         .unwrap()
         {
             Ok(_) => Ok(Patch(Vec::new())),
-            Err(e) => Ok(self.state().mutate(StateTrim::Full, |state| {
+            Err(e) => Ok(self.patch(StateTrim::Full, |state| {
                 state.show_error_message(
                     "Export Error".to_owned(),
                     format!(
@@ -809,7 +783,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::FilterAnimations(search_query.into()))
@@ -819,7 +793,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn filter_frames<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::FilterFrames(search_query.into()))
@@ -829,7 +803,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             state.focus_document(path.as_ref()).ok();
         }))
     }
@@ -839,7 +813,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn hide_hitboxes(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::HideHitboxes).ok();
             }
@@ -847,7 +821,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn hide_origin(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::HideOrigin).ok();
             }
@@ -855,7 +829,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn hide_sprite(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::HideSprite).ok();
             }
@@ -863,7 +837,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ImportFrames(
@@ -875,7 +849,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn jump_to_animation_end(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::JumpToAnimationEnd).ok();
             }
@@ -883,7 +857,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn jump_to_animation_start(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::JumpToAnimationStart).ok();
             }
@@ -891,7 +865,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn jump_to_next_frame(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::JumpToNextFrame).ok();
             }
@@ -899,7 +873,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn jump_to_previous_frame(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::JumpToPreviousFrame).ok();
             }
@@ -907,7 +881,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn lock_hitboxes(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::LockHitboxes).ok();
             }
@@ -915,7 +889,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn new_document<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             state.new_document(path.into());
         }))
     }
@@ -925,7 +899,7 @@ impl<A: TigerApp + Sync> Api for A {
         direction: dto::NudgeDirection,
         large_nudge: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::NudgeSelection(direction.into(), large_nudge))
@@ -949,7 +923,7 @@ impl<A: TigerApp + Sync> Api for A {
             ));
         }
 
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             for document in documents {
                 match document {
                     (_, Ok(d)) => {
@@ -971,7 +945,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn pan(&self, delta: (f32, f32)) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::Pan(delta.into())).ok();
             }
@@ -979,7 +953,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn pan_timeline(&self, delta: f32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::PanTimeline(delta)).ok();
             }
@@ -987,7 +961,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn paste(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(serialized) = self.read_clipboard() {
                 if let Ok(data) = serde_json::from_str(&serialized) {
                     if let Some(document) = state.current_document_mut() {
@@ -999,7 +973,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn pause(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::Pause).ok();
             }
@@ -1007,7 +981,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn play(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::Play).ok();
             }
@@ -1015,7 +989,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn redo(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::Redo).ok();
             }
@@ -1027,7 +1001,7 @@ impl<A: TigerApp + Sync> Api for A {
         from: P,
         to: Q,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::RelocateFrame(from.into(), to.into()))
@@ -1037,7 +1011,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn request_exit(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             state.request_exit();
             if state.should_exit() {
                 self.close_window();
@@ -1046,7 +1020,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn reset_timeline_zoom(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ResetTimelineZoom).ok();
             }
@@ -1054,7 +1028,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn reset_workbench_zoom(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ResetWorkbenchZoom).ok();
             }
@@ -1113,7 +1087,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn scrub_timeline(&self, time_millis: u64) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ScrubTimeline(Duration::from_millis(time_millis)))
@@ -1123,7 +1097,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn select_all(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::SelectAll).ok();
             }
@@ -1136,7 +1110,7 @@ impl<A: TigerApp + Sync> Api for A {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SelectAnimation(name.into(), shift, ctrl))
@@ -1146,7 +1120,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn select_direction(&self, direction: dto::Direction) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SelectDirection(direction.into()))
@@ -1161,7 +1135,7 @@ impl<A: TigerApp + Sync> Api for A {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SelectFrame(path.into(), shift, ctrl))
@@ -1176,7 +1150,7 @@ impl<A: TigerApp + Sync> Api for A {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SelectHitbox(name.into(), shift, ctrl))
@@ -1192,7 +1166,7 @@ impl<A: TigerApp + Sync> Api for A {
         shift: bool,
         ctrl: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SelectKeyframe(
@@ -1207,7 +1181,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_animation_looping(&self, is_looping: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetAnimationLooping(is_looping))
@@ -1217,7 +1191,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_animations_list_offset(&self, offset: u32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetAnimationsListOffset(offset))
@@ -1227,7 +1201,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportAtlasImageFile(file.into()))
@@ -1237,7 +1211,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportMetadataFile(file.into()))
@@ -1247,7 +1221,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, directory: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportMetadataPathsRoot(directory.into()))
@@ -1257,7 +1231,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_export_template_file<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetExportTemplateFile(path.into()))
@@ -1267,7 +1241,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_frames_list_mode(&self, list_mode: dto::ListMode) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetFramesListMode(list_mode.into()))
@@ -1277,7 +1251,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_frames_list_offset(&self, offset: u32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetFramesListOffset(offset))
@@ -1287,7 +1261,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxHeight(height))
@@ -1297,7 +1271,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxPositionX(x))
@@ -1307,7 +1281,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxPositionY(y))
@@ -1317,7 +1291,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_hitbox_width(&self, width: u32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxWidth(width))
@@ -1327,7 +1301,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_hitboxes_list_offset(&self, offset: u32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxesListOffset(offset))
@@ -1337,7 +1311,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_keyframe_duration(&self, duration_millis: u64) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetKeyframeDuration(Duration::from_millis(
@@ -1349,7 +1323,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetKeyframeOffsetX(x))
@@ -1359,7 +1333,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetKeyframeOffsetY(y))
@@ -1369,7 +1343,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_keyframe_snapping_base_duration(&self, duration_millis: u64) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetKeyframeSnappingBaseDuration(
@@ -1381,7 +1355,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_snap_keyframe_durations(&self, snap: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetSnapKeyframeDurations(snap))
@@ -1391,7 +1365,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_snap_keyframes_to_multiples_of_duration(&self, snap: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetSnapKeyframeToMultiplesOfDuration(snap))
@@ -1401,7 +1375,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_snap_keyframes_to_other_keyframes(&self, snap: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetSnapKeyframeToOtherKeyframes(snap))
@@ -1411,7 +1385,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_timeline_offset(&self, offset_millis: f32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetTimelineOffset(Duration::from_secs_f32(
@@ -1423,7 +1397,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_timeline_zoom_amount(&self, amount: f32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetTimelineZoomAmount(amount))
@@ -1433,7 +1407,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_workbench_zoom_factor(&self, zoom_factor: u32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetWorkbenchZoomFactor(zoom_factor))
@@ -1448,13 +1422,13 @@ impl<A: TigerApp + Sync> Api for A {
         summary: T,
         details: U,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             state.show_error_message(title.into(), summary.into(), details.into());
         }))
     }
 
     fn show_hitboxes(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ShowHitboxes).ok();
             }
@@ -1462,7 +1436,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn show_origin(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ShowOrigin).ok();
             }
@@ -1470,7 +1444,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn show_sprite(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ShowSprite).ok();
             }
@@ -1478,21 +1452,19 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn tick(&self, delta_time_millis: f64) -> Result<Patch, ()> {
-        Ok(self
-            .state()
-            .mutate(StateTrim::OnlyCurrentDocument, |state| {
-                if let Some(document) = state.current_document_mut() {
-                    document
-                        .process_command(Command::Tick(Duration::from_nanos(
-                            (delta_time_millis * 1_000_000.0) as u64,
-                        )))
-                        .ok();
-                }
-            }))
+        Ok(self.patch(StateTrim::OnlyCurrentDocument, |state| {
+            if let Some(document) = state.current_document_mut() {
+                document
+                    .process_command(Command::Tick(Duration::from_nanos(
+                        (delta_time_millis * 1_000_000.0) as u64,
+                    )))
+                    .ok();
+            }
+        }))
     }
 
     fn toggle_preserve_aspect_ratio(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::TogglePreserveAspectRatio)
@@ -1502,7 +1474,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn undo(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::Undo).ok();
             }
@@ -1510,7 +1482,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn unlock_hitboxes(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::UnlockHitboxes).ok();
             }
@@ -1518,7 +1490,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn update_drag_keyframe_duration(&self, delta_millis: i64) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::UpdateDragKeyframeDuration(delta_millis))
@@ -1528,7 +1500,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn update_nudge_hitbox(&self, displacement: (i32, i32), both_axis: bool) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
@@ -1542,7 +1514,7 @@ impl<A: TigerApp + Sync> Api for A {
         displacement: (i32, i32),
         both_axis: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
@@ -1556,7 +1528,7 @@ impl<A: TigerApp + Sync> Api for A {
         displacement: (i32, i32),
         preserve_aspect_ratio: bool,
     ) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::OnlyWorkbench, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::UpdateResizeHitbox(
@@ -1569,7 +1541,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_in_timeline(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ZoomInTimeline).ok();
             }
@@ -1577,7 +1549,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_in_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ZoomInTimelineAround(Duration::from_secs_f32(
@@ -1589,7 +1561,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_in_workbench(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ZoomInWorkbench).ok();
             }
@@ -1597,7 +1569,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_in_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ZoomInWorkbenchAround(fixed_point.into()))
@@ -1607,7 +1579,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_out_timeline(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ZoomOutTimeline).ok();
             }
@@ -1615,7 +1587,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_out_timeline_around(&self, fixed_point: f32) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ZoomOutTimelineAround(Duration::from_secs_f32(
@@ -1627,7 +1599,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_out_workbench(&self) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ZoomOutWorkbench).ok();
             }
@@ -1635,7 +1607,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) -> Result<Patch, ()> {
-        Ok(self.state().mutate(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::ZoomOutWorkbenchAround(fixed_point.into()))
@@ -1662,7 +1634,7 @@ async fn save_documents<A: TigerApp>(
         .into_iter()
         .map(|r| r.unwrap());
 
-    Ok(app.state().mutate(StateTrim::Full, |state| {
+    Ok(app.patch(StateTrim::Full, |state| {
         for (document, result) in documents.iter().zip(results) {
             match result {
                 Ok(_) => {

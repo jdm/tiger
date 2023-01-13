@@ -1,3 +1,4 @@
+use json_patch::Patch;
 use log::error;
 use serde::Serialize;
 use tauri::{ClipboardManager, Manager};
@@ -22,6 +23,11 @@ pub trait TigerApp {
     fn read_clipboard(&self) -> Option<String>;
     fn write_clipboard<S: Into<String>>(&self, content: S);
     fn close_window(&self);
+    fn patch<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F) -> Patch {
+        let state_handle = self.state();
+        let mut state = state_handle.lock();
+        state.patch(state_trim, operation)
+    }
 }
 
 impl TigerApp for tauri::App {
@@ -82,8 +88,7 @@ impl TigerApp for tauri::AppHandle {
     where
         F: FnOnce(&mut State),
     {
-        let state_handle = tauri::Manager::state::<state::Handle>(self);
-        let patch = state_handle.mutate(state_trim, operation);
+        let patch = self.patch(state_trim, operation);
         if !patch.0.is_empty() {
             if let Err(e) = tauri::Manager::emit_all(self, EVENT_PATCH_STATE, patch) {
                 error!("Error while pushing state patch: {e}");
