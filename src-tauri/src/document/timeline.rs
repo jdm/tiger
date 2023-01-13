@@ -229,11 +229,10 @@ impl Document {
 #[cfg(test)]
 mod tests {
 
-    use std::collections::HashMap;
-
-    use crate::mock::TigerAppMock;
-
-    use super::*;
+    use crate::{
+        dto::{BrowseDirection, Direction, DirectionPreset},
+        mock::TigerAppMock,
+    };
 
     #[tokio::test]
     async fn can_toggle_playback() {
@@ -257,238 +256,185 @@ mod tests {
         assert_eq!(app.document().timeline_clock_millis, 100);
     }
 
-    #[test]
-    fn playback_stops_at_the_end_sequence() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.play().unwrap();
-        d.advance_timeline(Duration::from_millis(500));
-        assert_eq!(d.timeline_clock().as_millis(), 300);
-        assert!(!d.is_timeline_playing());
+    #[tokio::test]
+    async fn playback_stops_at_the_end_sequence() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.set_animation_looping(false);
+        app.play();
+        app.tick(500.0);
+        assert_eq!(app.document().timeline_clock_millis, 400);
+        assert!(!app.document().timeline_is_playing);
     }
 
-    #[test]
-    fn play_from_end_of_sequence_starts_over() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.jump_to_animation_end().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 300);
-        d.play().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 0);
+    #[tokio::test]
+    async fn play_from_end_of_sequence_starts_over() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.set_animation_looping(false);
+        app.jump_to_animation_end();
+        assert_eq!(app.document().timeline_clock_millis, 400);
+        app.play();
+        assert_eq!(app.document().timeline_clock_millis, 0);
+        assert!(app.document().timeline_is_playing);
     }
 
     #[test]
     fn scrubbing_blank_sequence_jumps_to_start() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_test_animation::<_, &str>(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec![])]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.scrub_timeline(Duration::from_millis(500)).unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 0);
+        let app = TigerAppMock::new();
+        app.new_document("test");
+        app.create_animation();
+        app.scrub_timeline(500);
+        assert_eq!(app.document().timeline_clock_millis, 0);
     }
 
-    #[test]
-    fn can_loop_animation() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
+    #[tokio::test]
+    async fn can_loop_animation() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.set_animation_looping(true).unwrap();
-        d.play().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 0);
-        d.advance_timeline(Duration::from_millis(50));
-        assert_eq!(d.timeline_clock().as_millis(), 50);
-        d.advance_timeline(Duration::from_millis(100));
-        assert_eq!(d.timeline_clock().as_millis(), 150);
-        d.advance_timeline(Duration::from_millis(400));
-        assert_eq!(d.timeline_clock().as_millis(), 250);
+        app.play();
+        assert_eq!(app.document().timeline_clock_millis, 0);
+
+        app.tick(50.0);
+        assert_eq!(app.document().timeline_clock_millis, 50);
+
+        app.tick(100.0);
+        assert_eq!(app.document().timeline_clock_millis, 150);
+
+        app.tick(350.0);
+        assert_eq!(app.document().timeline_clock_millis, 100);
     }
 
-    #[test]
-    fn can_jump_to_animation_boundaries() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.scrub_timeline(Duration::from_millis(50)).unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 50);
-
-        d.jump_to_animation_start().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 0);
-
-        d.jump_to_animation_end().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 300);
+    #[tokio::test]
+    async fn can_jump_to_animation_boundaries() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.scrub_timeline(50);
+        assert_eq!(app.document().timeline_clock_millis, 50);
+        app.jump_to_animation_start();
+        assert_eq!(app.document().timeline_clock_millis, 0);
+        app.jump_to_animation_end();
+        assert_eq!(app.document().timeline_clock_millis, 400);
     }
 
-    #[test]
-    fn can_jump_to_next_or_previous_frame() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
+    #[tokio::test]
+    async fn can_jump_to_next_or_previous_frame() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.scrub_timeline(Duration::from_millis(50)).unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 50);
-
-        d.jump_to_next_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 100);
-        d.jump_to_next_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 200);
-        d.jump_to_next_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 300);
-        d.jump_to_next_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 300);
-        d.jump_to_previous_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 200);
-        d.jump_to_previous_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 100);
-        d.jump_to_previous_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 0);
-        d.jump_to_previous_frame().unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 0);
+        app.scrub_timeline(50);
+        assert_eq!(app.document().timeline_clock_millis, 50);
+        app.jump_to_next_frame();
+        assert_eq!(app.document().timeline_clock_millis, 100);
+        app.jump_to_next_frame();
+        assert_eq!(app.document().timeline_clock_millis, 200);
+        app.jump_to_next_frame();
+        assert_eq!(app.document().timeline_clock_millis, 300);
+        app.jump_to_next_frame();
+        assert_eq!(app.document().timeline_clock_millis, 400);
+        app.jump_to_next_frame();
+        assert_eq!(app.document().timeline_clock_millis, 400);
+        app.jump_to_previous_frame();
+        assert_eq!(app.document().timeline_clock_millis, 300);
+        app.jump_to_previous_frame();
+        assert_eq!(app.document().timeline_clock_millis, 200);
+        app.jump_to_previous_frame();
+        assert_eq!(app.document().timeline_clock_millis, 100);
+        app.jump_to_previous_frame();
+        assert_eq!(app.document().timeline_clock_millis, 0);
+        app.jump_to_previous_frame();
+        assert_eq!(app.document().timeline_clock_millis, 0);
     }
 
-    #[test]
-    fn can_cycle_directions() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([
-                (Direction::East, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::West, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-            ]),
-        );
+    #[tokio::test]
+    async fn can_cycle_directions() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_direction(Direction::North).unwrap();
+        let direction = || app.document().current_sequence_direction;
+        app.select_direction(Direction::North);
+        assert_eq!(direction(), Some(Direction::North));
 
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::North));
-        d.cycle_directions_forward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::West));
-        d.cycle_directions_forward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::South));
-        d.cycle_directions_forward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
-        d.cycle_directions_forward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::North));
-        d.cycle_directions_backward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
-        d.cycle_directions_backward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::South));
-        d.cycle_directions_backward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::West));
-        d.cycle_directions_backward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::North));
+        app.browse_selection(BrowseDirection::Down, false);
+        assert_eq!(direction(), Some(Direction::West));
+        app.browse_selection(BrowseDirection::Down, false);
+        assert_eq!(direction(), Some(Direction::South));
+        app.browse_selection(BrowseDirection::Down, false);
+        assert_eq!(direction(), Some(Direction::East));
+        app.browse_selection(BrowseDirection::Down, false);
+        assert_eq!(direction(), Some(Direction::North));
+        app.browse_selection(BrowseDirection::Up, false);
+        assert_eq!(direction(), Some(Direction::East));
+        app.browse_selection(BrowseDirection::Up, false);
+        assert_eq!(direction(), Some(Direction::South));
+        app.browse_selection(BrowseDirection::Up, false);
+        assert_eq!(direction(), Some(Direction::West));
+        app.browse_selection(BrowseDirection::Up, false);
+        assert_eq!(direction(), Some(Direction::North));
     }
 
-    #[test]
-    fn can_skip_gaps_when_cycling_directions() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([
-                (Direction::East, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::North, vec!["walk_0", "walk_1"]),
-                (Direction::West, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-            ]),
-        );
+    #[tokio::test]
+    async fn can_skip_gaps_when_cycling_directions() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(Direction::North, 2, false, false);
+        app.select_keyframe(Direction::North, 3, true, false);
+        app.delete_selection();
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_direction(Direction::East).unwrap();
-        d.scrub_timeline(Duration::from_millis(250)).unwrap();
-        assert_eq!(d.timeline_clock().as_millis(), 250);
+        app.select_direction(Direction::East);
+        app.scrub_timeline(250);
 
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
-        d.cycle_directions_forward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::West));
-        d.cycle_directions_backward().unwrap();
-        assert_eq!(d.current_sequence().to_owned(), Some(Direction::East));
-    }
-
-    #[test]
-    fn can_change_direction_preset() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-
-        d.edit_animation("walk_cycle").unwrap();
-        d.apply_direction_preset(DirectionPreset::EightDirections)
-            .unwrap();
-
+        app.browse_selection(BrowseDirection::Down, false);
         assert_eq!(
-            8,
-            d.sheet
-                .animation("walk_cycle")
-                .unwrap()
-                .sequences_iter()
-                .count()
+            app.document().current_sequence_direction,
+            Some(Direction::West)
+        );
+
+        app.browse_selection(BrowseDirection::Up, false);
+        assert_eq!(
+            app.document().current_sequence_direction,
+            Some(Direction::East)
         );
     }
 
-    #[test]
-    fn can_delete_keyframes() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
+    #[tokio::test]
+    async fn can_change_direction_preset() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.apply_direction_preset(DirectionPreset::EightDirections);
+        assert_eq!(8, app.document().animation("walk").sequences.len());
+    }
 
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_keyframes_only(vec![
-            ("walk_cycle".to_owned(), Direction::North, 1),
-            ("walk_cycle".to_owned(), Direction::North, 2),
-        ]);
+    #[tokio::test]
+    async fn can_delete_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(Direction::North, 1, false, false);
+        app.select_keyframe(Direction::North, 3, true, false);
+        app.delete_selected_keyframes();
 
-        d.delete_selected_keyframes().unwrap();
         assert_eq!(
             1,
-            d.sheet
-                .sequence("walk_cycle", Direction::North)
-                .num_keyframes()
+            app.document()
+                .sequence("walk", Direction::North)
+                .keyframes
+                .len()
         );
 
-        assert_eq!(
-            d.selected_keyframes()
-                .unwrap()
-                .iter()
-                .map(|(d, i, _)| (*d, *i))
-                .collect::<Vec<_>>(),
-            vec![(Direction::North, 0)]
+        assert!(
+            app.document()
+                .keyframe("walk", Direction::North, 0)
+                .selected
         );
     }
 }
