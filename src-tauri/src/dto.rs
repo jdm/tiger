@@ -863,9 +863,7 @@ mod tests {
         state.open_document(document::Document::open("test-data/flame.tiger").unwrap());
         let animation_name = state
             .current_document()
-            .unwrap()
-            .current_animation()
-            .as_ref()
+            .and_then(|d| d.current_animation().as_ref())
             .cloned()
             .unwrap();
         let dto = state.to_dto(StateTrim::OnlyWorkbench);

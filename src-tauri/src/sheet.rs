@@ -1111,14 +1111,12 @@ mod tests {
     #[test]
     fn can_read_write_sheet_from_disk() {
         let original = Sheet::<Any>::read("test-data/samurai.tiger")
-            .unwrap()
-            .with_relative_paths("test-data")
+            .and_then(|s| s.with_relative_paths("test-data"))
             .unwrap()
             .with_absolute_paths();
         original.clone().write("test-data/copy.tiger").unwrap();
         let copy = Sheet::<Any>::read("test-data/copy.tiger")
-            .unwrap()
-            .with_relative_paths("test-data")
+            .and_then(|s| s.with_relative_paths("test-data"))
             .unwrap()
             .with_absolute_paths();
         std::fs::remove_file("test-data/copy.tiger").unwrap();

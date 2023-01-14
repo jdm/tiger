@@ -51,9 +51,7 @@ mod tests {
             .document()
             .export_settings_being_edited
             .as_ref()
-            .unwrap()
-            .template_file
-            .canonicalize()
+            .and_then(|s| s.template_file.canonicalize().ok())
             .unwrap();
 
         app.wait_for_periodic_scans();

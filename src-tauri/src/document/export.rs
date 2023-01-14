@@ -200,10 +200,7 @@ mod tests {
             let state = state_handle.lock();
             state
                 .current_document()
-                .unwrap()
-                .sheet()
-                .export_settings()
-                .as_ref()
+                .and_then(|d| d.sheet().export_settings().as_ref())
                 .unwrap()
                 .to_owned()
         };
