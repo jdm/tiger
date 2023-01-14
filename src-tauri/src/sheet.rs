@@ -1108,48 +1108,6 @@ mod tests {
 
     use super::*;
 
-    impl<Z: Paths + Default> Sheet<Z> {
-        pub fn add_test_animation<N: AsRef<str>, P: AsRef<Path>>(
-            &mut self,
-            animation_name: N,
-            content: HashMap<Direction, Vec<P>>,
-        ) {
-            let (effective_animation_name, animation) =
-                self.create_animation(animation_name.as_ref());
-            assert_eq!(animation_name.as_ref(), effective_animation_name);
-
-            if content.is_empty() {
-                animation.apply_direction_preset(DirectionPreset::EightDirections);
-            } else {
-                let direction_preset =
-                    DirectionPreset::from_directions(content.keys().copied()).unwrap();
-                animation.apply_direction_preset(direction_preset);
-            }
-
-            for (direction, frames) in content {
-                for frame in &frames {
-                    self.add_frame(frame);
-                }
-                let animation = self.animation_mut(animation_name.as_ref()).unwrap();
-                let sequence = animation.sequence_mut(direction).unwrap();
-                for frame in frames.iter().rev() {
-                    sequence.insert_keyframe(Keyframe::new(frame), 0).unwrap();
-                }
-            }
-        }
-
-        pub fn keyframe<T: AsRef<str>>(
-            &self,
-            animation_name: T,
-            direction: Direction,
-            index: usize,
-        ) -> &Keyframe<Z> {
-            let animation = self.animation(animation_name).unwrap();
-            let sequence = animation.sequence(direction).unwrap();
-            sequence.keyframe(index).unwrap()
-        }
-    }
-
     #[test]
     fn can_read_write_sheet_from_disk() {
         let original = Sheet::<Any>::read("test-data/samurai.tiger")
@@ -1185,10 +1143,18 @@ mod tests {
     #[test]
     fn deleting_frame_remove_its_usage() {
         let mut sheet = Sheet::<Any>::default();
-        sheet.add_test_animation(
-            "Animation",
-            HashMap::from([(Direction::North, vec!["frame.png"])]),
-        );
+        sheet.add_frame("frame.png");
+        sheet.create_animation("Animation");
+        sheet
+            .animation_mut("Animation")
+            .unwrap()
+            .apply_direction_preset(DirectionPreset::FourDirections);
+        sheet
+            .animation_mut("Animation")
+            .and_then(|a| a.sequence_mut(Direction::North))
+            .unwrap()
+            .insert_keyframe(Keyframe::new("frame.png"), 0)
+            .unwrap();
 
         sheet.delete_frame("frame.png");
 
@@ -1196,10 +1162,9 @@ mod tests {
             0,
             sheet
                 .animation("Animation")
+                .and_then(|a| a.sequence(Direction::North))
+                .map(|s| s.num_keyframes())
                 .unwrap()
-                .sequence(Direction::North)
-                .unwrap()
-                .num_keyframes()
         );
     }
 
@@ -1245,16 +1210,27 @@ mod tests {
     fn relocating_a_frame_updates_its_usage() {
         let mut sheet = Sheet::<Any>::default();
         sheet.add_frame("old.png");
-        sheet.add_test_animation(
-            "Animation",
-            HashMap::from([(Direction::North, vec!["old.png"])]),
-        );
+        sheet.create_animation("Animation");
+        sheet
+            .animation_mut("Animation")
+            .unwrap()
+            .apply_direction_preset(DirectionPreset::FourDirections);
+        sheet
+            .animation_mut("Animation")
+            .and_then(|a| a.sequence_mut(Direction::North))
+            .unwrap()
+            .insert_keyframe(Keyframe::new("old.png"), 0)
+            .unwrap();
+
         sheet.relocate_frames(&HashMap::from([("old.png".into(), "new.png".into())]));
 
-        assert_eq!(
-            PathBuf::from("new.png"),
-            sheet.keyframe("Animation", Direction::North, 0).frame
-        );
+        let keyframe = sheet
+            .animation("Animation")
+            .and_then(|a| a.sequence(Direction::North))
+            .and_then(|s| s.keyframe(0))
+            .unwrap();
+
+        assert_eq!(PathBuf::from("new.png"), keyframe.frame);
     }
 
     #[test]
