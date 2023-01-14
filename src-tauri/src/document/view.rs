@@ -425,6 +425,15 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn can_scrub_timeline() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.set_timeline_offset(1500.0);
+        assert_eq!(app.document().timeline_offset_millis, 1500.0);
+    }
+
+    #[tokio::test]
     async fn can_filter_frames() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
