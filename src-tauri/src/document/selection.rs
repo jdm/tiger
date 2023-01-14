@@ -1000,8 +1000,10 @@ impl Eq for dyn HitboxID + '_ {}
 #[cfg(test)]
 mod tests {
 
+    use sugar_path::SugarPath;
+
     use super::*;
-    use std::collections::HashMap;
+    use crate::{app::mock::TigerAppMock, dto};
 
     #[test]
     fn can_replace_selection() {
@@ -1128,264 +1130,250 @@ mod tests {
         assert!(selection.contains(&6));
     }
 
-    #[test]
-    fn can_browse_animations() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation::<_, &str>("A", HashMap::new());
-        d.sheet.add_test_animation::<_, &str>("B", HashMap::new());
-        d.sheet.add_test_animation::<_, &str>("C", HashMap::new());
-        d.select_animation("A", false, false);
-        let just_a = HashSet::from(["A".to_owned()]);
-        let just_b = HashSet::from(["B".to_owned()]);
-        let just_c = HashSet::from(["C".to_owned()]);
-        let b_and_c = HashSet::from(["B".to_owned(), "C".to_owned()]);
-        let a_b_c = HashSet::from(["A".to_owned(), "B".to_owned(), "C".to_owned()]);
-        assert_eq!(&d.view.selection.animations.selected_items, &just_a);
-        d.browse_selection(BrowseDirection::Down, false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_b);
-        d.browse_selection(BrowseDirection::Down, true).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &b_and_c);
-        d.browse_selection(BrowseDirection::Up, false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_b);
-        d.browse_to_end(false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_c);
-        d.browse_to_start(false).unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &just_a);
-        d.select_all().unwrap();
-        assert_eq!(&d.view.selection.animations.selected_items, &a_b_c);
+    #[tokio::test]
+    async fn can_browse_animations() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+
+        let check_selection = |desired: Vec<&str>| {
+            assert_eq!(
+                app.document().selected_animations(),
+                desired.into_iter().map(|a| a.to_owned()).collect()
+            );
+        };
+
+        app.select_animation("attack", false, false);
+        check_selection(vec!["attack"]);
+        app.browse_selection(dto::BrowseDirection::Down, false);
+        check_selection(vec!["dead"]);
+        app.browse_selection(dto::BrowseDirection::Down, true);
+        check_selection(vec!["dead", "idle"]);
+        app.browse_selection(dto::BrowseDirection::Up, false);
+        check_selection(vec!["dead"]);
+        app.browse_to_end(false);
+        check_selection(vec!["walk"]);
+        app.browse_to_start(false);
+        check_selection(vec!["attack"]);
+        app.select_all();
+        check_selection(vec!["attack", "dead", "idle", "walk"]);
     }
 
-    #[test]
-    fn can_browse_frames_as_a_list() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["A", "B", "C"]);
-        d.view.frames_list_mode = ListMode::Linear;
-        d.select_frame("A", false, false);
-        let just_a = HashSet::from([PathBuf::from("A")]);
-        let just_b = HashSet::from([PathBuf::from("B")]);
-        let just_c = HashSet::from([PathBuf::from("C")]);
-        let b_and_c = HashSet::from([PathBuf::from("B"), PathBuf::from("C")]);
-        let a_b_c = HashSet::from([PathBuf::from("A"), PathBuf::from("B"), PathBuf::from("C")]);
-        assert_eq!(&d.view.selection.frames.selected_items, &just_a,);
-        d.browse_selection(BrowseDirection::Down, false).unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
-        d.browse_selection(BrowseDirection::Down, true).unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &b_and_c);
-        d.browse_selection(BrowseDirection::Up, false).unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &just_b,);
-        d.browse_to_end(false).unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &just_c);
-        d.browse_to_start(false).unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &just_a);
-        d.select_all().unwrap();
-        assert_eq!(&d.view.selection.frames.selected_items, &a_b_c);
+    #[tokio::test]
+    async fn can_browse_frames_as_a_list() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/flame.tiger"]).await;
+
+        let check_selection = |desired: Vec<&PathBuf>| {
+            assert_eq!(
+                app.document().selected_frames(),
+                desired.into_iter().map(|f| f.to_owned()).collect()
+            );
+        };
+
+        let hit_0 = PathBuf::from("test-data/flame-hit-0.png").resolve();
+        let hit_1 = PathBuf::from("test-data/flame-hit-1.png").resolve();
+        let hit_2 = PathBuf::from("test-data/flame-hit-2.png").resolve();
+        let idle_0 = PathBuf::from("test-data/flame-idle-0.png").resolve();
+        let idle_1 = PathBuf::from("test-data/flame-idle-1.png").resolve();
+        let idle_2 = PathBuf::from("test-data/flame-idle-2.png").resolve();
+        let idle_3 = PathBuf::from("test-data/flame-idle-3.png").resolve();
+        let idle_4 = PathBuf::from("test-data/flame-idle-4.png").resolve();
+
+        app.set_frames_list_mode(dto::ListMode::Linear);
+        app.select_frame(&hit_0, false, false);
+        check_selection(vec![&hit_0]);
+        app.browse_selection(dto::BrowseDirection::Down, false);
+        check_selection(vec![&hit_1]);
+        app.browse_selection(dto::BrowseDirection::Down, true);
+        check_selection(vec![&hit_1, &hit_2]);
+        app.browse_selection(dto::BrowseDirection::Up, false);
+        check_selection(vec![&hit_1]);
+        app.browse_to_end(false);
+        check_selection(vec![&idle_4]);
+        app.browse_to_start(false);
+        check_selection(vec![&hit_0]);
+        app.select_all();
+        check_selection(vec![
+            &hit_0, &hit_1, &hit_2, &idle_0, &idle_1, &idle_2, &idle_3, &idle_4,
+        ]);
     }
 
     #[test]
     fn can_browse_frames_as_a_4xn_grid() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec![
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+
+        let check_selection = |desired: Vec<&str>| {
+            assert_eq!(
+                app.document().selected_frames(),
+                desired.into_iter().map(PathBuf::from).collect()
+            );
+        };
+
+        app.import_frames(vec![
             "0a", "0b", "0c", "0d", //
             "1a", "1b", "1c", "1d", //
             "2a", "2b", "2c", "2d",
         ]);
-        d.view.frames_list_mode = ListMode::Grid4xN;
-        d.select_frame("0a", false, false);
-        let to_set = |v: Vec<&str>| v.iter().map(PathBuf::from).collect();
+        app.set_frames_list_mode(dto::ListMode::Grid4xN);
 
-        d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0b"]));
-        d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0c"]));
-        d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0d"]));
-        d.browse_selection(BrowseDirection::Right, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["1a"]));
-        d.browse_selection(BrowseDirection::Left, false).unwrap();
-        assert_eq!(d.view.selection.frames.selected_items, to_set(vec!["0d"]));
-        d.browse_selection(BrowseDirection::Down, true).unwrap();
-        assert_eq!(
-            d.view.selection.frames.selected_items,
-            to_set(vec!["0d", "1a", "1b", "1c", "1d"])
-        );
-        d.browse_selection(BrowseDirection::Down, true).unwrap();
-        assert_eq!(
-            d.view.selection.frames.selected_items,
-            to_set(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c", "2d"])
-        );
-        d.browse_selection(BrowseDirection::Left, true).unwrap();
-        assert_eq!(
-            d.view.selection.frames.selected_items,
-            to_set(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c"])
-        );
+        app.select_frame("0a", false, false);
+        check_selection(vec!["0a"]);
+        app.browse_selection(dto::BrowseDirection::Right, false);
+        check_selection(vec!["0b"]);
+        app.browse_selection(dto::BrowseDirection::Right, false);
+        check_selection(vec!["0c"]);
+        app.browse_selection(dto::BrowseDirection::Right, false);
+        check_selection(vec!["0d"]);
+        app.browse_selection(dto::BrowseDirection::Right, false);
+        check_selection(vec!["1a"]);
+        app.browse_selection(dto::BrowseDirection::Left, false);
+        check_selection(vec!["0d"]);
+        app.browse_selection(dto::BrowseDirection::Down, true);
+        check_selection(vec!["0d", "1a", "1b", "1c", "1d"]);
+        app.browse_selection(dto::BrowseDirection::Down, true);
+        check_selection(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c", "2d"]);
+        app.browse_selection(dto::BrowseDirection::Left, true);
+        check_selection(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c"]);
     }
 
-    #[test]
-    fn can_browse_keyframes() {
-        let to_set = |v: Vec<(Direction, usize)>| {
-            v.into_iter()
-                .map(|(d, i)| ("walk_cycle".into(), d, i))
-                .collect()
-        };
-
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([
-                (Direction::North, vec!["walk_0", "walk_1", "walk_2"]),
-                (Direction::South, vec!["walk_0", "walk_1", "walk_2"]),
-            ]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
+    #[tokio::test]
+    async fn can_browse_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
 
         {
-            d.select_keyframe(Direction::North, 1, false, false)
-                .unwrap();
-            d.browse_selection(BrowseDirection::Right, false).unwrap();
+            app.select_keyframe(dto::Direction::North, 1, false, false);
+            app.browse_selection(dto::BrowseDirection::Right, false);
             assert_eq!(
-                d.view.selection.keyframes.selected_items,
-                to_set(vec![(Direction::North, 2)])
+                app.document().selected_keyframes(),
+                [(dto::Direction::North, 2)].into()
             );
-            d.browse_selection(BrowseDirection::Left, false).unwrap();
+
+            app.browse_selection(dto::BrowseDirection::Left, false);
             assert_eq!(
-                d.view.selection.keyframes.selected_items,
-                to_set(vec![(Direction::North, 1)])
+                app.document().selected_keyframes(),
+                [(dto::Direction::North, 1)].into()
             );
         }
 
         {
-            d.select_keyframe(Direction::North, 1, false, false)
-                .unwrap();
-            d.browse_selection(BrowseDirection::Right, true).unwrap();
-            d.browse_selection(BrowseDirection::Down, true).unwrap();
+            app.select_keyframe(dto::Direction::North, 1, false, false);
+            app.browse_selection(dto::BrowseDirection::Right, true);
+            app.browse_selection(dto::BrowseDirection::Down, true);
             assert_eq!(
-                d.view.selection.keyframes.selected_items,
-                to_set(vec![
-                    (Direction::North, 1),
-                    (Direction::North, 2),
-                    (Direction::South, 1),
-                    (Direction::South, 2)
-                ])
+                app.document().selected_keyframes(),
+                [
+                    (dto::Direction::North, 1),
+                    (dto::Direction::North, 2),
+                    (dto::Direction::West, 1),
+                    (dto::Direction::West, 2)
+                ]
+                .into()
             );
         }
 
-        d.browse_to_end(false).unwrap();
+        app.browse_to_end(false);
         assert_eq!(
-            d.view.selection.keyframes.selected_items,
-            to_set(vec![(Direction::South, 2)])
+            app.document().selected_keyframes(),
+            [(dto::Direction::West, 3)].into()
         );
 
-        d.browse_to_start(false).unwrap();
+        app.browse_to_start(false);
         assert_eq!(
-            d.view.selection.keyframes.selected_items,
-            to_set(vec![(Direction::South, 0)])
+            app.document().selected_keyframes(),
+            [(dto::Direction::West, 0)].into()
         );
 
-        d.select_all().unwrap();
-        assert_eq!(
-            d.view.selection.keyframes.selected_items,
-            to_set(vec![
-                (Direction::North, 0),
-                (Direction::North, 1),
-                (Direction::North, 2),
-                (Direction::South, 0),
-                (Direction::South, 1),
-                (Direction::South, 2)
-            ])
-        );
+        app.select_all();
+        assert_eq!(app.document().selected_keyframes().len(), 16);
     }
 
-    #[test]
-    fn can_browse_hitboxes() {
-        let to_set = |v: Vec<&str>| {
-            v.into_iter()
-                .map(|h| ("walk_cycle".into(), Direction::North, 0, h.into()))
-                .collect()
+    #[tokio::test]
+    async fn can_browse_hitboxes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+
+        let check_selection = |desired: Vec<&str>| {
+            assert_eq!(
+                app.document().selected_hitboxes(),
+                desired.into_iter().map(String::from).collect()
+            );
         };
 
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
+        app.edit_animation("walk");
+        app.select_hitbox("weak", false, false);
+        app.copy();
+        app.paste();
+        app.paste();
 
-        let keyframe = d.sheet.keyframe_mut("walk_cycle", Direction::North, 0);
-        keyframe.create_hitbox("H0");
-        keyframe.create_hitbox("H2");
-        keyframe.create_hitbox("H1");
-
-        d.select_hitbox("H0", false, false).unwrap();
-        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H0"]));
-
-        d.browse_selection(BrowseDirection::Down, false).unwrap();
-        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H1"]));
-
-        d.browse_selection(BrowseDirection::Down, true).unwrap();
-        assert_eq!(
-            d.view.selection.hitboxes.selected_items,
-            to_set(vec!["H1", "H2"])
-        );
-
-        d.browse_selection(BrowseDirection::Up, false).unwrap();
-        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H1"]));
-
-        d.browse_to_end(false).unwrap();
-        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H2"]));
-
-        d.browse_to_start(false).unwrap();
-        assert_eq!(d.view.selection.hitboxes.selected_items, to_set(vec!["H0"]));
-
-        d.select_all().unwrap();
-        assert_eq!(
-            d.view.selection.hitboxes.selected_items,
-            to_set(vec!["H0", "H1", "H2"])
-        );
+        app.select_hitbox("weak", false, false);
+        check_selection(vec!["weak"]);
+        app.browse_selection(dto::BrowseDirection::Down, false);
+        check_selection(vec!["weak 2"]);
+        app.browse_selection(dto::BrowseDirection::Down, true);
+        check_selection(vec!["weak 2", "weak 3"]);
+        app.browse_selection(dto::BrowseDirection::Up, false);
+        check_selection(vec!["weak 2"]);
+        app.browse_to_end(false);
+        check_selection(vec!["weak 3"]);
+        app.browse_to_start(false);
+        check_selection(vec!["weak"]);
+        app.select_all();
+        check_selection(vec!["weak", "weak 2", "weak 3"]);
     }
 
     #[test]
-    fn can_delete_selection_frames() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["A", "B", "C"]);
-        d.select_frame("B", false, false);
-        assert!(d.sheet.frame("B").is_some());
-        d.delete_selection().unwrap();
-        assert_eq!(d.sheet.frames_iter().count(), 2);
-        assert!(d.sheet.frame("B").is_none());
+    fn can_delete_selected_frames() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["A", "B", "C"]);
+        assert_eq!(
+            app.document()
+                .sheet
+                .frames
+                .iter()
+                .map(|f| f.name.as_str())
+                .collect::<HashSet<_>>(),
+            ["A", "B", "C"].into()
+        );
+
+        app.select_frame("B", false, false);
+        app.delete_selection();
+        assert_eq!(
+            app.document()
+                .sheet
+                .frames
+                .iter()
+                .map(|f| f.name.as_str())
+                .collect::<HashSet<_>>(),
+            ["A", "C"].into()
+        );
     }
 
-    #[test]
-    fn can_nudge_keyframe() {
-        let mut d = Document::new("tmp");
-        d.sheet.add_frames(&vec!["walk_0", "walk_1", "walk_2"]);
-        d.sheet.add_test_animation(
-            "walk_cycle",
-            HashMap::from([(Direction::North, vec!["walk_0", "walk_1", "walk_2"])]),
-        );
-        d.edit_animation("walk_cycle").unwrap();
-        d.select_keyframes_only(vec![("walk_cycle".to_owned(), Direction::North, 1)]);
-        d.nudge_selection(NudgeDirection::Up, true).unwrap();
-        assert_eq!(
-            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
-            vec2(0, -10)
-        );
-        d.nudge_selection(NudgeDirection::Right, false).unwrap();
-        assert_eq!(
-            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
-            vec2(1, -10)
-        );
-        d.nudge_selection(NudgeDirection::Left, true).unwrap();
-        assert_eq!(
-            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
-            vec2(-9, -10)
-        );
-        d.nudge_selection(NudgeDirection::Down, false).unwrap();
-        assert_eq!(
-            d.selected_keyframes().unwrap().get(0).unwrap().2.offset(),
-            vec2(-9, -9)
-        );
+    #[tokio::test]
+    async fn can_nudge_keyframe() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        let position = || {
+            app.document()
+                .keyframe("walk", dto::Direction::North, 1)
+                .offset
+        };
+
+        app.select_keyframe(dto::Direction::North, 1, false, false);
+        app.set_keyframe_offset_x(0);
+        app.set_keyframe_offset_y(0);
+        app.nudge_selection(dto::NudgeDirection::Up, true);
+        assert_eq!(position(), (0, -10));
+        app.nudge_selection(dto::NudgeDirection::Right, false);
+        assert_eq!(position(), (1, -10));
+        app.nudge_selection(dto::NudgeDirection::Left, true);
+        assert_eq!(position(), (-9, -10));
+        app.nudge_selection(dto::NudgeDirection::Down, false);
+        assert_eq!(position(), (-9, -9));
     }
 }

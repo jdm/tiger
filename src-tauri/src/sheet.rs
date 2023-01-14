@@ -1148,17 +1148,6 @@ mod tests {
             let sequence = animation.sequence(direction).unwrap();
             sequence.keyframe(index).unwrap()
         }
-
-        pub fn keyframe_mut<T: AsRef<str>>(
-            &mut self,
-            animation_name: T,
-            direction: Direction,
-            index: usize,
-        ) -> &mut Keyframe<Z> {
-            let animation = self.animation_mut(animation_name).unwrap();
-            let sequence = animation.sequence_mut(direction).unwrap();
-            sequence.keyframe_mut(index).unwrap()
-        }
     }
 
     #[test]

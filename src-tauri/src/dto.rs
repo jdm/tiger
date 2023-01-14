@@ -497,6 +497,55 @@ impl Document {
     ) -> &Hitbox {
         self.keyframe(animation, direction, index).hitbox(hitbox)
     }
+
+    #[cfg(test)]
+    pub fn selected_frames(&self) -> HashSet<PathBuf> {
+        self.sheet
+            .frames
+            .iter()
+            .filter_map(|f| f.selected.then_some(f.path.clone()))
+            .collect()
+    }
+
+    #[cfg(test)]
+    pub fn selected_animations(&self) -> HashSet<String> {
+        self.sheet
+            .animations
+            .iter()
+            .filter_map(|a| a.selected.then_some(a.name.clone()))
+            .collect()
+    }
+
+    #[cfg(test)]
+    pub fn selected_keyframes(&self) -> HashSet<(Direction, usize)> {
+        self.sheet
+            .animations
+            .iter()
+            .find(|a| Some(&a.name) == self.current_animation_name.as_ref())
+            .unwrap()
+            .sequences
+            .iter()
+            .flat_map(|(d, s)| {
+                s.keyframes
+                    .iter()
+                    .enumerate()
+                    .filter_map(|(i, k)| k.selected.then_some((*d, i)))
+            })
+            .collect()
+    }
+
+    #[cfg(test)]
+    pub fn selected_hitboxes(&self) -> HashSet<String> {
+        self.keyframe(
+            self.current_animation_name.as_ref().unwrap(),
+            self.current_sequence_direction.unwrap(),
+            self.current_keyframe_index.unwrap(),
+        )
+        .hitboxes
+        .iter()
+        .filter_map(|h| h.selected.then_some(h.name.clone()))
+        .collect()
+    }
 }
 
 impl<P: Paths> sheet::Sheet<P> {
