@@ -9,7 +9,7 @@
 - [x] Merge redundant code between save(), save_as() and save_all()
 - [x] Automatically add extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected
-- [ ] Reach satisfying test coverage
+- [x] Reach satisfying test coverage
 - [x] Replace tarpaulin with grcov for code coverage measurements
 - [x] Hover & pressed states for Button controls
 - [x] Hover & pressed states for Toggle controls
