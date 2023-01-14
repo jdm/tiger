@@ -10,7 +10,8 @@
 						:icon="LockClosedIcon" />
 				</TooltipArea>
 				<div class="flex-1 flex justify-end">
-					<Button :positive="true" :icon="TagIcon" custom-color="pink" label="Add" @click="onAddClicked" />
+					<Button :positive="true" :icon="TagIcon" :disabled="!state.currentKeyframe" custom-color="pink"
+						label="Add" @click="onAddClicked" />
 				</div>
 			</div>
 			<PaneInset class="flex-1 min-h-0">
