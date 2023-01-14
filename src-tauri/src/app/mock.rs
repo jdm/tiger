@@ -220,6 +220,14 @@ impl TigerAppMock {
         self.apply_patch(Api::cancel_exit(self).unwrap());
     }
 
+    pub fn cancel_export_as(&self) {
+        self.apply_patch(Api::cancel_export_as(self).unwrap());
+    }
+
+    pub fn cancel_relocate_frames(&self) {
+        self.apply_patch(Api::cancel_relocate_frames(self).unwrap());
+    }
+
     pub fn cancel_rename(&self) {
         self.apply_patch(Api::cancel_rename(self).unwrap());
     }

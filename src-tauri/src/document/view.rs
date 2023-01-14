@@ -345,6 +345,17 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn can_pan_and_center_workbench() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.set_workbench_zoom_factor(2);
+        app.pan((16.0, 32.0));
+        assert_eq!(app.document().workbench_offset, (8.0, 16.0));
+        app.center_workbench();
+        assert_eq!(app.document().workbench_offset, (0.0, 0.0));
+    }
+
+    #[tokio::test]
     async fn can_zoom_timeline_in_out() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;

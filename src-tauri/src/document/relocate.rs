@@ -89,14 +89,26 @@ mod tests {
         let app = TigerAppMock::new();
         app.new_document("tmp.tiger");
         app.import_frames(vec![&bad_dead, &bad_idle, &unrelated]);
+        let has_frame = |p: &PathBuf| app.document().sheet.frames.iter().any(|f| &f.path == p);
 
         app.wait_for_periodic_scans();
+
+        app.begin_relocate_frames();
+        assert!(app.document().frames_being_relocated.is_some());
+        app.relocate_frame(&bad_dead, &good_dead);
+        app.cancel_relocate_frames();
+
+        assert!(app.document().frames_being_relocated.is_none());
+        assert!(has_frame(&bad_dead));
+        assert!(has_frame(&bad_idle));
+        assert!(has_frame(&unrelated));
+        assert!(!has_frame(&good_dead));
+        assert!(!has_frame(&good_idle));
 
         app.begin_relocate_frames();
         app.relocate_frame(&bad_dead, &good_dead);
         app.end_relocate_frames();
 
-        let has_frame = |p: &PathBuf| app.document().sheet.frames.iter().any(|f| &f.path == p);
         assert!(!has_frame(&bad_dead));
         assert!(!has_frame(&bad_idle));
         assert!(has_frame(&good_dead));

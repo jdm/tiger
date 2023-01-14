@@ -174,6 +174,26 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn can_cut_paste_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(dto::Direction::East, 0, false, false);
+        app.select_keyframe(dto::Direction::East, 3, true, false);
+        app.cut();
+        app.select_direction(dto::Direction::West);
+        app.paste();
+        assert!(app
+            .document()
+            .keyframes("walk", dto::Direction::East)
+            .is_empty());
+        assert_eq!(
+            app.document().keyframes("walk", dto::Direction::West).len(),
+            8
+        );
+    }
+
+    #[tokio::test]
     async fn can_copy_paste_hitbox() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;

@@ -226,7 +226,7 @@ mod tests {
         let metadata_root = PathBuf::from("test-output/root").resolve();
         let atlas_image_file =
             PathBuf::from("test-output/can_adjust_export_settings.png").resolve();
-        let output_metadata =
+        let metadata_file =
             PathBuf::from("test-output/can_adjust_export_settings.export").resolve();
 
         let app = TigerAppMock::new();
@@ -235,11 +235,11 @@ mod tests {
         app.set_export_template_file(template_file);
         app.set_export_metadata_paths_root(metadata_root);
         app.set_export_atlas_image_file(&atlas_image_file);
-        app.set_export_metadata_file(&output_metadata);
+        app.set_export_metadata_file(&metadata_file);
         app.end_export_as().await;
 
         assert_eq!(
-            std::fs::read_to_string(output_metadata).unwrap(),
+            std::fs::read_to_string(metadata_file).unwrap(),
             std::fs::read_to_string("test-output/can_adjust_export_settings.export").unwrap()
         );
 
@@ -247,6 +247,27 @@ mod tests {
             std::fs::read(atlas_image_file).unwrap(),
             std::fs::read("test-data/samurai.png").unwrap()
         );
+    }
+
+    #[tokio::test]
+    async fn can_cancel_export_as() {
+        let atlas_image_file = PathBuf::from("test-output/can_cancel_export_as.png").resolve();
+        let template_file = PathBuf::from("test-output/can_cancel_export_as.export").resolve();
+
+        std::fs::remove_file(&atlas_image_file).ok();
+        std::fs::remove_file(&template_file).ok();
+
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.begin_export_as();
+        assert!(app.document().export_settings_being_edited.is_some());
+        app.set_export_atlas_image_file(&atlas_image_file);
+        app.set_export_metadata_file(&template_file);
+        app.cancel_export_as();
+        assert!(app.document().export_settings_being_edited.is_none());
+
+        assert!(!atlas_image_file.exists());
+        assert!(!template_file.exists());
     }
 
     #[test]

@@ -308,6 +308,16 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn can_acknowledge_error() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/missing-file.tiger"])
+            .await;
+        assert!(app.client_state().error.is_some());
+        app.acknowledge_error();
+        assert!(app.client_state().error.is_none());
+    }
+
+    #[tokio::test]
     async fn can_request_exit_and_cancel() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;

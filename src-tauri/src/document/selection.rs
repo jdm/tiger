@@ -1325,6 +1325,17 @@ mod tests {
     }
 
     #[test]
+    fn can_clear_selection() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["A", "B", "C"]);
+        app.select_frame("B", false, false);
+        assert!(!app.document().selected_frames().is_empty());
+        app.clear_selection();
+        assert!(app.document().selected_frames().is_empty());
+    }
+
+    #[test]
     fn can_delete_selected_frames() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
