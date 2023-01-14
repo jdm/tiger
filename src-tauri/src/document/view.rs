@@ -386,4 +386,30 @@ mod tests {
         app.zoom_out_timeline_around(1_000.0);
         assert!((visible_position() - reference).abs() < 1.0);
     }
+
+    #[tokio::test]
+    async fn can_toggle_workbench_view_options() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+
+        app.disable_sprite_darkening();
+        assert!(!app.document().darken_sprites);
+        app.enable_sprite_darkening();
+        assert!(app.document().darken_sprites);
+
+        app.hide_hitboxes();
+        assert!(app.document().hide_hitboxes);
+        app.show_hitboxes();
+        assert!(!app.document().hide_hitboxes);
+
+        app.hide_origin();
+        assert!(app.document().hide_origin);
+        app.show_origin();
+        assert!(!app.document().hide_origin);
+
+        app.hide_sprite();
+        assert!(app.document().hide_sprite);
+        app.show_sprite();
+        assert!(!app.document().hide_sprite);
+    }
 }
