@@ -270,6 +270,15 @@ mod tests {
         assert!(!template_file.exists());
     }
 
+    #[tokio::test]
+    async fn shows_export_errors() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        assert!(app.client_state().error.is_none());
+        app.export().await;
+        assert!(app.client_state().error.is_some());
+    }
+
     #[test]
     fn validates_empty_paths_in_export_settings() {
         let mut d = Document::new("tmp.tiger");

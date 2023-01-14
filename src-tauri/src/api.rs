@@ -666,35 +666,7 @@ impl<A: TigerApp + Sync> Api for A {
             }
         });
 
-        let (sheet, document_name) = {
-            let state_handle = self.state();
-            let state = state_handle.lock();
-            match state.current_document() {
-                Some(d) => (d.sheet().clone(), d.path().to_file_name()),
-                _ => return Ok(patch),
-            }
-        };
-
-        let result = tauri::async_runtime::spawn_blocking({
-            let texture_cache = self.texture_cache();
-            move || export_sheet(&sheet, texture_cache)
-        })
-        .await
-        .unwrap();
-
-        let mut additional_patch = self.patch(StateTrim::Full, |state| {
-            if let Err(e) = result {
-                state.show_error_message(
-                    "Export Error".to_owned(),
-                    format!(
-                        "An error occured while trying to export `{}`",
-                        document_name.to_file_name(),
-                    ),
-                    e.to_string(),
-                );
-            }
-        });
-
+        let mut additional_patch = export_document(self).await;
         patch.0.append(&mut additional_patch.0);
         Ok(patch)
     }
@@ -752,34 +724,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     async fn export(&self) -> Result<Patch, ()> {
-        let (sheet, document_name) = {
-            let state_handle = self.state();
-            let state = state_handle.lock();
-            match state.current_document() {
-                Some(d) => (d.sheet().clone(), d.path().to_file_name()),
-                _ => return Ok(Patch(Vec::new())),
-            }
-        };
-
-        match tauri::async_runtime::spawn_blocking({
-            let texture_cache = self.texture_cache();
-            move || export_sheet(&sheet, texture_cache)
-        })
-        .await
-        .unwrap()
-        {
-            Ok(_) => Ok(Patch(Vec::new())),
-            Err(e) => Ok(self.patch(StateTrim::Full, |state| {
-                state.show_error_message(
-                    "Export Error".to_owned(),
-                    format!(
-                        "An error occured while trying to export `{}`",
-                        document_name.to_file_name(),
-                    ),
-                    e.to_string(),
-                )
-            })),
-        }
+        Ok(export_document(self).await)
     }
 
     fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()> {
@@ -1659,4 +1604,35 @@ async fn save_documents<A: TigerApp>(
             app.close_window();
         }
     }))
+}
+
+async fn export_document<A: TigerApp>(app: &A) -> Patch {
+    let (sheet, document_name) = {
+        let state_handle = app.state();
+        let state = state_handle.lock();
+        match state.current_document() {
+            Some(d) => (d.sheet().clone(), d.path().to_file_name()),
+            _ => return Patch(Vec::new()),
+        }
+    };
+
+    let result = tauri::async_runtime::spawn_blocking({
+        let texture_cache = app.texture_cache();
+        move || export_sheet(&sheet, texture_cache)
+    })
+    .await
+    .unwrap();
+
+    app.patch(StateTrim::Full, |state| {
+        if let Err(e) = result {
+            state.show_error_message(
+                "Export Error".to_owned(),
+                format!(
+                    "An error occured while trying to export `{}`",
+                    document_name.to_file_name(),
+                ),
+                e.to_string(),
+            );
+        }
+    })
 }
