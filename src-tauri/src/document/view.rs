@@ -317,7 +317,7 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
-    use crate::mock::TigerAppMock;
+    use crate::app::mock::TigerAppMock;
 
     #[tokio::test]
     async fn can_zoom_workbench_in_out() {

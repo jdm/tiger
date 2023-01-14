@@ -588,7 +588,7 @@ impl Display for Command {
 #[cfg(test)]
 mod tests {
 
-    use crate::mock::TigerAppMock;
+    use crate::app::mock::TigerAppMock;
 
     fn list_frames(app: &TigerAppMock) -> Vec<String> {
         app.document()

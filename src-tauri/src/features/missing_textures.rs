@@ -45,7 +45,7 @@ mod tests {
 
     use std::{fs::File, path::PathBuf};
 
-    use crate::mock::TigerAppMock;
+    use crate::app::mock::TigerAppMock;
 
     #[test]
     fn detects_texture_addition_and_removal() {

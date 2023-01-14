@@ -118,8 +118,8 @@ impl Document {
 #[cfg(test)]
 mod tests {
 
+    use crate::app::mock::TigerAppMock;
     use crate::dto;
-    use crate::mock::TigerAppMock;
 
     #[test]
     fn can_move_keyframe() {

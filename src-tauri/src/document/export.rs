@@ -188,7 +188,7 @@ mod tests {
     use sugar_path::SugarPath;
 
     use super::*;
-    use crate::{app::TigerApp, mock::TigerAppMock};
+    use crate::app::{mock::TigerAppMock, TigerApp};
 
     #[tokio::test]
     async fn export_matches_known_output() {

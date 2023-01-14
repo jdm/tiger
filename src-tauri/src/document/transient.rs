@@ -763,8 +763,8 @@ mod tests {
     use sugar_path::SugarPath;
 
     use super::*;
+    use crate::app::mock::TigerAppMock;
     use crate::dto;
-    use crate::mock::TigerAppMock;
 
     #[tokio::test]
     async fn can_rename_animations() {

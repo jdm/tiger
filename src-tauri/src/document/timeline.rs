@@ -230,8 +230,8 @@ impl Document {
 mod tests {
 
     use crate::{
+        app::mock::TigerAppMock,
         dto::{BrowseDirection, Direction, DirectionPreset},
-        mock::TigerAppMock,
     };
 
     #[tokio::test]

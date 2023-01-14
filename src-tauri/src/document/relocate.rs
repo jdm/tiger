@@ -76,7 +76,7 @@ mod tests {
     use sugar_path::SugarPath;
 
     use super::*;
-    use crate::mock::TigerAppMock;
+    use crate::app::mock::TigerAppMock;
 
     #[test]
     fn can_relocate_frames() {

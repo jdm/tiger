@@ -40,9 +40,8 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
 
 #[cfg(test)]
 mod tests {
-    use crate::mock::TigerAppMock;
-
     use super::*;
+    use crate::app::mock::TigerAppMock;
 
     #[test]
     fn emits_invalidate_event() {

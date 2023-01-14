@@ -111,7 +111,7 @@ mod tests {
     use std::path::PathBuf;
     use sugar_path::SugarPath;
 
-    use crate::{app::TigerApp, mock::TigerAppMock};
+    use crate::app::{mock::TigerAppMock, TigerApp};
 
     #[tokio::test]
     async fn follows_frame_additions_and_removals() {

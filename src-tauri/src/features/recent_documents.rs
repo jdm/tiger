@@ -56,7 +56,7 @@ mod tests {
     use sugar_path::SugarPath;
 
     use super::*;
-    use crate::{dto::RecentDocument, mock::TigerAppMock};
+    use crate::{app::mock::TigerAppMock, dto::RecentDocument};
 
     #[test]
     fn reads_recent_documents_from_disk() {

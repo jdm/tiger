@@ -107,6 +107,49 @@ impl TigerAppMock {
     }
 }
 
+impl TigerApp for TigerAppMock {
+    fn state(&self) -> state::Handle {
+        self.state.clone()
+    }
+
+    fn texture_cache(&self) -> texture_cache::Handle {
+        self.texture_cache.clone()
+    }
+
+    fn paths(&self) -> paths::Handle {
+        self.paths.clone()
+    }
+
+    fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: dto::StateTrim, operation: F) {
+        let patch = self.patch(state_trim, operation);
+        self.apply_patch(patch);
+    }
+
+    fn replace_state(&self) {
+        let state_handle = self.state();
+        let state = state_handle.lock();
+        *self.client_state.lock() = state.to_dto(dto::StateTrim::Full);
+    }
+
+    fn emit_all<S: serde::Serialize + Clone>(&self, event: &str, payload: S) {
+        self.events
+            .lock()
+            .push((event.to_owned(), serde_json::to_value(payload).unwrap()));
+    }
+
+    fn read_clipboard(&self) -> Option<String> {
+        self.clipboard.lock().clone()
+    }
+
+    fn write_clipboard<S: Into<String>>(&self, content: S) {
+        *self.clipboard.lock() = Some(content.into())
+    }
+
+    fn close_window(&self) {
+        *self.closed.lock() = true;
+    }
+}
+
 #[allow(dead_code)]
 impl TigerAppMock {
     pub fn acknowledge_error(&self) {
@@ -640,48 +683,5 @@ impl TigerAppMock {
 
     pub fn zoom_out_workbench_around(&self, fixed_point: (f32, f32)) {
         self.apply_patch(Api::zoom_out_workbench_around(self, fixed_point).unwrap());
-    }
-}
-
-impl TigerApp for TigerAppMock {
-    fn state(&self) -> state::Handle {
-        self.state.clone()
-    }
-
-    fn texture_cache(&self) -> texture_cache::Handle {
-        self.texture_cache.clone()
-    }
-
-    fn paths(&self) -> paths::Handle {
-        self.paths.clone()
-    }
-
-    fn patch_state<F: FnOnce(&mut State)>(&self, state_trim: dto::StateTrim, operation: F) {
-        let patch = self.patch(state_trim, operation);
-        self.apply_patch(patch);
-    }
-
-    fn replace_state(&self) {
-        let state_handle = self.state();
-        let state = state_handle.lock();
-        *self.client_state.lock() = state.to_dto(dto::StateTrim::Full);
-    }
-
-    fn emit_all<S: serde::Serialize + Clone>(&self, event: &str, payload: S) {
-        self.events
-            .lock()
-            .push((event.to_owned(), serde_json::to_value(payload).unwrap()));
-    }
-
-    fn read_clipboard(&self) -> Option<String> {
-        self.clipboard.lock().clone()
-    }
-
-    fn write_clipboard<S: Into<String>>(&self, content: S) {
-        *self.clipboard.lock() = Some(content.into())
-    }
-
-    fn close_window(&self) {
-        *self.closed.lock() = true;
     }
 }

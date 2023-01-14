@@ -35,7 +35,7 @@ mod tests {
     use std::path::PathBuf;
     use sugar_path::SugarPath;
 
-    use crate::{dto::ExportSettingsError, mock::TigerAppMock};
+    use crate::{app::mock::TigerAppMock, dto::ExportSettingsError};
 
     #[tokio::test]
     async fn detects_template_errors() {

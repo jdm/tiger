@@ -237,7 +237,7 @@ mod tests {
     use std::path::PathBuf;
 
     use super::*;
-    use crate::mock::TigerAppMock;
+    use crate::app::mock::TigerAppMock;
 
     #[tokio::test]
     async fn can_open_and_close_documents() {

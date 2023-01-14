@@ -144,7 +144,7 @@ mod tests {
     use sugar_path::SugarPath;
 
     use super::*;
-    use crate::{dto, mock::TigerAppMock};
+    use crate::{app::mock::TigerAppMock, dto};
 
     #[tokio::test]
     async fn can_copy_paste_animation() {

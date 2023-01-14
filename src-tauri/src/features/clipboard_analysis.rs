@@ -30,9 +30,8 @@ pub fn init<A: TigerApp + Send + 'static>(app: A, period: Duration) {
 #[cfg(test)]
 mod tests {
     use crate::{
-        app::TigerApp,
+        app::{mock::TigerAppMock, TigerApp},
         dto::{ClipboardManifest, Direction},
-        mock::TigerAppMock,
     };
 
     #[tokio::test]
