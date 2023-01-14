@@ -1046,6 +1046,44 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn can_disable_keyframe_snapping() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.set_snap_keyframe_durations(false);
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        app.update_drag_keyframe_duration(99);
+        app.end_drag_keyframe_duration();
+
+        assert_eq!(
+            app.document()
+                .keyframe("walk", dto::Direction::North, 1)
+                .duration_millis,
+            199
+        );
+    }
+
+    #[tokio::test]
+    async fn can_disable_snapping_to_other_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+
+        app.set_snap_keyframes_to_other_keyframes(false);
+        app.begin_drag_keyframe_duration(dto::Direction::North, 1);
+        app.update_drag_keyframe_duration(99);
+        app.end_drag_keyframe_duration();
+
+        assert_eq!(
+            app.document()
+                .keyframe("walk", dto::Direction::North, 1)
+                .duration_millis,
+            199
+        );
+    }
+
+    #[tokio::test]
     async fn drag_keyframe_duration_does_not_snap_to_moving_keyframes() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
