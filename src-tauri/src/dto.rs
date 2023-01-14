@@ -459,9 +459,27 @@ impl document::Document {
 
 impl Document {
     #[cfg(test)]
-    pub fn animation<S: AsRef<str>>(&self, animation: S) -> &Animation {
+    pub fn frames(&self) -> HashSet<String> {
+        self.sheet.frames.iter().map(|f| f.name.clone()).collect()
+    }
+
+    #[cfg(test)]
+    pub fn frame<S: AsRef<str>>(&self, name: S) -> &Frame {
         self.sheet
-            .animations
+            .frames
+            .iter()
+            .find(|f| f.name == name.as_ref())
+            .unwrap()
+    }
+
+    #[cfg(test)]
+    pub fn animations(&self) -> &Vec<Animation> {
+        &self.sheet.animations
+    }
+
+    #[cfg(test)]
+    pub fn animation<S: AsRef<str>>(&self, animation: S) -> &Animation {
+        self.animations()
             .iter()
             .find(|a| a.name == animation.as_ref())
             .unwrap()
@@ -485,6 +503,16 @@ impl Document {
         index: usize,
     ) -> &Keyframe {
         self.sequence(animation, direction).keyframe(index)
+    }
+
+    #[cfg(test)]
+    pub fn hitboxes<S: AsRef<str>>(
+        &self,
+        animation: S,
+        direction: Direction,
+        index: usize,
+    ) -> &Vec<Hitbox> {
+        &self.keyframe(animation, direction, index).hitboxes
     }
 
     #[cfg(test)]

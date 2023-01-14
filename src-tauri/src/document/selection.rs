@@ -1336,31 +1336,77 @@ mod tests {
     }
 
     #[test]
-    fn can_delete_selected_frames() {
+    fn can_delete_selection() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
         app.import_frames(vec!["A", "B", "C"]);
         assert_eq!(
-            app.document()
-                .sheet
-                .frames
-                .iter()
-                .map(|f| f.name.as_str())
-                .collect::<HashSet<_>>(),
-            ["A", "B", "C"].into()
+            app.document().frames(),
+            ["A".into(), "B".into(), "C".into()].into()
         );
-
         app.select_frame("B", false, false);
         app.delete_selection();
+        assert_eq!(app.document().frames(), ["A".into(), "C".into()].into());
+    }
+
+    #[test]
+    fn can_delete_selected_frames() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.import_frames(vec!["A", "B", "C"]);
+        app.select_frame("B", false, false);
         assert_eq!(
-            app.document()
-                .sheet
-                .frames
-                .iter()
-                .map(|f| f.name.as_str())
-                .collect::<HashSet<_>>(),
-            ["A", "C"].into()
+            app.document().frames(),
+            ["A".into(), "B".into(), "C".into()].into()
         );
+        app.delete_selected_frames();
+        assert_eq!(app.document().frames(), ["A".into(), "C".into()].into());
+    }
+
+    #[tokio::test]
+    async fn can_delete_selected_animations() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.select_animation("walk", false, false);
+        assert!(app.document().animations().iter().any(|a| a.name != "walk"));
+        app.delete_selected_animations();
+        assert!(app.document().animations().iter().all(|a| a.name != "walk"));
+    }
+
+    #[tokio::test]
+    async fn can_delete_selected_keyframes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_keyframe(dto::Direction::North, 0, false, false);
+        app.select_keyframe(dto::Direction::North, 3, true, false);
+        assert!(!app
+            .document()
+            .keyframes("walk", dto::Direction::North)
+            .is_empty());
+        app.delete_selected_keyframes();
+        assert!(app
+            .document()
+            .keyframes("walk", dto::Direction::North)
+            .is_empty());
+    }
+
+    #[tokio::test]
+    async fn can_delete_selected_hitboxes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.select_direction(dto::Direction::North);
+        app.select_hitbox("weak", false, false);
+        assert!(!app
+            .document()
+            .hitboxes("walk", dto::Direction::North, 0)
+            .is_empty());
+        app.delete_selected_hitboxes();
+        assert!(app
+            .document()
+            .hitboxes("walk", dto::Direction::North, 0)
+            .is_empty());
     }
 
     #[tokio::test]

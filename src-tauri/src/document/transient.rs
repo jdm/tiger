@@ -1148,6 +1148,7 @@ mod tests {
 
         app.begin_nudge_keyframe(dto::Direction::North, 0);
         app.update_nudge_keyframe((5, 10), false);
+        app.end_nudge_keyframe();
 
         assert_eq!(
             app.document()

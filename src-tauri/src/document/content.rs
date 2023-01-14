@@ -74,3 +74,19 @@ impl Document {
         self.persistent.missing_textures.contains(frame.as_ref())
     }
 }
+
+#[cfg(test)]
+mod tests {
+
+    use crate::app::mock::TigerAppMock;
+
+    #[test]
+    fn can_create_and_delete_animation() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.create_animation();
+        assert!(!app.document().animations().is_empty());
+        app.delete_animation(app.document().current_animation_name.unwrap());
+        assert!(app.document().animations().is_empty());
+    }
+}

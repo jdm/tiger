@@ -317,7 +317,8 @@ impl Document {
 
 #[cfg(test)]
 mod tests {
-    use crate::app::mock::TigerAppMock;
+
+    use crate::{app::mock::TigerAppMock, dto};
 
     #[tokio::test]
     async fn can_zoom_workbench_in_out() {
@@ -356,6 +357,32 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn can_toggle_workbench_view_options() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+
+        app.disable_sprite_darkening();
+        assert!(!app.document().darken_sprites);
+        app.enable_sprite_darkening();
+        assert!(app.document().darken_sprites);
+
+        app.hide_hitboxes();
+        assert!(app.document().hide_hitboxes);
+        app.show_hitboxes();
+        assert!(!app.document().hide_hitboxes);
+
+        app.hide_origin();
+        assert!(app.document().hide_origin);
+        app.show_origin();
+        assert!(!app.document().hide_origin);
+
+        app.hide_sprite();
+        assert!(app.document().hide_sprite);
+        app.show_sprite();
+        assert!(!app.document().hide_sprite);
+    }
+
+    #[tokio::test]
     async fn can_zoom_timeline_in_out() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
@@ -388,28 +415,69 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn can_toggle_workbench_view_options() {
+    async fn can_pan_timeline() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.edit_animation("walk");
+        app.set_timeline_zoom_amount(1.0);
+        app.pan_timeline(-900.0);
+        assert_eq!(app.document().timeline_offset_millis, 300.0);
+    }
 
-        app.disable_sprite_darkening();
-        assert!(!app.document().darken_sprites);
-        app.enable_sprite_darkening();
-        assert!(app.document().darken_sprites);
+    #[tokio::test]
+    async fn can_filter_frames() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        assert!(!app.document().frame("samurai-dead-all").filtered_out);
+        assert!(!app.document().frame("samurai-attack-west").filtered_out);
+        app.filter_frames("a ack");
+        assert!(app.document().frame("samurai-dead-all").filtered_out);
+        assert!(!app.document().frame("samurai-attack-west").filtered_out);
+    }
 
-        app.hide_hitboxes();
-        assert!(app.document().hide_hitboxes);
-        app.show_hitboxes();
-        assert!(!app.document().hide_hitboxes);
+    #[tokio::test]
+    async fn can_filter_animations() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        assert!(!app.document().animation("idle").filtered_out);
+        assert!(!app.document().animation("attack").filtered_out);
+        app.filter_animations("dl");
+        assert!(!app.document().animation("idle").filtered_out);
+        assert!(app.document().animation("attack").filtered_out);
+    }
 
-        app.hide_origin();
-        assert!(app.document().hide_origin);
-        app.show_origin();
-        assert!(!app.document().hide_origin);
+    #[test]
+    fn can_store_list_offsets() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
 
-        app.hide_sprite();
-        assert!(app.document().hide_sprite);
-        app.show_sprite();
-        assert!(!app.document().hide_sprite);
+        app.set_frames_list_mode(dto::ListMode::Linear);
+        app.set_frames_list_offset(50);
+        assert_eq!(app.document().frames_list_offset, 50);
+
+        app.set_frames_list_mode(dto::ListMode::Grid4xN);
+        assert_eq!(app.document().frames_list_offset, 0);
+        app.set_frames_list_offset(60);
+        assert_eq!(app.document().frames_list_offset, 60);
+
+        app.set_frames_list_mode(dto::ListMode::Linear);
+        assert_eq!(app.document().frames_list_offset, 50);
+
+        app.set_animations_list_offset(80);
+        assert_eq!(app.document().animations_list_offset, 80);
+
+        app.set_hitboxes_list_offset(90);
+        assert_eq!(app.document().hitboxes_list_offset, 90);
+    }
+
+    #[test]
+    fn can_lock_and_unlock_hitboxes() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        assert!(!app.document().lock_hitboxes);
+        app.lock_hitboxes();
+        assert!(app.document().lock_hitboxes);
+        app.unlock_hitboxes();
+        assert!(!app.document().lock_hitboxes);
     }
 }
