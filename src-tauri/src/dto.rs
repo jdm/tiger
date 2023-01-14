@@ -35,7 +35,7 @@ pub enum ClipboardManifest {
     Hitboxes,
 }
 
-#[derive(Clone, Debug, Deserialize, Serialize)]
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct UserFacingError {
     pub key: String,

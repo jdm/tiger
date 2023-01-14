@@ -537,4 +537,15 @@ mod tests {
                 .collect::<Vec<_>>()
         );
     }
+
+    #[tokio::test]
+    async fn can_bring_up_error_message() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.show_error_message("title", "summary", "details");
+        let error = app.client_state().error.unwrap();
+        assert_eq!(error.title, "title");
+        assert_eq!(error.summary, "summary");
+        assert_eq!(error.details, "details");
+    }
 }
