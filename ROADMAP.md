@@ -10,6 +10,7 @@
 - [x] Automatically add extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected
 - [x] Reach satisfying test coverage
+- [ ] Using `Export` before defining export settings behaves like `Export As…`
 - [x] Replace tarpaulin with grcov for code coverage measurements
 - [x] Hover & pressed states for Button controls
 - [x] Hover & pressed states for Toggle controls
