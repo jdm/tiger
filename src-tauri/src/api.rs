@@ -724,7 +724,19 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     async fn export(&self) -> Result<Patch, ()> {
-        Ok(export_document(self).await)
+        let has_export_settings = {
+            let state_handle = self.state();
+            let state = state_handle.lock();
+            state
+                .current_document()
+                .map(|d| d.sheet().export_settings().is_some())
+                .unwrap_or_default()
+        };
+        if has_export_settings {
+            Ok(export_document(self).await)
+        } else {
+            self.begin_export_as()
+        }
     }
 
     fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()> {

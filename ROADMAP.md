@@ -8,7 +8,7 @@
 - [x] Bumped `.tiger` format version to `Tiger5`
 - [x] Automatically add `.png` extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected
-- [ ] Using `Export` before defining export settings behaves like `Export As…`
+- [x] Using `Export` before defining export settings behaves like `Export As…`
 - [x] Hover & pressed states for Button controls
 - [x] Hover & pressed states for Toggle controls
 - [x] Hover & pressed states for playback controls

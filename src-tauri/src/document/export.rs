@@ -271,9 +271,19 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn shows_export_errors() {
+    async fn exports_as_when_trying_to_export_with_blank_settings() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
+        app.export().await;
+        assert!(app.client_state().error.is_none());
+        assert!(app.document().export_settings_being_edited.is_some());
+    }
+
+    #[tokio::test]
+    async fn shows_export_errors() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.import_frames(vec!["test-data/missing-file.png"]);
         assert!(app.client_state().error.is_none());
         app.export().await;
         assert!(app.client_state().error.is_some());
