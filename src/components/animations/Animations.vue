@@ -2,7 +2,14 @@
 	<div class="flex-1 flex flex-col min-h-0 p-4 gap-4">
 		<div class="w-full flex gap-2 items-center">
 			<InputSearch class="flex-1" placeholder="Search animations" v-model="searchQuery" />
-			<Button :positive="true" :icon="FilmIcon" label="New" @click="createAnimation" />
+			<div class="relative">
+				<Button :positive="true" :icon="FilmIcon" label="New" @click="createAnimation" />
+				<TutorialBubble arrow-position="left" :tutorial-active="state.onboardingInProgress"
+					:step-active="state.onboardingStep == OnboardingStep.CreateAnimation"
+					class="absolute top-1/2 right-0">
+					Create an animation.
+				</TutorialBubble>
+			</div>
 		</div>
 		<PaneInset class="flex-1 min-h-0">
 			<StatefulScroll ref="scrollableElement" v-model:scroll-top="scrollPosition"
@@ -22,7 +29,7 @@
 import { computed, nextTick, Ref, ref, watch } from "vue"
 import { FilmIcon } from "@heroicons/vue/20/solid"
 import { clearSelection, createAnimation, filterAnimations, paste, setAnimationsListOffset } from "@/backend/api"
-import { ClipboardManifest } from "@/backend/dto"
+import { ClipboardManifest, OnboardingStep } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import Animation from "@/components/animations/Animation.vue"
 import Button from "@/components/basic/Button.vue"
@@ -30,6 +37,7 @@ import ContextMenu from "@/components/basic/ContextMenu.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import StatefulScroll from "@/components/basic/StatefulScroll.vue"
+import TutorialBubble from "@/components/basic/TutorialBubble.vue"
 
 const state = useStateStore();
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);

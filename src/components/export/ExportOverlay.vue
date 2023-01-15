@@ -14,11 +14,9 @@
 										:filters="[{ name: 'Image', extensions: ['png'] }]" />
 								</template>
 								<template #error>
-									<Transition name="error-slide">
-										<InputError
-											v-if="introComplete && atlasImageFile && validation?.atlasImageFileError"
-											:shortErrorText="shortErrorText(validation.atlasImageFileError)" />
-									</Transition>
+									<InputError v-if="validation && introComplete"
+										:visible="!!atlasImageFile && !!validation?.atlasImageFileError"
+										:shortErrorText="shortErrorText(validation.atlasImageFileError)" />
 								</template>
 							</InputField>
 							<InputField label="Metadata File">
@@ -28,11 +26,9 @@
 										:filters="[{ name: 'Any', extensions: [] }]" />
 								</template>
 								<template #error>
-									<Transition name="error-slide">
-										<InputError
-											v-if="introComplete && metadataFile && validation?.metadataFileError"
-											:shortErrorText="shortErrorText(validation.metadataFileError)" />
-									</Transition>
+									<InputError v-if="validation && introComplete"
+										:visible="!!metadataFile && !!validation?.metadataFileError"
+										:shortErrorText="shortErrorText(validation.metadataFileError)" />
 								</template>
 							</InputField>
 						</div>
@@ -45,12 +41,10 @@
 										placeholder="C:\ExampleGame\Tooling\SpritesheetFormat.template" />
 								</template>
 								<template #error>
-									<Transition name="error-slide">
-										<InputError
-											v-if="introComplete && templateFile && validation?.templateFileError"
-											:shortErrorText="shortErrorText(validation.templateFileError)"
-											:longErrorText="longErrorText(validation.templateFileError) || undefined" />
-									</Transition>
+									<InputError v-if="validation && introComplete"
+										:visible="!!templateFile && !!validation?.templateFileError"
+										:shortErrorText="shortErrorText(validation.templateFileError)"
+										:longErrorText="longErrorText(validation.templateFileError) || undefined" />
 								</template>
 							</InputField>
 							<InputField label="Metadata Root Directory">
@@ -59,11 +53,9 @@
 										placeholder="C:\ExampleGame" />
 								</template>
 								<template #error>
-									<Transition name="error-slide">
-										<InputError
-											v-if="introComplete && metadataRoot && validation?.metadataPathsRootError"
-											:shortErrorText="shortErrorText(validation.metadataPathsRootError)" />
-									</Transition>
+									<InputError v-if="validation && introComplete"
+										:visible="!!metadataRoot && !!validation?.metadataPathsRootError"
+										:shortErrorText="shortErrorText(validation.metadataPathsRootError)" />
 								</template>
 							</InputField>
 						</div>
@@ -139,7 +131,10 @@ function onVisible() {
 	introComplete.value = true;
 }
 
-function shortErrorText(error: ExportSettingsError): string {
+function shortErrorText(error: ExportSettingsError | null): string {
+	if (!error) {
+		return "";
+	}
 	switch (error) {
 		case "ExpectedAbsolutePath": return "This path should be absolute, not relative.";
 		case "ExpectedDirectory": return "This path should be a directory, not a file.";
@@ -153,7 +148,10 @@ function shortErrorText(error: ExportSettingsError): string {
 }
 
 
-function longErrorText(error: ExportSettingsError): string | null {
+function longErrorText(error: ExportSettingsError | null): string | null {
+	if (!error) {
+		return null;
+	}
 	switch (error) {
 		case "ExpectedAbsolutePath": return null;
 		case "ExpectedDirectory": return null;
@@ -181,21 +179,5 @@ function longErrorText(error: ExportSettingsError): string | null {
 .pane-slide-enter-from,
 .pane-slide-leave-to {
 	transform: translateX(100%);
-}
-
-.error-slide-enter-active {
-	transition-property: opacity, transform;
-	transition: 0.3s ease-out;
-}
-
-.error-slide-leave-active {
-	transition-property: opacity, transform;
-	transition: 0.2s ease-in;
-}
-
-.error-slide-enter-from,
-.error-slide-leave-to {
-	opacity: 0;
-	transform: translateX(-10px);
 }
 </style>

@@ -8,17 +8,21 @@ export function debounceAnimation<T extends MultiWatchSources>(
   delay?: number
 ): Ref<boolean> {
   const value = ref(true);
-  watch(sources, () => {
-    if (!evaluate()) {
-      value.value = false;
-    } else {
-      window.setTimeout(() => {
-        if (evaluate()) {
-          value.value = true;
-        }
-      }, delay || 800);
-    }
-  });
+  watch(
+    sources,
+    () => {
+      if (!evaluate()) {
+        value.value = false;
+      } else {
+        window.setTimeout(() => {
+          if (evaluate()) {
+            value.value = true;
+          }
+        }, delay || 800);
+      }
+    },
+    { immediate: true }
+  );
   return value;
 }
 

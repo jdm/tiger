@@ -1,6 +1,7 @@
 <template>
 	<Teleport v-if="open" to="#floatingLayer">
-		<div ref="el" class="absolute pointer-events-auto" :style="positionStyle">
+		<div ref="el" class="absolute " :style="positionStyle"
+			:class="ignorePointerEvents ? 'pointer-events-none' : 'pointer-events-auto'">
 			<slot />
 		</div>
 	</Teleport>
@@ -12,6 +13,7 @@ import { computed, Ref, ref, watch } from "vue";
 const props = defineProps<{
 	open: boolean,
 	position: [number, number],
+	ignorePointerEvents?: boolean,
 }>();
 
 const emit = defineEmits<{

@@ -1,6 +1,6 @@
 <template>
 	<div class="flex-1 flex flex-col items-stretch min-h-0 p-4 gap-4">
-		<Transition>
+		<Transition name="relocate-intro">
 			<div v-if="state.anyFramesMissing" class="-mt-4 -mx-4 overflow-hidden">
 				<div class="w-full flex items-center py-2 pl-4 pr-6 bg-red-600 text-plastic-900 text-sm font-medium">
 					<ExclamationTriangleIcon class="mr-4 w-9 p-1.5 text-red-600 bg-plastic-900 rounded-full" />
@@ -13,7 +13,13 @@
 		<div class="w-full flex gap-2 items-center transition-all" :class="darkening">
 			<MultiSwitch :items="listModes" @activate="switchListMode" />
 			<InputSearch placeholder="Search frames" v-model="searchQuery" />
-			<Button :positive="true" :icon="PhotoIcon" label="Import" @click="importFrames" />
+			<div class="relative">
+				<Button :positive="true" :icon="PhotoIcon" label="Import" @click="importFrames" />
+				<TutorialBubble arrow-position="left" :tutorial-active="state.onboardingInProgress"
+					:step-active="state.onboardingStep == OnboardingStep.ImportFrame" class="absolute top-1/2 right-0">
+					Get started by importing<br />frame images.
+				</TutorialBubble>
+			</div>
 		</div>
 		<PaneInset class="flex-1 min-h-0 transition-all" :class="darkening">
 			<StatefulScroll ref="scrollableElement" v-model:scroll-top="scrollPosition"
@@ -32,13 +38,14 @@ import { computed, nextTick, Ref, ref, watch } from "vue"
 import { Bars4Icon, PhotoIcon, Squares2X2Icon } from "@heroicons/vue/20/solid"
 import { ExclamationTriangleIcon } from "@heroicons/vue/24/solid"
 import { beginRelocateFrames, clearSelection, filterFrames, importFrames, setFramesListMode, setFramesListOffset } from "@/backend/api"
-import { ListMode } from "@/backend/dto"
+import { ListMode, OnboardingStep } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import Button from "@/components/basic/Button.vue"
 import InputSearch from "@/components/basic/InputSearch.vue"
 import MultiSwitch, { MultiSwitchItem } from "@/components/basic/MultiSwitch.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import StatefulScroll from "@/components/basic/StatefulScroll.vue"
+import TutorialBubble from "@/components/basic/TutorialBubble.vue"
 import Frame from "@/components/frames/Frame.vue"
 
 const state = useStateStore();
@@ -88,22 +95,21 @@ const searchQuery = computed({
 const darkening = computed(() => [
 	...state.anyFramesMissing ? ["brightness-[.4]", "saturate-0"] : [],
 ]);
-
 </script>
 
 <style>
-.v-enter-active {
+.relocate-intro-enter-active {
 	transition: max-height 0.15s ease-out;
 	max-height: 56px;
 }
 
-.v-leave-active {
+.relocate-intro-leave-active {
 	transition: max-height 0.15s ease-in;
 	max-height: 56px;
 }
 
-.v-enter-from,
-.v-leave-to {
+.relocate-intro-enter-from,
+.relocate-intro-leave-to {
 	max-height: 0px;
 }
 </style>

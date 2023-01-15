@@ -5,6 +5,7 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::document::{self};
+use crate::features::onboarding;
 use crate::sheet::{self, Paths};
 use crate::state;
 
@@ -19,6 +20,7 @@ pub struct State {
     pub clipboard_manifest: Option<ClipboardManifest>,
     pub is_release_build: bool,
     pub error: Option<UserFacingError>,
+    pub onboarding_step: OnboardingStep,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
@@ -42,6 +44,15 @@ pub struct UserFacingError {
     pub title: String,
     pub summary: String,
     pub details: String,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+pub enum OnboardingStep {
+    NotStarted,
+    ImportFrame,
+    CreateAnimation,
+    PlaceFrameOnTimeline,
+    Completed,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -316,6 +327,7 @@ impl state::State {
             clipboard_manifest: self.clipboard_manifest().as_ref().map(|m| m.into()),
             is_release_build: !cfg!(debug_assertions),
             error: self.error().map(|e| e.into()),
+            onboarding_step: (&self.onboarding_step()).into(),
         }
     }
 }
@@ -327,6 +339,20 @@ impl From<&state::UserFacingError> for UserFacingError {
             title: error.title.clone(),
             summary: error.summary.clone(),
             details: error.details.clone(),
+        }
+    }
+}
+
+impl From<&onboarding::OnboardingStep> for OnboardingStep {
+    fn from(step: &onboarding::OnboardingStep) -> Self {
+        match step {
+            onboarding::OnboardingStep::NotStarted => OnboardingStep::NotStarted,
+            onboarding::OnboardingStep::ImportFrame => OnboardingStep::ImportFrame,
+            onboarding::OnboardingStep::CreateAnimation => OnboardingStep::CreateAnimation,
+            onboarding::OnboardingStep::PlaceFrameOnTimeline => {
+                OnboardingStep::PlaceFrameOnTimeline
+            }
+            onboarding::OnboardingStep::Completed => OnboardingStep::Completed,
         }
     }
 }

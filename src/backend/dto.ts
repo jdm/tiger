@@ -9,6 +9,7 @@ export type State = {
   clipboardManifest: ClipboardManifest | null;
   isReleaseBuild: boolean;
   error: UserFacingError | null;
+  onboardingStep: OnboardingStep;
 };
 
 export type RecentDocument = {
@@ -22,6 +23,14 @@ export type UserFacingError = {
   summary: string;
   details: string;
 };
+
+export enum OnboardingStep {
+  NotStarted = "NotStarted",
+  ImportFrame = "ImportFrame",
+  CreateAnimation = "CreateAnimation",
+  PlaceFrameOnTimeline = "PlaceFrameOnTimeline",
+  Completed = "Completed",
+}
 
 export enum ClipboardManifest {
   Animations = "Animations",

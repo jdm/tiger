@@ -6,6 +6,7 @@ import {
   Keyframe,
   Patch,
   Sequence,
+  OnboardingStep,
 } from "@/backend/dto";
 import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
@@ -19,6 +20,7 @@ export const useStateStore = defineStore("state", {
       clipboardManifest: null,
       isReleaseBuild: false,
       error: null,
+      onboardingStep: OnboardingStep.NotStarted,
     } as State),
   actions: {
     patch(patch: Patch) {
@@ -127,6 +129,12 @@ export const useStateStore = defineStore("state", {
     },
     canPaste(): boolean {
       return !!this.clipboardManifest && !!this.currentDocument;
+    },
+    onboardingInProgress(): boolean {
+      return (
+        this.onboardingStep != OnboardingStep.NotStarted &&
+        this.onboardingStep != OnboardingStep.Completed
+      );
     },
   },
 });

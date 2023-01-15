@@ -8,6 +8,7 @@ pub type Handle = handle::Handle<Paths>;
 pub struct Paths {
     pub log_file: PathBuf,
     pub recent_documents_file: PathBuf,
+    pub onboarding_file: PathBuf,
 }
 
 impl Paths {
@@ -18,6 +19,7 @@ impl Paths {
         Self {
             log_file: data_local_dir.join("tiger.log"),
             recent_documents_file: data_local_dir.join("recent-documents.json"),
+            onboarding_file: data_local_dir.join("onboarding.json"),
         }
     }
 
@@ -34,9 +36,17 @@ impl Paths {
         backtrace.hash(&mut s);
         let hash = s.finish();
         Paths {
-            recent_documents_file: format!("test-output/recent_documents-{hash}.json").into(),
             log_file: format!("test-output/log-{hash}.log").into(),
+            recent_documents_file: format!("test-output/recent-documents-{hash}.json").into(),
+            onboarding_file: format!("test-output/onboarding-{hash}.json").into(),
         }
+    }
+
+    #[cfg(test)]
+    pub fn remove_all(&self) {
+        std::fs::remove_file(&self.log_file).ok();
+        std::fs::remove_file(&self.recent_documents_file).ok();
+        std::fs::remove_file(&self.onboarding_file).ok();
     }
 }
 

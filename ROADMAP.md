@@ -2,16 +2,13 @@
 
 ## Tiger 0.8
 
-- [x] Handle missing frame files (warning + offer to relocate)
-- [ ] In-place tutorials instead of blank data
+- [x] Missing frame files are detected and can be relocated
+- [x] Onboarding tutorial for first-time users
 - [x] ⚠ The `sheet_image` field in template data was replaced by `atlas_image` and now includes atlas dimensions (issue #13)
 - [x] Bumped `.tiger` format version to `Tiger5`
-- [x] Merge redundant code between save(), save_as() and save_all()
-- [x] Automatically add extension to exported textures
+- [x] Automatically add `.png` extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected
-- [x] Reach satisfying test coverage
 - [ ] Using `Export` before defining export settings behaves like `Export As…`
-- [x] Replace tarpaulin with grcov for code coverage measurements
 - [x] Hover & pressed states for Button controls
 - [x] Hover & pressed states for Toggle controls
 - [x] Hover & pressed states for playback controls
@@ -25,6 +22,9 @@
 - [x] Fixed a bug where the `sheet_image` field would use `\` as path separator instead of `/` (issue #14)
 - [x] Fixed export documentation referencing a non-existing source field on `Frame`
 - [x] Fixed a bug where timeline would not fill entire panel after resizing the program window
+- [x] Replace tarpaulin with grcov for code coverage measurements
+- [x] Reach satisfying test coverage
+- [x] Merge redundant code between save(), save_as() and save_all()
 
 ## Tiger 0.9
 

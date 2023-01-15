@@ -8,6 +8,7 @@ use thiserror::Error;
 use crate::{
     document::{ClipboardManifest, Document, DocumentError},
     dto::{self, StateTrim},
+    features::onboarding::OnboardingStep,
     utils::handle,
 };
 
@@ -28,6 +29,7 @@ pub struct State {
     recent_documents: Observable<'static, Vec<PathBuf>>,
     clipboard_manifest: Option<ClipboardManifest>,
     errors: Vec<UserFacingError>,
+    onboarding_step: Observable<'static, OnboardingStep>,
     exit_requested: bool,
 }
 
@@ -43,6 +45,7 @@ impl State {
     pub fn patch<F: FnOnce(&mut State)>(&mut self, state_trim: StateTrim, operation: F) -> Patch {
         let old_state: dto::State = self.to_dto(state_trim);
         operation(self);
+        self.after_change();
         let new_state: dto::State = self.to_dto(state_trim);
 
         let old_json = serde_json::to_value(old_state);
@@ -55,6 +58,10 @@ impl State {
                 Patch(Vec::new())
             }
         }
+    }
+
+    fn after_change(&mut self) {
+        self.advance_onboarding();
     }
 
     pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
@@ -84,6 +91,7 @@ impl State {
         }
         self.focus_document(&path).unwrap();
         self.add_recent_document(path);
+        self.set_onboarding_step(OnboardingStep::Completed);
     }
 
     pub fn focus_document<T: AsRef<Path>>(&mut self, path: T) -> Result<(), AppError> {
@@ -228,6 +236,20 @@ impl State {
 
     pub fn clipboard_manifest(&self) -> &Option<ClipboardManifest> {
         &self.clipboard_manifest
+    }
+
+    pub fn set_onboarding_step(&mut self, new_onboarding_step: OnboardingStep) {
+        if new_onboarding_step != self.onboarding_step() {
+            self.onboarding_step.mutate(|s| *s = new_onboarding_step);
+        }
+    }
+
+    pub fn onboarding_step(&self) -> OnboardingStep {
+        *self.onboarding_step
+    }
+
+    pub fn onboarding_step_delegate(&self) -> &Delegate<'static, OnboardingStep> {
+        self.onboarding_step.delegate()
     }
 }
 

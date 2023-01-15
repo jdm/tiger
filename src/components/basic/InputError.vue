@@ -1,7 +1,7 @@
 <template>
-	<Bubble error>
-		<div class="flex pr-2 whitespace-pre-wrap">
-			<ExclamationTriangleIcon class="ml-2 mr-4 w-6 flex-none" />
+	<Bubble error :visible="visible">
+		<div class="flex whitespace-pre-wrap items-center">
+			<ExclamationTriangleIcon class="mr-4 w-6 flex-none" />
 			<div class="flex-col">
 				<div>{{ shortErrorText }}</div>
 				<a v-if="longErrorText" class="block mt-0.5 underline cursor-pointer" @click="openDetails">View
@@ -17,6 +17,7 @@ import { showErrorMessage } from "@/backend/api";
 import Bubble from "@/components/basic/Bubble.vue"
 
 const props = defineProps<{
+	visible: boolean,
 	shortErrorText: string,
 	longErrorText?: string,
 }>();

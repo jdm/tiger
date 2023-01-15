@@ -39,8 +39,7 @@ impl TigerAppMock {
 
     pub fn new_uninitialized() -> Self {
         let paths = Paths::test_outputs();
-        std::fs::remove_file(&paths.log_file).ok();
-        std::fs::remove_file(&paths.recent_documents_file).ok();
+        paths.remove_all();
         Self {
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
@@ -56,6 +55,7 @@ impl TigerAppMock {
         self.texture_cache.init(self.clone(), Self::PERIOD);
         features::clipboard_analysis::init(self.clone(), Self::PERIOD);
         features::missing_textures::init(self.clone(), Self::PERIOD);
+        features::onboarding::init(self.clone());
         features::recent_documents::init(self.clone());
         features::template_hot_reload::init(self.clone(), Self::PERIOD);
         features::texture_hot_reload::init(self.clone(), Self::PERIOD);

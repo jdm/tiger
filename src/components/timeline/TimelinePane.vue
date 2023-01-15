@@ -1,17 +1,17 @@
 <template>
 	<Pane>
 		<div class="w-full px-4 py-2 flex items-center">
-			<div class="flex-1 flex gap-2">
+			<div class="flex gap-2">
 				<PerspectivePicker />
 				<TooltipArea text="Toggle animation looping">
 					<Toggle :toggled="!!state.currentAnimation?.isLooping" @toggled="setAnimationLooping"
 						:icon="ArrowPathIcon" />
 				</TooltipArea>
 			</div>
-			<div class="flex-1 flex justify-center">
+			<div class="grow flex justify-center">
 				<PlaybackControls />
 			</div>
-			<div class="flex-1 flex gap-2 justify-end items-center">
+			<div class="flex gap-2 justify-end items-center">
 				<TooltipArea text="Keyframe snapping">
 					<Toggle :toggled="!!state.currentDocument?.snapKeyframeDurations"
 						@toggled="setSnapKeyframeDurations" :icon="AdjustmentsHorizontalIcon" :canExpand="true">
@@ -38,6 +38,11 @@
 					</div>
 				</div>
 				<div class="flex-grow relative min-h-[212px]">
+					<TutorialBubble :tutorial-active="state.onboardingInProgress"
+						:step-active="state.onboardingStep == OnboardingStep.PlaceFrameOnTimeline"
+						arrow-position="bottom" class="absolute left-44 top-8">
+						Drag and drop frames onto the timeline<br />to put your animation together.
+					</TutorialBubble>
 					<div ref="scrollableElement" class="absolute min-w-full h-full overflow-clip flex flex-col"
 						@wheel="onMouseWheel">
 						<DragArea :buttons="['right']" activeCursor="cursor-move" @drag-update="updatePanning"
@@ -66,7 +71,7 @@ import {
 	panTimeline,
 	selectDirection, setAnimationLooping, setSnapKeyframeDurations, setTimelineOffset, setTimelineZoomAmount, zoomInTimeline, zoomInTimelineAround, zoomOutTimeline, zoomOutTimelineAround
 } from "@/backend/api"
-import { Direction, Sequence as SequenceDTO } from "@/backend/dto"
+import { Direction, OnboardingStep, Sequence as SequenceDTO } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import { debounceAnimation, isStable } from "@/utils/animation"
 import DragArea, { DragAreaEvent } from "@/components/basic/DragArea.vue"
@@ -75,6 +80,7 @@ import Pane from "@/components/basic/Pane.vue"
 import PaneInset from "@/components/basic/PaneInset.vue"
 import Toggle from "@/components/basic/Toggle.vue"
 import TooltipArea from "@/components/basic/TooltipArea.vue"
+import TutorialBubble from "@/components/basic/TutorialBubble.vue"
 import PerspectivePicker from "@/components/timeline/PerspectivePicker.vue"
 import PlaybackControls from "@/components/timeline/PlaybackControls.vue"
 import Ruler from "@/components/timeline/Ruler.vue"

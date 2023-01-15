@@ -99,10 +99,7 @@ mod tests {
         let recent_documents_file = app.paths().lock().recent_documents_file.clone();
         app.open_documents(vec![&samurai_file, &flame_file]).await;
         app.assert_eventually(|| {
-            let Ok(file_content) = std::fs::read_to_string(&recent_documents_file) else {
-                return false
-            };
-            let Ok(recent_documents) = serde_json::from_str::<Vec<PathBuf>>(&file_content) else {
+            let Ok(recent_documents) = read_from_disk(&recent_documents_file) else {
                 return false
             };
             recent_documents == vec![flame_file.clone(), samurai_file.clone()]
