@@ -1148,7 +1148,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_animations_list_offset(&self, offset: u32) -> Result<Patch, ()> {
-        Ok(self.patch(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetAnimationsListOffset(offset))
@@ -1208,7 +1208,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_frames_list_offset(&self, offset: u32) -> Result<Patch, ()> {
-        Ok(self.patch(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetFramesListOffset(offset))
@@ -1258,7 +1258,7 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     fn set_hitboxes_list_offset(&self, offset: u32) -> Result<Patch, ()> {
-        Ok(self.patch(StateTrim::Full, |state| {
+        Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
                     .process_command(Command::SetHitboxesListOffset(offset))

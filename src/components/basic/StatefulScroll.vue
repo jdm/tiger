@@ -19,6 +19,8 @@ defineExpose({
 
 const scrollableElement: Ref<HTMLElement | null> = ref(null);
 let autoScrolling = false;
+let incoming = new Map<number, number>();
+let outgoing = new Map<number, number>();
 
 function onScroll() {
 	if (!scrollableElement.value) {
@@ -28,7 +30,13 @@ function onScroll() {
 		autoScrolling = false;
 		return;
 	}
-	emit("update:scrollTop", scrollableElement.value.scrollTop);
+	const newPosition = scrollableElement.value.scrollTop;
+	if (incoming.get(newPosition) != undefined) {
+		decrement(incoming, newPosition);
+	} else {
+		increment(outgoing, newPosition);
+		emit("update:scrollTop", scrollableElement.value.scrollTop);
+	}
 }
 
 function scrollToElement(element: HTMLElement) {
@@ -52,8 +60,25 @@ watch(() => props.scrollTop, (newPosition) => {
 		if (!scrollableElement.value) {
 			return;
 		}
-		scrollableElement.value.scrollTop = newPosition;
+		if (outgoing.get(newPosition) != undefined) {
+			decrement(outgoing, newPosition);
+		} else {
+			increment(incoming, newPosition);
+			scrollableElement.value.scrollTop = newPosition;
+		}
 	});
 });
 
+function increment(ledger: Map<number, number>, value: number) {
+	ledger.set(value, 1 + (ledger.get(value) || 0));
+}
+
+function decrement(ledger: Map<number, number>, value: number) {
+	const current = ledger.get(value) || 0;
+	if (current > 1) {
+		ledger.set(value, current - 1);
+	} else if (current == 1) {
+		ledger.delete(value);
+	}
+}
 </script>
