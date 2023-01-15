@@ -84,7 +84,7 @@
         "width": 1920,
         "height": 1080,
         "resizable": true,
-        "minWidth": 1000,
+        "minWidth": 1280,
         "minHeight": 1000,
         "decorations": false,
         "fileDropEnabled": false
