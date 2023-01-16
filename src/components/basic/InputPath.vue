@@ -1,14 +1,15 @@
 <template>
 	<InputText v-model="value" :placeholder="placeholder">
 		<template #after>
-			<span @click="openFilePicker" @mouseenter="onMouseEnter" @mouseleave="onMouseLeave" class="relative inline-flex items-center px-3 rounded-md
-				cursor-pointer  bg-plastic-600
-				border border-l-0 border-t-plastic-500 border-b-plastic-900 border-r-plastic-800 overflow-clip">
+			<button @click="openFilePicker" @mousedown="onMouseDown" @mouseup="onMouseUp" @mouseenter="onMouseEnter"
+				@mouseleave="onMouseLeave" :class="buttonClass" class="relative inline-flex items-center px-3 rounded-md
+				cursor-pointer  bg-plastic-600 border border-l-0 border-t-plastic-500 border-b-plastic-900 border-r-plastic-800 overflow-clip
+				outline-offset-2 active:outline-0">
 				<div class="absolute h-full w-full left-0 top-0 scale-75 blur-md bg-plastic-500/50 mix-blend-screen"
 					v-if="hovered" />
 				<FolderIcon v-if="isDirectory" class="w-5" :class="iconClass" />
 				<EllipsisHorizontalIcon v-if="!isDirectory" class="w-5" :class="iconClass" />
-			</span>
+			</button>
 		</template>
 	</InputText>
 </template>
@@ -35,9 +36,14 @@ const value: WritableComputedRef<string> = computed({
 });
 
 const hovered = ref(false);
+const active = ref(false);
 
 const iconClass = computed(()=>[
 	...hovered.value ? ["text-plastic-200"] : ["text-plastic-300"],
+]);
+
+const buttonClass = computed(() => [
+	!active.value ? ["focus:outline-2", "focus:outline-blue-500", "focus:outline-dotted"] : ["focus:outline-0"],
 ]);
 
 async function openFilePicker() {
@@ -59,6 +65,14 @@ function onMouseEnter() {
 
 function onMouseLeave() {
 	hovered.value = false;
+	active.value = false;
 }
 
+function onMouseDown() {
+	active.value = true;
+}
+
+function onMouseUp() {
+	active.value = false;
+}
 </script>

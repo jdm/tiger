@@ -1,5 +1,5 @@
 <template>
-	<fieldset :disabled="state.activeModalId != null" class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
+	<div class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
 		<AppBar />
 		<div class="flex-1 relative">
 			<div class="absolute inset-0 min-h-0 flex gap-5 p-5">
@@ -21,7 +21,7 @@
 			<NotificationOverlay class="absolute inset-0 z-[999]" />
 			<ExportOverlay class="absolute inset-0 z-[1000]" />
 		</div>
-	</fieldset>
+	</div>
 </template>
 
 <script setup lang="ts">

@@ -2,7 +2,7 @@
 	<div class="pointer-events-none">
 		<ScreenCover :visible="settings != null" />
 		<Transition name="pane-slide" @after-leave="onHidden" @after-enter="onVisible">
-			<div v-if="settings" class="absolute inset-0 pointer-events-auto ">
+			<FocusTrap v-if="settings" class="absolute inset-0 pointer-events-auto" @escape="cancelExportAs">
 				<div class="w-full h-full flex justify-end">
 					<div class="h-full w-[40rem] p-10 flex flex-col gap-16 bg-plastic-700">
 						<div class="flex flex-col gap-4">
@@ -61,9 +61,9 @@
 						</div>
 
 						<div class="flex gap-4 justify-end">
-							<Button label="Export" :positive="true" @click="endExportAs"
+							<Button label="Export" :positive="true" tabbable @click="endExportAs"
 								:disabled="!validation?.validSettings" />
-							<Button label="Cancel" @click="cancelExportAs" />
+							<Button label="Cancel" tabbable @click="cancelExportAs" />
 						</div>
 
 						<div class="flex-1 flex flex-col justify-end">
@@ -73,13 +73,13 @@
 								<div>
 									Confused about these options? Check out the <a
 										href="https://agersant.github.io/tiger/exporting.html" target="_blank"
-										class="underline underline-offset-2">documentation</a>.
+										class="underline underline-offset-2" tabindex="-1">documentation</a>.
 								</div>
 							</div>
 						</div>
 					</div>
 				</div>
-			</div>
+			</FocusTrap>
 		</Transition>
 	</div>
 </template>
@@ -92,6 +92,7 @@ import { cancelExportAs, endExportAs, setExportMetadataFile, setExportMetadataPa
 import { ExportSettingsError } from "@/backend/dto"
 import { useStateStore } from "@/stores/state"
 import Button from "@/components/basic/Button.vue"
+import FocusTrap from "@/components/basic/FocusTrap.vue"
 import InputError from "@/components/basic/InputError.vue"
 import InputField from "@/components/basic/InputField.vue"
 import InputPath from "@/components/basic/InputPath.vue"

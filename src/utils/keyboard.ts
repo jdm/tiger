@@ -1,13 +1,9 @@
 import {
-  acknowledgeError,
   beginExportAs,
   beginRenameSelection,
   browseSelection,
   browseToEnd,
   browseToStart,
-  cancelExit,
-  cancelExportAs,
-  cancelRelocateFrames,
   centerWorkbench,
   closeAllDocuments,
   closeCurrentDocument,
@@ -35,17 +31,33 @@ import {
   zoomOutWorkbench,
 } from "@/backend/api";
 import { BrowseDirection, NudgeDirection } from "@/backend/dto";
+import { useFocusStore } from "@/stores/focus";
 import { useStateStore } from "@/stores/state";
 
 function onKeyDown(event: KeyboardEvent) {
-  const isActiveElementKeyboardFriendly =
-    (document.activeElement as HTMLInputElement).tabIndex != -1;
+  const focus = useFocusStore();
+  const state = useStateStore();
 
-  if (document.activeElement?.tagName == "INPUT") {
-    return;
+  const isInputtingText = document.activeElement?.tagName == "INPUT";
+
+  // Prevent browser shortcuts
+  if (
+    (event.key == "E" && event.ctrlKey) || // Search
+    (event.key == "S" && event.ctrlKey) || // Screenshot
+    (event.key == "z" && event.ctrlKey) || //  Undo
+    (event.key == "Z" && event.ctrlKey) || //  Redo
+    //  Selection
+    (!isInputtingText && event.key == "ArrowUp") ||
+    (!isInputtingText && event.key == "ArrowDown") ||
+    (!isInputtingText && event.key == "ArrowLeft") ||
+    (!isInputtingText && event.key == "ArrowRight")
+  ) {
+    event.preventDefault();
   }
 
-  const state = useStateStore();
+  if (isInputtingText || focus.isInputTrapped) {
+    return;
+  }
 
   if (event.ctrlKey) {
     if (event.key == "n") {
@@ -59,22 +71,18 @@ function onKeyDown(event: KeyboardEvent) {
         save();
       }
     } else if (event.key == "S") {
-      event.preventDefault();
       saveAs(state.currentDocumentPath);
     } else if (event.key == "e") {
       doExport();
     } else if (event.key == "E") {
-      event.preventDefault();
       beginExportAs();
     } else if (event.key == "w") {
       closeCurrentDocument();
     } else if (event.key == "W") {
       closeAllDocuments();
     } else if (event.key == "z") {
-      event.preventDefault();
       undo();
     } else if (event.key == "Z") {
-      event.preventDefault();
       redo();
     } else if (event.key == "x") {
       cut();
@@ -115,27 +123,20 @@ function onKeyDown(event: KeyboardEvent) {
     }
   } else {
     if (event.key == " ") {
-      if (!isActiveElementKeyboardFriendly) {
-        event.preventDefault();
-        if (state.currentDocument?.timelineIsPlaying) {
-          pause();
-        } else {
-          play();
-        }
+      if (state.currentDocument?.timelineIsPlaying) {
+        pause();
+      } else {
+        play();
       }
     } else if (event.key == "Delete") {
       deleteSelection();
     } else if (event.key == "ArrowUp") {
-      event.preventDefault();
       browseSelection(BrowseDirection.Up, event.shiftKey);
     } else if (event.key == "ArrowDown") {
-      event.preventDefault();
       browseSelection(BrowseDirection.Down, event.shiftKey);
     } else if (event.key == "ArrowLeft") {
-      event.preventDefault();
       browseSelection(BrowseDirection.Left, event.shiftKey);
     } else if (event.key == "ArrowRight") {
-      event.preventDefault();
       browseSelection(BrowseDirection.Right, event.shiftKey);
     } else if (event.key == "Home") {
       browseToStart(event.shiftKey);
@@ -143,20 +144,6 @@ function onKeyDown(event: KeyboardEvent) {
       browseToEnd(event.shiftKey);
     } else if (event.key == "F2") {
       beginRenameSelection();
-    } else if (event.key == "Enter") {
-      if (!isActiveElementKeyboardFriendly) {
-        event.preventDefault();
-      }
-    } else if (event.key == "Escape") {
-      if (state.error) {
-        acknowledgeError();
-      } else if (state.currentDocument?.wasCloseRequested) {
-        cancelExit();
-      } else if (state.currentDocument?.framesBeingRelocated) {
-        cancelRelocateFrames();
-      } else if (state.currentDocument?.exportSettingsBeingEdited) {
-        cancelExportAs();
-      }
     }
   }
 }

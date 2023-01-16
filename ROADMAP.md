@@ -4,6 +4,7 @@
 
 - [x] Missing frame files are detected and can be relocated
 - [x] Onboarding tutorial for first-time users
+- [x] Export complete notifications
 - [x] ⚠ The `sheet_image` field in template data was replaced by `atlas_image` and now includes atlas dimensions (issue #13)
 - [x] Bumped `.tiger` format version to `Tiger5`
 - [x] Automatically add `.png` extension to exported textures
@@ -17,8 +18,9 @@
 - [x] Can close directions dropdown menu by clicking it again
 - [x] Can press escape to close modals / export overlay
 - [ ] Can press Ctrl+Tab / Shift+Ctrl+Tab to cycle active document
-- [ ] Can press arrow keys to cycle active button in modal dialogs
-- [x] Export complete notification
+- [x] Can press Tab / Shift+Tab to cycle active input in export overlay
+- [x] Can press arrow keys to cycle active input in modal dialogs or export overlay
+- [x] Can no longer use keyboard shortcuts while modal dialogs or export overlay are active
 - [x] Fixed a bug where scrollable panels would sometimes jitter when using the mouse wheel
 - [x] Fixed a bug where window could be resized narrow enough to break timeline UI
 - [x] Fixed a bug where the `sheet_image` field would use `\` as path separator instead of `/` (issue #14)

@@ -28,16 +28,6 @@ export const useStateStore = defineStore("state", {
     },
   },
   getters: {
-    activeModalId(): string | null {
-      if (this.error != null) {
-        return this.error.key;
-      } else if (this.currentDocument?.wasCloseRequested) {
-        return "closing_" + this.currentDocument.path;
-      } else if (!!this.currentDocument?.framesBeingRelocated) {
-        return "relocating_" + this.currentDocument.path;
-      }
-      return null;
-    },
     currentDocument(state) {
       for (let document of state.documents) {
         if (document.path == state.currentDocumentPath) {
