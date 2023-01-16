@@ -15,12 +15,12 @@
 - [x] Hover & pressed states for playback controls
 - [x] Hover state for FlatMultiSwitch controls
 - [x] Hover state for InputPath controls
-- [x] Can close directions dropdown menu by clicking it again
+- [x] Can press Ctrl+Tab / Shift+Ctrl+Tab to cycle active document
 - [x] Can press escape to close modals / export overlay
-- [ ] Can press Ctrl+Tab / Shift+Ctrl+Tab to cycle active document
 - [x] Can press Tab / Shift+Tab to cycle active input in export overlay
 - [x] Can press arrow keys to cycle active input in modal dialogs or export overlay
 - [x] Can no longer use keyboard shortcuts while modal dialogs or export overlay are active
+- [x] Can close directions dropdown menu by clicking it again
 - [x] Fixed a bug where scrollable panels would sometimes jitter when using the mouse wheel
 - [x] Fixed a bug where window could be resized narrow enough to break timeline UI
 - [x] Fixed a bug where the `sheet_image` field would use `\` as path separator instead of `/` (issue #14)

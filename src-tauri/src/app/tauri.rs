@@ -154,6 +154,16 @@ pub fn focus_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()>
 }
 
 #[tauri::command]
+pub fn focus_next_document(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.focus_next_document()
+}
+
+#[tauri::command]
+pub fn focus_previous_document(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.focus_previous_document()
+}
+
+#[tauri::command]
 pub fn close_all_documents(app: tauri::AppHandle) -> Result<Patch, ()> {
     app.close_all_documents()
 }

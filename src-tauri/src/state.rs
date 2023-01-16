@@ -101,6 +101,30 @@ impl State {
         Ok(())
     }
 
+    pub fn focus_next_document(&mut self) -> Result<(), AppError> {
+        self.cycle_focused_document(false)
+    }
+
+    pub fn focus_previous_document(&mut self) -> Result<(), AppError> {
+        self.cycle_focused_document(true)
+    }
+
+    fn cycle_focused_document(&mut self, backward: bool) -> Result<(), AppError> {
+        let Some(current_index) = self
+            .current_document
+            .as_ref()
+            .and_then(|p| self.documents_iter().position(|d| d.path() == p))
+        else {
+            return Ok(())
+        };
+        let delta: isize = if backward { -1 } else { 1 };
+        let num_documents = self.documents.len();
+        let new_index =
+            (num_documents + current_index).saturating_add_signed(delta) % self.documents.len();
+        let new_document = self.documents[new_index].path().to_owned();
+        self.focus_document(new_document)
+    }
+
     pub fn current_document(&self) -> Option<&Document> {
         match &self.current_document {
             None => None,
@@ -497,6 +521,27 @@ mod tests {
             app.client_state().current_document_path,
             Some("test-data/samurai.tiger".into())
         );
+    }
+
+    #[test]
+    fn can_cycle_documents() {
+        let app = TigerAppMock::new();
+        app.new_document("1");
+        app.new_document("2");
+        app.new_document("3");
+        assert_eq!(app.client_state().current_document_path, Some("3".into()));
+        app.focus_next_document();
+        assert_eq!(app.client_state().current_document_path, Some("1".into()));
+        app.focus_next_document();
+        assert_eq!(app.client_state().current_document_path, Some("2".into()));
+        app.focus_next_document();
+        assert_eq!(app.client_state().current_document_path, Some("3".into()));
+        app.focus_previous_document();
+        assert_eq!(app.client_state().current_document_path, Some("2".into()));
+        app.focus_previous_document();
+        assert_eq!(app.client_state().current_document_path, Some("1".into()));
+        app.focus_previous_document();
+        assert_eq!(app.client_state().current_document_path, Some("3".into()));
     }
 
     #[test]

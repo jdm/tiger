@@ -91,6 +91,8 @@ pub trait Api {
     fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
     fn filter_frames<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
+    fn focus_next_document(&self) -> Result<Patch, ()>;
+    fn focus_previous_document(&self) -> Result<Patch, ()>;
     fn get_state(&self) -> Result<dto::State, ()>;
     fn hide_hitboxes(&self) -> Result<Patch, ()>;
     fn hide_origin(&self) -> Result<Patch, ()>;
@@ -780,6 +782,18 @@ impl<A: TigerApp + Sync> Api for A {
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::Full, |state| {
             state.focus_document(path.as_ref()).ok();
+        }))
+    }
+
+    fn focus_next_document(&self) -> Result<Patch, ()> {
+        Ok(self.patch(StateTrim::NoDocuments, |state| {
+            state.focus_next_document().ok();
+        }))
+    }
+
+    fn focus_previous_document(&self) -> Result<Patch, ()> {
+        Ok(self.patch(StateTrim::NoDocuments, |state| {
+            state.focus_previous_document().ok();
         }))
     }
 

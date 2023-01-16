@@ -11,6 +11,8 @@ import {
   cut,
   deleteSelection,
   doExport,
+  focusNextDocument,
+  focusPreviousDocument,
   newDocument,
   nudgeSelection,
   openDocuments,
@@ -64,6 +66,12 @@ function onKeyDown(event: KeyboardEvent) {
       newDocument();
     } else if (event.key == "o") {
       openDocuments();
+    } else if (event.key == "Tab") {
+      if (event.shiftKey) {
+        focusPreviousDocument();
+      } else {
+        focusNextDocument();
+      }
     } else if (event.key == "s") {
       if (event.altKey) {
         saveAll();

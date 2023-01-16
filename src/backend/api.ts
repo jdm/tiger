@@ -82,6 +82,16 @@ export async function focusDocument(path: string): Promise<void> {
   appStore.patch(await invoke("focus_document", { path: path }));
 }
 
+export async function focusNextDocument(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("focus_next_document"));
+}
+
+export async function focusPreviousDocument(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("focus_previous_document"));
+}
+
 export async function closeDocument(path: string): Promise<void> {
   const appStore = useStateStore();
   appStore.patch(await invoke("close_document", { path: path }));

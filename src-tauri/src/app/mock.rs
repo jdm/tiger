@@ -380,6 +380,14 @@ impl TigerAppMock {
         self.apply_patch(Api::focus_document(self, path).unwrap());
     }
 
+    pub fn focus_next_document(&self) {
+        self.apply_patch(Api::focus_next_document(self).unwrap());
+    }
+
+    pub fn focus_previous_document(&self) {
+        self.apply_patch(Api::focus_previous_document(self).unwrap());
+    }
+
     pub fn hide_hitboxes(&self) {
         self.apply_patch(Api::hide_hitboxes(self).unwrap());
     }

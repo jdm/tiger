@@ -66,6 +66,8 @@ fn main() {
             app::tauri::close_current_document,
             app::tauri::close_document,
             app::tauri::focus_document,
+            app::tauri::focus_next_document,
+            app::tauri::focus_previous_document,
             app::tauri::get_state,
             app::tauri::new_document,
             app::tauri::open_documents,
