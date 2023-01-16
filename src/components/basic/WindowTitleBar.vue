@@ -21,8 +21,8 @@
 					class="w-12 px-4 hover:bg-plastic-500">
 					<div class="w-2.5 h-2.5 mx-auto border border-zinc-400" />
 				</button>
-				<button @click="requestExit" class="w-12 px-4 hover:bg-red-600" @mouseenter="xHovered = true"
-					@mouseleave="xHovered = false" tabindex="-1">
+				<button @click="requestExit" class="w-12 px-4 hover:bg-red-600 focus:outline-0"
+					@mouseenter="xHovered = true" @mouseleave="xHovered = false" tabindex="-1">
 					<div class="relative mx-auto w-3.5 h-3.5">
 						<div class="absolute w-full h-px top-1/2 rotate-45" :class="xColor" />
 						<div class="absolute w-full h-px top-1/2 -rotate-45" :class="xColor" />
