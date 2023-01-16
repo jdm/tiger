@@ -1,6 +1,7 @@
 <template>
   <div class="relative h-screen w-screen overflow-hidden select-none" @contextmenu="onContextMenu">
     <MainLayer />
+    <NotificationLayer class="absolute inset-0 z-[9997]" />
     <ModalLayer class="absolute inset-0 z-[9998]" />
     <FloatingLayer class="absolute inset-0 z-[9999]" />
   </div>
@@ -18,6 +19,7 @@ import { registerKeyboardShortcuts, unregisterKeyboardShortcuts } from "@/utils/
 import FloatingLayer from "@/components/basic/FloatingLayer.vue"
 import MainLayer from "@/components/MainLayer.vue"
 import ModalLayer from "@/components/ModalLayer.vue"
+import NotificationLayer from "@/components/NotificationLayer.vue"
 
 const dev = useDevStore();
 const sprite = useSpriteStore();

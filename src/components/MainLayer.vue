@@ -18,7 +18,7 @@
 					<TimelinePane />
 				</div>
 			</div>
-			<ExportOverlay class="absolute inset-0 z-[9997]" />
+			<ExportOverlay class="absolute inset-0 z-[1000]" />
 		</div>
 	</fieldset>
 </template>
