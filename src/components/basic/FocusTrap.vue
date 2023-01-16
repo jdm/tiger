@@ -29,6 +29,7 @@ watch(el, (current, previous) => {
 				emit("escape");
 				return false;
 			},
+			initialFocus: false,
 			isKeyBackward: (event: KeyboardEvent) => {
 				return	(event.key == "Tab" && event.shiftKey && !event.ctrlKey)
 					||	(canUseArrowKeys() && event.key == "ArrowLeft" && !event.shiftKey && !event.ctrlKey)
