@@ -18,6 +18,7 @@
 					<TimelinePane />
 				</div>
 			</div>
+			<NotificationOverlay class="absolute inset-0 z-[999]" />
 			<ExportOverlay class="absolute inset-0 z-[1000]" />
 		</div>
 	</fieldset>
@@ -25,6 +26,7 @@
 
 <script setup lang="ts">
 import AppBar from "@/components/AppBar.vue"
+import NotificationOverlay from "@/components/NotificationOverlay.vue"
 import AnimationsPane from "@/components/animations/AnimationsPane.vue"
 import DetailsPane from "@/components/details/DetailsPane.vue"
 import ExportOverlay from "@/components/export/ExportOverlay.vue"

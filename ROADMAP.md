@@ -16,7 +16,9 @@
 - [x] Hover state for InputPath controls
 - [x] Can close directions dropdown menu by clicking it again
 - [x] Can press escape to close modals / export overlay
-- [ ] Export complete notification
+- [ ] Can press Ctrl+Tab / Shift+Ctrl+Tab to cycle active document
+- [ ] Can press arrow keys to cycle active button in modal dialogs
+- [x] Export complete notification
 - [x] Fixed a bug where scrollable panels would sometimes jitter when using the mouse wheel
 - [x] Fixed a bug where window could be resized narrow enough to break timeline UI
 - [x] Fixed a bug where the `sheet_image` field would use `\` as path separator instead of `/` (issue #14)

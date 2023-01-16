@@ -188,7 +188,10 @@ mod tests {
     use sugar_path::SugarPath;
 
     use super::*;
-    use crate::app::{mock::TigerAppMock, TigerApp};
+    use crate::{
+        app::{mock::TigerAppMock, TigerApp},
+        dto,
+    };
 
     #[tokio::test]
     async fn export_matches_known_output() {
@@ -275,18 +278,34 @@ mod tests {
         let app = TigerAppMock::new();
         app.new_document("tmp");
         app.export().await;
-        assert!(app.client_state().error.is_none());
         assert!(app.document().export_settings_being_edited.is_some());
     }
 
     #[tokio::test]
-    async fn shows_export_errors() {
+    async fn notifies_of_export_success() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.export().await;
+        assert!(app
+            .events()
+            .into_iter()
+            .any(
+                |(event, payload)| event.as_str() == dto::EVENT_EXPORT_SUCCESS
+                    && serde_json::from_value::<dto::ExportSuccess>(payload).is_ok()
+            ));
+    }
+
+    #[tokio::test]
+    async fn notifies_of_export_error() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
         app.import_frames(vec!["test-data/missing-file.png"]);
-        assert!(app.client_state().error.is_none());
         app.export().await;
-        assert!(app.client_state().error.is_some());
+        assert!(app
+            .events()
+            .into_iter()
+            .any(|(event, payload)| event.as_str() == dto::EVENT_EXPORT_ERROR
+                && serde_json::from_value::<dto::ExportError>(payload).is_ok()));
     }
 
     #[test]

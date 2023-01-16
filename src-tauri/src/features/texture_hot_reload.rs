@@ -1,18 +1,10 @@
-use serde::{Deserialize, Serialize};
-use std::path::PathBuf;
 use std::time::Duration;
 
 use crate::{
     app::TigerApp,
+    dto,
     utils::{file_watcher::FileWatcher, texture_list::TextureList},
 };
-
-static EVENT_INVALIDATE_TEXTURE: &str = "invalidate-texture";
-
-#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
-struct TextureEvent {
-    path: PathBuf,
-}
 
 pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
     let (mut file_watcher, events_receiver) = FileWatcher::new({
@@ -32,7 +24,10 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
     std::thread::spawn(move || loop {
         if let Ok(Ok(events)) = events_receiver.recv() {
             for event in events {
-                app.emit_all(EVENT_INVALIDATE_TEXTURE, TextureEvent { path: event.path });
+                app.emit_all(
+                    dto::EVENT_INVALIDATE_TEXTURE,
+                    dto::TextureInvalidationEvent { path: event.path },
+                );
             }
         }
     });
@@ -60,17 +55,17 @@ mod tests {
         assert!(app
             .events()
             .iter()
-            .all(|(event, _)| event != EVENT_INVALIDATE_TEXTURE));
+            .all(|(event, _)| event != dto::EVENT_INVALIDATE_TEXTURE));
         std::fs::copy(after_frame, &frame).unwrap();
         app.wait_for_periodic_scans();
 
-        let expected_payload = TextureEvent { path: frame };
+        let expected_payload = dto::TextureInvalidationEvent { path: frame };
         assert!(app
             .events()
             .into_iter()
             .any(
-                |(event, payload)| event.as_str() == EVENT_INVALIDATE_TEXTURE
-                    && match serde_json::from_value::<TextureEvent>(payload) {
+                |(event, payload)| event.as_str() == dto::EVENT_INVALIDATE_TEXTURE
+                    && match serde_json::from_value::<dto::TextureInvalidationEvent>(payload) {
                         Ok(payload) => payload == expected_payload,
                         Err(_) => false,
                     }

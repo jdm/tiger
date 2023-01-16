@@ -209,6 +209,19 @@ export type ExportSettingsValidation = {
   metadataPathsRootError: ExportSettingsError | null;
 };
 
+export type ExportError = {
+  documentName: string;
+  error: string;
+};
+
+export type ExportSuccess = {
+  documentName: string;
+  atlasImageFilePath: string;
+  atlasImageFileName: string;
+  metadataFilePath: string;
+  metadataFileName: string;
+};
+
 export type TextureInvalidationEvent = {
   path: string;
 };

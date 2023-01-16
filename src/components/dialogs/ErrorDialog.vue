@@ -1,10 +1,10 @@
 <template>
 	<ModalDialog :title="error.title" :icon="ExclamationTriangleIcon" :error="true">
 		<template #body>
-			<p class="pb-1">{{ error.summary }}</p>
+			<p class="pb-2" v-html="error.summary" />
 			<div
 				class="p-4 max-w-2xl max-h-80 select-text bg-plastic-700 border-4 border-plastic-700 rounded-md text-xs text-plastic-300 overflow-scroll styled-scrollbars">
-				<div class="w-fit min-w-[400px] whitespace-pre font-mono">{{ error.details }}</div>
+				<div class="w-fit min-w-[500px] whitespace-pre font-mono">{{ error.details }}</div>
 			</div>
 		</template>
 		<template #actions>

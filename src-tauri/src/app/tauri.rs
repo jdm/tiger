@@ -14,9 +14,6 @@ use crate::{
     utils::paths,
 };
 
-static EVENT_PATCH_STATE: &str = "patch-state";
-static EVENT_REPLACE_STATE: &str = "replace-state";
-
 impl TigerApp for tauri::App {
     fn state(&self) -> state::Handle {
         TigerApp::state(&self.handle())
@@ -77,7 +74,7 @@ impl TigerApp for tauri::AppHandle {
     {
         let patch = self.patch(state_trim, operation);
         if !patch.0.is_empty() {
-            if let Err(e) = tauri::Manager::emit_all(self, EVENT_PATCH_STATE, patch) {
+            if let Err(e) = tauri::Manager::emit_all(self, dto::EVENT_PATCH_STATE, patch) {
                 error!("Error while pushing state patch: {e}");
             }
         }
@@ -87,7 +84,7 @@ impl TigerApp for tauri::AppHandle {
         let state_handle = tauri::Manager::state::<state::Handle>(self);
         let state = state_handle.lock();
         let new_state = state.to_dto(StateTrim::Full);
-        if let Err(e) = tauri::Manager::emit_all(self, EVENT_REPLACE_STATE, new_state) {
+        if let Err(e) = tauri::Manager::emit_all(self, dto::EVENT_REPLACE_STATE, new_state) {
             error!("Error while replacing state: {e}");
         }
     }

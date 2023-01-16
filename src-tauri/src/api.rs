@@ -6,7 +6,7 @@ use std::time::Duration;
 use crate::app::TigerApp;
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
-use crate::export::export_sheet;
+use crate::export::{export_sheet, ExportOutput};
 use crate::sheet::{Absolute, Sheet};
 
 struct DocumentToSave {
@@ -679,14 +679,12 @@ impl<A: TigerApp + Sync> Api for A {
     }
 
     async fn end_export_as(&self) -> Result<Patch, ()> {
-        let mut patch = self.patch(StateTrim::Full, |state| {
+        let patch = self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::EndExportAs).ok();
             }
         });
-
-        let mut additional_patch = export_document(self).await;
-        patch.0.append(&mut additional_patch.0);
+        export_document(self).await;
         Ok(patch)
     }
 
@@ -752,7 +750,8 @@ impl<A: TigerApp + Sync> Api for A {
                 .unwrap_or_default()
         };
         if has_export_settings {
-            Ok(export_document(self).await)
+            export_document(self).await;
+            Ok(Patch(Vec::new()))
         } else {
             self.begin_export_as()
         }
@@ -912,7 +911,7 @@ impl<A: TigerApp + Sync> Api for A {
                         state.show_error_message(
                             "Error".to_owned(),
                             format!(
-                                "An error occured while trying to open `{}`",
+                                "An error occured while trying to open `{}`:",
                                 path.to_file_name()
                             ),
                             e.to_string(),
@@ -1646,7 +1645,7 @@ async fn save_documents<A: TigerApp>(
                 Err(e) => state.show_error_message(
                     "Error".to_owned(),
                     format!(
-                        "An error occured while trying to save `{}`",
+                        "An error occured while trying to save `{}`:",
                         document.destination.to_file_name()
                     ),
                     e.to_string(),
@@ -1661,13 +1660,13 @@ async fn save_documents<A: TigerApp>(
     }))
 }
 
-async fn export_document<A: TigerApp>(app: &A) -> Patch {
-    let (sheet, document_name) = {
+async fn export_document<A: TigerApp>(app: &A) {
+    let (sheet, document_path) = {
         let state_handle = app.state();
         let state = state_handle.lock();
         match state.current_document() {
-            Some(d) => (d.sheet().clone(), d.path().to_file_name()),
-            _ => return Patch(Vec::new()),
+            Some(d) => (d.sheet().clone(), d.path().to_owned()),
+            _ => return,
         }
     };
 
@@ -1678,16 +1677,27 @@ async fn export_document<A: TigerApp>(app: &A) -> Patch {
     .await
     .unwrap();
 
-    app.patch(StateTrim::Full, |state| {
-        if let Err(e) = result {
-            state.show_error_message(
-                "Export Error".to_owned(),
-                format!(
-                    "An error occured while trying to export `{}`",
-                    document_name.to_file_name(),
-                ),
-                e.to_string(),
-            );
+    match result {
+        Ok(output) => {
+            let ExportOutput::TemplateExportOutput {
+                atlas_image_path,
+                metadata_path,
+            } = output;
+            let payload = dto::ExportSuccess {
+                document_name: document_path.to_file_name(),
+                atlas_image_file_path: atlas_image_path.clone(),
+                atlas_image_file_name: atlas_image_path.to_file_name(),
+                metadata_file_path: metadata_path.clone(),
+                metadata_file_name: metadata_path.to_file_name(),
+            };
+            app.emit_all(dto::EVENT_EXPORT_SUCCESS, payload);
         }
-    })
+        Err(e) => {
+            let payload = dto::ExportError {
+                document_name: document_path.to_file_name(),
+                error: e.to_string(),
+            };
+            app.emit_all(dto::EVENT_EXPORT_ERROR, payload);
+        }
+    }
 }

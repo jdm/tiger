@@ -11,6 +11,12 @@ use crate::state;
 
 // Typescript: @/stores/state
 
+pub static EVENT_EXPORT_ERROR: &str = "export-error";
+pub static EVENT_EXPORT_SUCCESS: &str = "export-success";
+pub static EVENT_INVALIDATE_TEXTURE: &str = "invalidate-texture";
+pub static EVENT_PATCH_STATE: &str = "patch-state";
+pub static EVENT_REPLACE_STATE: &str = "replace-state";
+
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct State {
@@ -248,6 +254,29 @@ pub struct ExportSettingsValidation {
     pub atlas_image_file_error: Option<ExportSettingsError>,
     pub metadata_file_error: Option<ExportSettingsError>,
     pub metadata_paths_root_error: Option<ExportSettingsError>,
+}
+
+#[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct TextureInvalidationEvent {
+    pub path: PathBuf,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportError {
+    pub document_name: String,
+    pub error: String,
+}
+
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ExportSuccess {
+    pub document_name: String,
+    pub atlas_image_file_path: PathBuf,
+    pub atlas_image_file_name: String,
+    pub metadata_file_path: PathBuf,
+    pub metadata_file_name: String,
 }
 
 #[derive(Clone, Copy)]

@@ -15,6 +15,13 @@ mod metadata;
 pub use atlas::*;
 pub use metadata::*;
 
+pub enum ExportOutput {
+    TemplateExportOutput {
+        atlas_image_path: PathBuf,
+        metadata_path: PathBuf,
+    },
+}
+
 #[derive(Error, Debug)]
 pub enum ExportError {
     #[error("Missing export settings")]
@@ -32,7 +39,7 @@ pub enum ExportError {
 pub fn export_sheet(
     sheet: &Sheet<Absolute>,
     texture_cache: texture_cache::Handle,
-) -> Result<(), ExportError> {
+) -> Result<ExportOutput, ExportError> {
     let export_settings = sheet
         .export_settings()
         .as_ref()
@@ -61,10 +68,13 @@ pub fn export_sheet(
                 let mut file = create_file(path)?;
                 atlas.image().write_to(&mut file, image::ImageFormat::Png)?;
             }
+
+            Ok(ExportOutput::TemplateExportOutput {
+                atlas_image_path: template_settings.atlas_image_file().to_owned(),
+                metadata_path: template_settings.metadata_file().to_owned(),
+            })
         }
     }
-
-    Ok(())
 }
 
 fn create_file(path: &Path) -> Result<File, ExportError> {
