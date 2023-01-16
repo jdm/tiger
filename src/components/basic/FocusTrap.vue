@@ -24,6 +24,7 @@ watch(el, (current, previous) => {
 	}
 	if (current) {
 		trap = focusTrap.createFocusTrap(current, {
+			allowOutsideClick: true,
 			escapeDeactivates: () => {
 				emit("escape");
 				return false;
