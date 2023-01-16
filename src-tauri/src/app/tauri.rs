@@ -756,8 +756,8 @@ pub fn end_nudge_keyframe(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn create_hitbox(app: tauri::AppHandle, position: Option<(i32, i32)>) -> Result<Patch, ()> {
-    app.create_hitbox(position)
+pub fn create_hitbox(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.create_hitbox()
 }
 
 #[tauri::command]

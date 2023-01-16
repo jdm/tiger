@@ -58,7 +58,7 @@ pub trait Api {
     fn close_without_saving(&self) -> Result<Patch, ()>;
     fn copy(&self) -> Result<Patch, ()>;
     fn create_animation(&self) -> Result<Patch, ()>;
-    fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()>;
+    fn create_hitbox(&self) -> Result<Patch, ()>;
     fn cut(&self) -> Result<Patch, ()>;
     fn delete_animation<S: Into<String>>(&self, name: S) -> Result<Patch, ()>;
     fn delete_frame<P: Into<PathBuf>>(&self, path: P) -> Result<Patch, ()>;
@@ -492,12 +492,10 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    fn create_hitbox(&self, position: Option<(i32, i32)>) -> Result<Patch, ()> {
+    fn create_hitbox(&self) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
-                document
-                    .process_command(Command::CreateHitbox(position.map(|p| p.into())))
-                    .ok();
+                document.process_command(Command::CreateHitbox).ok();
             }
         }))
     }

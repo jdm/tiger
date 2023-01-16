@@ -774,11 +774,9 @@ export async function endNudgeKeyframe(): Promise<void> {
   appStore.patch(await invoke("end_nudge_keyframe"));
 }
 
-export async function createHitbox(
-  position: [number, number] | null
-): Promise<void> {
+export async function createHitbox(): Promise<void> {
   const appStore = useStateStore();
-  appStore.patch(await invoke("create_hitbox", { position: position }));
+  appStore.patch(await invoke("create_hitbox"));
 }
 
 export async function deleteHitbox(name: string): Promise<void> {

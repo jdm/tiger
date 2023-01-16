@@ -264,8 +264,8 @@ impl TigerAppMock {
         self.apply_patch(Api::create_animation(self).unwrap());
     }
 
-    pub fn create_hitbox(&self, position: Option<(i32, i32)>) {
-        self.apply_patch(Api::create_hitbox(self, position).unwrap());
+    pub fn create_hitbox(&self) {
+        self.apply_patch(Api::create_hitbox(self).unwrap());
     }
 
     pub fn cut(&self) {

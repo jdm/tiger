@@ -1,4 +1,4 @@
-use euclid::{default::Vector2D, vec2};
+use euclid::vec2;
 use std::time::Duration;
 
 use crate::document::*;
@@ -25,14 +25,11 @@ impl Document {
         Ok(())
     }
 
-    pub(super) fn create_hitbox(&mut self, position: Option<Vector2D<i32>>) -> DocumentResult<()> {
+    pub(super) fn create_hitbox(&mut self) -> DocumentResult<()> {
         let (animation_name, _) = self.workbench_animation()?;
         let animation_name = animation_name.clone();
         let ((direction, index), keyframe) = self.workbench_keyframe_mut()?;
-        let (hitbox_name, hitbox) = keyframe.create_hitbox("New Hitbox");
-        if let Some(position) = position {
-            hitbox.set_position(position);
-        }
+        let (hitbox_name, _) = keyframe.create_hitbox("New Hitbox");
         self.select_hitbox_only(animation_name, direction, index, hitbox_name);
         Ok(())
     }
@@ -170,7 +167,7 @@ mod tests {
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
-        app.create_hitbox(Some((0, 0)));
+        app.create_hitbox();
 
         app.set_hitbox_position_x(10);
         app.set_hitbox_position_y(20);
@@ -207,7 +204,7 @@ mod tests {
         app.create_animation();
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
-        app.create_hitbox(Some((0, 0)));
+        app.create_hitbox();
 
         app.set_hitbox_width(10);
         app.set_hitbox_height(20);
@@ -257,7 +254,7 @@ mod tests {
         app.begin_drag_and_drop_frame("frame");
         app.drop_frame_on_timeline(dto::Direction::North, 0);
 
-        app.create_hitbox(Some((0, 0)));
+        app.create_hitbox();
         assert_eq!(hitbox_names().len(), 1);
 
         app.delete_hitbox(hitbox_names()[0].clone());

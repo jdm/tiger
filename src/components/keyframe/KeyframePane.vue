@@ -63,7 +63,7 @@ function onToggleLockHitboxes(toggled: boolean) {
 }
 
 function onAddClicked() {
-	createHitbox(null);
+	createHitbox();
 }
 
 const scrollPosition =  computed({
