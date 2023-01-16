@@ -239,7 +239,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BeginDragAndDropKeyframe(direction.into(), index))
+                    .process_command(Command::BeginDragAndDropKeyframe {
+                        direction: direction.into(),
+                        index,
+                    })
                     .ok();
             }
         }))
@@ -253,7 +256,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BeginDragKeyframeDuration(direction.into(), index))
+                    .process_command(Command::BeginDragKeyframeDuration {
+                        direction: direction.into(),
+                        index,
+                    })
                     .ok();
             }
         }))
@@ -281,7 +287,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BeginNudgeKeyframe(direction.into(), index))
+                    .process_command(Command::BeginNudgeKeyframe {
+                        direction: direction.into(),
+                        index,
+                    })
                     .ok();
             }
         }))
@@ -331,7 +340,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BeginResizeHitbox(name.into(), axis.into()))
+                    .process_command(Command::BeginResizeHitbox {
+                        name: name.into(),
+                        axis: axis.into(),
+                    })
                     .ok();
             }
         }))
@@ -341,7 +353,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::BrowseSelection(direction.into(), shift))
+                    .process_command(Command::BrowseSelection {
+                        direction: direction.into(),
+                        shift,
+                    })
                     .ok();
             }
         }))
@@ -591,7 +606,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::DropFrameOnTimeline(direction.into(), index))
+                    .process_command(Command::DropFrameOnTimeline {
+                        direction: direction.into(),
+                        index,
+                    })
                     .ok();
             }
         }))
@@ -605,7 +623,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::DropKeyframeOnTimeline(direction.into(), index))
+                    .process_command(Command::DropKeyframeOnTimeline {
+                        direction: direction.into(),
+                        index,
+                    })
                     .ok();
             }
         }))
@@ -859,7 +880,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::NudgeSelection(direction.into(), large_nudge))
+                    .process_command(Command::NudgeSelection {
+                        direction: direction.into(),
+                        large_nudge,
+                    })
                     .ok();
             }
         }))
@@ -961,7 +985,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::RelocateFrame(from.into(), to.into()))
+                    .process_command(Command::RelocateFrame {
+                        from: from.into(),
+                        to: to.into(),
+                    })
                     .ok();
             }
         }))
@@ -1070,7 +1097,11 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectAnimation(name.into(), shift, ctrl))
+                    .process_command(Command::SelectAnimation {
+                        name: name.into(),
+                        shift,
+                        ctrl,
+                    })
                     .ok();
             }
         }))
@@ -1095,7 +1126,11 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectFrame(path.into(), shift, ctrl))
+                    .process_command(Command::SelectFrame {
+                        path: path.into(),
+                        shift,
+                        ctrl,
+                    })
                     .ok();
             }
         }))
@@ -1110,7 +1145,11 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectHitbox(name.into(), shift, ctrl))
+                    .process_command(Command::SelectHitbox {
+                        name: name.into(),
+                        shift,
+                        ctrl,
+                    })
                     .ok();
             }
         }))
@@ -1126,12 +1165,12 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::SelectKeyframe(
-                        direction.into(),
+                    .process_command(Command::SelectKeyframe {
+                        direction: direction.into(),
                         index,
                         shift,
                         ctrl,
-                    ))
+                    })
                     .ok();
             }
         }))
@@ -1460,7 +1499,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::UpdateNudgeHitbox(displacement.into(), both_axis))
+                    .process_command(Command::UpdateNudgeHitbox {
+                        displacement: displacement.into(),
+                        both_axis,
+                    })
                     .ok();
             }
         }))
@@ -1474,7 +1516,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::UpdateNudgeKeyframe(displacement.into(), both_axis))
+                    .process_command(Command::UpdateNudgeKeyframe {
+                        displacement: displacement.into(),
+                        both_axis,
+                    })
                     .ok();
             }
         }))
@@ -1488,10 +1533,10 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
-                    .process_command(Command::UpdateResizeHitbox(
-                        displacement.into(),
+                    .process_command(Command::UpdateResizeHitbox {
+                        displacement: displacement.into(),
                         preserve_aspect_ratio,
-                    ))
+                    })
                     .ok();
             }
         }))

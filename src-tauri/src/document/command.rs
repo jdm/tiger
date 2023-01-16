@@ -20,22 +20,48 @@ pub enum Command {
     SetHitboxesListOffset(u32),
     ImportFrames(Vec<PathBuf>),
     BeginRelocateFrames,
-    RelocateFrame(PathBuf, PathBuf),
+    RelocateFrame {
+        from: PathBuf,
+        to: PathBuf,
+    },
     CancelRelocateFrames,
     EndRelocateFrames,
     DeleteFrame(PathBuf),
     DeleteSelectedFrames,
     DeleteSelection,
-    NudgeSelection(NudgeDirection, bool),
-    BrowseSelection(BrowseDirection, bool),
+    NudgeSelection {
+        direction: NudgeDirection,
+        large_nudge: bool,
+    },
+    BrowseSelection {
+        direction: BrowseDirection,
+        shift: bool,
+    },
     BrowseToEnd(bool),
     BrowseToStart(bool),
     ClearSelection,
     SelectAll,
-    SelectFrame(PathBuf, bool, bool),
-    SelectAnimation(String, bool, bool),
-    SelectKeyframe(Direction, usize, bool, bool),
-    SelectHitbox(String, bool, bool),
+    SelectFrame {
+        path: PathBuf,
+        shift: bool,
+        ctrl: bool,
+    },
+    SelectAnimation {
+        name: String,
+        shift: bool,
+        ctrl: bool,
+    },
+    SelectKeyframe {
+        direction: Direction,
+        index: usize,
+        shift: bool,
+        ctrl: bool,
+    },
+    SelectHitbox {
+        name: String,
+        shift: bool,
+        ctrl: bool,
+    },
     Pan(Vector2D<f32>),
     CenterWorkbench,
     ZoomInWorkbench,
@@ -86,20 +112,38 @@ pub enum Command {
     ApplyDirectionPreset(DirectionPreset),
     SelectDirection(Direction),
     BeginDragAndDropFrame(PathBuf),
-    DropFrameOnTimeline(Direction, usize),
+    DropFrameOnTimeline {
+        direction: Direction,
+        index: usize,
+    },
     EndDragAndDropFrame,
     DeleteSelectedKeyframes,
     SetKeyframeDuration(Duration),
     SetKeyframeOffsetX(i32),
     SetKeyframeOffsetY(i32),
-    BeginDragAndDropKeyframe(Direction, usize),
-    DropKeyframeOnTimeline(Direction, usize),
+    BeginDragAndDropKeyframe {
+        direction: Direction,
+        index: usize,
+    },
+    DropKeyframeOnTimeline {
+        direction: Direction,
+        index: usize,
+    },
     EndDragAndDropKeyframe,
-    BeginDragKeyframeDuration(Direction, usize),
+    BeginDragKeyframeDuration {
+        direction: Direction,
+        index: usize,
+    },
     UpdateDragKeyframeDuration(i64),
     EndDragKeyframeDuration,
-    BeginNudgeKeyframe(Direction, usize),
-    UpdateNudgeKeyframe(Vector2D<i32>, bool),
+    BeginNudgeKeyframe {
+        direction: Direction,
+        index: usize,
+    },
+    UpdateNudgeKeyframe {
+        displacement: Vector2D<i32>,
+        both_axis: bool,
+    },
     EndNudgeKeyframe,
     CreateHitbox(Option<Vector2D<i32>>),
     DeleteHitbox(String),
@@ -112,10 +156,19 @@ pub enum Command {
     SetHitboxHeight(u32),
     TogglePreserveAspectRatio,
     BeginNudgeHitbox(String),
-    UpdateNudgeHitbox(Vector2D<i32>, bool),
+    UpdateNudgeHitbox {
+        displacement: Vector2D<i32>,
+        both_axis: bool,
+    },
     EndNudgeHitbox,
-    BeginResizeHitbox(String, ResizeAxis),
-    UpdateResizeHitbox(Vector2D<i32>, bool),
+    BeginResizeHitbox {
+        name: String,
+        axis: ResizeAxis,
+    },
+    UpdateResizeHitbox {
+        displacement: Vector2D<i32>,
+        preserve_aspect_ratio: bool,
+    },
     EndResizeHitbox,
     BeginExportAs,
     SetExportTemplateFile(PathBuf),
@@ -149,26 +202,34 @@ impl Document {
             Command::SetHitboxesListOffset(o) => self.view.hitboxes_list_offset = o,
             Command::ImportFrames(ref p) => self.import_frames(p),
             Command::BeginRelocateFrames => self.begin_relocate_frames(),
-            Command::RelocateFrame(ref from, ref to) => {
-                self.relocate_frame(from.clone(), to.clone())?
-            }
+            Command::RelocateFrame { from, to } => self.relocate_frame(from, to)?,
             Command::CancelRelocateFrames => self.cancel_relocate_frames(),
             Command::EndRelocateFrames => self.end_relocate_frames()?,
             Command::DeleteFrame(ref p) => self.sheet.delete_frame(p),
             Command::DeleteSelectedFrames => self.delete_selected_frames(),
             Command::DeleteSelection => self.delete_selection()?,
-            Command::NudgeSelection(d, l) => self.nudge_selection(d, l)?,
-            Command::BrowseSelection(d, shift) => self.browse_selection(d, shift)?,
+            Command::NudgeSelection {
+                direction,
+                large_nudge,
+            } => self.nudge_selection(direction, large_nudge)?,
+            Command::BrowseSelection { direction, shift } => {
+                self.browse_selection(direction, shift)?
+            }
             Command::BrowseToEnd(shift) => self.browse_to_end(shift)?,
             Command::BrowseToStart(shift) => self.browse_to_start(shift)?,
             Command::ClearSelection => self.view.selection.clear(),
             Command::SelectAll => self.select_all()?,
-            Command::SelectFrame(ref p, shift, ctrl) => self.select_frame(p, shift, ctrl),
-            Command::SelectAnimation(ref n, shift, ctrl) => self.select_animation(n, shift, ctrl),
-            Command::SelectKeyframe(d, i, shift, ctrl) => {
-                self.select_keyframe(d, i, shift, ctrl)?
+            Command::SelectFrame { path, shift, ctrl } => self.select_frame(path, shift, ctrl),
+            Command::SelectAnimation { name, shift, ctrl } => {
+                self.select_animation(name, shift, ctrl)
             }
-            Command::SelectHitbox(ref n, shift, ctrl) => self.select_hitbox(n, shift, ctrl)?,
+            Command::SelectKeyframe {
+                direction,
+                index,
+                shift,
+                ctrl,
+            } => self.select_keyframe(direction, index, shift, ctrl)?,
+            Command::SelectHitbox { name, shift, ctrl } => self.select_hitbox(name, shift, ctrl)?,
             Command::Pan(delta) => self.view.pan(delta),
             Command::CenterWorkbench => self.view.center_workbench(),
             Command::ZoomInWorkbench => self.view.zoom_in_workbench(),
@@ -226,20 +287,33 @@ impl Document {
             Command::ApplyDirectionPreset(p) => self.apply_direction_preset(p)?,
             Command::SelectDirection(d) => self.select_direction(d)?,
             Command::BeginDragAndDropFrame(ref f) => self.begin_drag_and_drop_frame(f.clone()),
-            Command::DropFrameOnTimeline(d, i) => self.drop_frame_on_timeline(d, i)?,
+            Command::DropFrameOnTimeline { direction, index } => {
+                self.drop_frame_on_timeline(direction, index)?
+            }
             Command::EndDragAndDropFrame => self.end_drag_and_drop_frame(),
             Command::DeleteSelectedKeyframes => self.delete_selected_keyframes()?,
             Command::SetKeyframeDuration(d) => self.set_keyframe_duration(d)?,
             Command::SetKeyframeOffsetX(x) => self.set_keyframe_offset_x(x)?,
             Command::SetKeyframeOffsetY(y) => self.set_keyframe_offset_y(y)?,
-            Command::BeginDragAndDropKeyframe(d, i) => self.begin_drag_and_drop_keyframe(d, i)?,
-            Command::DropKeyframeOnTimeline(d, i) => self.drop_keyframe_on_timeline(d, i)?,
+            Command::BeginDragAndDropKeyframe { direction, index } => {
+                self.begin_drag_and_drop_keyframe(direction, index)?
+            }
+            Command::DropKeyframeOnTimeline { direction, index } => {
+                self.drop_keyframe_on_timeline(direction, index)?
+            }
             Command::EndDragAndDropKeyframe => self.end_drag_and_drop_keyframe(),
-            Command::BeginDragKeyframeDuration(d, i) => self.begin_drag_keyframe_duration(d, i)?,
+            Command::BeginDragKeyframeDuration { direction, index } => {
+                self.begin_drag_keyframe_duration(direction, index)?
+            }
             Command::UpdateDragKeyframeDuration(t) => self.update_drag_keyframe_duration(t)?,
             Command::EndDragKeyframeDuration => self.end_drag_keyframe_duration(),
-            Command::BeginNudgeKeyframe(d, i) => self.begin_nudge_keyframe(d, i)?,
-            Command::UpdateNudgeKeyframe(d, b) => self.update_nudge_keyframe(d, b)?,
+            Command::BeginNudgeKeyframe { direction, index } => {
+                self.begin_nudge_keyframe(direction, index)?
+            }
+            Command::UpdateNudgeKeyframe {
+                displacement,
+                both_axis,
+            } => self.update_nudge_keyframe(displacement, both_axis)?,
             Command::EndNudgeKeyframe => self.end_nudge_keyframe(),
             Command::CreateHitbox(p) => self.create_hitbox(p)?,
             Command::DeleteHitbox(ref name) => self.delete_hitbox(name)?,
@@ -254,10 +328,16 @@ impl Document {
                 self.persistent.preserve_aspect_ratio = !self.persistent.preserve_aspect_ratio
             }
             Command::BeginNudgeHitbox(ref n) => self.begin_nudge_hitbox(n)?,
-            Command::UpdateNudgeHitbox(d, b) => self.update_nudge_hitbox(d, b)?,
+            Command::UpdateNudgeHitbox {
+                displacement,
+                both_axis,
+            } => self.update_nudge_hitbox(displacement, both_axis)?,
             Command::EndNudgeHitbox => self.end_nudge_hitbox(),
-            Command::BeginResizeHitbox(ref n, a) => self.begin_resize_hitbox(n, a)?,
-            Command::UpdateResizeHitbox(d, a) => self.update_resize_hitbox(d, a)?,
+            Command::BeginResizeHitbox { name, axis } => self.begin_resize_hitbox(name, axis)?,
+            Command::UpdateResizeHitbox {
+                displacement,
+                preserve_aspect_ratio,
+            } => self.update_resize_hitbox(displacement, preserve_aspect_ratio)?,
             Command::EndResizeHitbox => self.end_resize_hitbox(),
             Command::BeginExportAs => self.begin_export_as(),
             Command::SetExportTemplateFile(ref p) => self.set_export_template_file(p)?,
@@ -288,15 +368,15 @@ impl Document {
                 | Command::BeginRenameSelection
                 | Command::CancelRename
                 | Command::BeginDragAndDropFrame(_)
-                | Command::BeginDragAndDropKeyframe(_, _)
-                | Command::BeginDragKeyframeDuration(_, _)
+                | Command::BeginDragAndDropKeyframe { .. }
+                | Command::BeginDragKeyframeDuration { .. }
                 | Command::UpdateDragKeyframeDuration(_)
-                | Command::BeginNudgeKeyframe(_, _)
-                | Command::UpdateNudgeKeyframe(_, _)
+                | Command::BeginNudgeKeyframe { .. }
+                | Command::UpdateNudgeKeyframe { .. }
                 | Command::BeginNudgeHitbox(_)
-                | Command::UpdateNudgeHitbox(_, _)
-                | Command::BeginResizeHitbox(_, _)
-                | Command::UpdateResizeHitbox(_, _)
+                | Command::UpdateNudgeHitbox { .. }
+                | Command::BeginResizeHitbox { .. }
+                | Command::UpdateResizeHitbox { .. }
         ) {
             self.transient = Default::default();
             self.record_command(command);
@@ -450,15 +530,15 @@ impl Display for Command {
             | Command::SetFramesListMode(_)
             | Command::FilterFrames(_)
             | Command::FilterAnimations(_)
-            | Command::BrowseSelection(_, _)
+            | Command::BrowseSelection { .. }
             | Command::BrowseToEnd(_)
             | Command::BrowseToStart(_)
             | Command::ClearSelection
             | Command::SelectAll
-            | Command::SelectFrame(_, _, _)
-            | Command::SelectAnimation(_, _, _)
-            | Command::SelectKeyframe(_, _, _, _)
-            | Command::SelectHitbox(_, _, _)
+            | Command::SelectFrame { .. }
+            | Command::SelectAnimation { .. }
+            | Command::SelectKeyframe { .. }
+            | Command::SelectHitbox { .. }
             | Command::Pan(_)
             | Command::CenterWorkbench
             | Command::ZoomInWorkbench
@@ -513,7 +593,7 @@ impl Display for Command {
             Command::DeleteFrame(_) => f.write_str("Delete Frame"),
             Command::DeleteSelectedFrames => f.write_str("Delete Frames"),
             Command::DeleteSelection => f.write_str("Delete"),
-            Command::NudgeSelection(_, _) => f.write_str("Nudge"),
+            Command::NudgeSelection { .. } => f.write_str("Nudge"),
             Command::CreateAnimation => f.write_str("Create Animation"),
             Command::EditAnimation(_) => f.write_str("Open Animation"),
             Command::DeleteAnimation(_) => f.write_str("Delete Animation"),
@@ -540,7 +620,7 @@ impl Display for Command {
             Command::SetSnapKeyframeDurations(false) => f.write_str("Disable Keyframe Snapping"),
 
             Command::BeginRelocateFrames
-            | Command::RelocateFrame(_, _)
+            | Command::RelocateFrame { .. }
             | Command::CancelRelocateFrames
             | Command::EndRelocateFrames => f.write_str("Relocate Frames"),
 
@@ -551,27 +631,27 @@ impl Display for Command {
             }
 
             Command::BeginDragAndDropFrame(_)
-            | Command::DropFrameOnTimeline(_, _)
+            | Command::DropFrameOnTimeline { .. }
             | Command::EndDragAndDropFrame => f.write_str("Create Keyframe"),
 
-            Command::BeginDragAndDropKeyframe(_, _)
-            | Command::DropKeyframeOnTimeline(_, _)
+            Command::BeginDragAndDropKeyframe { .. }
+            | Command::DropKeyframeOnTimeline { .. }
             | Command::EndDragAndDropKeyframe => f.write_str("Reorder Keyframes"),
 
-            Command::BeginDragKeyframeDuration(_, _)
+            Command::BeginDragKeyframeDuration { .. }
             | Command::UpdateDragKeyframeDuration(_)
             | Command::EndDragKeyframeDuration => f.write_str("Adjust Keyframe Duration"),
 
-            Command::BeginNudgeKeyframe(_, _)
-            | Command::UpdateNudgeKeyframe(_, _)
+            Command::BeginNudgeKeyframe { .. }
+            | Command::UpdateNudgeKeyframe { .. }
             | Command::EndNudgeKeyframe => f.write_str("Nudge Keyframe"),
 
             Command::BeginNudgeHitbox(_)
-            | Command::UpdateNudgeHitbox(_, _)
+            | Command::UpdateNudgeHitbox { .. }
             | Command::EndNudgeHitbox => f.write_str("Nudge Hitbox"),
 
-            Command::BeginResizeHitbox(_, _)
-            | Command::UpdateResizeHitbox(_, _)
+            Command::BeginResizeHitbox { .. }
+            | Command::UpdateResizeHitbox { .. }
             | Command::EndResizeHitbox => f.write_str("Resize Hitbox"),
 
             Command::BeginRenameSelection

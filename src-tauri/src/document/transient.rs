@@ -645,7 +645,7 @@ impl Document {
 
     pub(super) fn update_resize_hitbox(
         &mut self,
-        mouse_delta: Vector2D<i32>,
+        displacement: Vector2D<i32>,
         preserve_aspect_ratio: bool,
     ) -> DocumentResult<()> {
         use ResizeAxis::*;
@@ -683,19 +683,19 @@ impl Document {
                 } else {
                     1.0
                 };
-                if mouse_delta.x.abs() > mouse_delta.y.abs() {
+                if displacement.x.abs() > displacement.y.abs() {
                     vec2(
-                        mouse_delta.x as f32,
-                        odd_axis_factor * (mouse_delta.x as f32 / aspect_ratio).round(),
+                        displacement.x as f32,
+                        odd_axis_factor * (displacement.x as f32 / aspect_ratio).round(),
                     )
                 } else {
                     vec2(
-                        odd_axis_factor * (mouse_delta.y as f32 * aspect_ratio).round(),
-                        mouse_delta.y as f32,
+                        odd_axis_factor * (displacement.y as f32 * aspect_ratio).round(),
+                        displacement.y as f32,
                     )
                 }
             } else {
-                mouse_delta.to_f32()
+                displacement.to_f32()
             };
 
             let delta = (delta / zoom).round().to_i32();
