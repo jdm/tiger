@@ -29,7 +29,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref, watch } from "vue";
+import { computed, Ref, ref } from "vue";
 import { ChevronDownIcon } from "@heroicons/vue/20/solid";
 import FloatingWidget from "@/components/basic/FloatingWidget.vue";
 import MenuBackground from "@/components/basic/MenuBackground.vue";
