@@ -109,11 +109,15 @@ function onMouseLeave() {
 	active.value = false;
 }
 
-function onMouseDown() {
-	active.value = true;
+function onMouseDown(event: MouseEvent) {
+	if (event.button == 0) {
+		active.value = true;
+	}
 }
 
-function onMouseUp() {
-	active.value = false;
+function onMouseUp(event: MouseEvent) {
+	if (event.button == 0) {
+		active.value = false;
+	}
 }
 </script>
