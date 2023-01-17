@@ -80,6 +80,10 @@ impl State {
             .count()
             != 0;
 
+        let is_renaming_animation = self
+            .documents_iter()
+            .any(|d| d.animation_being_renamed().is_some());
+
         let has_keyframe = self
             .documents_iter()
             .flat_map(|d| d.sheet().animations_iter())
@@ -90,7 +94,7 @@ impl State {
             OnboardingStep::NotStarted
         } else if !has_frame {
             OnboardingStep::ImportFrame
-        } else if !has_animation {
+        } else if !has_animation || is_renaming_animation {
             OnboardingStep::CreateAnimation
         } else if !has_keyframe {
             OnboardingStep::PlaceFrameOnTimeline
@@ -140,6 +144,11 @@ mod tests {
             dto::OnboardingStep::CreateAnimation
         );
         app.create_animation();
+        assert_eq!(
+            app.client_state().onboarding_step,
+            dto::OnboardingStep::CreateAnimation
+        );
+        app.cancel_rename();
         assert_eq!(
             app.client_state().onboarding_step,
             dto::OnboardingStep::PlaceFrameOnTimeline

@@ -249,12 +249,12 @@ pub fn set_frames_list_mode(app: tauri::AppHandle, list_mode: dto::ListMode) -> 
 }
 
 #[tauri::command]
-pub fn set_frames_list_offset(app: tauri::AppHandle, offset: u32) -> Result<Patch, ()> {
+pub fn set_frames_list_offset(app: tauri::AppHandle, offset: f64) -> Result<Patch, ()> {
     app.set_frames_list_offset(offset)
 }
 
 #[tauri::command]
-pub fn set_hitboxes_list_offset(app: tauri::AppHandle, offset: u32) -> Result<Patch, ()> {
+pub fn set_hitboxes_list_offset(app: tauri::AppHandle, offset: f64) -> Result<Patch, ()> {
     app.set_hitboxes_list_offset(offset)
 }
 
@@ -269,7 +269,7 @@ pub fn filter_animations(app: tauri::AppHandle, search_query: String) -> Result<
 }
 
 #[tauri::command]
-pub fn set_animations_list_offset(app: tauri::AppHandle, offset: u32) -> Result<Patch, ()> {
+pub fn set_animations_list_offset(app: tauri::AppHandle, offset: f64) -> Result<Patch, ()> {
     app.set_animations_list_offset(offset)
 }
 

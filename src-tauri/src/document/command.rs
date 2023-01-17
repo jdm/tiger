@@ -13,11 +13,11 @@ pub enum Command {
     DetachedNavigation,
     Paste(Clipboard),
     SetFramesListMode(ListMode),
-    SetFramesListOffset(u32),
+    SetFramesListOffset(f64),
     FilterFrames(String),
     FilterAnimations(String),
-    SetAnimationsListOffset(u32),
-    SetHitboxesListOffset(u32),
+    SetAnimationsListOffset(f64),
+    SetHitboxesListOffset(f64),
     ImportFrames(Vec<PathBuf>),
     BeginRelocateFrames,
     RelocateFrame {
@@ -352,6 +352,10 @@ impl Document {
     }
 
     pub fn process_command(&mut self, command: Command) -> DocumentResult<()> {
+        if !command.preserves_transient_state() {
+            self.transient = Default::default();
+        }
+
         let result = self.process_command_internal(command.clone());
         if let Err(e) = &result {
             error!("Error while processing document command `{command:?}`: {e}");
@@ -359,26 +363,7 @@ impl Document {
 
         self.sanitize_view();
 
-        if !matches!(
-            command,
-            Command::Undo
-                | Command::Redo
-                | Command::BeginRenameAnimation(_)
-                | Command::BeginRenameHitbox(_)
-                | Command::BeginRenameSelection
-                | Command::CancelRename
-                | Command::BeginDragAndDropFrame(_)
-                | Command::BeginDragAndDropKeyframe { .. }
-                | Command::BeginDragKeyframeDuration { .. }
-                | Command::UpdateDragKeyframeDuration(_)
-                | Command::BeginNudgeKeyframe { .. }
-                | Command::UpdateNudgeKeyframe { .. }
-                | Command::BeginNudgeHitbox(_)
-                | Command::UpdateNudgeHitbox { .. }
-                | Command::BeginResizeHitbox { .. }
-                | Command::UpdateResizeHitbox { .. }
-        ) {
-            self.transient = Default::default();
+        if command.is_recordable() {
             self.record_command(command);
         }
 
@@ -520,6 +505,62 @@ impl Document {
 
     pub fn redo_effect(&self) -> Option<String> {
         self.redo_command().map(|c| c.to_string())
+    }
+}
+
+impl Command {
+    fn is_recordable(&self) -> bool {
+        !matches!(
+            self,
+            Command::BeginDragAndDropFrame(_)
+                | Command::BeginDragAndDropKeyframe { .. }
+                | Command::BeginDragKeyframeDuration { .. }
+                | Command::BeginNudgeHitbox(_)
+                | Command::BeginNudgeKeyframe { .. }
+                | Command::BeginRenameAnimation(_)
+                | Command::BeginRenameHitbox(_)
+                | Command::BeginRenameSelection
+                | Command::BeginResizeHitbox { .. }
+                | Command::CancelRename
+                | Command::Redo
+                | Command::Undo
+                | Command::UpdateDragKeyframeDuration(_)
+                | Command::UpdateNudgeHitbox { .. }
+                | Command::UpdateNudgeKeyframe { .. }
+                | Command::UpdateResizeHitbox { .. }
+        )
+    }
+
+    fn preserves_transient_state(&self) -> bool {
+        matches!(
+            self,
+            Command::BeginDragAndDropFrame(_)
+                | Command::BeginDragAndDropKeyframe { .. }
+                | Command::BeginDragKeyframeDuration { .. }
+                | Command::BeginNudgeHitbox(_)
+                | Command::BeginNudgeKeyframe { .. }
+                | Command::BeginRenameAnimation(_)
+                | Command::BeginRenameHitbox(_)
+                | Command::BeginRenameSelection
+                | Command::BeginResizeHitbox { .. }
+                | Command::CancelRename
+                | Command::EndDragAndDropFrame
+                | Command::EndDragAndDropKeyframe
+                | Command::EndDragKeyframeDuration
+                | Command::EndNudgeHitbox
+                | Command::EndNudgeKeyframe
+                | Command::EndRenameAnimation(_)
+                | Command::EndRenameHitbox(_)
+                | Command::EndResizeHitbox
+                | Command::UpdateDragKeyframeDuration(_)
+                | Command::UpdateNudgeHitbox { .. }
+                | Command::UpdateNudgeKeyframe { .. }
+                | Command::UpdateResizeHitbox { .. }
+                | Command::PanTimeline(_)
+                | Command::SetAnimationsListOffset(_)
+                | Command::SetHitboxesListOffset(_)
+                | Command::SetFramesListOffset(_)
+        )
     }
 }
 

@@ -7,7 +7,8 @@
 				{ icon: XMarkIcon, callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
-				<InputRename v-model="newName" @complete-rename="onRenameInputComplete" @cancel-rename="cancelRename" />
+				<InputRename :original-name="hitbox.name" @complete-rename="onRenameInputComplete"
+					@cancel-rename="cancelRename" />
 			</template>
 		</Selectable>
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
@@ -15,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref, watch } from "vue"
+import { computed, Ref, ref } from "vue"
 import { PencilSquareIcon, TagIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { beginRenameHitbox, cancelRename, copy, cut, deleteHitbox, deleteSelectedHitboxes, endRenameHitbox, selectHitbox } from "@/backend/api"
 import { Hitbox as HitboxDTO } from "@/backend/dto"
@@ -32,7 +33,6 @@ defineExpose({
 	getHitbox: () => props.hitbox
 });
 
-const newName = ref("");
 const el: Ref<HTMLElement | null> = ref(null);
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
@@ -45,11 +45,6 @@ const contextMenuEntries = [
 
 const state = useStateStore();
 const renaming = computed(() => state.currentDocument?.hitboxBeingRenamed == props.hitbox.name);
-watch(renaming, (to, from) => {
-	if (to) {
-		newName.value = props.hitbox.name;
-	}
-});
 
 function onOpenContextMenu(event: MouseEvent) {
 	if (contextMenu.value) {
@@ -68,8 +63,8 @@ function onRenameClicked() {
 	beginRenameHitbox(props.hitbox.name);
 }
 
-function onRenameInputComplete() {
-	endRenameHitbox(newName.value);
+function onRenameInputComplete(newName: string) {
+	endRenameHitbox(newName);
 }
 
 function onDeleteClicked() {

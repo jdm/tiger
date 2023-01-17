@@ -546,7 +546,7 @@ impl TigerAppMock {
         self.apply_patch(Api::set_animation_looping(self, is_looping).unwrap());
     }
 
-    pub fn set_animations_list_offset(&self, offset: u32) {
+    pub fn set_animations_list_offset(&self, offset: f64) {
         self.apply_patch(Api::set_animations_list_offset(self, offset).unwrap());
     }
 
@@ -570,7 +570,7 @@ impl TigerAppMock {
         self.apply_patch(Api::set_frames_list_mode(self, list_mode).unwrap());
     }
 
-    pub fn set_frames_list_offset(&self, offset: u32) {
+    pub fn set_frames_list_offset(&self, offset: f64) {
         self.apply_patch(Api::set_frames_list_offset(self, offset).unwrap());
     }
 
@@ -590,7 +590,7 @@ impl TigerAppMock {
         self.apply_patch(Api::set_hitbox_width(self, width).unwrap());
     }
 
-    pub fn set_hitboxes_list_offset(&self, offset: u32) {
+    pub fn set_hitboxes_list_offset(&self, offset: f64) {
         self.apply_patch(Api::set_hitboxes_list_offset(self, offset).unwrap());
     }
 

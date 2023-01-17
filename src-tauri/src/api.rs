@@ -151,18 +151,18 @@ pub trait Api {
         ctrl: bool,
     ) -> Result<Patch, ()>;
     fn set_animation_looping(&self, is_looping: bool) -> Result<Patch, ()>;
-    fn set_animations_list_offset(&self, offset: u32) -> Result<Patch, ()>;
+    fn set_animations_list_offset(&self, offset: f64) -> Result<Patch, ()>;
     fn set_export_atlas_image_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_metadata_paths_root<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_export_template_file<P: Into<PathBuf>>(&self, file: P) -> Result<Patch, ()>;
     fn set_frames_list_mode(&self, list_mode: dto::ListMode) -> Result<Patch, ()>;
-    fn set_frames_list_offset(&self, offset: u32) -> Result<Patch, ()>;
+    fn set_frames_list_offset(&self, offset: f64) -> Result<Patch, ()>;
     fn set_hitbox_height(&self, height: u32) -> Result<Patch, ()>;
     fn set_hitbox_position_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_hitbox_position_y(&self, y: i32) -> Result<Patch, ()>;
     fn set_hitbox_width(&self, width: u32) -> Result<Patch, ()>;
-    fn set_hitboxes_list_offset(&self, offset: u32) -> Result<Patch, ()>;
+    fn set_hitboxes_list_offset(&self, offset: f64) -> Result<Patch, ()>;
     fn set_keyframe_duration(&self, duration_millies: u64) -> Result<Patch, ()>;
     fn set_keyframe_offset_x(&self, x: i32) -> Result<Patch, ()>;
     fn set_keyframe_offset_y(&self, y: i32) -> Result<Patch, ()>;
@@ -1201,7 +1201,7 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    fn set_animations_list_offset(&self, offset: u32) -> Result<Patch, ()> {
+    fn set_animations_list_offset(&self, offset: f64) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
@@ -1261,7 +1261,7 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    fn set_frames_list_offset(&self, offset: u32) -> Result<Patch, ()> {
+    fn set_frames_list_offset(&self, offset: f64) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document
@@ -1311,7 +1311,7 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    fn set_hitboxes_list_offset(&self, offset: u32) -> Result<Patch, ()> {
+    fn set_hitboxes_list_offset(&self, offset: f64) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::OnlyWorkbench, |state| {
             if let Some(document) = state.current_document_mut() {
                 document

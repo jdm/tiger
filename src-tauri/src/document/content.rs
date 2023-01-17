@@ -18,7 +18,9 @@ impl Document {
         let (animation_name, animation) = self.sheet.create_animation("New Animation");
         animation.apply_direction_preset(DirectionPreset::FourDirections);
         self.select_animation_only(animation_name.clone());
-        self.edit_animation(animation_name)
+        self.edit_animation(&animation_name)?;
+        self.begin_rename_animation(animation_name);
+        Ok(())
     }
 
     pub(super) fn edit_animation<T: AsRef<str>>(&mut self, name: T) -> DocumentResult<()> {
@@ -81,6 +83,16 @@ mod tests {
     use crate::app::mock::TigerAppMock;
 
     #[test]
+    fn can_name_new_animation() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.create_animation();
+        assert!(app.document().animation_being_renamed.is_some());
+        app.end_rename_animation("can_create_animation");
+        assert!(app.document().animations()[0].name == "can_create_animation");
+    }
+
+    #[test]
     fn can_create_and_delete_animation() {
         let app = TigerAppMock::new();
         app.new_document("tmp");
@@ -88,5 +100,18 @@ mod tests {
         assert!(!app.document().animations().is_empty());
         app.delete_animation(app.document().current_animation_name.unwrap());
         assert!(app.document().animations().is_empty());
+    }
+
+    #[test]
+    fn scrolling_does_not_cancel_animation_rename() {
+        let app = TigerAppMock::new();
+        app.new_document("tmp");
+        app.create_animation();
+        assert!(app.document().animation_being_renamed.is_some());
+        app.set_animations_list_offset(50.0);
+        app.set_hitboxes_list_offset(50.0);
+        app.set_frames_list_offset(50.0);
+        app.pan_timeline(50.0);
+        assert!(app.document().animation_being_renamed.is_some());
     }
 }

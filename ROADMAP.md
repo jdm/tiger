@@ -7,6 +7,7 @@
 - [x] Export complete notifications
 - [x] ⚠ The `sheet_image` field in template data was replaced by `atlas_image` and now includes atlas dimensions (issue #13)
 - [x] Bumped `.tiger` format version to `Tiger5`
+- [x] Creating an animation or a hitbox immediately begins renaming it
 - [x] Automatically add `.png` extension to exported textures
 - [x] All file dialogs open with a sensible default file/directory selected
 - [x] Using `Export` before defining export settings behaves like `Export As…`
@@ -26,7 +27,9 @@
 - [x] Fixed a bug where window could be resized narrow enough to break timeline UI
 - [x] Fixed a bug where the `sheet_image` field would use `\` as path separator instead of `/` (issue #14)
 - [x] Fixed export documentation referencing a non-existing source field on `Frame`
-- [x] Fixed a bug where timeline would not fill entire panel after resizing the program window
+- [x] Fixed a bug where the timeline would not fill entire panel after resizing the program window
+- [x] Fixed a bug where scrolling a panel would cancel any in-progress rename operation
+- [x] Fixed a bug where panel scroll positions were not saving as often as intended
 - [x] Replace tarpaulin with grcov for code coverage measurements
 - [x] Reach satisfying test coverage
 - [x] Merge redundant code between save(), save_as() and save_all()

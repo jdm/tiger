@@ -14,18 +14,18 @@ pub enum ListMode {
 #[derive(Clone, Debug, PartialEq)]
 pub struct View {
     pub(super) animations_filter: String,
-    pub(super) animations_list_offset: u32,
+    pub(super) animations_list_offset: f64,
     pub(super) current_animation: Option<String>,
     pub(super) current_sequence: Option<Direction>,
     pub(super) darken_sprites: bool,
     pub(super) frames_filter: String,
-    pub(super) frames_grid_offset: u32,
+    pub(super) frames_grid_offset: f64,
     pub(super) frames_list_mode: ListMode,
-    pub(super) frames_list_offset: u32,
+    pub(super) frames_list_offset: f64,
     pub(super) hide_hitboxes: bool,
     pub(super) hide_origin: bool,
     pub(super) hide_sprite: bool,
-    pub(super) hitboxes_list_offset: u32,
+    pub(super) hitboxes_list_offset: f64,
     pub(super) keyframe_snapping_base_duration: Duration,
     pub(super) lock_hitboxes: bool,
     pub(super) selection: SelectionState,
@@ -43,18 +43,18 @@ impl Default for View {
     fn default() -> View {
         View {
             animations_filter: Default::default(),
-            animations_list_offset: 0,
+            animations_list_offset: 0.0,
             current_animation: None,
             current_sequence: None,
             darken_sprites: true,
             frames_filter: Default::default(),
-            frames_grid_offset: 0,
+            frames_grid_offset: 0.0,
             frames_list_mode: ListMode::Grid4xN,
-            frames_list_offset: 0,
+            frames_list_offset: 0.0,
             hide_hitboxes: false,
             hide_origin: false,
             hide_sprite: false,
-            hitboxes_list_offset: 0,
+            hitboxes_list_offset: 0.0,
             keyframe_snapping_base_duration: Duration::from_millis(100),
             lock_hitboxes: false,
             selection: Default::default(),
@@ -187,7 +187,7 @@ impl View {
         self.timeline_clock = Duration::ZERO;
     }
 
-    pub(super) fn set_frames_list_offset(&mut self, offset: u32) {
+    pub(super) fn set_frames_list_offset(&mut self, offset: f64) {
         match self.frames_list_mode {
             ListMode::Linear => self.frames_list_offset = offset,
             ListMode::Grid4xN => self.frames_grid_offset = offset,
@@ -208,18 +208,18 @@ impl Document {
         &self.view.animations_filter
     }
 
-    pub fn frames_list_offset(&self) -> u32 {
+    pub fn frames_list_offset(&self) -> f64 {
         match self.view.frames_list_mode {
             ListMode::Linear => self.view.frames_list_offset,
             ListMode::Grid4xN => self.view.frames_grid_offset,
         }
     }
 
-    pub fn animations_list_offset(&self) -> u32 {
+    pub fn animations_list_offset(&self) -> f64 {
         self.view.animations_list_offset
     }
 
-    pub fn hitboxes_list_offset(&self) -> u32 {
+    pub fn hitboxes_list_offset(&self) -> f64 {
         self.view.hitboxes_list_offset
     }
 
@@ -461,22 +461,22 @@ mod tests {
         app.new_document("tmp");
 
         app.set_frames_list_mode(dto::ListMode::Linear);
-        app.set_frames_list_offset(50);
-        assert_eq!(app.document().frames_list_offset, 50);
+        app.set_frames_list_offset(50.0);
+        assert_eq!(app.document().frames_list_offset, 50.0);
 
         app.set_frames_list_mode(dto::ListMode::Grid4xN);
-        assert_eq!(app.document().frames_list_offset, 0);
-        app.set_frames_list_offset(60);
-        assert_eq!(app.document().frames_list_offset, 60);
+        assert_eq!(app.document().frames_list_offset, 0.0);
+        app.set_frames_list_offset(60.0);
+        assert_eq!(app.document().frames_list_offset, 60.0);
 
         app.set_frames_list_mode(dto::ListMode::Linear);
-        assert_eq!(app.document().frames_list_offset, 50);
+        assert_eq!(app.document().frames_list_offset, 50.0);
 
-        app.set_animations_list_offset(80);
-        assert_eq!(app.document().animations_list_offset, 80);
+        app.set_animations_list_offset(80.0);
+        assert_eq!(app.document().animations_list_offset, 80.0);
 
-        app.set_hitboxes_list_offset(90);
-        assert_eq!(app.document().hitboxes_list_offset, 90);
+        app.set_hitboxes_list_offset(90.0);
+        assert_eq!(app.document().hitboxes_list_offset, 90.0);
     }
 
     #[test]

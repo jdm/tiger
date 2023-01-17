@@ -8,7 +8,8 @@
 				{ icon: XMarkIcon, callback: onDeleteClicked }
 			]">
 			<template #content v-if="renaming">
-				<InputRename v-model="newName" @complete-rename="onRenameInputComplete" @cancel-rename="cancelRename" />
+				<InputRename :original-name="animation.name" @complete-rename="onRenameInputComplete"
+					@cancel-rename="cancelRename" />
 			</template>
 		</Selectable>
 		<ContextMenu ref="contextMenu" :content="contextMenuEntries" />
@@ -16,7 +17,7 @@
 </template>
 
 <script setup lang="ts">
-import { watch, computed, Ref, ref } from "vue"
+import { computed, Ref, ref, nextTick } from "vue"
 import { FilmIcon, PencilSquareIcon, XMarkIcon } from "@heroicons/vue/20/solid"
 import { beginRenameAnimation, cancelRename, copy, cut, deleteAnimation, deleteSelectedAnimations, editAnimation, endRenameAnimation, selectAnimation } from "@/backend/api"
 import { Animation as AnimationDTO } from "@/backend/dto"
@@ -33,7 +34,6 @@ defineExpose({
 	getAnimation: () => props.animation
 });
 
-const newName = ref("");
 const contextMenu: Ref<typeof ContextMenu | null> = ref(null);
 
 const contextMenuEntries = [
@@ -47,11 +47,6 @@ const contextMenuEntries = [
 const state = useStateStore();
 
 const renaming = computed(() => state.currentDocument?.animationBeingRenamed == props.animation.name);
-watch(renaming, (to, from) => {
-	if (to) {
-		newName.value = props.animation.name;
-	}
-});
 
 function onOpenContextMenu(event: MouseEvent) {
 	if (contextMenu.value) {
@@ -74,8 +69,8 @@ function beginRename() {
 	beginRenameAnimation(props.animation.name);
 }
 
-function onRenameInputComplete() {
-	endRenameAnimation(newName.value);
+function onRenameInputComplete(newName: string) {
+	endRenameAnimation(newName);
 }
 
 function onDeleteClicked() {
