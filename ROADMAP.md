@@ -49,12 +49,14 @@
 - [ ] Re-evaluate https://github.com/1Password/typeshare to auto-generate typescript DTOs
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
-- [ ] Readme logo
+- [ ] Logo in readme
 - [ ] Gif/video in readme
-- [ ] Branding in installer
+- [ ] Remove under-development warning from readme
+- [ ] Logo in documentation
+- [ ] Favicon in documentation
+- [ ] Branding in installer and installer icon
+- [ ] App icon (file explorer, taskbar, add/remove programs, title bar)
 - [ ] Github social media preview image (in repo settings)
-- [ ] About dialog
-- [ ] App icon (file explorer, taskbar, add/remove programers, installer, title bar)
 - [ ] Itch.io or other distribution method
 
 ## Post 1.0
