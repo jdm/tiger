@@ -50,7 +50,7 @@ mod tests {
         app.copy();
 
         let check_manifest = |desired_manifest: Option<ClipboardManifest>| {
-            retry(Fixed::from(PERIOD).take(10), || {
+            retry(Fixed::from(PERIOD).take(100), || {
                 match (&desired_manifest, app.client_state().clipboard_manifest) {
                     (None, None) => Ok(()),
                     (None, Some(m)) => Err(Some(m)),

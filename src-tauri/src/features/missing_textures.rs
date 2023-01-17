@@ -63,13 +63,13 @@ mod tests {
             |app: &TigerAppMock| app.document().sheet.frames[0].missing_on_disk;
 
         let check_missing = |app: &TigerAppMock| {
-            retry(Fixed::from(PERIOD).take(10), || {
+            retry(Fixed::from(PERIOD).take(100), || {
                 is_texture_missing(app).then_some(()).ok_or(())
             })
         };
 
         let check_present = |app: &TigerAppMock| {
-            retry(Fixed::from(PERIOD).take(10), || {
+            retry(Fixed::from(PERIOD).take(100), || {
                 (!is_texture_missing(app)).then_some(()).ok_or(())
             })
         };

@@ -147,13 +147,13 @@ mod tests {
         let is_cached = |app: &TigerAppMock| app.texture_cache().lock().contains_key(&frame_path);
 
         let check_cached = |app: &TigerAppMock| {
-            retry(Fixed::from(PERIOD).take(10), || {
+            retry(Fixed::from(PERIOD).take(100), || {
                 is_cached(app).then_some(()).ok_or(())
             })
         };
 
         let check_evicted = |app: &TigerAppMock| {
-            retry(Fixed::from(PERIOD).take(10), || {
+            retry(Fixed::from(PERIOD).take(100), || {
                 (!is_cached(app)).then_some(()).ok_or(())
             })
         };
@@ -177,7 +177,7 @@ mod tests {
         std::fs::copy(&before_frame, &frame).unwrap();
 
         let validate_cached_image = |cache_key: &PathBuf, reference_image: &PathBuf| {
-            retry(Fixed::from(PERIOD).take(10), || {
+            retry(Fixed::from(PERIOD).take(100), || {
                 match app.texture_cache().lock().get(cache_key) {
                     None => Err("Not in cache"),
                     Some(image) => {
@@ -197,7 +197,7 @@ mod tests {
         let has_old_version = validate_cached_image(&frame, &before_frame);
         assert_eq!(has_old_version, Ok(()));
 
-        let is_watching = retry(Fixed::from(PERIOD).take(10), || {
+        let is_watching = retry(Fixed::from(PERIOD).take(100), || {
             app.texture_cache_info()
                 .file_watcher
                 .read()

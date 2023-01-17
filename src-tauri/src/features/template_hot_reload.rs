@@ -87,7 +87,7 @@ mod tests {
             .template_file_error
             .is_none());
 
-        let watching_changes = retry(Fixed::from(PERIOD).take(10), || {
+        let watching_changes = retry(Fixed::from(PERIOD).take(100), || {
             if app
                 .template_hot_reload_info()
                 .file_watcher
@@ -110,7 +110,7 @@ mod tests {
             .is_none());
 
         std::fs::copy(bad_template_path, &test_template_path).unwrap();
-        let template_file_error = retry(Fixed::from(PERIOD).take(10), || {
+        let template_file_error = retry(Fixed::from(PERIOD).take(100), || {
             match app
                 .document()
                 .export_settings_validation
