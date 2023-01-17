@@ -22,7 +22,7 @@ jobs:
           target_branch: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Checkout Release branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: release
       - name: Add <version number> git tag
@@ -47,7 +47,7 @@ jobs:
 
     steps:
       - name: Checkout Release branch
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           ref: release
       - name: Update version in tauri.conf.json
