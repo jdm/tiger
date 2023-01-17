@@ -304,6 +304,18 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn emits_event_for_open_errors() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/missing-file.tiger"])
+            .await;
+        assert!(app
+            .events()
+            .into_iter()
+            .any(|(event, payload)| event == dto::EVENT_OPEN_DOCUMENT_ERROR
+                && serde_json::from_value::<dto::OpenDocumentError>(payload).is_ok()));
+    }
+
+    #[tokio::test]
     async fn open_and_close_updates_focused_document() {
         let app = TigerAppMock::new();
 
@@ -351,16 +363,6 @@ mod tests {
             app.client_state().current_document_path,
             Some("test-data/samurai.tiger".into())
         );
-    }
-
-    #[tokio::test]
-    async fn can_acknowledge_error() {
-        let app = TigerAppMock::new();
-        app.open_documents(vec!["test-data/missing-file.tiger"])
-            .await;
-        assert!(app.client_state().error.is_some());
-        app.acknowledge_error();
-        assert!(app.client_state().error.is_none());
     }
 
     #[tokio::test]
@@ -614,5 +616,14 @@ mod tests {
         assert_eq!(error.title, "title");
         assert_eq!(error.summary, "summary");
         assert_eq!(error.details, "details");
+    }
+
+    #[test]
+    fn can_acknowledge_error() {
+        let app = TigerAppMock::new();
+        app.show_error_message("title", "summary", "details");
+        assert!(app.client_state().error.is_some());
+        app.acknowledge_error();
+        assert!(app.client_state().error.is_none());
     }
 }

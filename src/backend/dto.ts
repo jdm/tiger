@@ -222,6 +222,16 @@ export type ExportSuccess = {
   metadataFileName: string;
 };
 
-export type TextureInvalidationEvent = {
+export type TextureInvalidation = {
   path: string;
+};
+
+export type OpenDocumentError = {
+  documentName: string;
+  error: string;
+};
+
+export type SaveDocumentError = {
+  documentName: string;
+  error: string;
 };

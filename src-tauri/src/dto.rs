@@ -14,8 +14,10 @@ use crate::state;
 pub static EVENT_EXPORT_ERROR: &str = "export-error";
 pub static EVENT_EXPORT_SUCCESS: &str = "export-success";
 pub static EVENT_INVALIDATE_TEXTURE: &str = "invalidate-texture";
+pub static EVENT_OPEN_DOCUMENT_ERROR: &str = "open-document-error";
 pub static EVENT_PATCH_STATE: &str = "patch-state";
 pub static EVENT_REPLACE_STATE: &str = "replace-state";
+pub static EVENT_SAVE_DOCUMENT_ERROR: &str = "save-document-error";
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -258,8 +260,22 @@ pub struct ExportSettingsValidation {
 
 #[derive(Clone, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "camelCase")]
-pub struct TextureInvalidationEvent {
+pub struct TextureInvalidation {
     pub path: PathBuf,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct OpenDocumentError {
+    pub document_name: String,
+    pub error: String,
+}
+
+#[derive(Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct SaveDocumentError {
+    pub document_name: String,
+    pub error: String,
 }
 
 #[derive(Clone, Deserialize, Serialize)]

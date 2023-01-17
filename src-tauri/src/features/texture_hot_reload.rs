@@ -42,7 +42,7 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TextureHotRe
             for event in events {
                 app.emit_all(
                     dto::EVENT_INVALIDATE_TEXTURE,
-                    dto::TextureInvalidationEvent { path: event.path },
+                    dto::TextureInvalidation { path: event.path },
                 );
             }
         }
@@ -84,7 +84,7 @@ mod tests {
         app: &TigerAppMock,
         frame: P,
     ) -> Result<(), retry::Error<()>> {
-        let expected_payload = dto::TextureInvalidationEvent {
+        let expected_payload = dto::TextureInvalidation {
             path: frame.as_ref().to_owned(),
         };
         retry(Fixed::from(PERIOD).take(100), || {
@@ -92,7 +92,7 @@ mod tests {
                 .into_iter()
                 .any(|(event, payload)| {
                     event.as_str() == dto::EVENT_INVALIDATE_TEXTURE
-                        && match serde_json::from_value::<dto::TextureInvalidationEvent>(payload) {
+                        && match serde_json::from_value::<dto::TextureInvalidation>(payload) {
                             Ok(payload) => payload == expected_payload,
                             Err(_) => false,
                         }

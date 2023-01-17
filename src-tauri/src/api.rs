@@ -915,22 +915,26 @@ impl<A: TigerApp + Sync> Api for A {
             ));
         }
 
+        for (path, result) in &documents {
+            match result {
+                Ok(_) => (),
+                Err(e) => {
+                    self.emit_all(
+                        dto::EVENT_OPEN_DOCUMENT_ERROR,
+                        dto::OpenDocumentError {
+                            document_name: path.to_file_name(),
+                            error: e.to_string(),
+                        },
+                    );
+                }
+            }
+        }
+
         Ok(self.patch(StateTrim::Full, |state| {
-            for document in documents {
-                match document {
-                    (_, Ok(d)) => {
-                        state.open_document(d);
-                    }
-                    (path, Err(e)) => {
-                        state.show_error_message(
-                            "Error".to_owned(),
-                            format!(
-                                "An error occured while trying to open `{}`:",
-                                path.to_file_name()
-                            ),
-                            e.to_string(),
-                        );
-                    }
+            for (_, result) in documents {
+                match result {
+                    Ok(d) => state.open_document(d),
+                    _ => (),
                 }
             }
         }))
@@ -1642,28 +1646,38 @@ async fn save_documents<A: TigerApp>(
             sheet.write(&write_destination)
         }));
     }
+
     let results = futures::future::join_all(work)
         .await
         .into_iter()
-        .map(|r| r.unwrap());
+        .map(|r| r.unwrap())
+        .collect::<Vec<_>>();
+
+    for (document, result) in documents.iter().zip(&results) {
+        match result {
+            Ok(()) => (),
+            Err(e) => {
+                app.emit_all(
+                    dto::EVENT_SAVE_DOCUMENT_ERROR,
+                    dto::SaveDocumentError {
+                        document_name: document.destination.to_file_name(),
+                        error: e.to_string(),
+                    },
+                );
+            }
+        }
+    }
 
     Ok(app.patch(StateTrim::Full, |state| {
         for (document, result) in documents.iter().zip(results) {
             match result {
-                Ok(_) => {
+                Ok(()) => {
                     state.relocate_document(&document.source, &document.destination);
                     if let Some(d) = state.document_mut(&document.destination) {
                         d.mark_as_saved(document.version);
                     }
                 }
-                Err(e) => state.show_error_message(
-                    "Error".to_owned(),
-                    format!(
-                        "An error occured while trying to save `{}`:",
-                        document.destination.to_file_name()
-                    ),
-                    e.to_string(),
-                ),
+                Err(_) => (),
             }
         }
 
