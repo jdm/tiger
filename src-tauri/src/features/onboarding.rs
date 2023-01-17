@@ -118,9 +118,11 @@ fn read_from_disk(source: &Path) -> Result<OnboardingData, std::io::Error> {
 #[cfg(test)]
 mod tests {
 
+    use retry::{delay::Fixed, retry};
+
     use super::*;
     use crate::{
-        app::mock::TigerAppMock,
+        app::mock::{TigerAppMock, TigerAppMockBuilder},
         dto::{self},
     };
 
@@ -167,20 +169,20 @@ mod tests {
 
     #[test]
     fn reads_onboarding_data() {
-        let app = TigerAppMock::new_uninitialized();
+        let app_builder = TigerAppMockBuilder::new();
 
-        let onboarding_file = app.paths().lock().onboarding_file.clone();
+        let onboarding_file = app_builder.paths().onboarding_file.clone();
         let onboarding_data = OnboardingData {
             onboarding_complete: true,
         };
-
         std::fs::write(
             onboarding_file,
             serde_json::to_string(&onboarding_data).unwrap(),
         )
         .unwrap();
 
-        app.init();
+        let app = app_builder.build();
+
         assert_eq!(
             app.client_state().onboarding_step,
             dto::OnboardingStep::Completed
@@ -192,14 +194,19 @@ mod tests {
         let app = TigerAppMock::new();
         let onboarding_file = app.paths().lock().onboarding_file.clone();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        app.assert_eventually(|| {
+
+        let wrote_to_disk = retry(Fixed::from_millis(500).take(10), || {
             let Ok(onboarding_data) = read_from_disk(&onboarding_file) else {
-                return false
+                return Err("Read error");
             };
-            onboarding_data
-                == OnboardingData {
-                    onboarding_complete: true,
-                }
+            let expected_data = OnboardingData {
+                onboarding_complete: true,
+            };
+            match onboarding_data == expected_data {
+                true => Ok(()),
+                false => Err("Content mismatch"),
+            }
         });
+        assert_eq!(Ok(()), wrote_to_disk);
     }
 }

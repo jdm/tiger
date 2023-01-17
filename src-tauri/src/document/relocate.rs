@@ -73,6 +73,7 @@ impl Document {
 #[cfg(test)]
 mod tests {
 
+    use retry::{delay::Fixed, retry};
     use sugar_path::SugarPath;
 
     use super::*;
@@ -91,7 +92,16 @@ mod tests {
         app.import_frames(vec![&bad_dead, &bad_idle, &unrelated]);
         let has_frame = |p: &PathBuf| app.document().sheet.frames.iter().any(|f| &f.path == p);
 
-        app.wait_for_periodic_scans();
+        let detected_missing_frames = retry(Fixed::from_millis(500).take(10), || {
+            if !app.document().frame("samurai-dead-all").missing_on_disk {
+                Err("samurai-dead-all not detected as missing")
+            } else if !app.document().frame("samurai-idle-west").missing_on_disk {
+                Err("samurai-idle-west not detected as missing")
+            } else {
+                Ok(())
+            }
+        });
+        assert_eq!(Ok(()), detected_missing_frames);
 
         app.begin_relocate_frames();
         assert!(app.document().frames_being_relocated.is_some());

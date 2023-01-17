@@ -1,4 +1,5 @@
-use std::time::Duration;
+use parking_lot::RwLock;
+use std::{sync::Arc, time::Duration};
 
 use crate::{
     app::TigerApp,
@@ -6,8 +7,19 @@ use crate::{
     utils::{file_watcher::FileWatcher, texture_list::TextureList},
 };
 
-pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
-    let (mut file_watcher, events_receiver) = FileWatcher::new({
+#[cfg(not(test))]
+static PERIOD: Duration = Duration::from_millis(1_000);
+#[cfg(test)]
+static PERIOD: Duration = Duration::from_millis(100);
+
+#[derive(Clone)]
+pub struct TextureHotReloadInfo {
+    #[cfg(test)]
+    file_watcher: Arc<RwLock<FileWatcher>>,
+}
+
+pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TextureHotReloadInfo {
+    let (file_watcher, events_receiver) = FileWatcher::new({
         let app = app.clone();
         move || {
             let state_handle = app.state();
@@ -15,10 +27,14 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
             state.list_textures()
         }
     });
+    let file_watcher = Arc::new(RwLock::new(file_watcher));
 
-    std::thread::spawn(move || loop {
-        file_watcher.update_watched_files();
-        std::thread::sleep(period);
+    std::thread::spawn({
+        let file_watcher = file_watcher.clone();
+        move || loop {
+            file_watcher.write().update_watched_files();
+            std::thread::sleep(PERIOD);
+        }
     });
 
     std::thread::spawn(move || loop {
@@ -31,10 +47,17 @@ pub fn init<A: TigerApp + Send + Clone + 'static>(app: A, period: Duration) {
             }
         }
     });
+
+    TextureHotReloadInfo {
+        #[cfg(test)]
+        file_watcher,
+    }
 }
 
 #[cfg(test)]
 mod tests {
+    use retry::{delay::Fixed, retry};
+
     use super::*;
     use crate::app::mock::TigerAppMock;
 
@@ -48,27 +71,43 @@ mod tests {
         let app = TigerAppMock::new();
         app.new_document("test.tiger");
 
-        std::fs::copy(before_frame, &frame).unwrap();
+        std::fs::copy(&before_frame, &frame).unwrap();
         app.import_frames(vec![frame.clone()]);
-        app.wait_for_periodic_scans();
+        let watching_changes = retry(Fixed::from(PERIOD).take(10), || {
+            if app
+                .texture_hot_reload_info()
+                .file_watcher
+                .read()
+                .is_watching(&frame)
+            {
+                Ok(())
+            } else {
+                Err(())
+            }
+        });
+        assert!(watching_changes.is_ok());
 
         assert!(app
             .events()
             .iter()
             .all(|(event, _)| event != dto::EVENT_INVALIDATE_TEXTURE));
+
         std::fs::copy(after_frame, &frame).unwrap();
-        app.wait_for_periodic_scans();
 
         let expected_payload = dto::TextureInvalidationEvent { path: frame };
-        assert!(app
-            .events()
-            .into_iter()
-            .any(
-                |(event, payload)| event.as_str() == dto::EVENT_INVALIDATE_TEXTURE
-                    && match serde_json::from_value::<dto::TextureInvalidationEvent>(payload) {
-                        Ok(payload) => payload == expected_payload,
-                        Err(_) => false,
-                    }
-            ));
+        let invalidation_event_emitted = retry(Fixed::from(PERIOD).take(10), || {
+            app.events()
+                .into_iter()
+                .any(|(event, payload)| {
+                    event.as_str() == dto::EVENT_INVALIDATE_TEXTURE
+                        && match serde_json::from_value::<dto::TextureInvalidationEvent>(payload) {
+                            Ok(payload) => payload == expected_payload,
+                            Err(_) => false,
+                        }
+                })
+                .then_some(())
+                .ok_or(())
+        });
+        assert!(invalidation_event_emitted.is_ok());
     }
 }

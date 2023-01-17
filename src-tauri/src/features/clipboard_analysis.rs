@@ -2,9 +2,11 @@ use std::time::Duration;
 
 use crate::{app::TigerApp, document::clipboard_manifest, dto::StateTrim};
 
-pub fn init<A: TigerApp + Send + 'static>(app: A, period: Duration) {
+static PERIOD: Duration = Duration::from_millis(100);
+
+pub fn init<A: TigerApp + Send + 'static>(app: A) {
     std::thread::spawn(move || loop {
-        std::thread::sleep(period);
+        std::thread::sleep(PERIOD);
 
         let clipboard_content = app.read_clipboard();
 
@@ -29,6 +31,9 @@ pub fn init<A: TigerApp + Send + 'static>(app: A, period: Duration) {
 
 #[cfg(test)]
 mod tests {
+    use retry::{delay::Fixed, retry};
+
+    use super::*;
     use crate::{
         app::{mock::TigerAppMock, TigerApp},
         dto::{ClipboardManifest, Direction},
@@ -43,31 +48,30 @@ mod tests {
 
         app.select_animation("idle", false, false);
         app.copy();
-        app.wait_for_periodic_scans();
-        assert_eq!(
-            app.client_state().clipboard_manifest,
-            Some(ClipboardManifest::Animations)
-        );
+
+        let check_manifest = |desired_manifest: Option<ClipboardManifest>| {
+            retry(Fixed::from(PERIOD).take(10), || {
+                match (&desired_manifest, app.client_state().clipboard_manifest) {
+                    (None, None) => Ok(()),
+                    (None, Some(m)) => Err(Some(m)),
+                    (Some(_), None) => Err(None),
+                    (Some(ref m), Some(n)) if *m == n => Ok(()),
+                    (Some(_), Some(n)) => Err(Some(n)),
+                }
+            })
+        };
+        assert_eq!(check_manifest(Some(ClipboardManifest::Animations)), Ok(()));
 
         app.edit_animation("idle");
         app.select_keyframe(Direction::North, 0, false, false);
         app.copy();
-        app.wait_for_periodic_scans();
-        assert_eq!(
-            app.client_state().clipboard_manifest,
-            Some(ClipboardManifest::Keyframes)
-        );
+        assert_eq!(check_manifest(Some(ClipboardManifest::Keyframes)), Ok(()));
 
         app.select_hitbox("weak", false, false);
         app.copy();
-        app.wait_for_periodic_scans();
-        assert_eq!(
-            app.client_state().clipboard_manifest,
-            Some(ClipboardManifest::Hitboxes)
-        );
+        assert_eq!(check_manifest(Some(ClipboardManifest::Hitboxes)), Ok(()));
 
         app.write_clipboard("random clipboard data");
-        app.wait_for_periodic_scans();
-        assert_eq!(app.client_state().clipboard_manifest, None);
+        assert_eq!(check_manifest(None), Ok(()));
     }
 }

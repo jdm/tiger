@@ -53,10 +53,14 @@ fn read_from_disk(source: &Path) -> Result<Vec<PathBuf>, std::io::Error> {
 #[cfg(test)]
 mod tests {
 
+    use retry::{delay::Fixed, retry};
     use sugar_path::SugarPath;
 
     use super::*;
-    use crate::{app::mock::TigerAppMock, dto::RecentDocument};
+    use crate::{
+        app::mock::{TigerAppMock, TigerAppMockBuilder},
+        dto::RecentDocument,
+    };
 
     #[test]
     fn reads_recent_documents_from_disk() {
@@ -71,9 +75,9 @@ mod tests {
         )
         .unwrap();
 
-        let app = TigerAppMock::new_uninitialized();
-        app.paths().lock().recent_documents_file = recent_documents_file;
-        app.init();
+        let mut app_builder = TigerAppMockBuilder::new();
+        app_builder.paths_mut().recent_documents_file = recent_documents_file;
+        let app = app_builder.build();
 
         assert_eq!(
             app.client_state().recent_document_paths,
@@ -98,11 +102,16 @@ mod tests {
         let app = TigerAppMock::new();
         let recent_documents_file = app.paths().lock().recent_documents_file.clone();
         app.open_documents(vec![&samurai_file, &flame_file]).await;
-        app.assert_eventually(|| {
+
+        let wrote_to_disk = retry(Fixed::from_millis(500).take(10), || {
             let Ok(recent_documents) = read_from_disk(&recent_documents_file) else {
-                return false
+                return Err("Read error");
             };
-            recent_documents == vec![flame_file.clone(), samurai_file.clone()]
+            match recent_documents == vec![flame_file.clone(), samurai_file.clone()] {
+                true => Ok(()),
+                false => Err("Content mismatch"),
+            }
         });
+        assert_eq!(Ok(()), wrote_to_disk);
     }
 }

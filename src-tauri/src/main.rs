@@ -5,7 +5,6 @@
 
 use log::{error, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
-use std::time::Duration;
 use tauri::Manager;
 
 use app::TigerApp;
@@ -46,15 +45,13 @@ fn main() {
         .manage(paths::Handle::new(paths))
         .setup(|tauri_app| {
             init_window_shadow(tauri_app);
-            tauri_app
-                .texture_cache()
-                .init(tauri_app.handle(), Duration::from_millis(1_000));
-            features::clipboard_analysis::init(tauri_app.handle(), Duration::from_millis(100));
-            features::missing_textures::init(tauri_app.handle(), Duration::from_millis(500));
+            features::clipboard_analysis::init(tauri_app.handle());
+            features::missing_textures::init(tauri_app.handle());
             features::onboarding::init(tauri_app.handle());
             features::recent_documents::init(tauri_app.handle());
-            features::template_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
-            features::texture_hot_reload::init(tauri_app.handle(), Duration::from_millis(1_000));
+            features::template_hot_reload::init(tauri_app.handle());
+            features::texture_cache::init(tauri_app.handle());
+            features::texture_hot_reload::init(tauri_app.handle());
             Ok(())
         })
         .on_window_event(handle_window_event)

@@ -2,14 +2,18 @@ use json_patch::Patch;
 use std::{
     ops::Deref,
     path::{Path, PathBuf},
-    time::Duration,
 };
 
 use crate::{
     api::Api,
     app::TigerApp,
     dto,
-    features::{self, texture_cache},
+    features::{
+        self,
+        template_hot_reload::TemplateHotReloadInfo,
+        texture_cache::{self, TextureCacheInfo},
+        texture_hot_reload::TextureHotReloadInfo,
+    },
     state::{self, State},
     utils::{
         handle,
@@ -19,53 +23,68 @@ use crate::{
 
 #[derive(Clone)]
 pub struct TigerAppMock {
+    paths: paths::Handle,
     state: state::Handle,
     texture_cache: texture_cache::Handle,
-    paths: paths::Handle,
     client_state: handle::Handle<dto::State>,
     events: handle::Handle<Vec<(String, serde_json::Value)>>,
     clipboard: handle::Handle<Option<String>>,
     closed: handle::Handle<bool>,
+    template_hot_reload_info: Option<TemplateHotReloadInfo>,
+    texture_cache_info: Option<TextureCacheInfo>,
+    texture_hot_reload_info: Option<TextureHotReloadInfo>,
 }
 
-impl TigerAppMock {
-    const PERIOD: Duration = Duration::from_millis(50);
+pub struct TigerAppMockBuilder {
+    paths: Paths,
+}
 
+impl TigerAppMockBuilder {
     pub fn new() -> Self {
-        let app = Self::new_uninitialized();
-        app.init();
-        app
-    }
-
-    pub fn new_uninitialized() -> Self {
         let paths = Paths::test_outputs();
         paths.remove_all();
-        Self {
+        Self { paths }
+    }
+
+    pub fn paths(&self) -> &Paths {
+        &self.paths
+    }
+
+    pub fn paths_mut(&mut self) -> &mut Paths {
+        &mut self.paths
+    }
+
+    pub fn build(self) -> TigerAppMock {
+        let mut app = TigerAppMock {
+            paths: handle::Handle::new(self.paths),
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
-            paths: handle::Handle::new(paths),
             client_state: handle::Handle::new(State::default().to_dto(dto::StateTrim::Full)),
             events: handle::Handle::default(),
             clipboard: handle::Handle::default(),
             closed: handle::Handle::default(),
-        }
-    }
+            template_hot_reload_info: None,
+            texture_cache_info: None,
+            texture_hot_reload_info: None,
+        };
 
-    pub fn init(&self) {
-        self.texture_cache.init(self.clone(), Self::PERIOD);
-        features::clipboard_analysis::init(self.clone(), Self::PERIOD);
-        features::missing_textures::init(self.clone(), Self::PERIOD);
-        features::onboarding::init(self.clone());
-        features::recent_documents::init(self.clone());
-        features::template_hot_reload::init(self.clone(), Self::PERIOD);
-        features::texture_hot_reload::init(self.clone(), Self::PERIOD);
-        self.replace_state();
-    }
+        features::texture_cache::init(app.clone());
+        features::clipboard_analysis::init(app.clone());
+        features::missing_textures::init(app.clone());
+        features::onboarding::init(app.clone());
+        features::recent_documents::init(app.clone());
+        app.template_hot_reload_info = Some(features::template_hot_reload::init(app.clone()));
+        app.texture_cache_info = Some(features::texture_cache::init(app.clone()));
+        app.texture_hot_reload_info = Some(features::texture_hot_reload::init(app.clone()));
+        app.replace_state();
 
-    pub fn wait_for_periodic_scans(&self) {
-        // TODO Use a condvar setup for tests that need to wait
-        // until file watches have been added (texture_hot_reload, template_hot_reload)
-        std::thread::sleep(2 * Self::PERIOD + Duration::from_millis(200));
+        app
+    }
+}
+
+impl TigerAppMock {
+    pub fn new() -> Self {
+        TigerAppMockBuilder::new().build()
     }
 
     pub fn client_state(&self) -> dto::State {
@@ -74,6 +93,18 @@ impl TigerAppMock {
 
     pub fn events(&self) -> Vec<(String, serde_json::Value)> {
         self.events.lock().clone()
+    }
+
+    pub fn texture_cache_info(&self) -> TextureCacheInfo {
+        self.texture_cache_info.as_ref().unwrap().clone()
+    }
+
+    pub fn texture_hot_reload_info(&self) -> TextureHotReloadInfo {
+        self.texture_hot_reload_info.as_ref().unwrap().clone()
+    }
+
+    pub fn template_hot_reload_info(&self) -> TemplateHotReloadInfo {
+        self.template_hot_reload_info.as_ref().unwrap().clone()
     }
 
     pub fn is_closed(&self) -> bool {
@@ -87,17 +118,6 @@ impl TigerAppMock {
             .into_iter()
             .find(|d| &d.path == state.current_document_path.as_ref().unwrap())
             .unwrap()
-    }
-
-    pub fn assert_eventually<F: Fn() -> bool>(&self, test: F) {
-        let start = std::time::Instant::now();
-        while std::time::Instant::now().duration_since(start) < Duration::from_secs(5) {
-            if test() {
-                return;
-            }
-            self.wait_for_periodic_scans();
-        }
-        panic!("Assertion failed");
     }
 
     fn apply_patch(&self, patch: Patch) {
