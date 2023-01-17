@@ -21,19 +21,6 @@ jobs:
           profile: minimal
           components: llvm-tools-preview
           default: true
-      - name: Download Build Cache
-        uses: actions/cache@v3
-        with:
-          path: |
-            ~/.cargo/bin/
-            ~/.cargo/registry/index/
-            ~/.cargo/registry/cache/
-            ~/.cargo/git/db/
-            ~/.cargo/.crates.toml
-            ~/.cargo/.crates2.json
-            src-tauri/target/
-          key: ${{ github.workflow }}-{{ runner.os }}-cargo-${{ github.ref }}-${{ github.sha }}
-          restore-keys: ${{ github.workflow }}-{{ runner.os }}-cargo-${{ github.ref }}
       - name: Install grcov
         run: cargo install grcov
       - name: Build Frontend
