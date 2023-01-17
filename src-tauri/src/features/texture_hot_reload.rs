@@ -57,45 +57,37 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TextureHotRe
 #[cfg(test)]
 mod tests {
     use retry::{delay::Fixed, retry};
+    use std::path::Path;
 
     use super::*;
     use crate::app::mock::TigerAppMock;
 
-    #[test]
-    fn emits_invalidate_event() {
-        let dir = std::env::current_dir().unwrap();
-        let frame = dir.join("test-output/emits_invalidate_event.png");
-        let before_frame = dir.join("test-data/samurai-dead-all.png");
-        let after_frame = dir.join("test-data/samurai-attack-north.png");
-
-        let app = TigerAppMock::new();
-        app.new_document("test.tiger");
-
-        std::fs::copy(&before_frame, &frame).unwrap();
-        app.import_frames(vec![frame.clone()]);
-        let watching_changes = retry(Fixed::from(PERIOD).take(10), || {
+    fn wait_for_file_watch<P: AsRef<Path>>(
+        app: &TigerAppMock,
+        frame: P,
+    ) -> Result<(), retry::Error<()>> {
+        retry(Fixed::from(PERIOD).take(100), || {
             if app
                 .texture_hot_reload_info()
                 .file_watcher
                 .read()
-                .is_watching(&frame)
+                .is_watching(frame.as_ref())
             {
                 Ok(())
             } else {
                 Err(())
             }
-        });
-        assert!(watching_changes.is_ok());
+        })
+    }
 
-        assert!(app
-            .events()
-            .iter()
-            .all(|(event, _)| event != dto::EVENT_INVALIDATE_TEXTURE));
-
-        std::fs::copy(after_frame, &frame).unwrap();
-
-        let expected_payload = dto::TextureInvalidationEvent { path: frame };
-        let invalidation_event_emitted = retry(Fixed::from(PERIOD).take(10), || {
+    fn wait_for_invalidation_event<P: AsRef<Path>>(
+        app: &TigerAppMock,
+        frame: P,
+    ) -> Result<(), retry::Error<()>> {
+        let expected_payload = dto::TextureInvalidationEvent {
+            path: frame.as_ref().to_owned(),
+        };
+        retry(Fixed::from(PERIOD).take(100), || {
             app.events()
                 .into_iter()
                 .any(|(event, payload)| {
@@ -107,7 +99,54 @@ mod tests {
                 })
                 .then_some(())
                 .ok_or(())
-        });
+        })
+    }
+
+    #[test]
+    fn emits_invalidate_event_on_file_change() {
+        let dir = std::env::current_dir().unwrap();
+        let frame = dir.join("test-output/emits_invalidate_event_on_file_change.png");
+        let before_frame = dir.join("test-data/samurai-dead-all.png");
+        let after_frame = dir.join("test-data/samurai-attack-north.png");
+
+        std::fs::copy(&before_frame, &frame).unwrap();
+
+        let app = TigerAppMock::new();
+        app.new_document("test.tiger");
+        app.import_frames(vec![frame.clone()]);
+
+        let watching_changes = wait_for_file_watch(&app, &frame);
+        assert!(watching_changes.is_ok());
+
+        assert!(app
+            .events()
+            .iter()
+            .all(|(event, _)| event != dto::EVENT_INVALIDATE_TEXTURE));
+
+        std::fs::copy(after_frame, &frame).unwrap();
+
+        let invalidation_event_emitted = wait_for_invalidation_event(&app, frame);
+        assert!(invalidation_event_emitted.is_ok());
+    }
+
+    #[test]
+    fn emits_invalidate_event_on_file_add() {
+        let dir = std::env::current_dir().unwrap();
+        let frame = dir.join("test-output/emits_invalidate_event_on_file_add.png");
+        let source_frame = dir.join("test-data/samurai-dead-all.png");
+
+        std::fs::remove_file(&frame).ok();
+
+        let app = TigerAppMock::new();
+        app.new_document("test.tiger");
+        app.import_frames(vec![&frame]);
+
+        let watching_changes = wait_for_file_watch(&app, &frame);
+        assert!(watching_changes.is_ok());
+
+        std::fs::copy(source_frame, &frame).unwrap();
+
+        let invalidation_event_emitted = wait_for_invalidation_event(&app, frame);
         assert!(invalidation_event_emitted.is_ok());
     }
 }

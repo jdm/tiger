@@ -61,9 +61,9 @@ mod tests {
     use crate::{app::mock::TigerAppMock, dto::ExportSettingsError};
 
     #[tokio::test]
-    async fn detects_template_errors() {
+    async fn detects_template_errors_on_file_change() {
         let test_template_path =
-            PathBuf::from("test-output/detects_template_errors.template").resolve();
+            PathBuf::from("test-output/detects_template_errors_on_file_change.template").resolve();
         let bad_template_path = PathBuf::from("test-data/malformed.template").resolve();
 
         let app = TigerAppMock::new();
