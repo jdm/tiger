@@ -12,6 +12,7 @@
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
 - [ ] Can open log from help menu
 - [ ] .tiger file association
+- [ ] Cleanup application files (log, recent-documents, onboarding) on uninstall
 
 ## Tiger 1.0
 
