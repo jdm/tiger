@@ -13,7 +13,7 @@ pub struct Paths {
 
 impl Paths {
     pub fn new() -> Self {
-        let project_dirs = directories::ProjectDirs::from("org", "Permafrost", "Tiger").unwrap();
+        let project_dirs = directories::ProjectDirs::from("", "", "Tiger").unwrap();
         let data_local_dir = project_dirs.data_local_dir();
         std::fs::create_dir_all(data_local_dir).unwrap();
         Self {

@@ -13,6 +13,7 @@
 - [ ] Can open log from help menu
 - [ ] .tiger file association
 - [ ] Cleanup application files (log, recent-documents, onboarding) on uninstall
+- [x] Application files are now stored under `%LocalAppData%/Tiger` instead of `%LocalAppData%/Permafrost/Tiger` (this directory can safely be deleted manually)
 
 ## Tiger 1.0
 
