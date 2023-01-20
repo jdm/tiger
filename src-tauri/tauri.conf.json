@@ -52,7 +52,7 @@
         "icons/icon.icns",
         "icons/icon.ico"
       ],
-      "identifier": "com.agersant.tiger",
+      "identifier": "Tiger",
       "longDescription": "",
       "macOS": {
         "entitlements": null,
@@ -67,7 +67,10 @@
       "windows": {
         "certificateThumbprint": null,
         "digestAlgorithm": "sha256",
-        "timestampUrl": ""
+        "timestampUrl": "",
+        "wix": {
+          "template": "installer/template.wxs"
+        }
       }
     },
     "security": {

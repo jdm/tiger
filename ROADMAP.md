@@ -12,8 +12,10 @@
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
 - [ ] Can open log from help menu
 - [ ] .tiger file association
-- [ ] Cleanup application files (log, recent-documents, onboarding) on uninstall
+- [ ] Cleanup application files and webview cache on uninstall
+- [x] Webview cache is now stored alongside application files under `%LocalAppData%/Tiger`
 - [x] Application files are now stored under `%LocalAppData%/Tiger` instead of `%LocalAppData%/Permafrost/Tiger` (this directory can safely be deleted manually)
+- [x] Registry keys are now written under `HKCU\Software\Tiger` instead of `HKCU\Software\com.agersant.tiger`
 
 ## Tiger 1.0
 
