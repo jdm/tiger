@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
 import { onMounted, onUnmounted, watch } from "vue"
-import { showErrorMessage, tick } from "@/backend/api"
+import { getState, finalizeStartup, showErrorMessage, tick } from "@/backend/api"
 import { State, Patch, TextureInvalidation, OpenDocumentError, SaveDocumentError, } from "@/backend/dto"
 import { useDevStore } from "@/stores/dev"
 import { useSpriteStore } from "@/stores/sprite"
@@ -23,7 +23,7 @@ const dev = useDevStore();
 const sprite = useSpriteStore();
 const state = useStateStore();
 
-onMounted(() => {
+onMounted(async () => {
   listen("patch-state", event => {
     state.patch(event.payload as Patch);
   });
@@ -45,6 +45,9 @@ onMounted(() => {
     showErrorMessage("Error", description, saveDocumentError.error);
   });
   registerKeyboardShortcuts();
+
+  await getState();
+  await finalizeStartup();
 });
 
 onUnmounted(() => {

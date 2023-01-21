@@ -11,7 +11,8 @@
 - [ ] Add About dialog with version number / license info
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
 - [ ] Can open log from help menu
-- [ ] .tiger file association
+- [x] `.tiger` file association
+- [x] Opening files from Windows Explorer re-uses existing instance
 - [ ] Cleanup application files and webview cache on uninstall
 - [x] Webview cache is now stored alongside application files under `%LocalAppData%/Tiger`
 - [x] Application files are now stored under `%LocalAppData%/Tiger` instead of `%LocalAppData%/Permafrost/Tiger` (this directory can safely be deleted manually)

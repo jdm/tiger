@@ -30,6 +30,7 @@ pub struct State {
     clipboard_manifest: Option<ClipboardManifest>,
     errors: Vec<UserFacingError>,
     onboarding_step: Observable<'static, OnboardingStep>,
+    opened_startup_documents: bool,
     exit_requested: bool,
 }
 
@@ -225,6 +226,14 @@ impl State {
         self.exit_requested && self.documents.is_empty()
     }
 
+    pub fn opened_startup_documents(&self) -> bool {
+        self.opened_startup_documents
+    }
+
+    pub fn set_opened_startup_documents(&mut self, opened: bool) {
+        self.opened_startup_documents = opened;
+    }
+
     pub fn acknowledge_error(&mut self) {
         if !self.errors.is_empty() {
             self.errors.remove(0);
@@ -301,6 +310,18 @@ mod tests {
         app.close_document("test-data/flame.tiger");
         assert_eq!(app.client_state().documents.len(), 1);
         assert_eq!(app.client_state().documents[0].name, "samurai.tiger");
+    }
+
+    #[tokio::test]
+    async fn can_open_documents_on_start() {
+        let app = TigerAppMock::new();
+        app.set_command_line_arguments(vec!["test-data/samurai.tiger"]);
+        app.finalize_startup().await;
+        assert_eq!(app.client_state().documents.len(), 1);
+        app.close_all_documents();
+        assert!(app.client_state().documents.is_empty());
+        app.finalize_startup().await;
+        assert!(app.client_state().documents.is_empty());
     }
 
     #[tokio::test]

@@ -90,6 +90,7 @@ pub trait Api {
     async fn export(&self) -> Result<Patch, ()>;
     fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
     fn filter_frames<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
+    async fn finalize_startup(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn focus_next_document(&self) -> Result<Patch, ()>;
     fn focus_previous_document(&self) -> Result<Patch, ()>;
@@ -938,6 +939,17 @@ impl<A: TigerApp + Sync> Api for A {
                 }
             }
         }))
+    }
+
+    async fn finalize_startup(&self) -> Result<Patch, ()> {
+        self.release_startup_guard();
+        if self.state().lock().opened_startup_documents() {
+            Ok(Patch(Vec::new()))
+        } else {
+            let startup_documents = self.command_line_arguments();
+            self.state().lock().set_opened_startup_documents(true);
+            self.open_documents(startup_documents).await
+        }
     }
 
     fn pan(&self, delta: (f32, f32)) -> Result<Patch, ()> {

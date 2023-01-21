@@ -21,6 +21,9 @@ pub trait TigerApp {
     fn emit_all<S: Serialize + Clone>(&self, event: &str, payload: S);
     fn read_clipboard(&self) -> Option<String>;
     fn write_clipboard<S: Into<String>>(&self, content: S);
+    fn command_line_arguments(&self) -> Vec<String>;
+    fn release_startup_guard(&self);
+    fn focus_window(&self);
     fn close_window(&self);
     fn patch<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F) -> Patch {
         let state_handle = self.state();

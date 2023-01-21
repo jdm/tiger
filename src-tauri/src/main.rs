@@ -8,7 +8,13 @@ use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, W
 use tauri::Manager;
 
 use app::TigerApp;
-use features::texture_cache;
+use features::{
+    single_instance::{
+        acquire_startup_guard, attach_to_primary_instance, become_primary_instance,
+        StartupGuardHandle,
+    },
+    texture_cache,
+};
 use utils::paths;
 
 mod api;
@@ -22,8 +28,16 @@ mod state;
 mod utils;
 
 fn main() {
-    let paths = paths::Paths::default();
+    let startup_guard = acquire_startup_guard();
+    let command_line_arguments = std::env::args().skip(1).collect::<Vec<_>>();
+    if matches!(
+        attach_to_primary_instance(command_line_arguments, &startup_guard),
+        Ok(true),
+    ) {
+        std::process::exit(0);
+    }
 
+    let paths = paths::Paths::default();
     CombinedLogger::init(vec![
         TermLogger::new(
             LevelFilter::Info,
@@ -43,16 +57,29 @@ fn main() {
         .manage(state::Handle::default())
         .manage(texture_cache::Handle::default())
         .manage(paths::Handle::new(paths))
-        .setup(|tauri_app| {
-            init_window_shadow(tauri_app);
-            features::clipboard_analysis::init(tauri_app.handle());
-            features::missing_textures::init(tauri_app.handle());
-            features::onboarding::init(tauri_app.handle());
-            features::recent_documents::init(tauri_app.handle());
-            features::template_hot_reload::init(tauri_app.handle());
-            features::texture_cache::init(tauri_app.handle());
-            features::texture_hot_reload::init(tauri_app.handle());
-            Ok(())
+        .manage(StartupGuardHandle::new(Some(startup_guard)))
+        .setup({
+            move |tauri_app| {
+                init_window_shadow(tauri_app);
+
+                {
+                    let app_handle = tauri_app.handle();
+                    let managed_startup_guard = Manager::state::<StartupGuardHandle>(&app_handle);
+                    let startup_guard_lock = managed_startup_guard.lock();
+                    let startup_guard = &*startup_guard_lock.as_ref().unwrap();
+                    become_primary_instance(tauri_app.handle(), startup_guard);
+                }
+
+                features::clipboard_analysis::init(tauri_app.handle());
+                features::missing_textures::init(tauri_app.handle());
+                features::onboarding::init(tauri_app.handle());
+                features::recent_documents::init(tauri_app.handle());
+                features::template_hot_reload::init(tauri_app.handle());
+                features::texture_cache::init(tauri_app.handle());
+                features::texture_hot_reload::init(tauri_app.handle());
+
+                Ok(())
+            }
         })
         .on_window_event(handle_window_event)
         .invoke_handler(tauri::generate_handler![
@@ -62,6 +89,7 @@ fn main() {
             app::tauri::close_all_documents,
             app::tauri::close_current_document,
             app::tauri::close_document,
+            app::tauri::finalize_startup,
             app::tauri::focus_document,
             app::tauri::focus_next_document,
             app::tauri::focus_previous_document,

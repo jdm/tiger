@@ -10,6 +10,7 @@ use crate::{
     dto,
     features::{
         self,
+        single_instance::{acquire_startup_guard, StartupGuardHandle},
         template_hot_reload::TemplateHotReloadInfo,
         texture_cache::{self, TextureCacheInfo},
         texture_hot_reload::TextureHotReloadInfo,
@@ -29,7 +30,10 @@ pub struct TigerAppMock {
     client_state: handle::Handle<dto::State>,
     events: handle::Handle<Vec<(String, serde_json::Value)>>,
     clipboard: handle::Handle<Option<String>>,
+    command_line_arguments: handle::Handle<Vec<String>>,
+    focused: handle::Handle<bool>,
     closed: handle::Handle<bool>,
+    startup_guard: StartupGuardHandle,
     template_hot_reload_info: Option<TemplateHotReloadInfo>,
     texture_cache_info: Option<TextureCacheInfo>,
     texture_hot_reload_info: Option<TextureHotReloadInfo>,
@@ -37,13 +41,22 @@ pub struct TigerAppMock {
 
 pub struct TigerAppMockBuilder {
     paths: Paths,
+    create_startup_guard: bool,
 }
 
 impl TigerAppMockBuilder {
     pub fn new() -> Self {
         let paths = Paths::test_outputs();
         paths.remove_all();
-        Self { paths }
+        Self {
+            paths,
+            create_startup_guard: false,
+        }
+    }
+
+    pub fn with_startup_guard(&mut self) -> &mut Self {
+        self.create_startup_guard = true;
+        self
     }
 
     pub fn paths(&self) -> &Paths {
@@ -54,15 +67,20 @@ impl TigerAppMockBuilder {
         &mut self.paths
     }
 
-    pub fn build(self) -> TigerAppMock {
+    pub fn build(&self) -> TigerAppMock {
+        let startup_guard = self.create_startup_guard.then(|| acquire_startup_guard());
+
         let mut app = TigerAppMock {
-            paths: handle::Handle::new(self.paths),
+            paths: handle::Handle::new(self.paths.clone()),
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
             client_state: handle::Handle::new(State::default().to_dto(dto::StateTrim::Full)),
             events: handle::Handle::default(),
             clipboard: handle::Handle::default(),
+            command_line_arguments: handle::Handle::default(),
+            focused: handle::Handle::default(),
             closed: handle::Handle::default(),
+            startup_guard: StartupGuardHandle::new(startup_guard),
             template_hot_reload_info: None,
             texture_cache_info: None,
             texture_hot_reload_info: None,
@@ -95,6 +113,10 @@ impl TigerAppMock {
         self.events.lock().clone()
     }
 
+    pub fn has_startup_guard(&self) -> bool {
+        self.startup_guard.lock().is_some()
+    }
+
     pub fn texture_cache_info(&self) -> TextureCacheInfo {
         self.texture_cache_info.as_ref().unwrap().clone()
     }
@@ -105,6 +127,14 @@ impl TigerAppMock {
 
     pub fn template_hot_reload_info(&self) -> TemplateHotReloadInfo {
         self.template_hot_reload_info.as_ref().unwrap().clone()
+    }
+
+    pub fn set_command_line_arguments<S: Into<String>>(&self, arguments: Vec<S>) {
+        *self.command_line_arguments.lock() = arguments.into_iter().map(|s| s.into()).collect();
+    }
+
+    pub fn is_focused(&self) -> bool {
+        *self.focused.lock()
     }
 
     pub fn is_closed(&self) -> bool {
@@ -165,8 +195,20 @@ impl TigerApp for TigerAppMock {
         *self.clipboard.lock() = Some(content.into())
     }
 
+    fn command_line_arguments(&self) -> Vec<String> {
+        self.command_line_arguments.lock().clone()
+    }
+
+    fn focus_window(&self) {
+        *self.focused.lock() = true;
+    }
+
     fn close_window(&self) {
         *self.closed.lock() = true;
+    }
+
+    fn release_startup_guard(&self) {
+        self.startup_guard.lock().take();
     }
 }
 
@@ -394,6 +436,10 @@ impl TigerAppMock {
 
     pub fn filter_frames<S: Into<String>>(&self, search_query: S) {
         self.apply_patch(Api::filter_frames(self, search_query).unwrap());
+    }
+
+    pub async fn finalize_startup(&self) {
+        self.apply_patch(Api::finalize_startup(self).await.unwrap());
     }
 
     pub fn focus_document<P: AsRef<Path>>(&self, path: P) {

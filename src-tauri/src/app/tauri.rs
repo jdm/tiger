@@ -9,7 +9,7 @@ use crate::{
     api::Api,
     app::TigerApp,
     dto::{self, StateTrim},
-    features::texture_cache,
+    features::{single_instance::StartupGuardHandle, texture_cache},
     state::{self, State},
     utils::paths,
 };
@@ -47,8 +47,20 @@ impl TigerApp for tauri::App {
         self.handle().write_clipboard(content)
     }
 
+    fn command_line_arguments(&self) -> Vec<String> {
+        self.handle().command_line_arguments()
+    }
+
+    fn focus_window(&self) {
+        self.handle().focus_window()
+    }
+
     fn close_window(&self) {
         self.handle().close_window()
+    }
+
+    fn release_startup_guard(&self) {
+        self.handle().release_startup_guard()
     }
 }
 
@@ -109,12 +121,30 @@ impl TigerApp for tauri::AppHandle {
         }
     }
 
+    fn command_line_arguments(&self) -> Vec<String> {
+        std::env::args().skip(1).collect::<Vec<_>>()
+    }
+
+    fn focus_window(&self) {
+        if let Some(window) = self.get_window("main") {
+            window.unminimize().ok();
+            window.set_focus().ok();
+        } else {
+            error!("Could not access app window to focus it");
+        }
+    }
+
     fn close_window(&self) {
         if let Some(window) = self.get_window("main") {
             window.close().ok();
         } else {
             error!("Could not access app window to close it");
         }
+    }
+
+    fn release_startup_guard(&self) {
+        let startup_guard = tauri::Manager::state::<StartupGuardHandle>(self);
+        startup_guard.lock().take();
     }
 }
 
@@ -146,6 +176,11 @@ pub fn new_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
 #[tauri::command]
 pub async fn open_documents(app: tauri::AppHandle, paths: Vec<&Path>) -> Result<Patch, ()> {
     app.open_documents(paths).await
+}
+
+#[tauri::command]
+pub async fn finalize_startup(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.finalize_startup().await
 }
 
 #[tauri::command]
