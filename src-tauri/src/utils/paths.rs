@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use crate::utils::handle;
 
@@ -12,33 +12,19 @@ pub struct Paths {
 }
 
 impl Paths {
-    pub fn new() -> Self {
-        let project_dirs = directories::ProjectDirs::from("", "", "Tiger").unwrap();
-        let data_local_dir = project_dirs.data_local_dir();
-        std::fs::create_dir_all(data_local_dir).unwrap();
+    pub fn new<P: AsRef<Path>, S: AsRef<str>>(local_app_data_dir: P, suffix: S) -> Self {
+        std::fs::create_dir_all(&local_app_data_dir).unwrap();
+        let suffix = suffix.as_ref();
         Self {
-            log_file: data_local_dir.join("tiger.log"),
-            recent_documents_file: data_local_dir.join("recent-documents.json"),
-            onboarding_file: data_local_dir.join("onboarding.json"),
-        }
-    }
-
-    #[cfg(test)]
-    pub fn test_outputs() -> Self {
-        use std::{
-            collections::hash_map::DefaultHasher,
-            hash::{Hash, Hasher},
-        };
-
-        let backtrace = std::backtrace::Backtrace::force_capture();
-        let backtrace = backtrace.to_string();
-        let mut s = DefaultHasher::new();
-        backtrace.hash(&mut s);
-        let hash = s.finish();
-        Paths {
-            log_file: format!("test-output/log-{hash}.log").into(),
-            recent_documents_file: format!("test-output/recent-documents-{hash}.json").into(),
-            onboarding_file: format!("test-output/onboarding-{hash}.json").into(),
+            log_file: local_app_data_dir
+                .as_ref()
+                .join(format!("tiger{suffix}.log")),
+            recent_documents_file: local_app_data_dir
+                .as_ref()
+                .join(format!("recent-documents{suffix}.json")),
+            onboarding_file: local_app_data_dir
+                .as_ref()
+                .join(format!("onboarding{suffix}.json")),
         }
     }
 
@@ -47,11 +33,5 @@ impl Paths {
         std::fs::remove_file(&self.log_file).ok();
         std::fs::remove_file(&self.recent_documents_file).ok();
         std::fs::remove_file(&self.onboarding_file).ok();
-    }
-}
-
-impl Default for Paths {
-    fn default() -> Self {
-        Self::new()
     }
 }

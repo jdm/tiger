@@ -1,5 +1,7 @@
 use json_patch::Patch;
 use std::{
+    collections::hash_map::DefaultHasher,
+    hash::{Hash, Hasher},
     ops::Deref,
     path::{Path, PathBuf},
 };
@@ -46,8 +48,17 @@ pub struct TigerAppMockBuilder {
 
 impl TigerAppMockBuilder {
     pub fn new() -> Self {
-        let paths = Paths::test_outputs();
+        let paths_suffix = {
+            let backtrace = std::backtrace::Backtrace::force_capture();
+            let backtrace = backtrace.to_string();
+            let mut s = DefaultHasher::new();
+            backtrace.hash(&mut s);
+            s.finish().to_string()
+        };
+
+        let paths = Paths::new("test-output", paths_suffix);
         paths.remove_all();
+
         Self {
             paths,
             create_startup_guard: false,

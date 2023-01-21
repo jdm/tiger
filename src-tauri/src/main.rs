@@ -5,6 +5,7 @@
 
 use log::{error, LevelFilter};
 use simplelog::{ColorChoice, CombinedLogger, Config, TermLogger, TerminalMode, WriteLogger};
+use std::path::Path;
 use tauri::Manager;
 
 use app::TigerApp;
@@ -15,7 +16,7 @@ use features::{
     },
     texture_cache,
 };
-use utils::paths;
+use utils::paths::{self, Paths};
 
 mod api;
 mod app;
@@ -37,30 +38,17 @@ fn main() {
         std::process::exit(0);
     }
 
-    let paths = paths::Paths::default();
-    CombinedLogger::init(vec![
-        TermLogger::new(
-            LevelFilter::Info,
-            Config::default(),
-            TerminalMode::Mixed,
-            ColorChoice::Auto,
-        ),
-        WriteLogger::new(
-            LevelFilter::Info,
-            Config::default(),
-            std::fs::File::create(&paths.log_file).unwrap(),
-        ),
-    ])
-    .unwrap();
-
     tauri::Builder::default()
         .manage(state::Handle::default())
         .manage(texture_cache::Handle::default())
-        .manage(paths::Handle::new(paths))
         .manage(StartupGuardHandle::new(Some(startup_guard)))
         .setup({
             move |tauri_app| {
                 init_window_shadow(tauri_app);
+
+                let paths = Paths::new(tauri_app.path_resolver().app_local_data_dir().unwrap(), "");
+                init_logging(&paths.log_file);
+                tauri_app.manage(paths::Handle::new(paths));
 
                 {
                     let app_handle = tauri_app.handle();
@@ -225,6 +213,23 @@ fn main() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+fn init_logging<P: AsRef<Path>>(log_file: P) {
+    CombinedLogger::init(vec![
+        TermLogger::new(
+            LevelFilter::Info,
+            Config::default(),
+            TerminalMode::Mixed,
+            ColorChoice::Auto,
+        ),
+        WriteLogger::new(
+            LevelFilter::Info,
+            Config::default(),
+            std::fs::File::create(log_file.as_ref()).unwrap(),
+        ),
+    ])
+    .unwrap();
 }
 
 fn handle_window_event(event: tauri::GlobalWindowEvent) {
