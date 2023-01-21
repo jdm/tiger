@@ -3,7 +3,9 @@
 		<div class="flex" :class="[highlighted && !disabled ? 'bg-blue-600 rounded-sm' : '']">
 			<div class="flex grow justify-between pl-7 gap-14 py-1.5 whitespace-nowrap">
 				<div :class="disabled ? 'text-zinc-600' : highlighted ? 'text-blue-100' : 'text-zinc-400'">
-					{{ entry.name }}
+					<a :href="entry.url" target="_blank">
+						{{ entry.name }}
+					</a>
 				</div>
 				<div :class="highlighted && !disabled ? 'text-blue-400' : 'text-zinc-600'">
 					{{ entry.shortcut }}
@@ -33,7 +35,7 @@ const emit = defineEmits<{
 	(e: 'unhovered', element: HTMLElement): void
 }>();
 
-const disabled = computed(() => props.entry.disabled || (!props.entry.action && !props.entry.submenus?.length));
+const disabled = computed(() => props.entry.disabled || (!props.entry.action && !props.entry.submenus?.length && !props.entry.url));
 
 function onMouseEnter(event: MouseEvent) {
 	emit("hovered", event.currentTarget as HTMLElement);

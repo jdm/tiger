@@ -23,12 +23,13 @@ export type MenuBarEntry = {
 export type Separator = {};
 
 export type MenuEntry = {
-  key: string,
-  name: string,
-  shortcut?: string,
-  action?: () => Promise<void>,
-  submenus?: (MenuEntry | Separator)[],
-  disabled?: boolean,
+	key: string,
+	name: string,
+	shortcut?: string,
+	action?: () => Promise<void>,
+	url?: string,
+	submenus?: (MenuEntry | Separator)[],
+	disabled?: boolean,
 };
 
 defineProps<{
@@ -44,13 +45,6 @@ const menuPosition = computed((): [number, number] => {
 	}
 	const rect = currentItem.value.getBoundingClientRect();
 	return [rect.left, rect.bottom - 2];
-});
-
-const menuPositionStyle = computed(() => {
-	return {
-		left: `${menuPosition.value[0]}px`,
-		top: `${menuPosition.value[1]}px`,
-	};
 });
 
 function onItemClicked(event: MouseEvent, entry: MenuBarEntry) {

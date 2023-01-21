@@ -88,11 +88,18 @@ const viewMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 	{ name: "Reset Zoom (Timeline)", shortcut: "Ctrl+Alt+0", action: resetTimelineZoom, disabled: !state.currentDocument },
 ]));
 
+const helpMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
+	{ name: "Documentation…", url: "https://agersant.github.io/tiger" },
+	{ name: "Report a Bug…", url: "https://github.com/agersant/tiger/issues/new" },
+	{ name: "Share Ideas and Feedback…", url: "https://github.com/agersant/tiger/discussions/new/choose" },
+]));
+
 const menuEntries = computed((): MenuBarEntry[] => {
 	return reactive([
 		{ name: "File", content: fileMenuEntries },
 		{ name: "Edit", content: editMenuEntries },
-		{ name: "View", content: viewMenuEntries }
+		{ name: "View", content: viewMenuEntries },
+		{ name: "Help", content: helpMenuEntries }
 	]);
 });
 
