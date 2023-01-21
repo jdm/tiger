@@ -10,7 +10,6 @@
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
-- [ ] Can open log from help menu
 - [x] `.tiger` file association
 - [x] Opening files from Windows Explorer re-uses existing instance
 - [ ] Cleanup application files and webview cache on uninstall
