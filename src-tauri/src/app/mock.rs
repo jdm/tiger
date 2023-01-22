@@ -26,6 +26,7 @@ use crate::{
 
 #[derive(Clone)]
 pub struct TigerAppMock {
+    version: semver::Version,
     paths: paths::Handle,
     state: state::Handle,
     texture_cache: texture_cache::Handle,
@@ -43,6 +44,7 @@ pub struct TigerAppMock {
 
 pub struct TigerAppMockBuilder {
     paths: Paths,
+    version: semver::Version,
     create_startup_guard: bool,
 }
 
@@ -61,11 +63,17 @@ impl TigerAppMockBuilder {
 
         Self {
             paths,
+            version: semver::Version::parse("0.0.0").unwrap(),
             create_startup_guard: false,
         }
     }
 
-    pub fn with_startup_guard(&mut self) -> &mut Self {
+    pub fn with_version(mut self, version: semver::Version) -> Self {
+        self.version = version;
+        self
+    }
+
+    pub fn with_startup_guard(mut self) -> Self {
         self.create_startup_guard = true;
         self
     }
@@ -82,6 +90,7 @@ impl TigerAppMockBuilder {
         let startup_guard = self.create_startup_guard.then(|| acquire_startup_guard());
 
         let mut app = TigerAppMock {
+            version: self.version.clone(),
             paths: handle::Handle::new(self.paths.clone()),
             state: state::Handle::default(),
             texture_cache: texture_cache::Handle::default(),
@@ -167,6 +176,10 @@ impl TigerAppMock {
 }
 
 impl TigerApp for TigerAppMock {
+    fn version(&self) -> semver::Version {
+        self.version.clone()
+    }
+
     fn state(&self) -> state::Handle {
         self.state.clone()
     }

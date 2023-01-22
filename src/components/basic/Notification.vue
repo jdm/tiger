@@ -10,7 +10,9 @@
 					<div v-for="action in actions"
 						class="cursor-pointer -m-1.5 -ml-3 mt-0.5 rounded-md  p-1.5 px-3 text-md font-medium underline-offset-2 hover:underline"
 						:class="highlightClass" @click="action.callback">
-						{{ action.text}}
+						<a :href="action.url" target="_blank">
+							{{ action.text}}
+						</a>
 					</div>
 				</div>
 			</div>
@@ -32,7 +34,7 @@ export type NotificationData = {
 	title: string,
 	icon: Component,
 	description: string,
-	actions?: { text: string, callback: () => void }[],
+	actions?: { text: string, callback?: () => void, url?: string }[],
 };
 
 const props = defineProps<{
@@ -41,7 +43,7 @@ const props = defineProps<{
 	title: string,
 	icon: Component,
 	description: string,
-	actions?: { text: string, callback: () => void }[],
+	actions?: { text: string, callback?: () => void, url?: string }[],
 }>();
 
 const emit = defineEmits<{

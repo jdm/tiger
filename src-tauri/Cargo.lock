@@ -3365,6 +3365,7 @@ dependencies = [
  "pathdiff",
  "regex",
  "retry",
+ "semver 1.0.16",
  "serde",
  "serde_json",
  "simplelog",

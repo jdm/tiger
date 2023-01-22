@@ -234,6 +234,10 @@ export type UpdateError = {
   details: string;
 };
 
+export type UpdateSuccess = {
+  versionNumber: string;
+};
+
 export type TextureInvalidation = {
   path: string;
 };

@@ -10,7 +10,7 @@
   - [x] Can install new version
   - [ ] Generate `updater.json` during release process
   - [ ] `tauri.conf.json` points to latest release's `updater.json`
-  - [ ] Show notification with changelog link after update
+  - [x] Show notification with changelog link after update
   - [ ] Offer to save modified files before applying update
 - [ ] Splash screen
 - [x] Add a a help menu with links to issues/discussions/documentation

@@ -12,6 +12,7 @@ use crate::state;
 // Typescript: @/stores/state
 
 pub static EVENT_APP_UPDATE_ERROR: &str = "app-update-error";
+pub static EVENT_APP_UPDATE_SUCCESS: &str = "app-update-success";
 pub static EVENT_EXPORT_ERROR: &str = "export-error";
 pub static EVENT_EXPORT_SUCCESS: &str = "export-success";
 pub static EVENT_INVALIDATE_TEXTURE: &str = "invalidate-texture";
@@ -309,6 +310,12 @@ pub struct ExportSuccess {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateError {
     pub details: String,
+}
+
+#[derive(Clone, Deserialize, Serialize, Eq, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateSuccess {
+    pub version_number: semver::Version,
 }
 
 #[derive(Clone, Copy)]

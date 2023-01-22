@@ -8,15 +8,15 @@
 import { listen } from "@tauri-apps/api/event";
 import { onMounted, Ref, ref } from "vue";
 import { revealInExplorer, showErrorMessage } from "@/backend/api";
-import { ExportError, ExportSuccess, UpdateError } from "@/backend/dto";
-import { DocumentCheckIcon, ExclamationTriangleIcon } from "@heroicons/vue/20/solid"
+import { ExportError, ExportSuccess, UpdateError, UpdateSuccess } from "@/backend/dto";
+import { DocumentCheckIcon, ExclamationTriangleIcon, InformationCircleIcon } from "@heroicons/vue/20/solid"
 import Notifications from "@/components/basic/Notifications.vue"
 
 const notifications: Ref<InstanceType<typeof Notifications> | null> = ref(null);
 
 onMounted(() => {
 	listen("app-update-error", event => {
-		const exportError = event.payload as UpdateError;
+		const updateError = event.payload as UpdateError;
 		const title = "Update Error";
 		const description = "Something went wrong while updating Tiger.";
 		const modalDescription = "Something went wrong while updating Tiger:";
@@ -28,8 +28,24 @@ onMounted(() => {
 			actions: [{
 				text: "View details",
 				callback: () => {
-					showErrorMessage(title, modalDescription, exportError.details);
+					showErrorMessage(title, modalDescription, updateError.details);
 				},
+			}],
+		});
+	});
+
+	listen("app-update-success", event => {
+		const updateSuccess = event.payload as UpdateSuccess;
+		const title = "Update Complete";
+		const description = `Tiger was updated to version <span class="font-medium text-orange-500">${updateSuccess.versionNumber}</span>.`;
+		notifications.value?.push({
+			flavor: "neutral",
+			title: title,
+			icon: InformationCircleIcon,
+			description: description,
+			actions: [{
+				text: "View changelog",
+				url: "https://github.com/agersant/tiger/blob/master/CHANGELOG.md",
 			}],
 		});
 	});

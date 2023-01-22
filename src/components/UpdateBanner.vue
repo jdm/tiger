@@ -8,7 +8,7 @@
 						<div>A new version of Tiger is available!</div>
 						<div class="flex gap-1 font-semibold underline cursor-pointer text-amber-900"
 							@click="installUpdate">
-							<RocketLaunchIcon class="w-6" />Install now
+							<CloudArrowDownIcon class="w-6" />Update now
 						</div>
 					</div>
 					<div v-else-if="state.updateStep == UpdateStep.InstallingUpdate"
@@ -23,7 +23,7 @@
 
 <script setup lang="ts">
 import { computed } from "vue";
-import { RocketLaunchIcon, BoltIcon } from "@heroicons/vue/24/outline"
+import { CloudArrowDownIcon, BoltIcon } from "@heroicons/vue/24/outline"
 import { installUpdate } from "@/backend/api"
 import { UpdateStep } from "@/backend/dto"
 import { useStateStore } from "@/stores/state";

@@ -13,6 +13,7 @@ pub mod mock;
 pub mod tauri;
 
 pub trait TigerApp {
+    fn version(&self) -> semver::Version;
     fn state(&self) -> state::Handle;
     fn texture_cache(&self) -> texture_cache::Handle;
     fn paths(&self) -> paths::Handle;

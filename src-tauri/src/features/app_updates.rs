@@ -1,8 +1,11 @@
-use std::{thread, time::Duration};
-
 use log::error;
+use serde::{Deserialize, Serialize};
+use std::{fs::File, path::Path, thread, time::Duration};
 
-use crate::{app::TigerApp, dto::StateTrim};
+use crate::{
+    app::TigerApp,
+    dto::{self, StateTrim},
+};
 
 #[derive(Clone, Copy, Debug, Default, Eq, PartialEq)]
 pub enum UpdateStep {
@@ -13,7 +16,14 @@ pub enum UpdateStep {
     InstallingUpdate,
 }
 
+#[derive(Deserialize, Serialize, Eq, PartialEq)]
+struct UpdateData {
+    last_used_version: semver::Version,
+}
+
 pub fn init<A: TigerApp + Clone + Send + Sync + 'static>(app: A) {
+    let updates_file = app.paths().lock().updates_file.clone();
+
     thread::spawn({
         let app = app.clone();
         move || {
@@ -24,6 +34,34 @@ pub fn init<A: TigerApp + Clone + Send + Sync + 'static>(app: A) {
                     thread::sleep(Duration::from_secs(1));
                 }
             }
+
+            let current_version = app.version();
+            let last_used_version = read_from_disk(&updates_file).map(|d| d.last_used_version);
+            let upgraded = matches!(
+                last_used_version.as_ref().map(|v| *v < current_version),
+                Ok(true)
+            );
+
+            if upgraded {
+                app.emit_all(
+                    dto::EVENT_APP_UPDATE_SUCCESS,
+                    dto::UpdateSuccess {
+                        version_number: current_version.clone(),
+                    },
+                );
+            }
+
+            if upgraded || last_used_version.is_err() {
+                if let Err(e) = write_to_disk(
+                    &UpdateData {
+                        last_used_version: current_version,
+                    },
+                    updates_file,
+                ) {
+                    error!("Error while writing last used version to disk: {e}");
+                }
+            }
+
             loop {
                 if app.state().lock().update_step() == UpdateStep::Idle {
                     app.patch_state(StateTrim::NoDocuments, |state| {
@@ -55,6 +93,18 @@ pub fn init<A: TigerApp + Clone + Send + Sync + 'static>(app: A) {
     });
 }
 
+fn write_to_disk<P: AsRef<Path>>(data: &UpdateData, destination: P) -> Result<(), std::io::Error> {
+    let file = File::create(destination.as_ref())?;
+    serde_json::to_writer_pretty(file, data)?;
+    Ok(())
+}
+
+fn read_from_disk<P: AsRef<Path>>(source: P) -> Result<UpdateData, std::io::Error> {
+    let file = File::open(source.as_ref())?;
+    let data: UpdateData = serde_json::from_reader(file)?;
+    Ok(data)
+}
+
 #[cfg(test)]
 mod tests {
 
@@ -84,5 +134,62 @@ mod tests {
             app.client_state().update_step,
             dto::UpdateStep::InstallingUpdate
         );
+    }
+
+    #[tokio::test]
+    async fn write_current_version_to_disk() {
+        let new_version = semver::Version::parse("0.10.0").unwrap();
+        let app_builder = TigerAppMockBuilder::new().with_version(new_version.clone());
+        let updates_file = app_builder.paths().updates_file.clone();
+        std::fs::remove_file(&updates_file).ok();
+        let _app = app_builder.build();
+
+        let wrote_to_disk = retry(Fixed::from_millis(500).take(10), || {
+            let Ok(update_data) = read_from_disk(&updates_file) else {
+                return Err("Read error");
+            };
+            let expected_data = UpdateData {
+                last_used_version: new_version.clone(),
+            };
+            match update_data == expected_data {
+                true => Ok(()),
+                false => Err("Content mismatch: {update_data}"),
+            }
+        });
+        assert_eq!(Ok(()), wrote_to_disk);
+    }
+
+    #[tokio::test]
+    async fn advertises_new_version() {
+        let old_version = semver::Version::parse("0.9.0").unwrap();
+        let new_version = semver::Version::parse("0.10.0").unwrap();
+
+        let app_builder = TigerAppMockBuilder::new().with_version(new_version.clone());
+        write_to_disk(
+            &UpdateData {
+                last_used_version: old_version,
+            },
+            &app_builder.paths().updates_file,
+        )
+        .unwrap();
+        let app = app_builder.build();
+
+        let emitted_event = retry(Fixed::from_millis(100).take(100), || {
+            let expected_payload = dto::UpdateSuccess {
+                version_number: new_version.clone(),
+            };
+            app.events()
+                .into_iter()
+                .any(|(event, payload)| {
+                    event.as_str() == dto::EVENT_APP_UPDATE_SUCCESS
+                        && match serde_json::from_value::<dto::UpdateSuccess>(payload) {
+                            Ok(payload) => payload == expected_payload,
+                            Err(_) => false,
+                        }
+                })
+                .then_some(())
+                .ok_or(())
+        });
+        assert_eq!(emitted_event, Ok(()));
     }
 }

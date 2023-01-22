@@ -14,6 +14,10 @@ use crate::{
 };
 
 impl TigerApp for tauri::App {
+    fn version(&self) -> semver::Version {
+        self.handle().version()
+    }
+
     fn state(&self) -> state::Handle {
         TigerApp::state(&self.handle())
     }
@@ -76,6 +80,10 @@ impl TigerApp for tauri::App {
 }
 
 impl TigerApp for tauri::AppHandle {
+    fn version(&self) -> semver::Version {
+        self.package_info().version.clone()
+    }
+
     fn state(&self) -> state::Handle {
         let state = tauri::Manager::state::<state::Handle>(self);
         state::Handle::clone(&state)
