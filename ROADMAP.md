@@ -6,6 +6,12 @@
 - [ ] More template file examples in documentation
 - [ ] Documentation about use of file paths in .tiger files
 - [ ] Auto-updates
+  - [x] Show banner when new version is available
+  - [x] Can install new version
+  - [ ] Generate `auto-update.json` during release process
+  - [ ] `tauri.conf.json` points to latest release's `auto-update.json`
+  - [ ] Show notification with changelog link after update
+  - [ ] Offer to save modified files before applying update
 - [ ] Splash screen
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
