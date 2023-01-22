@@ -7,6 +7,7 @@ use crate::app::TigerApp;
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
 use crate::export::{export_sheet, ExportOutput};
+use crate::features::app_updates::UpdateStep;
 use crate::sheet::{Absolute, Sheet};
 
 struct DocumentToSave {
@@ -99,6 +100,7 @@ pub trait Api {
     fn hide_origin(&self) -> Result<Patch, ()>;
     fn hide_sprite(&self) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
+    fn install_update(&self) -> Result<Patch, ()>;
     fn jump_to_animation_end(&self) -> Result<Patch, ()>;
     fn jump_to_animation_start(&self) -> Result<Patch, ()>;
     fn jump_to_next_frame(&self) -> Result<Patch, ()>;
@@ -836,6 +838,21 @@ impl<A: TigerApp + Sync> Api for A {
                     .ok();
             }
         }))
+    }
+
+    fn install_update(&self) -> Result<Patch, ()> {
+        self.patch_state(StateTrim::NoDocuments, |state| {
+            state.set_update_step(UpdateStep::InstallingUpdate);
+        });
+        match self.install_update() {
+            Ok(()) => Ok(Patch(Vec::new())),
+            Err(e) => {
+                self.emit_all(dto::EVENT_APP_UPDATE_ERROR, dto::UpdateError { details: e });
+                Ok(self.patch(StateTrim::Full, |state| {
+                    state.set_update_step(UpdateStep::UpdateAvailable);
+                }))
+            }
+        }
     }
 
     fn jump_to_animation_end(&self) -> Result<Patch, ()> {

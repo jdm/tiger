@@ -10,6 +10,7 @@ export type State = {
   isReleaseBuild: boolean;
   error: UserFacingError | null;
   onboardingStep: OnboardingStep;
+  updateStep: UpdateStep;
 };
 
 export type RecentDocument = {
@@ -30,6 +31,13 @@ export enum OnboardingStep {
   CreateAnimation = "CreateAnimation",
   PlaceFrameOnTimeline = "PlaceFrameOnTimeline",
   Completed = "Completed",
+}
+
+export enum UpdateStep {
+  Idle = "Idle",
+  CheckingUpdate = "CheckingUpdate",
+  UpdateAvailable = "UpdateAvailable",
+  InstallingUpdate = "InstallingUpdate",
 }
 
 export enum ClipboardManifest {
@@ -220,6 +228,10 @@ export type ExportSuccess = {
   atlasImageFileName: string;
   metadataFilePath: string;
   metadataFileName: string;
+};
+
+export type UpdateError = {
+  details: string;
 };
 
 export type TextureInvalidation = {

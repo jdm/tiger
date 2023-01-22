@@ -1,6 +1,7 @@
 <template>
 	<div class="h-full w-full flex flex-col overflow-clip bg-plastic-900">
 		<AppBar />
+		<UpdateBanner />
 		<div class="flex-1 relative">
 			<div class="absolute inset-0 min-h-0 flex gap-5 p-5">
 				<div class="basis-[27.375rem] min-w-0 flex flex-col gap-5">
@@ -27,6 +28,7 @@
 <script setup lang="ts">
 import AppBar from "@/components/AppBar.vue"
 import ExportOverlay from "@/components/ExportOverlay.vue"
+import UpdateBanner from "@/components/UpdateBanner.vue"
 import NotificationOverlay from "@/components/NotificationOverlay.vue"
 import AnimationsPane from "@/components/animations/AnimationsPane.vue"
 import DetailsPane from "@/components/details/DetailsPane.vue"

@@ -5,12 +5,13 @@ use std::path::PathBuf;
 use uuid::Uuid;
 
 use crate::document::{self};
-use crate::features::onboarding;
+use crate::features::{app_updates, onboarding};
 use crate::sheet::{self, Paths};
 use crate::state;
 
 // Typescript: @/stores/state
 
+pub static EVENT_APP_UPDATE_ERROR: &str = "app-update-error";
 pub static EVENT_EXPORT_ERROR: &str = "export-error";
 pub static EVENT_EXPORT_SUCCESS: &str = "export-success";
 pub static EVENT_INVALIDATE_TEXTURE: &str = "invalidate-texture";
@@ -29,6 +30,7 @@ pub struct State {
     pub is_release_build: bool,
     pub error: Option<UserFacingError>,
     pub onboarding_step: OnboardingStep,
+    pub update_step: UpdateStep,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
@@ -61,6 +63,14 @@ pub enum OnboardingStep {
     CreateAnimation,
     PlaceFrameOnTimeline,
     Completed,
+}
+
+#[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
+pub enum UpdateStep {
+    Idle,
+    CheckingUpdate,
+    UpdateAvailable,
+    InstallingUpdate,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -295,6 +305,12 @@ pub struct ExportSuccess {
     pub metadata_file_name: String,
 }
 
+#[derive(Clone, Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateError {
+    pub details: String,
+}
+
 #[derive(Clone, Copy)]
 pub enum StateTrim {
     Full,
@@ -373,6 +389,7 @@ impl state::State {
             is_release_build: !cfg!(debug_assertions),
             error: self.error().map(|e| e.into()),
             onboarding_step: (&self.onboarding_step()).into(),
+            update_step: (&self.update_step()).into(),
         }
     }
 }
@@ -398,6 +415,17 @@ impl From<&onboarding::OnboardingStep> for OnboardingStep {
                 OnboardingStep::PlaceFrameOnTimeline
             }
             onboarding::OnboardingStep::Completed => OnboardingStep::Completed,
+        }
+    }
+}
+
+impl From<&app_updates::UpdateStep> for UpdateStep {
+    fn from(step: &app_updates::UpdateStep) -> Self {
+        match step {
+            app_updates::UpdateStep::Idle => UpdateStep::Idle,
+            app_updates::UpdateStep::CheckingUpdate => UpdateStep::CheckingUpdate,
+            app_updates::UpdateStep::UpdateAvailable => UpdateStep::UpdateAvailable,
+            app_updates::UpdateStep::InstallingUpdate => UpdateStep::InstallingUpdate,
         }
     }
 }

@@ -77,7 +77,12 @@
       "csp": "default-src 'self'; img-src 'self' asset: https://asset.localhost"
     },
     "updater": {
-      "active": false
+      "active": true,
+      "dialog": false,
+      "endpoints": [
+        "https://gist.githubusercontent.com/agersant/54c6bc6b175a42ea2c18532656f25d7c/raw/auto-update.json"
+      ],
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IEM2NjY4MEI3MDM5MEY2MzMKUldRejlwQUR0NEJteHFXZmt0WVRITmxRZFpKZElyWVFtQlIxRHd1VWE3OWVlcGx4Y2I5VkZHQzgK"
     },
     "windows": [
       {

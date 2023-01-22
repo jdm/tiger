@@ -39,7 +39,7 @@ serde = { version = "1.0", features = ["derive"] }
 simplelog = "0.12.0"
 squeak = "0.1.0"
 sugar_path = "0.0.10"
-tauri = { version = "1.2", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
+tauri = { version = "1.2", features = ["clipboard", "clipboard-read-text", "clipboard-write-text", "dialog-open", "dialog-save", "protocol-asset", "shell-open", "updater", "window-close", "window-maximize", "window-minimize", "window-start-dragging", "window-unmaximize"] }
 thiserror = "1.0"
 tokio = { version = "1.24.1", features = ["macros"] }
 window-shadows = "0.2.0"

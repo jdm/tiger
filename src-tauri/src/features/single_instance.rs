@@ -177,15 +177,15 @@ mod tests {
     #[tokio::test]
     async fn can_release_startup_guard() {
         let app = TigerAppMockBuilder::new().with_startup_guard().build();
-        assert!(app.has_startup_guard());
+        assert!(!app.is_startup_complete());
         app.finalize_startup().await;
-        assert!(!app.has_startup_guard());
+        assert!(app.is_startup_complete());
     }
 
     #[tokio::test]
     async fn startup_guard_blocks_other_instances() {
         let app = TigerAppMockBuilder::new().with_startup_guard().build();
-        assert!(app.has_startup_guard());
+        assert!(!app.is_startup_complete());
 
         let acquired_inner_guard = Arc::new(Mutex::new(false));
         std::thread::spawn({

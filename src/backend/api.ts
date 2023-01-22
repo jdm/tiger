@@ -34,6 +34,11 @@ export async function showErrorMessage(
   );
 }
 
+export async function installUpdate() {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("install_update"));
+}
+
 export async function acknowledgeError(): Promise<void> {
   const appStore = useStateStore();
   appStore.patch(await invoke("acknowledge_error"));

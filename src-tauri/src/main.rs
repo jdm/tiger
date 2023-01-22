@@ -39,9 +39,9 @@ fn main() {
     }
 
     tauri::Builder::default()
+        .manage(StartupGuardHandle::new(Some(startup_guard)))
         .manage(state::Handle::default())
         .manage(texture_cache::Handle::default())
-        .manage(StartupGuardHandle::new(Some(startup_guard)))
         .setup({
             move |tauri_app| {
                 init_window_shadow(tauri_app);
@@ -58,6 +58,7 @@ fn main() {
                     become_primary_instance(tauri_app.handle(), startup_guard);
                 }
 
+                features::app_updates::init(tauri_app.handle());
                 features::clipboard_analysis::init(tauri_app.handle());
                 features::missing_textures::init(tauri_app.handle());
                 features::onboarding::init(tauri_app.handle());
@@ -82,6 +83,7 @@ fn main() {
             app::tauri::focus_next_document,
             app::tauri::focus_previous_document,
             app::tauri::get_state,
+            app::tauri::install_update,
             app::tauri::new_document,
             app::tauri::open_documents,
             app::tauri::request_exit,

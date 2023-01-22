@@ -7,6 +7,7 @@ import {
   Patch,
   Sequence,
   OnboardingStep,
+  UpdateStep,
 } from "@/backend/dto";
 import { applyPatch } from "fast-json-patch";
 import { defineStore, acceptHMRUpdate } from "pinia";
@@ -21,6 +22,7 @@ export const useStateStore = defineStore("state", {
       isReleaseBuild: false,
       error: null,
       onboardingStep: OnboardingStep.NotStarted,
+      updateStep: UpdateStep.Idle,
     } as State),
   actions: {
     patch(patch: Patch) {

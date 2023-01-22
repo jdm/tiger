@@ -8,7 +8,7 @@ use thiserror::Error;
 use crate::{
     document::{ClipboardManifest, Document, DocumentError},
     dto::{self, StateTrim},
-    features::onboarding::OnboardingStep,
+    features::{app_updates::UpdateStep, onboarding::OnboardingStep},
     utils::handle,
 };
 
@@ -30,6 +30,7 @@ pub struct State {
     clipboard_manifest: Option<ClipboardManifest>,
     errors: Vec<UserFacingError>,
     onboarding_step: Observable<'static, OnboardingStep>,
+    update_step: UpdateStep,
     opened_startup_documents: bool,
     exit_requested: bool,
 }
@@ -283,6 +284,14 @@ impl State {
 
     pub fn onboarding_step_delegate(&self) -> &Delegate<'static, OnboardingStep> {
         self.onboarding_step.delegate()
+    }
+
+    pub fn update_step(&self) -> UpdateStep {
+        self.update_step
+    }
+
+    pub fn set_update_step(&mut self, new_update_step: UpdateStep) {
+        self.update_step = new_update_step;
     }
 }
 

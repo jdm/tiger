@@ -97,6 +97,7 @@ impl TigerAppMockBuilder {
             texture_hot_reload_info: None,
         };
 
+        features::app_updates::init(app.clone());
         features::texture_cache::init(app.clone());
         features::clipboard_analysis::init(app.clone());
         features::missing_textures::init(app.clone());
@@ -122,10 +123,6 @@ impl TigerAppMock {
 
     pub fn events(&self) -> Vec<(String, serde_json::Value)> {
         self.events.lock().clone()
-    }
-
-    pub fn has_startup_guard(&self) -> bool {
-        self.startup_guard.lock().is_some()
     }
 
     pub fn texture_cache_info(&self) -> TextureCacheInfo {
@@ -162,9 +159,10 @@ impl TigerAppMock {
     }
 
     fn apply_patch(&self, patch: Patch) {
-        let mut client_state = serde_json::to_value(self.client_state.lock().deref()).unwrap();
+        let mut client_state_lock = self.client_state.lock();
+        let mut client_state = serde_json::to_value(client_state_lock.deref()).unwrap();
         json_patch::patch(&mut client_state, &patch).unwrap();
-        *self.client_state.lock() = serde_json::from_value(client_state).unwrap();
+        *client_state_lock = serde_json::from_value(client_state).unwrap();
     }
 }
 
@@ -193,9 +191,8 @@ impl TigerApp for TigerAppMock {
     }
 
     fn emit_all<S: serde::Serialize + Clone>(&self, event: &str, payload: S) {
-        self.events
-            .lock()
-            .push((event.to_owned(), serde_json::to_value(payload).unwrap()));
+        let payload = serde_json::to_value(payload).unwrap();
+        self.events.lock().push((event.to_owned(), payload));
     }
 
     fn read_clipboard(&self) -> Option<String> {
@@ -210,6 +207,14 @@ impl TigerApp for TigerAppMock {
         self.command_line_arguments.lock().clone()
     }
 
+    fn release_startup_guard(&self) {
+        self.startup_guard.lock().take();
+    }
+
+    fn is_startup_complete(&self) -> bool {
+        self.startup_guard.lock().is_none()
+    }
+
     fn focus_window(&self) {
         *self.focused.lock() = true;
     }
@@ -218,8 +223,12 @@ impl TigerApp for TigerAppMock {
         *self.closed.lock() = true;
     }
 
-    fn release_startup_guard(&self) {
-        self.startup_guard.lock().take();
+    fn check_update(&self) -> Result<bool, String> {
+        Ok(true)
+    }
+
+    fn install_update(&self) -> Result<(), String> {
+        Ok(())
     }
 }
 
@@ -479,6 +488,10 @@ impl TigerAppMock {
 
     pub fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
+    }
+
+    pub fn install_update(&self) {
+        self.apply_patch(Api::install_update(self).unwrap());
     }
 
     pub fn jump_to_animation_end(&self) {

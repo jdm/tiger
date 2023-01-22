@@ -1,3 +1,4 @@
+pub mod app_updates;
 pub mod clipboard_analysis;
 pub mod missing_textures;
 pub mod onboarding;

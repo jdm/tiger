@@ -22,9 +22,12 @@ pub trait TigerApp {
     fn read_clipboard(&self) -> Option<String>;
     fn write_clipboard<S: Into<String>>(&self, content: S);
     fn command_line_arguments(&self) -> Vec<String>;
-    fn release_startup_guard(&self);
     fn focus_window(&self);
     fn close_window(&self);
+    fn check_update(&self) -> Result<bool, String>;
+    fn install_update(&self) -> Result<(), String>;
+    fn release_startup_guard(&self);
+    fn is_startup_complete(&self) -> bool;
     fn patch<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F) -> Patch {
         let state_handle = self.state();
         let mut state = state_handle.lock();

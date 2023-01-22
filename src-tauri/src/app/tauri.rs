@@ -1,8 +1,7 @@
-use std::path::{Path, PathBuf};
-
 use json_patch::Patch;
 use log::error;
 use serde::Serialize;
+use std::path::{Path, PathBuf};
 use tauri::{ClipboardManager, Manager};
 
 use crate::{
@@ -51,6 +50,14 @@ impl TigerApp for tauri::App {
         self.handle().command_line_arguments()
     }
 
+    fn release_startup_guard(&self) {
+        self.handle().release_startup_guard()
+    }
+
+    fn is_startup_complete(&self) -> bool {
+        self.handle().is_startup_complete()
+    }
+
     fn focus_window(&self) {
         self.handle().focus_window()
     }
@@ -59,8 +66,12 @@ impl TigerApp for tauri::App {
         self.handle().close_window()
     }
 
-    fn release_startup_guard(&self) {
-        self.handle().release_startup_guard()
+    fn check_update(&self) -> Result<bool, String> {
+        self.handle().check_update()
+    }
+
+    fn install_update(&self) -> Result<(), String> {
+        TigerApp::install_update(&self.handle())
     }
 }
 
@@ -125,6 +136,17 @@ impl TigerApp for tauri::AppHandle {
         std::env::args().skip(1).collect::<Vec<_>>()
     }
 
+    fn release_startup_guard(&self) {
+        let startup_guard = tauri::Manager::state::<StartupGuardHandle>(self);
+        startup_guard.lock().take();
+    }
+
+    fn is_startup_complete(&self) -> bool {
+        let startup_guard = tauri::Manager::state::<StartupGuardHandle>(self);
+        let complete = startup_guard.lock().is_none();
+        complete
+    }
+
     fn focus_window(&self) {
         if let Some(window) = self.get_window("main") {
             window.unminimize().ok();
@@ -142,15 +164,51 @@ impl TigerApp for tauri::AppHandle {
         }
     }
 
-    fn release_startup_guard(&self) {
-        let startup_guard = tauri::Manager::state::<StartupGuardHandle>(self);
-        startup_guard.lock().take();
+    fn check_update(&self) -> Result<bool, String> {
+        tauri::async_runtime::block_on(async {
+            match self.updater().check().await {
+                Ok(update) => Ok(update.is_update_available()),
+                Err(e) => {
+                    error!("Failed to check update: {e}");
+                    Err(e.to_string())
+                }
+            }
+        })
+    }
+
+    fn install_update(&self) -> Result<(), String> {
+        tauri::async_runtime::block_on(async {
+            match self.updater().check().await {
+                Ok(update) => {
+                    if update.is_update_available() {
+                        match update.download_and_install().await {
+                            Ok(()) => Ok(()),
+                            Err(e) => {
+                                error!("Failed to download/install update: {e}");
+                                Err(e.to_string())
+                            }
+                        }
+                    } else {
+                        Ok(())
+                    }
+                }
+                Err(e) => {
+                    error!("Failed to check update: {e}");
+                    Err(e.to_string())
+                }
+            }
+        })
     }
 }
 
 #[tauri::command]
 pub fn get_state(app: tauri::AppHandle) -> Result<dto::State, ()> {
     app.get_state()
+}
+
+#[tauri::command]
+pub fn install_update(app: tauri::AppHandle) -> Result<Patch, ()> {
+    Api::install_update(&app)
 }
 
 #[tauri::command]
