@@ -19,12 +19,27 @@ jobs:
           default: true
       - name: Install frontend dependencies
         run: npm install
+      - name: Build frontend
+        run: npm run build
+      - name: Run tests
+        working-directory: ./src-tauri
+        run: cargo test
+
+  package:
+    name: Package
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          profile: minimal
+          default: true
+      - name: Install frontend dependencies
+        run: npm install
       - name: Build complete app
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
-      - name: Run backend tests
-        working-directory: ./src-tauri
-        run: cargo test
