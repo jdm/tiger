@@ -1,7 +1,10 @@
 use json_patch::Patch;
 use log::error;
 use serde::Serialize;
-use std::path::{Path, PathBuf};
+use std::{
+    path::{Path, PathBuf},
+    time::Duration,
+};
 use tauri::{ClipboardManager, Manager};
 
 use crate::{
@@ -174,7 +177,12 @@ impl TigerApp for tauri::AppHandle {
 
     fn check_update(&self) -> Result<bool, String> {
         tauri::async_runtime::block_on(async {
-            match self.updater().check().await {
+            match self
+                .updater()
+                .timeout(Duration::from_secs(10))
+                .check()
+                .await
+            {
                 Ok(update) => Ok(update.is_update_available()),
                 Err(e) => {
                     error!("Failed to check update: {e}");
@@ -186,7 +194,12 @@ impl TigerApp for tauri::AppHandle {
 
     fn install_update(&self) -> Result<(), String> {
         tauri::async_runtime::block_on(async {
-            match self.updater().check().await {
+            match self
+                .updater()
+                .timeout(Duration::from_secs(60))
+                .check()
+                .await
+            {
                 Ok(update) => {
                     if update.is_update_available() {
                         match update.download_and_install().await {
