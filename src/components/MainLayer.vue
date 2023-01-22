@@ -26,15 +26,12 @@
 
 <script setup lang="ts">
 import AppBar from "@/components/AppBar.vue"
+import ExportOverlay from "@/components/ExportOverlay.vue"
 import NotificationOverlay from "@/components/NotificationOverlay.vue"
 import AnimationsPane from "@/components/animations/AnimationsPane.vue"
 import DetailsPane from "@/components/details/DetailsPane.vue"
-import ExportOverlay from "@/components/export/ExportOverlay.vue"
 import FramesPane from "@/components/frames/FramesPane.vue"
 import KeyframePane from "@/components/keyframe/KeyframePane.vue"
 import TimelinePane from "@/components/timeline/TimelinePane.vue"
 import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
-import { useStateStore } from "@/stores/state"
-
-const state = useStateStore();
 </script>
