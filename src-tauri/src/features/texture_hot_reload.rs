@@ -32,6 +32,7 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TextureHotRe
     thread::Builder::new()
         .name("texture-hot-reload-update-watcher-thread".to_owned())
         .spawn({
+            #[cfg(test)]
             let file_watcher = file_watcher.clone();
             move || loop {
                 file_watcher.write().update_watched_files();
@@ -115,7 +116,7 @@ mod tests {
         let before_frame = dir.join("test-data/samurai-dead-all.png");
         let after_frame = dir.join("test-data/samurai-attack-north.png");
 
-        std::fs::copy(&before_frame, &frame).unwrap();
+        std::fs::copy(before_frame, &frame).unwrap();
 
         let app = TigerAppMock::new();
         app.new_document("test.tiger");

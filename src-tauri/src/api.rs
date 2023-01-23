@@ -920,9 +920,8 @@ impl<A: TigerApp + Sync> Api for A {
 
         Ok(self.patch(StateTrim::Full, |state| {
             for (_, result) in documents {
-                match result {
-                    Ok(d) => state.open_document(d),
-                    _ => (),
+                if let Ok(d) = result {
+                    state.open_document(d);
                 }
             }
         }))
@@ -1675,14 +1674,11 @@ async fn save_documents<A: TigerApp>(
 
     Ok(app.patch(StateTrim::Full, |state| {
         for (document, result) in documents.iter().zip(results) {
-            match result {
-                Ok(()) => {
-                    state.relocate_document(&document.source, &document.destination);
-                    if let Some(d) = state.document_mut(&document.destination) {
-                        d.mark_as_saved(document.version);
-                    }
+            if result.is_ok() {
+                state.relocate_document(&document.source, &document.destination);
+                if let Some(d) = state.document_mut(&document.destination) {
+                    d.mark_as_saved(document.version);
                 }
-                Err(_) => (),
             }
         }
 

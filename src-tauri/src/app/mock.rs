@@ -87,7 +87,7 @@ impl TigerAppMockBuilder {
     }
 
     pub fn build(&self) -> TigerAppMock {
-        let startup_guard = self.create_startup_guard.then(|| acquire_startup_guard());
+        let startup_guard = self.create_startup_guard.then(acquire_startup_guard);
 
         let mut app = TigerAppMock {
             version: self.version.clone(),

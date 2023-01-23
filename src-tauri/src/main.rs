@@ -54,7 +54,7 @@ fn main() {
                     let app_handle = tauri_app.handle();
                     let managed_startup_guard = Manager::state::<StartupGuardHandle>(&app_handle);
                     let startup_guard_lock = managed_startup_guard.lock();
-                    let startup_guard = &*startup_guard_lock.as_ref().unwrap();
+                    let startup_guard = startup_guard_lock.as_ref().unwrap();
                     become_primary_instance(tauri_app.handle(), startup_guard);
                 }
 

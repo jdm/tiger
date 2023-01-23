@@ -34,6 +34,7 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TemplateHotR
     thread::Builder::new()
         .name("template-hot-reload-update-watcher-thread".to_owned())
         .spawn({
+            #[cfg(test)]
             let file_watcher = file_watcher.clone();
             move || loop {
                 file_watcher.write().update_watched_files();
