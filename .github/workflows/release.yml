@@ -13,7 +13,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       RELEASE_ID: ${{ steps.create-release.outputs.id }}
-      RELEASE_ASSETS: ${{ steps.create-release.outputs.assets }}
 
     steps:
       - name: Merge to release branch
@@ -41,10 +40,12 @@ jobs:
           target_commitish: release
           draft: true
 
-  build_windows_binaries:
+  build-windows-binaries:
     name: Build Windows Binaries
     runs-on: windows-latest
     needs: prepare-release
+    outputs:
+      WINDOWS_ASSETS: ${{ steps.upload-binaries.outputs.assets }}
 
     steps:
       - name: Checkout release branch
@@ -62,18 +63,22 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
       - name: Build binaries
-        uses: tauri-apps/tauri-action@v0
-        with:
-          releaseId: ${{ needs.prepare-release.outputs.RELEASE_ID }}
+        run: cargo tauri build
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+      - name: Upload binaries
+        id: upload-binaries
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.versionNumber }}
+          files: src-tauri/target/release/bundle/*.*
 
-  generate_update_manifest:
+  generate-update-manifest:
     name: Generate Update Manifest
     runs-on: windows-latest
-    needs: build_windows_binaries
+    needs: build-windows-binaries
 
     steps:
       - name: Checkout release branch
@@ -83,10 +88,9 @@ jobs:
       - name: Create release Manifest
         run: src-tauri/distribution/generate-update-manifest.ps1
         env:
-          RELEASE_ASSETS: ${{ needs.prepare-release.outputs.RELEASE_ASSETS }}
+          WINDOWS_ASSETS: ${{ needs.build-windows-binaries.outputs.WINDOWS_ASSETS }}
           TIGER_VERSION: ${{ github.event.inputs.versionNumber }}
-      - name: Create Github release
-        id: create-release
+      - name: Upload manifest
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.versionNumber }}
