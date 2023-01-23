@@ -88,6 +88,7 @@ jobs:
       - name: Create release Manifest
         run: src-tauri/distribution/generate-update-manifest.ps1
         env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WINDOWS_ASSETS: ${{ needs.build-windows-binaries.outputs.WINDOWS_ASSETS }}
           TIGER_VERSION: ${{ github.event.inputs.versionNumber }}
       - name: Upload manifest
