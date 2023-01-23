@@ -72,7 +72,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.inputs.versionNumber }}
-          files: src-tauri/target/release/bundle/*.*
+          files: src-tauri/target/release/bundle/msi/*.*
 
   generate-update-manifest:
     name: Generate Update Manifest
