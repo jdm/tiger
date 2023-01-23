@@ -31,6 +31,8 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
       - name: Install frontend dependencies
         run: npm install
+      - name: Install tauri CLI
+        run: cargo install tauri-cli
       - name: Build complete app
         run: cargo tauri build
         env:
