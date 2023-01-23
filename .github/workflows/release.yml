@@ -58,11 +58,7 @@ jobs:
           field: package.version
           value: ${{ github.event.inputs.versionNumber }}
       - name: Install Rust toolchain
-        uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          default: true
+        uses: dtolnay/rust-toolchain@stable
       - name: Install frontend dependencies
         run: npm install
       - name: Build binaries

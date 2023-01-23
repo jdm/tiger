@@ -15,12 +15,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
       - name: Install Rust Toolchain
-        uses: actions-rs/toolchain@v1
+        uses: dtolnay/rust-toolchain@nightly
         with:
-          toolchain: nightly
-          profile: minimal
           components: llvm-tools-preview
-          default: true
       - name: Install grcov
         run: cargo install grcov
       - name: Build Frontend

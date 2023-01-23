@@ -12,11 +12,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          default: true
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
       - name: Install frontend dependencies
         run: npm install
       - name: Build frontend
@@ -30,11 +27,8 @@ jobs:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: stable
-          profile: minimal
-          default: true
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
       - name: Install frontend dependencies
         run: npm install
       - name: Build complete app
