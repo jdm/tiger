@@ -13,13 +13,12 @@ if (-not (Test-Path -Path env:\TIGER_VERSION)) {
 }
 $tiger_version = $env:TIGER_VERSION
 
-
-$msi_signature_asset_id = $windows_assets
+$msi_signature_draft_url = $windows_assets
 | ConvertFrom-Json
 | Where-Object { $_.name -match '\.msi\.zip\.sig$' }
-| Select-Object -ExpandProperty id
-$msi_signature_draft_url = 'https://api.github.com/repos/agersant/tiger/releases/assets/' + $msi_signature_asset_id
-$msi_signature = (Invoke-webrequest -Headers @{'Accept' = 'application/octet-stream'; 'Authorization' = $github_token } -URI $msi_signature_draft_url).Content
+| Select-Object -ExpandProperty url
+$github_auth_header = 'Bearer ' + $github_token
+$msi_signature = (Invoke-webrequest -Headers @{'Accept' = 'application/octet-stream'; 'Authorization' = $github_auth_header } -URI $msi_signature_draft_url).Content
 if ($msi_signature.GetType().IsArray) {
 	$msi_signature = [System.Text.Encoding]::ASCII.GetString($msi_signature);
 }
