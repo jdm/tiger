@@ -13,6 +13,9 @@ $msi_signature_url = $windows_assets
 | Where-Object { $_.browser_download_url -match '\.msi\.zip\.sig$' }
 | Select-Object -ExpandProperty browser_download_url
 $msi_signature = (Invoke-webrequest -URI $msi_signature_url).Content
+if ($msi_signature.GetType().IsArray) {
+	$msi_signature = [System.Text.Encoding]::ASCII.GetString($msi_signature);
+}
 
 $msi_updater_url = $windows_assets
 | ConvertFrom-Json `
