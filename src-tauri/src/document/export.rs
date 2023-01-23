@@ -185,6 +185,7 @@ fn validate_output_directory_path(p: &Path) -> Option<ExportSettingsError> {
 #[cfg(test)]
 mod tests {
 
+    use retry::{delay::Fixed, retry};
     use sugar_path::SugarPath;
 
     use super::*;
@@ -212,15 +213,29 @@ mod tests {
         std::fs::remove_file(export_settings.metadata_file()).ok();
         app.export().await;
 
-        assert_eq!(
-            std::fs::read_to_string(export_settings.metadata_file()).unwrap(),
-            std::fs::read_to_string("test-data/samurai.export").unwrap()
-        );
+        let metadata_is_correct = retry(Fixed::from_millis(100).take(100), || {
+            let reference = std::fs::read_to_string("test-data/samurai.export").unwrap();
+            let Ok(exported) = std::fs::read_to_string(export_settings.metadata_file()) else {
+                return Err("Couldn't read exported file".to_owned());
+            };
+            (exported == reference).then_some(()).ok_or(format!(
+                "Unexpected export data in {0}",
+                export_settings.metadata_file().display()
+            ))
+        });
+        assert_eq!(metadata_is_correct, Ok(()));
 
-        assert_eq!(
-            std::fs::read(export_settings.atlas_image_file()).unwrap(),
-            std::fs::read("test-data/samurai.png").unwrap()
-        );
+        let atlas_is_correct = retry(Fixed::from_millis(100).take(100), || {
+            let reference = std::fs::read("test-data/samurai.png").unwrap();
+            let Ok(exported) = std::fs::read(export_settings.atlas_image_file()) else {
+                return Err("Couldn't read exported file".to_owned());
+            };
+            (exported == reference).then_some(()).ok_or(format!(
+                "Unexpected export data in {0}",
+                export_settings.atlas_image_file().display()
+            ))
+        });
+        assert_eq!(atlas_is_correct, Ok(()));
     }
 
     #[tokio::test]
