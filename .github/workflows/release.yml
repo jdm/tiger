@@ -73,6 +73,7 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.versionNumber }}
           files: src-tauri/target/release/bundle/msi/*.*
+          draft: true
 
   generate-update-manifest:
     name: Generate Update Manifest
@@ -94,3 +95,4 @@ jobs:
         with:
           tag_name: ${{ github.event.inputs.versionNumber }}
           files: update-manifest.json
+          draft: true
