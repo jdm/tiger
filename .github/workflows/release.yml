@@ -86,7 +86,7 @@ jobs:
           ref: release
       - name: Create release Manifest
         run: src-tauri/distribution/generate-update-manifest.ps1
-        with:
+        env:
           RELEASE_ASSETS: ${{ needs.prepare-release.outputs.RELEASE_ASSETS }}
           TIGER_VERSION: ${{ github.event.inputs.versionNumber }}
       - name: Create Github release
