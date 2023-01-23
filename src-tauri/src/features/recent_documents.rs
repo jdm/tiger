@@ -1,8 +1,11 @@
 use log::error;
 use squeak::Response;
-use std::fs::File;
-use std::path::{Path, PathBuf};
-use std::sync::mpsc::channel;
+use std::{
+    fs::File,
+    path::{Path, PathBuf},
+    sync::mpsc::channel,
+    thread,
+};
 
 use crate::app::TigerApp;
 
@@ -27,12 +30,15 @@ pub fn init<A: TigerApp + Send>(app: A) {
             Response::StaySubscribed
         });
 
-    std::thread::spawn(move || loop {
-        let Ok(recent_documents) = rx.recv() else { break };
-        if let Err(e) = write_to_disk(&recent_documents, &recent_documents_file) {
-            error!("Error while saving list of recently opened documents: {e}");
-        }
-    });
+    thread::Builder::new()
+        .name("recent-documents-thread".to_owned())
+        .spawn(move || loop {
+            let Ok(recent_documents) = rx.recv() else { break };
+            if let Err(e) = write_to_disk(&recent_documents, &recent_documents_file) {
+                error!("Error while saving list of recently opened documents: {e}");
+            }
+        })
+        .unwrap();
 }
 
 fn write_to_disk(documents: &Vec<PathBuf>, destination: &Path) -> Result<(), std::io::Error> {

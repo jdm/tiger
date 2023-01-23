@@ -1,6 +1,4 @@
-use std::collections::{HashMap, HashSet};
-use std::path::PathBuf;
-use std::time::Duration;
+use std::{collections::{HashMap, HashSet}, path::PathBuf, thread, time::Duration};
 
 use crate::{app::TigerApp, dto::StateTrim, utils::texture_list::TextureList};
 
@@ -10,39 +8,42 @@ static PERIOD: Duration = Duration::from_millis(500);
 static PERIOD: Duration = Duration::from_millis(100);
 
 pub fn init<A: TigerApp + Send + Clone + 'static>(app: A) {
-    std::thread::spawn(move || loop {
-        std::thread::sleep(PERIOD);
+    thread::Builder::new()
+        .name("missing-textures-thread".to_owned())
+        .spawn(move || loop {
+            thread::sleep(PERIOD);
 
-        let (all_textures, old_missing_textures) = {
-            let state_handle = app.state();
-            let state = state_handle.lock();
-            let mut all_textures = HashMap::new();
-            let mut old_missing_textures = HashMap::new();
-            for document in state.documents_iter() {
-                all_textures.insert(document.path().to_owned(), document.list_textures());
-                old_missing_textures.insert(
-                    document.path().to_owned(),
-                    document.missing_textures().clone(),
-                );
-            }
-            (all_textures, old_missing_textures)
-        };
-
-        let mut new_missing_textures: HashMap<PathBuf, HashSet<PathBuf>> = all_textures
-            .into_iter()
-            .map(|(p, t)| (p, t.into_iter().filter(|t| !t.exists()).collect()))
-            .collect();
-
-        if old_missing_textures != new_missing_textures {
-            app.patch_state(StateTrim::Full, |state| {
-                for document in state.documents_iter_mut() {
-                    if let Some(textures) = new_missing_textures.remove(document.path()) {
-                        document.set_missing_textures(textures);
-                    }
+            let (all_textures, old_missing_textures) = {
+                let state_handle = app.state();
+                let state = state_handle.lock();
+                let mut all_textures = HashMap::new();
+                let mut old_missing_textures = HashMap::new();
+                for document in state.documents_iter() {
+                    all_textures.insert(document.path().to_owned(), document.list_textures());
+                    old_missing_textures.insert(
+                        document.path().to_owned(),
+                        document.missing_textures().clone(),
+                    );
                 }
-            });
-        }
-    });
+                (all_textures, old_missing_textures)
+            };
+
+            let mut new_missing_textures: HashMap<PathBuf, HashSet<PathBuf>> = all_textures
+                .into_iter()
+                .map(|(p, t)| (p, t.into_iter().filter(|t| !t.exists()).collect()))
+                .collect();
+
+            if old_missing_textures != new_missing_textures {
+                app.patch_state(StateTrim::Full, |state| {
+                    for document in state.documents_iter_mut() {
+                        if let Some(textures) = new_missing_textures.remove(document.path()) {
+                            document.set_missing_textures(textures);
+                        }
+                    }
+                });
+            }
+        })
+        .unwrap();
 }
 
 #[cfg(test)]

@@ -1,9 +1,7 @@
 use log::error;
 use serde::{Deserialize, Serialize};
 use squeak::Response;
-use std::fs::File;
-use std::path::Path;
-use std::sync::mpsc::channel;
+use std::{fs::File, path::Path, sync::mpsc::channel, thread};
 
 use crate::app::TigerApp;
 use crate::state::State;
@@ -48,12 +46,15 @@ pub fn init<A: TigerApp + Send>(app: A) {
             Response::StaySubscribed
         });
 
-    std::thread::spawn(move || loop {
-        let Ok(onboarding_data) = rx.recv() else { break };
-        if let Err(e) = write_to_disk(&onboarding_data, &onboarding_file) {
-            error!("Error while saving list of recently opened documents: {e}");
-        }
-    });
+    thread::Builder::new()
+        .name("onboarding-thread".to_owned())
+        .spawn(move || loop {
+            let Ok(onboarding_data) = rx.recv() else { break };
+            if let Err(e) = write_to_disk(&onboarding_data, &onboarding_file) {
+                error!("Error while saving list of recently opened documents: {e}");
+            }
+        })
+        .unwrap();
 }
 
 impl State {

@@ -1,32 +1,35 @@
-use std::time::Duration;
+use std::{thread, time::Duration};
 
 use crate::{app::TigerApp, document::clipboard_manifest, dto::StateTrim};
 
 static PERIOD: Duration = Duration::from_millis(100);
 
 pub fn init<A: TigerApp + Send + 'static>(app: A) {
-    std::thread::spawn(move || loop {
-        std::thread::sleep(PERIOD);
+    thread::Builder::new()
+        .name("clipboard-analysis-thread".to_owned())
+        .spawn(move || loop {
+            thread::sleep(PERIOD);
 
-        let clipboard_content = app.read_clipboard();
+            let clipboard_content = app.read_clipboard();
 
-        let new_manifest = match clipboard_content {
-            None => None,
-            Some(s) => clipboard_manifest(s),
-        };
+            let new_manifest = match clipboard_content {
+                None => None,
+                Some(s) => clipboard_manifest(s),
+            };
 
-        {
-            let state_handle = app.state();
-            let state = state_handle.lock();
-            if *state.clipboard_manifest() == new_manifest {
-                continue;
+            {
+                let state_handle = app.state();
+                let state = state_handle.lock();
+                if *state.clipboard_manifest() == new_manifest {
+                    continue;
+                }
             }
-        }
 
-        app.patch_state(StateTrim::NoDocuments, |state| {
-            state.set_clipboard_manifest(new_manifest);
-        });
-    });
+            app.patch_state(StateTrim::NoDocuments, |state| {
+                state.set_clipboard_manifest(new_manifest);
+            });
+        })
+        .unwrap();
 }
 
 #[cfg(test)]

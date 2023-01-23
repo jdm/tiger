@@ -24,69 +24,72 @@ struct UpdateData {
 pub fn init<A: TigerApp + Clone + Send + Sync + 'static>(app: A) {
     let updates_file = app.paths().lock().updates_file.clone();
 
-    thread::spawn({
-        let app = app.clone();
-        move || {
-            loop {
-                if app.is_startup_complete() {
-                    break;
-                } else {
-                    thread::sleep(Duration::from_secs(1));
+    thread::Builder::new()
+        .name("app-update-checks-thread".to_owned())
+        .spawn({
+            let app = app.clone();
+            move || {
+                loop {
+                    if app.is_startup_complete() {
+                        break;
+                    } else {
+                        thread::sleep(Duration::from_secs(1));
+                    }
                 }
-            }
 
-            let current_version = app.version();
-            let last_used_version = read_from_disk(&updates_file).map(|d| d.last_used_version);
-            let upgraded = matches!(
-                last_used_version.as_ref().map(|v| *v < current_version),
-                Ok(true)
-            );
-
-            if upgraded {
-                app.emit_all(
-                    dto::EVENT_APP_UPDATE_SUCCESS,
-                    dto::UpdateSuccess {
-                        version_number: current_version.clone(),
-                    },
+                let current_version = app.version();
+                let last_used_version = read_from_disk(&updates_file).map(|d| d.last_used_version);
+                let upgraded = matches!(
+                    last_used_version.as_ref().map(|v| *v < current_version),
+                    Ok(true)
                 );
-            }
 
-            if upgraded || last_used_version.is_err() {
-                if let Err(e) = write_to_disk(
-                    &UpdateData {
-                        last_used_version: current_version,
-                    },
-                    updates_file,
-                ) {
-                    error!("Error while writing last used version to disk: {e}");
+                if upgraded {
+                    app.emit_all(
+                        dto::EVENT_APP_UPDATE_SUCCESS,
+                        dto::UpdateSuccess {
+                            version_number: current_version.clone(),
+                        },
+                    );
                 }
-            }
 
-            loop {
-                let update_step = app.state().lock().update_step();
-                match update_step {
-                    UpdateStep::Idle => {
-                        if !check_update(app.clone()) {
-                            thread::sleep(Duration::from_secs(60 * 60));
+                if upgraded || last_used_version.is_err() {
+                    if let Err(e) = write_to_disk(
+                        &UpdateData {
+                            last_used_version: current_version,
+                        },
+                        updates_file,
+                    ) {
+                        error!("Error while writing last used version to disk: {e}");
+                    }
+                }
+
+                loop {
+                    let update_step = app.state().lock().update_step();
+                    match update_step {
+                        UpdateStep::Idle => {
+                            if !check_update(app.clone()) {
+                                thread::sleep(Duration::from_secs(60 * 60));
+                            }
                         }
-                    }
-                    UpdateStep::UpdateAvailable => {
-                        thread::sleep(Duration::from_millis(100));
-                    }
-                    UpdateStep::UpdateRequested => {
-                        if app.state().lock().should_update() {
-                            install_update(app.clone());
-                        } else {
+                        UpdateStep::UpdateAvailable => {
+                            thread::sleep(Duration::from_millis(100));
+                        }
+                        UpdateStep::UpdateRequested => {
+                            if app.state().lock().should_update() {
+                                install_update(app.clone());
+                            } else {
+                                thread::sleep(Duration::from_millis(100));
+                            }
+                        }
+                        UpdateStep::InstallingUpdate => {
                             thread::sleep(Duration::from_millis(100));
                         }
                     }
-                    UpdateStep::InstallingUpdate => {
-                        thread::sleep(Duration::from_millis(100));
-                    }
                 }
             }
-        }
-    });
+        })
+        .unwrap();
 }
 
 fn check_update<A: TigerApp>(app: A) -> bool {

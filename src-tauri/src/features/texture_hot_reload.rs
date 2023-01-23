@@ -1,5 +1,5 @@
 use parking_lot::RwLock;
-use std::{sync::Arc, time::Duration};
+use std::{sync::Arc, thread, time::Duration};
 
 use crate::{
     app::TigerApp,
@@ -29,24 +29,30 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TextureHotRe
     });
     let file_watcher = Arc::new(RwLock::new(file_watcher));
 
-    std::thread::spawn({
-        let file_watcher = file_watcher.clone();
-        move || loop {
-            file_watcher.write().update_watched_files();
-            std::thread::sleep(PERIOD);
-        }
-    });
-
-    std::thread::spawn(move || loop {
-        if let Ok(Ok(events)) = events_receiver.recv() {
-            for event in events {
-                app.emit_all(
-                    dto::EVENT_INVALIDATE_TEXTURE,
-                    dto::TextureInvalidation { path: event.path },
-                );
+    thread::Builder::new()
+        .name("texture-hot-reload-update-watcher-thread".to_owned())
+        .spawn({
+            let file_watcher = file_watcher.clone();
+            move || loop {
+                file_watcher.write().update_watched_files();
+                thread::sleep(PERIOD);
             }
-        }
-    });
+        })
+        .unwrap();
+
+    thread::Builder::new()
+        .name("texture-hot-reload-event-thread".to_owned())
+        .spawn(move || loop {
+            if let Ok(Ok(events)) = events_receiver.recv() {
+                for event in events {
+                    app.emit_all(
+                        dto::EVENT_INVALIDATE_TEXTURE,
+                        dto::TextureInvalidation { path: event.path },
+                    );
+                }
+            }
+        })
+        .unwrap();
 
     TextureHotReloadInfo {
         #[cfg(test)]

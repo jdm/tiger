@@ -8,7 +8,7 @@ use log::error;
 use named_lock::NamedLock;
 use parking_lot::{Condvar, Mutex};
 use serde::{Deserialize, Serialize};
-use std::{ffi::OsStr, io::Write, sync::Arc};
+use std::{ffi::OsStr, io::Write, sync::Arc, thread};
 
 use crate::{api::Api, app::TigerApp, utils::handle};
 
@@ -31,30 +31,33 @@ pub fn acquire_startup_guard() -> StartupGuard {
     let acquisition = Arc::new((Mutex::new(false), Condvar::new()));
     let release = Arc::new((Mutex::new(false), Condvar::new()));
 
-    std::thread::spawn({
-        let acquisition = acquisition.clone();
-        let release = release.clone();
-        move || {
-            let named_lock = NamedLock::create(LOCK_NAME).unwrap();
-            let named_lock_guard = named_lock.lock().unwrap();
+    thread::Builder::new()
+        .name("single-instance-startup-guard-thread".to_owned())
+        .spawn({
+            let acquisition = acquisition.clone();
+            let release = release.clone();
+            move || {
+                let named_lock = NamedLock::create(LOCK_NAME).unwrap();
+                let named_lock_guard = named_lock.lock().unwrap();
 
-            {
-                let &(ref lock, ref cvar) = &*acquisition;
-                *lock.lock() = true;
-                cvar.notify_one();
-            }
-
-            {
-                let &(ref lock, ref cvar) = &*release;
-                let mut can_be_released = lock.lock();
-                while !*can_be_released {
-                    cvar.wait(&mut can_be_released);
+                {
+                    let &(ref lock, ref cvar) = &*acquisition;
+                    *lock.lock() = true;
+                    cvar.notify_one();
                 }
-            }
 
-            drop(named_lock_guard);
-        }
-    });
+                {
+                    let &(ref lock, ref cvar) = &*release;
+                    let mut can_be_released = lock.lock();
+                    while !*can_be_released {
+                        cvar.wait(&mut can_be_released);
+                    }
+                }
+
+                drop(named_lock_guard);
+            }
+        })
+        .unwrap();
 
     {
         let &(ref lock, ref cvar) = &*acquisition;
@@ -94,28 +97,34 @@ pub fn become_primary_instance<A: TigerApp + Api + Clone + Send + Sync + 'static
     app: A,
     _startup_guard: &StartupGuard,
 ) {
-    std::thread::spawn(move || {
-        let read_pipe = PipeListenerOptions::new()
-            .mode(PipeMode::Messages)
-            .name(OsStr::new(PIPE_NAME))
-            .create::<MsgReaderPipeStream>()
-            .unwrap();
+    thread::Builder::new()
+        .name("single-instance-message-reader-thread".to_owned())
+        .spawn(move || {
+            let read_pipe = PipeListenerOptions::new()
+                .mode(PipeMode::Messages)
+                .name(OsStr::new(PIPE_NAME))
+                .create::<MsgReaderPipeStream>()
+                .unwrap();
 
-        for incoming in read_pipe.incoming() {
-            match incoming {
-                Ok(stream) => {
-                    std::thread::spawn({
-                        let app = app.clone();
-                        move || handle_attached_process(app, stream)
-                    });
-                }
-                Err(e) => {
-                    error!("Error reading from single instance named pipe: {e}");
-                    continue;
+            for incoming in read_pipe.incoming() {
+                match incoming {
+                    Ok(stream) => {
+                        thread::Builder::new()
+                            .name("single-instance-message-reader-ephemeral-thread".to_owned())
+                            .spawn({
+                                let app = app.clone();
+                                move || handle_attached_process(app, stream)
+                            })
+                            .unwrap();
+                    }
+                    Err(e) => {
+                        error!("Error reading from single instance named pipe: {e}");
+                        continue;
+                    }
                 }
             }
-        }
-    });
+        })
+        .unwrap();
 }
 
 fn handle_attached_process<A: TigerApp + Api + Clone>(app: A, mut stream: MsgReaderPipeStream) {
@@ -188,7 +197,7 @@ mod tests {
         assert!(!app.is_startup_complete());
 
         let acquired_inner_guard = Arc::new(Mutex::new(false));
-        std::thread::spawn({
+        thread::spawn({
             let acquired_inner_guard = acquired_inner_guard.clone();
             move || {
                 let _app = TigerAppMockBuilder::new().with_startup_guard().build();
@@ -196,7 +205,7 @@ mod tests {
             }
         });
 
-        std::thread::sleep(Duration::from_millis(500));
+        thread::sleep(Duration::from_millis(500));
         assert!(!*acquired_inner_guard.lock());
 
         app.finalize_startup().await;

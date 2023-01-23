@@ -1,5 +1,5 @@
 use parking_lot::RwLock;
-use std::{collections::HashSet, sync::Arc, time::Duration};
+use std::{collections::HashSet, sync::Arc, thread, time::Duration};
 
 use crate::{app::TigerApp, sheet, utils::file_watcher::FileWatcher};
 
@@ -31,19 +31,25 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TemplateHotR
     });
     let file_watcher = Arc::new(RwLock::new(file_watcher));
 
-    std::thread::spawn({
-        let file_watcher = file_watcher.clone();
-        move || loop {
-            file_watcher.write().update_watched_files();
-            std::thread::sleep(PERIOD);
-        }
-    });
+    thread::Builder::new()
+        .name("template-hot-reload-update-watcher-thread".to_owned())
+        .spawn({
+            let file_watcher = file_watcher.clone();
+            move || loop {
+                file_watcher.write().update_watched_files();
+                thread::sleep(PERIOD);
+            }
+        })
+        .unwrap();
 
-    std::thread::spawn(move || loop {
-        if let Ok(Ok(_)) = events_receiver.recv() {
-            app.replace_state();
-        }
-    });
+    thread::Builder::new()
+        .name("template-hot-reload-replace-state-thread".to_owned())
+        .spawn(move || loop {
+            if let Ok(Ok(_)) = events_receiver.recv() {
+                app.replace_state();
+            }
+        })
+        .unwrap();
 
     TemplateHotReloadInfo {
         #[cfg(test)]

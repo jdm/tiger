@@ -5,6 +5,7 @@ use std::{
     collections::{HashMap, HashSet},
     path::{Path, PathBuf},
     sync::Arc,
+    thread,
     time::Duration,
 };
 
@@ -37,53 +38,62 @@ pub fn init<A: TigerApp + Send + Sync + Clone + 'static>(app: A) -> TextureCache
     });
     let file_watcher = Arc::new(RwLock::new(file_watcher));
 
-    std::thread::spawn({
-        let file_watcher = file_watcher.clone();
-        move || loop {
-            file_watcher.write().update_watched_files();
-            std::thread::sleep(PERIOD);
-        }
-    });
+    thread::Builder::new()
+        .name("texture-cache-update-watcher-thread".to_owned())
+        .spawn({
+            let file_watcher = file_watcher.clone();
+            move || loop {
+                file_watcher.write().update_watched_files();
+                thread::sleep(PERIOD);
+            }
+        })
+        .unwrap();
 
     let texture_cache = app.texture_cache();
 
-    std::thread::spawn({
-        let texture_cache = texture_cache.clone();
-        move || loop {
-            if let Ok(Ok(events)) = events_receiver.recv() {
-                remove(
-                    &events.iter().map(|e| e.path.to_owned()).collect(),
-                    &texture_cache,
-                )
+    thread::Builder::new()
+        .name("texture-cache-eviction-thread".to_owned())
+        .spawn({
+            let texture_cache = texture_cache.clone();
+            move || loop {
+                if let Ok(Ok(events)) = events_receiver.recv() {
+                    remove(
+                        &events.iter().map(|e| e.path.to_owned()).collect(),
+                        &texture_cache,
+                    )
+                }
             }
-        }
-    });
+        })
+        .unwrap();
 
-    std::thread::spawn({
-        let texture_cache = texture_cache.clone();
-        move || loop {
-            let current_entries: HashSet<PathBuf> = {
-                let cache = texture_cache.lock();
-                cache.keys().cloned().collect()
-            };
-            let desired_entries = {
-                let state_handle = app.state();
-                let state = state_handle.lock();
-                state.list_textures()
-            };
-            let missing_entries = desired_entries
-                .iter()
-                .filter(|p| !current_entries.contains(*p))
-                .collect::<HashSet<_>>();
-            let extraneous_entries = current_entries
-                .iter()
-                .filter(|p| !desired_entries.contains(*p))
-                .collect::<HashSet<_>>();
-            remove(&extraneous_entries, &texture_cache);
-            add(&missing_entries, &texture_cache);
-            std::thread::sleep(PERIOD);
-        }
-    });
+    thread::Builder::new()
+        .name("texture-cache-update-thread".to_owned())
+        .spawn({
+            let texture_cache = texture_cache.clone();
+            move || loop {
+                let current_entries: HashSet<PathBuf> = {
+                    let cache = texture_cache.lock();
+                    cache.keys().cloned().collect()
+                };
+                let desired_entries = {
+                    let state_handle = app.state();
+                    let state = state_handle.lock();
+                    state.list_textures()
+                };
+                let missing_entries = desired_entries
+                    .iter()
+                    .filter(|p| !current_entries.contains(*p))
+                    .collect::<HashSet<_>>();
+                let extraneous_entries = current_entries
+                    .iter()
+                    .filter(|p| !desired_entries.contains(*p))
+                    .collect::<HashSet<_>>();
+                remove(&extraneous_entries, &texture_cache);
+                add(&missing_entries, &texture_cache);
+                thread::sleep(PERIOD);
+            }
+        })
+        .unwrap();
 
     TextureCacheInfo {
         #[cfg(test)]
