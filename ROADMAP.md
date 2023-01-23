@@ -8,8 +8,8 @@
 - [ ] Auto-updates
   - [x] Show banner when new version is available
   - [x] Can install new version
-  - [ ] Generate `updater.json` during release process
-  - [ ] `tauri.conf.json` points to latest release's `updater.json`
+  - [ ] Generate `update-manifest.json` during release process
+  - [ ] `tauri.conf.json` points to latest release's `update-manifest.json`
   - [x] Show notification with changelog link after update
   - [ ] Offer to save modified files before applying update
 - [ ] Splash screen

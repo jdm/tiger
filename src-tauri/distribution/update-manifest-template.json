@@ -1,0 +1,9 @@
+{
+  "version": "{VERSION}",
+  "platforms": {
+    "windows-x86_64": {
+      "signature": "{MSI_SIGNATURE}",
+      "url": "{MSI_URL}"
+    }
+  }
+}

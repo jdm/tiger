@@ -13,15 +13,16 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       RELEASE_ID: ${{ steps.create-release.outputs.id }}
+      RELEASE_ASSETS: ${{ steps.create-release.outputs.assets }}
 
     steps:
-      - name: Merge to Release branch
+      - name: Merge to release branch
         uses: devmasx/merge-branch@v1.3.1
         with:
           type: now
           target_branch: release
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Checkout Release branch
+      - name: Checkout release branch
         uses: actions/checkout@v3
         with:
           ref: release
@@ -46,7 +47,7 @@ jobs:
     needs: prepare-release
 
     steps:
-      - name: Checkout Release branch
+      - name: Checkout release branch
         uses: actions/checkout@v3
         with:
           ref: release
@@ -72,3 +73,25 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+  generate_update_manifest:
+    name: Generate Update Manifest
+    runs-on: windows-latest
+    needs: build_windows_binaries
+
+    steps:
+      - name: Checkout release branch
+        uses: actions/checkout@v3
+        with:
+          ref: release
+      - name: Create release Manifest
+        run: src-tauri/distribution/generate-update-manifest.ps1
+        with:
+          RELEASE_ASSETS: ${{ needs.prepare-release.outputs.RELEASE_ASSETS }}
+          TIGER_VERSION: ${{ github.event.inputs.versionNumber }}
+      - name: Create Github release
+        id: create-release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: ${{ github.event.inputs.versionNumber }}
+          files: update-manifest.json
