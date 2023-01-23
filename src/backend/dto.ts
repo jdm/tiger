@@ -35,8 +35,8 @@ export enum OnboardingStep {
 
 export enum UpdateStep {
   Idle = "Idle",
-  CheckingUpdate = "CheckingUpdate",
   UpdateAvailable = "UpdateAvailable",
+  UpdateRequested = "UpdateRequested",
   InstallingUpdate = "InstallingUpdate",
 }
 

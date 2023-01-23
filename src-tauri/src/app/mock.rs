@@ -236,8 +236,8 @@ impl TigerApp for TigerAppMock {
         *self.closed.lock() = true;
     }
 
-    fn check_update(&self) -> Result<bool, String> {
-        Ok(true)
+    fn check_update(&self) -> bool {
+        true
     }
 
     fn install_update(&self) -> Result<(), String> {
@@ -311,8 +311,8 @@ impl TigerAppMock {
         self.apply_patch(Api::browse_to_start(self, shift).unwrap());
     }
 
-    pub fn cancel_exit(&self) {
-        self.apply_patch(Api::cancel_exit(self).unwrap());
+    pub fn cancel_close_document(&self) {
+        self.apply_patch(Api::cancel_close_document(self).unwrap());
     }
 
     pub fn cancel_export_as(&self) {
@@ -503,10 +503,6 @@ impl TigerAppMock {
         self.apply_patch(Api::import_frames(self, paths).unwrap());
     }
 
-    pub fn install_update(&self) {
-        self.apply_patch(Api::install_update(self).unwrap());
-    }
-
     pub fn jump_to_animation_end(&self) {
         self.apply_patch(Api::jump_to_animation_end(self).unwrap());
     }
@@ -569,6 +565,10 @@ impl TigerAppMock {
 
     pub fn request_exit(&self) {
         self.apply_patch(Api::request_exit(self).unwrap());
+    }
+
+    pub fn request_install_update(&self) {
+        self.apply_patch(Api::request_install_update(self).unwrap());
     }
 
     pub fn reset_timeline_zoom(&self) {

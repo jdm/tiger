@@ -69,8 +69,8 @@ pub enum OnboardingStep {
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
 pub enum UpdateStep {
     Idle,
-    CheckingUpdate,
     UpdateAvailable,
+    UpdateRequested,
     InstallingUpdate,
 }
 
@@ -430,8 +430,8 @@ impl From<&app_updates::UpdateStep> for UpdateStep {
     fn from(step: &app_updates::UpdateStep) -> Self {
         match step {
             app_updates::UpdateStep::Idle => UpdateStep::Idle,
-            app_updates::UpdateStep::CheckingUpdate => UpdateStep::CheckingUpdate,
             app_updates::UpdateStep::UpdateAvailable => UpdateStep::UpdateAvailable,
+            app_updates::UpdateStep::UpdateRequested => UpdateStep::UpdateRequested,
             app_updates::UpdateStep::InstallingUpdate => UpdateStep::InstallingUpdate,
         }
     }

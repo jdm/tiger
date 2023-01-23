@@ -74,7 +74,7 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             // App
             app::tauri::acknowledge_error,
-            app::tauri::cancel_exit,
+            app::tauri::cancel_close_document,
             app::tauri::close_all_documents,
             app::tauri::close_current_document,
             app::tauri::close_document,
@@ -83,10 +83,10 @@ fn main() {
             app::tauri::focus_next_document,
             app::tauri::focus_previous_document,
             app::tauri::get_state,
-            app::tauri::install_update,
             app::tauri::new_document,
             app::tauri::open_documents,
             app::tauri::request_exit,
+            app::tauri::request_install_update,
             app::tauri::reveal_in_explorer,
             app::tauri::save_all,
             app::tauri::show_error_message,

@@ -64,6 +64,7 @@ impl State {
 
     fn after_change(&mut self) {
         self.advance_onboarding();
+        self.advance_exit();
     }
 
     pub fn documents_iter(&self) -> impl Iterator<Item = &Document> {
@@ -164,6 +165,12 @@ impl State {
         self.add_recent_document(to);
     }
 
+    pub fn close_all_documents(&mut self) {
+        for document in &mut self.documents {
+            document.request_close();
+        }
+    }
+
     pub fn close_document<T: AsRef<Path>>(&mut self, path: T) {
         if let Some(index) = self
             .documents
@@ -198,14 +205,15 @@ impl State {
 
     pub fn request_exit(&mut self) {
         self.exit_requested = true;
-        for document in &mut self.documents {
-            document.request_close();
-        }
+        self.close_all_documents();
         self.advance_exit();
     }
 
-    pub fn cancel_exit(&mut self) {
+    pub fn cancel_close_document(&mut self) {
         self.exit_requested = false;
+        if self.update_step == UpdateStep::UpdateRequested {
+            self.update_step = UpdateStep::UpdateAvailable;
+        }
         for document in &mut self.documents {
             document.cancel_close();
         }
@@ -284,6 +292,17 @@ impl State {
 
     pub fn onboarding_step_delegate(&self) -> &Delegate<'static, OnboardingStep> {
         self.onboarding_step.delegate()
+    }
+
+    pub fn request_update(&mut self) {
+        if self.update_step == UpdateStep::UpdateAvailable {
+            self.update_step = UpdateStep::UpdateRequested;
+        }
+        self.close_all_documents();
+    }
+
+    pub fn should_update(&self) -> bool {
+        self.update_step == UpdateStep::UpdateRequested && self.documents.is_empty()
     }
 
     pub fn update_step(&self) -> UpdateStep {
@@ -403,7 +422,7 @@ mod tests {
         app.request_exit();
         assert!(!app.is_closed());
         assert!(app.document().was_close_requested);
-        app.cancel_exit();
+        app.cancel_close_document();
         assert!(!app.is_closed());
         assert!(!app.document().was_close_requested);
         assert!(app.document().has_unsaved_changes);

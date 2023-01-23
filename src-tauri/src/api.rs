@@ -7,7 +7,6 @@ use crate::app::TigerApp;
 use crate::document::{Command, Document, DocumentResult};
 use crate::dto::{self, StateTrim, ToFileName};
 use crate::export::{export_sheet, ExportOutput};
-use crate::features::app_updates::UpdateStep;
 use crate::sheet::{Absolute, Sheet};
 
 struct DocumentToSave {
@@ -47,7 +46,7 @@ pub trait Api {
     fn browse_selection(&self, direction: dto::BrowseDirection, shift: bool) -> Result<Patch, ()>;
     fn browse_to_end(&self, shift: bool) -> Result<Patch, ()>;
     fn browse_to_start(&self, shift: bool) -> Result<Patch, ()>;
-    fn cancel_exit(&self) -> Result<Patch, ()>;
+    fn cancel_close_document(&self) -> Result<Patch, ()>;
     fn cancel_export_as(&self) -> Result<Patch, ()>;
     fn cancel_relocate_frames(&self) -> Result<Patch, ()>;
     fn cancel_rename(&self) -> Result<Patch, ()>;
@@ -100,7 +99,6 @@ pub trait Api {
     fn hide_origin(&self) -> Result<Patch, ()>;
     fn hide_sprite(&self) -> Result<Patch, ()>;
     fn import_frames<P: Into<PathBuf>>(&self, paths: Vec<P>) -> Result<Patch, ()>;
-    fn install_update(&self) -> Result<Patch, ()>;
     fn jump_to_animation_end(&self) -> Result<Patch, ()>;
     fn jump_to_animation_start(&self) -> Result<Patch, ()>;
     fn jump_to_next_frame(&self) -> Result<Patch, ()>;
@@ -128,6 +126,7 @@ pub trait Api {
         to: T,
     ) -> Result<Patch, ()>;
     fn request_exit(&self) -> Result<Patch, ()>;
+    fn request_install_update(&self) -> Result<Patch, ()>;
     fn reset_timeline_zoom(&self) -> Result<Patch, ()>;
     fn reset_workbench_zoom(&self) -> Result<Patch, ()>;
     async fn save(&self) -> Result<Patch, ()>;
@@ -383,9 +382,9 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    fn cancel_exit(&self) -> Result<Patch, ()> {
+    fn cancel_close_document(&self) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::Full, |state| {
-            state.cancel_exit();
+            state.cancel_close_document();
         }))
     }
 
@@ -431,13 +430,7 @@ impl<A: TigerApp + Sync> Api for A {
 
     fn close_all_documents(&self) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::Full, |state| {
-            for document in state.documents_iter_mut() {
-                document.request_close();
-            }
-            state.advance_exit();
-            if state.should_exit() {
-                self.close_window();
-            }
+            state.close_all_documents();
         }))
     }
 
@@ -446,10 +439,6 @@ impl<A: TigerApp + Sync> Api for A {
             if let Some(document) = state.current_document_mut() {
                 document.request_close();
             }
-            state.advance_exit();
-            if state.should_exit() {
-                self.close_window();
-            }
         }))
     }
 
@@ -457,10 +446,6 @@ impl<A: TigerApp + Sync> Api for A {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.document_mut(path.as_ref()) {
                 document.request_close();
-            }
-            state.advance_exit();
-            if state.should_exit() {
-                self.close_window();
             }
         }))
     }
@@ -840,21 +825,6 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    fn install_update(&self) -> Result<Patch, ()> {
-        self.patch_state(StateTrim::NoDocuments, |state| {
-            state.set_update_step(UpdateStep::InstallingUpdate);
-        });
-        match self.install_update() {
-            Ok(()) => Ok(Patch(Vec::new())),
-            Err(e) => {
-                self.emit_all(dto::EVENT_APP_UPDATE_ERROR, dto::UpdateError { details: e });
-                Ok(self.patch(StateTrim::Full, |state| {
-                    state.set_update_step(UpdateStep::UpdateAvailable);
-                }))
-            }
-        }
-    }
-
     fn jump_to_animation_end(&self) -> Result<Patch, ()> {
         Ok(self.patch(StateTrim::Full, |state| {
             if let Some(document) = state.current_document_mut() {
@@ -1044,6 +1014,12 @@ impl<A: TigerApp + Sync> Api for A {
             if state.should_exit() {
                 self.close_window();
             }
+        }))
+    }
+
+    fn request_install_update(&self) -> Result<Patch, ()> {
+        Ok(self.patch(StateTrim::NoDocuments, |state| {
+            state.request_update();
         }))
     }
 

@@ -11,8 +11,8 @@ use crate::{
 pub enum UpdateStep {
     #[default]
     Idle,
-    CheckingUpdate,
     UpdateAvailable,
+    UpdateRequested,
     InstallingUpdate,
 }
 
@@ -63,34 +63,55 @@ pub fn init<A: TigerApp + Clone + Send + Sync + 'static>(app: A) {
             }
 
             loop {
-                if app.state().lock().update_step() == UpdateStep::Idle {
-                    app.patch_state(StateTrim::NoDocuments, |state| {
-                        if state.update_step() == UpdateStep::Idle {
-                            state.set_update_step(UpdateStep::CheckingUpdate)
-                        }
-                    });
-                    match app.check_update() {
-                        Ok(true) => app.patch_state(StateTrim::NoDocuments, |state| {
-                            if state.update_step() == UpdateStep::CheckingUpdate {
-                                state.set_update_step(UpdateStep::UpdateAvailable)
-                            }
-                        }),
-                        Ok(false) => {
-                            app.patch_state(StateTrim::NoDocuments, |state| {
-                                if state.update_step() == UpdateStep::CheckingUpdate {
-                                    state.set_update_step(UpdateStep::Idle)
-                                }
-                            });
-                        }
-                        Err(e) => {
-                            error!("Failed to check for update: {e}");
+                let update_step = app.state().lock().update_step();
+                match update_step {
+                    UpdateStep::Idle => {
+                        if !check_update(app.clone()) {
+                            thread::sleep(Duration::from_secs(60 * 60));
                         }
                     }
+                    UpdateStep::UpdateAvailable => {
+                        thread::sleep(Duration::from_millis(100));
+                    }
+                    UpdateStep::UpdateRequested => {
+                        if app.state().lock().should_update() {
+                            install_update(app.clone());
+                        } else {
+                            thread::sleep(Duration::from_millis(100));
+                        }
+                    }
+                    UpdateStep::InstallingUpdate => {
+                        thread::sleep(Duration::from_millis(100));
+                    }
                 }
-                thread::sleep(Duration::from_secs(60 * 60));
             }
         }
     });
+}
+
+fn check_update<A: TigerApp>(app: A) -> bool {
+    let result = app.check_update();
+    if result {
+        app.patch_state(StateTrim::NoDocuments, |state| {
+            state.set_update_step(UpdateStep::UpdateAvailable)
+        });
+    }
+    result
+}
+
+fn install_update<A: TigerApp>(app: A) {
+    app.patch_state(StateTrim::NoDocuments, |state| {
+        state.set_update_step(UpdateStep::InstallingUpdate);
+    });
+    match app.install_update() {
+        Ok(()) => (),
+        Err(e) => {
+            app.emit_all(dto::EVENT_APP_UPDATE_ERROR, dto::UpdateError { details: e });
+            app.patch_state(StateTrim::NoDocuments, |state| {
+                state.set_update_step(UpdateStep::UpdateAvailable);
+            });
+        }
+    }
 }
 
 fn write_to_disk<P: AsRef<Path>>(data: &UpdateData, destination: P) -> Result<(), std::io::Error> {
@@ -109,12 +130,16 @@ fn read_from_disk<P: AsRef<Path>>(source: P) -> Result<UpdateData, std::io::Erro
 mod tests {
 
     use retry::{delay::Fixed, retry};
+    use std::path::PathBuf;
 
     use super::*;
-    use crate::{app::mock::TigerAppMockBuilder, dto};
+    use crate::{
+        app::mock::{TigerAppMock, TigerAppMockBuilder},
+        dto,
+    };
 
     #[tokio::test]
-    async fn can_auto_install_updates() {
+    async fn can_install_update() {
         let app = TigerAppMockBuilder::new().with_startup_guard().build();
 
         thread::sleep(Duration::from_millis(500));
@@ -129,10 +154,106 @@ mod tests {
         });
         assert_eq!(found_update, Ok(()));
 
-        app.install_update();
+        app.request_install_update();
+        let installing_update = retry(Fixed::from_millis(100).take(100), || {
+            match app.client_state().update_step {
+                dto::UpdateStep::InstallingUpdate => Ok(()),
+                other_state => Err(other_state),
+            }
+        });
+        assert_eq!(installing_update, Ok(()));
+    }
+
+    #[tokio::test]
+    async fn can_request_update_and_save_changes() {
+        let sheet_file = PathBuf::from("test-output/can_request_update_and_save_changes.tiger");
+        std::fs::copy("test-data/samurai.tiger", &sheet_file).unwrap();
+
+        let app = TigerAppMock::new();
+        app.open_documents(vec![sheet_file]).await;
+        app.delete_animation("idle");
+
+        let found_update = retry(Fixed::from_millis(100).take(100), || {
+            match app.client_state().update_step {
+                dto::UpdateStep::UpdateAvailable => Ok(()),
+                other_state => Err(other_state),
+            }
+        });
+        assert_eq!(found_update, Ok(()));
+
+        app.request_install_update();
+        thread::sleep(Duration::from_millis(500));
         assert_eq!(
             app.client_state().update_step,
-            dto::UpdateStep::InstallingUpdate
+            dto::UpdateStep::UpdateRequested
+        );
+
+        app.save().await;
+        let installing_update = retry(Fixed::from_millis(100).take(100), || {
+            match app.client_state().update_step {
+                dto::UpdateStep::InstallingUpdate => Ok(()),
+                other_state => Err(other_state),
+            }
+        });
+        assert_eq!(installing_update, Ok(()));
+    }
+
+    #[tokio::test]
+    async fn can_request_update_and_discard_changes() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.delete_animation("idle");
+
+        let found_update = retry(Fixed::from_millis(100).take(100), || {
+            match app.client_state().update_step {
+                dto::UpdateStep::UpdateAvailable => Ok(()),
+                other_state => Err(other_state),
+            }
+        });
+        assert_eq!(found_update, Ok(()));
+
+        app.request_install_update();
+        thread::sleep(Duration::from_millis(500));
+        assert_eq!(
+            app.client_state().update_step,
+            dto::UpdateStep::UpdateRequested
+        );
+
+        app.close_without_saving();
+        let installing_update = retry(Fixed::from_millis(100).take(100), || {
+            match app.client_state().update_step {
+                dto::UpdateStep::InstallingUpdate => Ok(()),
+                other_state => Err(other_state),
+            }
+        });
+        assert_eq!(installing_update, Ok(()));
+    }
+
+    #[tokio::test]
+    async fn can_request_update_and_cancel() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        app.delete_animation("idle");
+
+        let found_update = retry(Fixed::from_millis(100).take(100), || {
+            match app.client_state().update_step {
+                dto::UpdateStep::UpdateAvailable => Ok(()),
+                other_state => Err(other_state),
+            }
+        });
+        assert_eq!(found_update, Ok(()));
+
+        app.request_install_update();
+        thread::sleep(Duration::from_millis(500));
+        assert_eq!(
+            app.client_state().update_step,
+            dto::UpdateStep::UpdateRequested
+        );
+
+        app.cancel_close_document();
+        assert_eq!(
+            app.client_state().update_step,
+            dto::UpdateStep::UpdateAvailable
         );
     }
 

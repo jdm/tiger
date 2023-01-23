@@ -34,9 +34,9 @@ export async function showErrorMessage(
   );
 }
 
-export async function installUpdate() {
+export async function requestInstallUpdate() {
   const appStore = useStateStore();
-  appStore.patch(await invoke("install_update"));
+  appStore.patch(await invoke("request_install_update"));
 }
 
 export async function acknowledgeError(): Promise<void> {
@@ -122,9 +122,9 @@ export async function requestExit(): Promise<void> {
   appStore.patch(await invoke("request_exit"));
 }
 
-export async function cancelExit(): Promise<void> {
+export async function cancelCloseDocument(): Promise<void> {
   const appStore = useStateStore();
-  appStore.patch(await invoke("cancel_exit"));
+  appStore.patch(await invoke("cancel_close_document"));
 }
 
 export async function revealInExplorer(path: string): Promise<void> {

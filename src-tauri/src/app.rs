@@ -25,7 +25,7 @@ pub trait TigerApp {
     fn command_line_arguments(&self) -> Vec<String>;
     fn focus_window(&self);
     fn close_window(&self);
-    fn check_update(&self) -> Result<bool, String>;
+    fn check_update(&self) -> bool;
     fn install_update(&self) -> Result<(), String>;
     fn release_startup_guard(&self);
     fn is_startup_complete(&self) -> bool;

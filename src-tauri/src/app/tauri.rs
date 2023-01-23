@@ -73,7 +73,7 @@ impl TigerApp for tauri::App {
         self.handle().close_window()
     }
 
-    fn check_update(&self) -> Result<bool, String> {
+    fn check_update(&self) -> bool {
         self.handle().check_update()
     }
 
@@ -175,7 +175,7 @@ impl TigerApp for tauri::AppHandle {
         }
     }
 
-    fn check_update(&self) -> Result<bool, String> {
+    fn check_update(&self) -> bool {
         tauri::async_runtime::block_on(async {
             match self
                 .updater()
@@ -183,10 +183,10 @@ impl TigerApp for tauri::AppHandle {
                 .check()
                 .await
             {
-                Ok(update) => Ok(update.is_update_available()),
+                Ok(update) => update.is_update_available(),
                 Err(e) => {
                     error!("Failed to check update: {e}");
-                    Err(e.to_string())
+                    false
                 }
             }
         })
@@ -228,8 +228,8 @@ pub fn get_state(app: tauri::AppHandle) -> Result<dto::State, ()> {
 }
 
 #[tauri::command]
-pub fn install_update(app: tauri::AppHandle) -> Result<Patch, ()> {
-    Api::install_update(&app)
+pub fn request_install_update(app: tauri::AppHandle) -> Result<Patch, ()> {
+    Api::request_install_update(&app)
 }
 
 #[tauri::command]
@@ -298,8 +298,8 @@ pub fn request_exit(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn cancel_exit(app: tauri::AppHandle) -> Result<Patch, ()> {
-    app.cancel_exit()
+pub fn cancel_close_document(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.cancel_close_document()
 }
 
 #[tauri::command]

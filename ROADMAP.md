@@ -11,7 +11,7 @@
   - [x] Generate `update-manifest.json` during release process
   - [ ] `tauri.conf.json` points to latest release's `update-manifest.json`
   - [x] Show notification with changelog link after update
-  - [ ] Offer to save modified files before applying update
+  - [x] Offer to save modified files before applying update
 - [ ] Splash screen
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
