@@ -8,7 +8,7 @@
 - [ ] Auto-updates
   - [x] Show banner when new version is available
   - [x] Can install new version
-  - [ ] Generate `update-manifest.json` during release process
+  - [x] Generate `update-manifest.json` during release process
   - [ ] `tauri.conf.json` points to latest release's `update-manifest.json`
   - [x] Show notification with changelog link after update
   - [ ] Offer to save modified files before applying update
