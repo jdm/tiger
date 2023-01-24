@@ -5,13 +5,13 @@
 - [x] Document keyboard shortcuts
 - [ ] More template file examples in documentation
 - [ ] Documentation about use of file paths in .tiger files
-- [ ] Auto-updates
+- [x] Auto-updates
   - [x] Show banner when new version is available
   - [x] Can install new version
   - [x] Generate `update-manifest.json` during release process
-  - [ ] `tauri.conf.json` points to latest release's `update-manifest.json`
-  - [x] Show notification with changelog link after update
+  - [x] `tauri.conf.json` points to latest release's `update-manifest.json`
   - [x] Offer to save modified files before applying update
+  - [x] Show notification with changelog link after update
 - [ ] Splash screen
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
