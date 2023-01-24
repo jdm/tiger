@@ -139,7 +139,7 @@ The spritesheet data that can be referenced in the template is described in the 
 | :----- | :----- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | name   | String | Name of the hitbox.                                                                                                                                               |
 | x      | Number | Position of this hitbox's left edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions to the right of the origin. |
-| y      | Number | Vosition of this hitbox's top edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.            |
+| y      | Number | Position of this hitbox's top edge, relative to the origin of the animation (blue ➕ in the Tiger UI). Positive values for positions above the origin.            |
 | width  | Number | Hitbox width in pixels.                                                                                                                                           |
 | height | Number | Hitbox height in pixels.                                                                                                                                          |
 
