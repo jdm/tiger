@@ -2,25 +2,25 @@
 nav_order: 2
 ---
 
-# Exporting spritesheets
+# Exporting Spritesheets
 
-The spritesheet files with the `.tiger` extension being created and edited by Tiger are simple `json` files. You might be tempted to use them directly into your game engine of choice, but there are reasons not to:
+Spritesheet files with the `.tiger` extension being created and edited by Tiger are simple `json` files. You might be tempted to use them directly into your game engine of choice, but there are reasons not to:
 
-- The exact format may change between Tiger releases and could break your engine integration
-- The `.tiger` files refer to animation frames as individual files. For performance reasons, it is often preferable to combine frames into atlas images
+- The exact format may change between Tiger releases and could break your engine integration.
+- The `.tiger` files refer to animation frames as individual files. For performance reasons, it is often preferable to combine frames into atlas images.
 
 The export process in Tiger is designed to solve these two issues. When exporting a spritesheet (from the `File` > `Export` menu), Tiger generates two files:
 
-1. An atlas image file (`.png`) containing all the individual frames of animation packed together
-2. A metadata text file describing the position of individual frames in the atlas image, and additional metadata like hitboxes, animation names and timings
+1. An atlas image file (`.png`) containing all the individual frames of animation packed together.
+2. A metadata text file describing the position of individual frames in the atlas image, and additional metadata like hitboxes, animation names and timings.
 
 The `Atlas Image File` and `Metadata File` options in the Export dialog tell Tiger where to save the corresponding files.
 
 ## Metadata Format
 
-The exported metadata text file does not obey a specific format. It is up to you to define the format by providing a template file. This template file is specified using the `Metadata Template File` option in the Export dialog. You most likely only need to make one template file for your entire project / game engine.
+The exported metadata text file does not obey a predefined format. It is up to you to define the format by providing a **template file**. This template file is specified using the `Metadata Template File` option in the Export dialog. You most likely only need to make one template file for your entire game / engine.
 
-Here is an example of a simple template file which could be used to generate XML metadata:
+Here is an example of a simple template file which can be used to generate XML metadata:
 
 {% raw %}
 
@@ -50,26 +50,24 @@ When used, this template would generate metadata files like the following:
 
 Tiger template files are based on the general-purpose `handlebars` template format, which has its [own documentation](https://handlebarsjs.com/guide/).
 
-### Additional helpers
-
 In addition to standard Handlebars, additional helpers are available:
 
-| Name     | Example                                                   | Description                                                          |
-| :------- | :-------------------------------------------------------- | :------------------------------------------------------------------- |
-| add      | `{{ add keyframe.x 5 }}`                                  | Addition of two numbers.                                             |
-| divide   | `{{ divide keyframe.duration 5 }}`                        | Division of two numbers. Attempting to divide by zero will return 0. |
-| multiply | `{{ multiply keyframe.x -1 }}`                            | Multiplication of two numbers.                                       |
-| subtract | `{{ subtract keyframe.x 5 }}`                             | Subtraction of two numbers.                                          |
-| eq       | `{{ #if eq hitbox.name "damage" }}`                       | Equals operator.                                                     |
-| ne       | `{{ #if ne hitbox.name "damage" }}`                       | Not-equals operator.                                                 |
-| gt       | `{{ #if gt frame.width 10 }}`                             | Greater than operator.                                               |
-| gte      | `{{ #if gte frame.width 10 }}`                            | Greater than or equal operator.                                      |
-| lt       | `{{ #if lt frame.width 10 }}`                             | Less than operator.                                                  |
-| lte      | `{{ #if lte frame.width 10 }}`                            | Less than or equal operator.                                         |
-| and      | `{{ #if and (lte frame.width 10) (lte frame.width 10) }}` | Boolean `and` operator.                                              |
-| or       | `{{ #if or (lte frame.width 10) (lte frame.width 10) }}`  | Boolean `or` operator.                                               |
-| not      | `{{ #if not (eq frame.x 10) }}`                           | Boolean `not` operator.                                              |
-| len      | `{{ len keyframe.hitboxes }}`                             | Number of items in an array or object                                |
+| Name     | Example                                                                    | Description                                                          |
+| :------- | :------------------------------------------------------------------------- | :------------------------------------------------------------------- |
+| add      | `{%raw%}{{ add keyframe.x 5 }}{%endraw%}`                                  | Addition of two numbers.                                             |
+| divide   | `{%raw%}{{ divide keyframe.duration 5 }}{%endraw%}`                        | Division of two numbers. Attempting to divide by zero will return 0. |
+| multiply | `{%raw%}{{ multiply keyframe.x -1 }}{%endraw%}`                            | Multiplication of two numbers.                                       |
+| subtract | `{%raw%}{{ subtract keyframe.x 5 }}{%endraw%}`                             | Subtraction of two numbers.                                          |
+| eq       | `{%raw%}{{ #if eq hitbox.name "damage" }}{%endraw%}`                       | Equals operator.                                                     |
+| ne       | `{%raw%}{{ #if ne hitbox.name "damage" }}{%endraw%}`                       | Not-equals operator.                                                 |
+| gt       | `{%raw%}{{ #if gt frame.width 10 }}{%endraw%}`                             | Greater than operator.                                               |
+| gte      | `{%raw%}{{ #if gte frame.width 10 }}{%endraw%}`                            | Greater than or equal operator.                                      |
+| lt       | `{%raw%}{{ #if lt frame.width 10 }}{%endraw%}`                             | Less than operator.                                                  |
+| lte      | `{%raw%}{{ #if lte frame.width 10 }}{%endraw%}`                            | Less than or equal operator.                                         |
+| and      | `{%raw%}{{ #if and (lte frame.width 10) (lte frame.width 10) }}{%endraw%}` | Boolean `and` operator.                                              |
+| or       | `{%raw%}{{ #if or (lte frame.width 10) (lte frame.width 10) }}{%endraw%}`  | Boolean `or` operator.                                               |
+| not      | `{%raw%}{{ #if not (eq frame.x 10) }}{%endraw%}`                           | Boolean `not` operator.                                              |
+| len      | `{%raw%}{{ len keyframe.hitboxes }}{%endraw%}`                             | Number of items in an array or object                                |
 
 In the context of boolean operators, the following operands evaluate as `false`:
 
@@ -80,9 +78,11 @@ In the context of boolean operators, the following operands evaluate as `false`:
 
 [String manipulation helpers](https://github.com/davidB/handlebars_misc_helpers#string-transformation) are also available.
 
-### Global Variables
+## Using Spritesheet Data in Templates
 
-The spritesheet data that can be referenced in the template is described in the following tables:
+Spritesheet data that can be referenced in template files is described in the following tables:
+
+### Global Variables
 
 | Field       | Type                      | Description                                              |
 | :---------- | :------------------------ | :------------------------------------------------------- |
