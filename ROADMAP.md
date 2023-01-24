@@ -1,6 +1,6 @@
 # Roadmap
 
-## Tiger 0.9
+## Tiger 0.9.0
 
 - [ ] Document keyboard shortcuts
 - [ ] More template file examples in documentation

@@ -1,6 +1,6 @@
 # Changelog
 
-## Tiger 0.8
+## Tiger 0.8.0
 
 - [x] Missing frame files are detected and can be relocated
 - [x] Onboarding tutorial for first-time users
@@ -34,7 +34,7 @@
 - [x] Reached satisfying test coverage
 - [x] Merge redundant code between save(), save_as() and save_all()
 
-## Tiger 0.7
+## Tiger 0.7.0
 
 - [x] Tooltips to show full path in frames pane
 - [x] Tooltips for workbench toolbar items
