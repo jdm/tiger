@@ -7,10 +7,10 @@ Tiger is a graphical tool to author game spritesheets and their metadata.
 # Key Features
 
 - Author animations on an easy-to-use timeline
-- Support for top-down, sidescroller, isometric perspectives (and more!)
-- Add and position hitboxes for each keyframe
-- Compress all animation frames into compact texture atlases
-- Can export metadata for any game engine, thanks to a versatile template system
+- Top-down, sidescroller, isometric perspectives are supported (and more!)
+- Position hitboxes accurately
+- Compress animation frames into compact texture atlases
+- Export metadata for any game engine, thanks to a template system
 - Free and open-source with a permissive license
 
 ⚠️ This project is under development.
