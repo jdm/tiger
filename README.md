@@ -1,15 +1,16 @@
 [![Actions Status](https://github.com/agersant/tiger/workflows/Build/badge.svg)](https://github.com/agersant/tiger/actions) [![codecov](https://codecov.io/gh/agersant/tiger/branch/master/graph/badge.svg?token=Ekd9mm2Wii)](https://codecov.io/gh/agersant/tiger)
 
-Tiger is a graphical tool to author game spritesheets and associated metadata.
+Tiger is a graphical tool to author game spritesheets and their metadata.
 
 ![Tiger](res/readme/screenshot-0.4.0.png?raw=true "Tiger")
 
 # Key Features
 
-- Timeline-editing for authoring animations
-- Easy to add and position hitboxes
-- Use custom formats when exporting spritesheet metadata
-- Generated texture atlas for use in-engine
+- Author animations on an easy-to-use timeline
+- Support for top-down, sidescroller, isometric perspectives (and more!)
+- Add and position hitboxes for each keyframe
+- Compress all animation frames into compact texture atlases
+- Can export metadata for any game engine, thanks to a versatile template system
 - Free and open-source with a permissive license
 
 ⚠️ This project is under development.
@@ -20,10 +21,10 @@ Tiger is only supported on Windows and has no dependencies. To install it:
 
 1. Go to the [latest release](https://github.com/agersant/tiger/releases/latest) page
 2. Download the `.msi` installer
-2. Run the installer
-3. That's it, you're done!
+3. Run the installer
+4. That's it, you're done!
 
-To learn how to integrate Tiger sheets in your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
+To learn how to integrate Tiger sheets into your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
 
 # Contributing
 
@@ -31,4 +32,3 @@ To learn how to integrate Tiger sheets in your game, please refer to the [Docume
 - 🐛 For bug reports, please use the [Issues Tracker](https://github.com/agersant/tiger/issues).
 - 🛠 Planned changes and features are listed in the project [Roadmap](ROADMAP.md).
 - ❌ Please do not create pull requests.
-
