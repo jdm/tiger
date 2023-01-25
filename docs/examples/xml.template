@@ -1,0 +1,17 @@
+<spritesheet>
+	{{ #each animations as |animation| }}
+	<animation name="{{ animation.name }}" looping="{{ animation.is_looping }}">
+		{{ #each animation.sequences as |sequence| }}
+		<sequence direction="{{ sequence.direction }}">
+			{{ #each sequence.keyframes as |keyframe| }}
+			<keyframe x="{{ keyframe.x }}" y="{{ keyframe.y }}" duration="{{ keyframe.duration }}" atlasX="{{ keyframe.frame.x }}" atlasY="{{ keyframe.frame.y }}" width="{{ keyframe.frame.width }}" height="{{ keyframe.frame.height }}">
+				{{ #each keyframe.hitboxes as |hitbox| }}
+				<hitbox name="{{ hitbox.name }}" x="{{ hitbox.x }}" y="{{ hitbox.y }}" width="{{ hitbox.width }}" height="{{ hitbox.height }}"/>
+				{{ /each }}
+			</keyframe>
+			{{ /each }}
+		</sequence>
+		{{ /each }}
+	</animation>
+	{{ /each }}
+</spritesheet>

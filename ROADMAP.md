@@ -3,7 +3,7 @@
 ## Tiger 0.9.0
 
 - [x] Document keyboard shortcuts
-- [ ] More template file examples in documentation
+- [x] More template file examples in documentation
 - [ ] Documentation about use of file paths in .tiger files
 - [x] Auto-updates
   - [x] Show banner when new version is available

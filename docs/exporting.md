@@ -25,11 +25,11 @@ Here is an example of a simple template file which can be used to generate XML m
 {% raw %}
 
 ```handlebars
-<sprite>
+<spritesheet>
 	{{ #each frames as |frame| }}
 	<frame id="{{ frame.index }}" x="{{ frame.x }}" y="{{ frame.y }}" width="{{ frame.width }}" height="{{ frame.height }}" />
 	{{ /each }}
-</sprite>
+</spritesheet>
 ```
 
 {% endraw %}
@@ -37,14 +37,19 @@ Here is an example of a simple template file which can be used to generate XML m
 When used, this template would generate metadata files like the following:
 
 ```xml
-<sprite>
+<spritesheet>
 	<frame id="0" x="0" y="0" width="33" height="27" />
 	<frame id="1" x="33" y="0" width="25" height="44" />
 	<frame id="2" x="58" y="0" width="35" height="34" />
 	<frame id="3" x="93" y="0" width="35" height="31" />
 	<frame id="4" x="128" y="0" width="25" height="29" />
-</sprite>
+</spritesheet>
 ```
+
+More elaborate template examples can be found here:
+
+- [JSON](https://github.com/agersant/tiger/blob/master/docs/examples/json.template)
+- [XML](https://github.com/agersant/tiger/blob/master/docs/examples/xml.template)
 
 ## Metadata Template Syntax
 

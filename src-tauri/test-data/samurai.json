@@ -1,0 +1,483 @@
+{
+	"animations": [
+		{
+			"name": "attack",
+			"looping": "false",
+			"sequences": [
+				{
+					"direction": "East",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "96",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+							]
+						}
+					]
+				},
+				{
+					"direction": "North",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "80",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+							]
+						}
+					]
+				},
+				{
+					"direction": "West",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "64",
+							"atlasY": "32",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+							]
+						}
+					]
+				},
+				{
+					"direction": "South",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "64",
+							"atlasY": "48",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "dead",
+			"looping": "false",
+			"sequences": [
+				{
+					"direction": "North",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "64",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "idle",
+			"looping": "false",
+			"sequences": [
+				{
+					"direction": "East",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "112",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-13",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				},
+				{
+					"direction": "North",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "96",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-13",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				},
+				{
+					"direction": "West",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "64",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-13",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				},
+				{
+					"direction": "South",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "80",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-13",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				}
+			]
+		},
+		{
+			"name": "walk",
+			"looping": "true",
+			"sequences": [
+				{
+					"direction": "East",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "48",
+							"atlasY": "48",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "48",
+							"atlasY": "32",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "48",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "48",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				},
+				{
+					"direction": "North",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "32",
+							"atlasY": "48",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "32",
+							"atlasY": "32",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "32",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "32",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				},
+				{
+					"direction": "West",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "0",
+							"atlasY": "48",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "0",
+							"atlasY": "32",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "0",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "0",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				},
+				{
+					"direction": "South",
+					"keyframes": [
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "16",
+							"atlasY": "48",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "16",
+							"atlasY": "32",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "16",
+							"atlasY": "16",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						},
+						{
+							"x": "-8",
+							"y": "-16",
+							"atlasX": "16",
+							"atlasY": "0",
+							"width": "16",
+							"height": "16",
+							"hitboxes": [
+								{
+									"name": "weak",
+									"x": "-5",
+									"y": "-12",
+									"width": "10",
+									"height": "10"
+								}
+							]
+						}
+					]
+				}
+			]
+		}
+	]
+}

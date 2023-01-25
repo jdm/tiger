@@ -268,6 +268,47 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn template_examples_match_known_output() {
+        let atlas_file =
+            PathBuf::from("test-output/template_examples_match_known_output.png").resolve();
+        let test_cases = vec![
+            (
+                "../docs/examples/xml.template",
+                "test-output/template_examples_match_known_output.xml",
+                "test-data/samurai.xml",
+            ),
+            (
+                "../docs/examples/json.template",
+                "test-output/template_examples_match_known_output.json",
+                "test-data/samurai.json",
+            ),
+        ];
+
+        for (template, destination, expected) in test_cases {
+            let app = TigerAppMock::new();
+            app.open_documents(vec!["test-data/samurai.tiger"]).await;
+            std::fs::remove_file(destination).ok();
+            app.begin_export_as();
+            app.set_export_atlas_image_file(&atlas_file);
+            app.set_export_metadata_file(PathBuf::from(destination).resolve());
+            app.set_export_template_file(PathBuf::from(template).resolve());
+            app.end_export_as().await;
+
+            let metadata_is_correct = retry(Fixed::from_millis(100).take(100), || {
+                let expected = std::fs::read_to_string(expected).unwrap();
+                let Ok(exported) = std::fs::read_to_string(destination) else {
+                        return Err("Couldn't read exported file".to_owned());
+                    };
+                (exported == expected)
+                    .then_some(())
+                    .ok_or(format!("Unexpected export data in {0}", destination))
+            });
+
+            assert_eq!(metadata_is_correct, Ok(()));
+        }
+    }
+
+    #[tokio::test]
     async fn can_cancel_export_as() {
         let atlas_image_file = PathBuf::from("test-output/can_cancel_export_as.png").resolve();
         let template_file = PathBuf::from("test-output/can_cancel_export_as.export").resolve();
