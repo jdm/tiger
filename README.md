@@ -11,6 +11,7 @@ Tiger is a graphical tool to author game spritesheets and their metadata.
 - Position hitboxes accurately
 - Compress animation frames into compact texture atlases
 - Export metadata for any game engine, thanks to a template system
+- Source images hot-reload automatically when changed
 - Free and open-source with a permissive license
 
 ⚠️ This project is under development.

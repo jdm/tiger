@@ -4,7 +4,7 @@
 
 - [x] Document keyboard shortcuts
 - [x] More template file examples in documentation
-- [ ] Documentation about use of file paths in .tiger files
+- [x] Documentation about use of file paths in .tiger files
 - [x] Auto-updates
   - [x] Show banner when new version is available
   - [x] Can install new version
