@@ -301,7 +301,7 @@ mod tests {
                     };
                 (exported == expected)
                     .then_some(())
-                    .ok_or(format!("Unexpected export data in {0}", destination))
+                    .ok_or(format!("Unexpected export data in {destination}"))
             });
 
             assert_eq!(metadata_is_correct, Ok(()));

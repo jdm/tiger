@@ -41,13 +41,13 @@ pub fn acquire_startup_guard() -> StartupGuard {
                 let named_lock_guard = named_lock.lock().unwrap();
 
                 {
-                    let &(ref lock, ref cvar) = &*acquisition;
+                    let (lock, cvar) = &*acquisition;
                     *lock.lock() = true;
                     cvar.notify_one();
                 }
 
                 {
-                    let &(ref lock, ref cvar) = &*release;
+                    let (lock, cvar) = &*release;
                     let mut can_be_released = lock.lock();
                     while !*can_be_released {
                         cvar.wait(&mut can_be_released);
@@ -60,7 +60,7 @@ pub fn acquire_startup_guard() -> StartupGuard {
         .unwrap();
 
     {
-        let &(ref lock, ref cvar) = &*acquisition;
+        let (lock, cvar) = &*acquisition;
         let mut acquired = lock.lock();
         while !*acquired {
             cvar.wait(&mut acquired);
@@ -72,7 +72,7 @@ pub fn acquire_startup_guard() -> StartupGuard {
 
 impl Drop for StartupGuard {
     fn drop(&mut self) {
-        let &(ref lock, ref cvar) = &*self.release;
+        let (lock, cvar) = &*self.release;
         *lock.lock() = true;
         cvar.notify_one();
     }
