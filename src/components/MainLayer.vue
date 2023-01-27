@@ -55,6 +55,5 @@ const state = useStateStore();
 .v-leave-to {
 	opacity: 0;
 	transform: scale(97%, 97%);
-	filter: blur(2px) saturate(0%);
 }
 </style>
