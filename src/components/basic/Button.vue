@@ -22,7 +22,7 @@
 import type { Component } from "vue"
 import { computed, ref } from "vue"
 
-type ButtonColor = "pink";
+type ButtonColor = "blue" | "pink";
 
 const props = defineProps<{
 	label?: string,
@@ -73,6 +73,10 @@ const palette = computed(() => {
 		return 	[	"text-pink-100", "bg-gradient-to-b", "from-pink-800", "to-pink-600", "border-b-pink-900"
 				,	active.value ? "border-t-pink-800" : "border-t-pink-600",
 				];
+	} else if (props.customColor == "blue") {
+		return 	[	"text-blue-100", "bg-gradient-to-b", "from-blue-800", "to-blue-600", "border-b-blue-900"
+				,	active.value ? "border-t-blue-800" : "border-t-blue-600",
+				];
 	} else if (props.danger) {
 		return 	[	"text-red-100", "bg-gradient-to-b", "from-red-800", "to-red-600", "border-b-red-900"
 				,	active.value ? "border-t-red-800" : "border-t-red-600",
@@ -92,6 +96,8 @@ const glow = computed(() => {
 		return ["bg-plastic-500/50"];
 	} else if (props.customColor == "pink") {
 		return ["bg-fuchsia-500/50"];
+	} else if (props.customColor == "blue") {
+		return ["bg-sky-500/50"];
 	} else if (props.danger) {
 		return ["bg-rose-500/50"];
 	} else if (props.positive) {
