@@ -1,4 +1,4 @@
-[![Actions Status](https://github.com/agersant/tiger/workflows/Build/badge.svg)](https://github.com/agersant/tiger/actions) [![codecov](https://codecov.io/gh/agersant/tiger/branch/master/graph/badge.svg?token=Ekd9mm2Wii)](https://codecov.io/gh/agersant/tiger)
+[![Release](https://img.shields.io/github/v/release/agersant/tiger)](https://github.com/agersant/tiger/releases/latest) [![Build Status](https://img.shields.io/github/actions/workflow/status/agersant/tiger/ci.yml)](https://github.com/agersant/tiger/actions) [![Codecov](https://codecov.io/gh/agersant/tiger/branch/master/graph/badge.svg?token=Ekd9mm2Wii)](https://codecov.io/gh/agersant/tiger)
 
 Tiger is a graphical tool to author game spritesheets and their metadata.
 
