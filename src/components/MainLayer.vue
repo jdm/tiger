@@ -4,7 +4,8 @@
 		<UpdateBanner />
 		<div class="flex-1 relative">
 			<Transition appear>
-				<StartupScreen v-if="!state.currentDocument" class="absolute inset-0" />
+				<UpdateSpinner v-if="state.updateStep == UpdateStep.InstallingUpdate" class="absolute inset-0" />
+				<StartupScreen v-else-if="!state.currentDocument" class="absolute inset-0" />
 				<div v-else class="absolute inset-0 min-h-0 flex gap-5 p-5">
 					<div class="basis-[27.375rem] min-w-0 flex flex-col gap-5">
 						<AnimationsPane class="flex-1" />
@@ -29,9 +30,10 @@
 </template>
 
 <script setup lang="ts">
+import { UpdateStep } from "@/backend/dto"
+import { useStateStore } from "@/stores/state"
 import AppBar from "@/components/AppBar.vue"
 import ExportOverlay from "@/components/ExportOverlay.vue"
-import UpdateBanner from "@/components/UpdateBanner.vue"
 import StartupScreen from "@/components/StartupScreen.vue"
 import NotificationOverlay from "@/components/NotificationOverlay.vue"
 import AnimationsPane from "@/components/animations/AnimationsPane.vue"
@@ -39,8 +41,9 @@ import DetailsPane from "@/components/details/DetailsPane.vue"
 import FramesPane from "@/components/frames/FramesPane.vue"
 import KeyframePane from "@/components/keyframe/KeyframePane.vue"
 import TimelinePane from "@/components/timeline/TimelinePane.vue"
+import UpdateBanner from "@/components/updates/UpdateBanner.vue"
+import UpdateSpinner from "@/components/updates/UpdateSpinner.vue"
 import WorkbenchPane from "@/components/workbench/WorkbenchPane.vue"
-import { useStateStore } from "@/stores/state"
 
 const state = useStateStore();
 </script>
