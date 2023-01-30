@@ -18,7 +18,6 @@
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
 - [x] `.tiger` file association
 - [x] Opening files from Windows Explorer re-uses existing instance
-- [ ] Cleanup application files and webview cache on uninstall
 - [x] Webview cache is now stored alongside application files under `%LocalAppData%/Tiger`
 - [x] Application files are now stored under `%LocalAppData%/Tiger` instead of `%LocalAppData%/Permafrost/Tiger` (this directory can safely be deleted manually)
 - [x] Registry keys are now written under `HKCU\Software\Tiger` instead of `HKCU\Software\com.agersant.tiger`
@@ -54,3 +53,4 @@
 - [ ] Drag and drop frames from OS to content panel
 - [ ] Drag and drop frames from OS to timeline panel
 - [ ] Project files (.tiger files within a project can be moved without breaking)
+- [ ] Cleanup application files and webview cache on uninstall (blocked by https://github.com/tauri-apps/tauri/issues/6103 or https://github.com/tauri-apps/tauri/issues/6113)
