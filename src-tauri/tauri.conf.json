@@ -95,7 +95,8 @@
         "minWidth": 1280,
         "minHeight": 1000,
         "decorations": false,
-        "fileDropEnabled": false
+        "fileDropEnabled": false,
+        "visible": false
       }
     ]
   }

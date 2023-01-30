@@ -37,6 +37,7 @@ pub struct TigerAppMock {
     focused: handle::Handle<bool>,
     closed: handle::Handle<bool>,
     startup_guard: StartupGuardHandle,
+    main_window_visible: handle::Handle<bool>,
     template_hot_reload_info: Option<TemplateHotReloadInfo>,
     texture_cache_info: Option<TextureCacheInfo>,
     texture_hot_reload_info: Option<TextureHotReloadInfo>,
@@ -101,6 +102,7 @@ impl TigerAppMockBuilder {
             focused: handle::Handle::default(),
             closed: handle::Handle::default(),
             startup_guard: StartupGuardHandle::new(startup_guard),
+            main_window_visible: handle::Handle::default(),
             template_hot_reload_info: None,
             texture_cache_info: None,
             texture_hot_reload_info: None,
@@ -156,6 +158,10 @@ impl TigerAppMock {
 
     pub fn is_closed(&self) -> bool {
         *self.closed.lock()
+    }
+
+    pub fn is_main_window_visible(&self) -> bool {
+        *self.main_window_visible.lock()
     }
 
     pub fn document(&self) -> dto::Document {
@@ -222,6 +228,10 @@ impl TigerApp for TigerAppMock {
 
     fn release_startup_guard(&self) {
         self.startup_guard.lock().take();
+    }
+
+    fn show_main_window(&self) {
+        *self.main_window_visible.lock() = true;
     }
 
     fn is_startup_complete(&self) -> bool {
@@ -471,8 +481,8 @@ impl TigerAppMock {
         self.apply_patch(Api::filter_frames(self, search_query).unwrap());
     }
 
-    pub async fn finalize_startup(&self) {
-        self.apply_patch(Api::finalize_startup(self).await.unwrap());
+    pub fn finalize_startup(&self) {
+        self.apply_patch(Api::finalize_startup(self).unwrap());
     }
 
     pub fn focus_document<P: AsRef<Path>>(&self, path: P) {
@@ -533,6 +543,10 @@ impl TigerAppMock {
 
     pub async fn open_documents<P: Into<PathBuf> + Send + Sync>(&self, paths: Vec<P>) {
         self.apply_patch(Api::open_documents(self, paths).await.unwrap());
+    }
+
+    pub async fn open_startup_documents(&self) {
+        self.apply_patch(Api::open_startup_documents(self).await.unwrap());
     }
 
     pub fn pan(&self, delta: (f32, f32)) {

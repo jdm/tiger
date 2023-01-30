@@ -61,6 +61,10 @@ impl TigerApp for tauri::App {
         self.handle().release_startup_guard()
     }
 
+    fn show_main_window(&self) {
+        self.handle().show_main_window()
+    }
+
     fn is_startup_complete(&self) -> bool {
         self.handle().is_startup_complete()
     }
@@ -150,6 +154,14 @@ impl TigerApp for tauri::AppHandle {
     fn release_startup_guard(&self) {
         let startup_guard = tauri::Manager::state::<StartupGuardHandle>(self);
         startup_guard.lock().take();
+    }
+
+    fn show_main_window(&self) {
+        if let Some(main_window) = self.get_window("main") {
+            main_window.show().ok();
+        } else {
+            error!("Could not access app window to make it visible");
+        }
     }
 
     fn is_startup_complete(&self) -> bool {
@@ -258,8 +270,13 @@ pub async fn open_documents(app: tauri::AppHandle, paths: Vec<&Path>) -> Result<
 }
 
 #[tauri::command]
+pub async fn open_startup_documents(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.open_startup_documents().await
+}
+
+#[tauri::command]
 pub async fn finalize_startup(app: tauri::AppHandle) -> Result<Patch, ()> {
-    app.finalize_startup().await
+    app.finalize_startup()
 }
 
 #[tauri::command]

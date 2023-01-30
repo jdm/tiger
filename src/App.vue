@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { listen } from "@tauri-apps/api/event"
 import { onMounted, onUnmounted, watch } from "vue"
-import { getState, finalizeStartup, showErrorMessage, tick } from "@/backend/api"
+import { getState, finalizeStartup, openStartupDocuments, showErrorMessage, tick } from "@/backend/api"
 import { State, Patch, TextureInvalidation, OpenDocumentError, SaveDocumentError, } from "@/backend/dto"
 import { useDevStore } from "@/stores/dev"
 import { useSpriteStore } from "@/stores/sprite"
@@ -47,6 +47,7 @@ onMounted(async () => {
   registerKeyboardShortcuts();
 
   await getState();
+  await openStartupDocuments();
   await finalizeStartup();
 });
 

@@ -77,6 +77,11 @@ export async function openDocuments() {
   }
 }
 
+export async function openStartupDocuments() {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("open_startup_documents"));
+}
+
 export async function finalizeStartup() {
   const appStore = useStateStore();
   appStore.patch(await invoke("finalize_startup"));

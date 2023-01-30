@@ -28,6 +28,7 @@ pub trait TigerApp {
     fn check_update(&self) -> bool;
     fn install_update(&self) -> Result<(), String>;
     fn release_startup_guard(&self);
+    fn show_main_window(&self);
     fn is_startup_complete(&self) -> bool;
     fn patch<F: FnOnce(&mut State)>(&self, state_trim: StateTrim, operation: F) -> Patch {
         let state_handle = self.state();

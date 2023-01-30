@@ -27,8 +27,9 @@ pub struct State {
     documents: Vec<Document>,
     current_document: Option<PathBuf>,
     recent_documents: Observable<'static, Vec<PathBuf>>,
-    clipboard_manifest: Option<ClipboardManifest>,
     errors: Vec<UserFacingError>,
+    startup_finalized: bool,
+    clipboard_manifest: Option<ClipboardManifest>,
     onboarding_step: Observable<'static, OnboardingStep>,
     update_step: UpdateStep,
     opened_startup_documents: bool,
@@ -272,6 +273,14 @@ impl State {
         self.recent_documents.delegate()
     }
 
+    pub fn finalize_startup(&mut self) {
+        self.startup_finalized = true;
+    }
+
+    pub fn is_startup_finalized(&self) -> bool {
+        self.startup_finalized
+    }
+
     pub fn set_clipboard_manifest(&mut self, new_manifest: Option<ClipboardManifest>) {
         self.clipboard_manifest = new_manifest;
     }
@@ -344,12 +353,28 @@ mod tests {
     async fn can_open_documents_on_start() {
         let app = TigerAppMock::new();
         app.set_command_line_arguments(vec!["test-data/samurai.tiger"]);
-        app.finalize_startup().await;
+        app.open_startup_documents().await;
         assert_eq!(app.client_state().documents.len(), 1);
         app.close_all_documents();
         assert!(app.client_state().documents.is_empty());
-        app.finalize_startup().await;
+        app.open_startup_documents().await;
         assert!(app.client_state().documents.is_empty());
+    }
+
+    #[tokio::test]
+    async fn shows_main_window_on_start() {
+        let app = TigerAppMock::new();
+        assert!(!app.is_main_window_visible());
+        app.finalize_startup();
+        assert!(app.is_main_window_visible());
+    }
+
+    #[tokio::test]
+    async fn marks_startup_as_finalized() {
+        let app = TigerAppMock::new();
+        assert!(!app.client_state().startup_finalized);
+        app.finalize_startup();
+        assert!(app.client_state().startup_finalized);
     }
 
     #[tokio::test]

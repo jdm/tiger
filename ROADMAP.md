@@ -12,7 +12,7 @@
   - [x] `tauri.conf.json` points to latest release's `update-manifest.json`
   - [x] Offer to save modified files before applying update
   - [x] Show notification with changelog link after update
-- [ ] Splash screen
+- [x] Clean up visual jank during app startup
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs

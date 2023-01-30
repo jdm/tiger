@@ -3,7 +3,7 @@
 		<AppBar />
 		<UpdateBanner />
 		<div class="flex-1 relative">
-			<Transition appear>
+			<Transition appear v-if="state.startupFinalized">
 				<UpdateSpinner v-if="state.updateStep == UpdateStep.InstallingUpdate" class="absolute inset-0" />
 				<StartupScreen v-else-if="!state.currentDocument" class="absolute inset-0" />
 				<div v-else class="absolute inset-0 min-h-0 flex gap-5 p-5">

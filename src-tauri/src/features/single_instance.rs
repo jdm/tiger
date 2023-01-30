@@ -183,16 +183,16 @@ mod tests {
     use super::*;
     use crate::app::mock::{TigerAppMock, TigerAppMockBuilder};
 
-    #[tokio::test]
-    async fn can_release_startup_guard() {
+    #[test]
+    fn can_release_startup_guard() {
         let app = TigerAppMockBuilder::new().with_startup_guard().build();
         assert!(!app.is_startup_complete());
-        app.finalize_startup().await;
+        app.finalize_startup();
         assert!(app.is_startup_complete());
     }
 
-    #[tokio::test]
-    async fn startup_guard_blocks_other_instances() {
+    #[test]
+    fn startup_guard_blocks_other_instances() {
         let app = TigerAppMockBuilder::new().with_startup_guard().build();
         assert!(!app.is_startup_complete());
 
@@ -208,7 +208,7 @@ mod tests {
         thread::sleep(Duration::from_millis(500));
         assert!(!*acquired_inner_guard.lock());
 
-        app.finalize_startup().await;
+        app.finalize_startup();
         let acquired_inner_guard = retry(Fixed::from_millis(100).take(100), || {
             (*acquired_inner_guard.lock()).then_some(()).ok_or(())
         });

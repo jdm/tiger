@@ -9,6 +9,7 @@ export type State = {
   clipboardManifest: ClipboardManifest | null;
   isReleaseBuild: boolean;
   error: UserFacingError | null;
+  startupFinalized: boolean;
   onboardingStep: OnboardingStep;
   updateStep: UpdateStep;
 };

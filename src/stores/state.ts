@@ -21,6 +21,7 @@ export const useStateStore = defineStore("state", {
       clipboardManifest: null,
       isReleaseBuild: false,
       error: null,
+      startupFinalized: false,
       onboardingStep: OnboardingStep.NotStarted,
       updateStep: UpdateStep.Idle,
     } as State),

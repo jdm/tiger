@@ -90,7 +90,7 @@ pub trait Api {
     async fn export(&self) -> Result<Patch, ()>;
     fn filter_animations<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
     fn filter_frames<S: Into<String>>(&self, search_query: S) -> Result<Patch, ()>;
-    async fn finalize_startup(&self) -> Result<Patch, ()>;
+    fn finalize_startup(&self) -> Result<Patch, ()>;
     fn focus_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
     fn focus_next_document(&self) -> Result<Patch, ()>;
     fn focus_previous_document(&self) -> Result<Patch, ()>;
@@ -114,6 +114,7 @@ pub trait Api {
         &self,
         paths: Vec<P>,
     ) -> Result<Patch, ()>;
+    async fn open_startup_documents(&self) -> Result<Patch, ()>;
     fn pan(&self, delta: (f32, f32)) -> Result<Patch, ()>;
     fn pan_timeline(&self, delta: f32) -> Result<Patch, ()>;
     fn paste(&self) -> Result<Patch, ()>;
@@ -927,8 +928,7 @@ impl<A: TigerApp + Sync> Api for A {
         }))
     }
 
-    async fn finalize_startup(&self) -> Result<Patch, ()> {
-        self.release_startup_guard();
+    async fn open_startup_documents(&self) -> Result<Patch, ()> {
         if self.state().lock().opened_startup_documents() {
             Ok(Patch(Vec::new()))
         } else {
@@ -936,6 +936,14 @@ impl<A: TigerApp + Sync> Api for A {
             self.state().lock().set_opened_startup_documents(true);
             self.open_documents(startup_documents).await
         }
+    }
+
+    fn finalize_startup(&self) -> Result<Patch, ()> {
+        self.release_startup_guard();
+        self.show_main_window();
+        Ok(self.patch(StateTrim::NoDocuments, |state| {
+            state.finalize_startup();
+        }))
     }
 
     fn pan(&self, delta: (f32, f32)) -> Result<Patch, ()> {

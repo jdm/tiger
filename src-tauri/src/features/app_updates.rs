@@ -138,14 +138,14 @@ mod tests {
         dto,
     };
 
-    #[tokio::test]
-    async fn can_install_update() {
+    #[test]
+    fn can_install_update() {
         let app = TigerAppMockBuilder::new().with_startup_guard().build();
 
         thread::sleep(Duration::from_millis(500));
         assert_eq!(app.client_state().update_step, dto::UpdateStep::Idle);
 
-        app.finalize_startup().await;
+        app.finalize_startup();
         let found_update = retry(Fixed::from_millis(100).take(100), || {
             match app.client_state().update_step {
                 dto::UpdateStep::UpdateAvailable => Ok(()),

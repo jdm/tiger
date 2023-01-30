@@ -30,6 +30,7 @@ pub struct State {
     pub clipboard_manifest: Option<ClipboardManifest>,
     pub is_release_build: bool,
     pub error: Option<UserFacingError>,
+    pub startup_finalized: bool,
     pub onboarding_step: OnboardingStep,
     pub update_step: UpdateStep,
 }
@@ -395,6 +396,7 @@ impl state::State {
             clipboard_manifest: self.clipboard_manifest().as_ref().map(|m| m.into()),
             is_release_build: !cfg!(debug_assertions),
             error: self.error().map(|e| e.into()),
+            startup_finalized: self.is_startup_finalized(),
             onboarding_step: (&self.onboarding_step()).into(),
             update_step: (&self.update_step()).into(),
         }

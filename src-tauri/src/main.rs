@@ -85,6 +85,7 @@ fn main() {
             app::tauri::get_state,
             app::tauri::new_document,
             app::tauri::open_documents,
+            app::tauri::open_startup_documents,
             app::tauri::request_exit,
             app::tauri::request_install_update,
             app::tauri::reveal_in_explorer,
