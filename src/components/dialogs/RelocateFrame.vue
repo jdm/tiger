@@ -16,7 +16,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, Ref, ref } from "vue";
+import { computed, ref } from "vue";
 import { CheckCircleIcon } from "@heroicons/vue/24/solid"
 import { relocateFrame } from "@/backend/api";
 import { Frame } from "@/backend/dto";

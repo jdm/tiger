@@ -32,6 +32,7 @@ pub struct State {
     clipboard_manifest: Option<ClipboardManifest>,
     onboarding_step: Observable<'static, OnboardingStep>,
     update_step: UpdateStep,
+    about_dialog_open: bool,
     opened_startup_documents: bool,
     exit_requested: bool,
 }
@@ -248,6 +249,18 @@ impl State {
         if !self.errors.is_empty() {
             self.errors.remove(0);
         }
+    }
+
+    pub fn open_about_dialog(&mut self) {
+        self.about_dialog_open = true;
+    }
+
+    pub fn close_about_dialog(&mut self) {
+        self.about_dialog_open = false;
+    }
+
+    pub fn is_about_dialog_open(&self) -> bool {
+        self.about_dialog_open
     }
 
     fn add_recent_document<T: AsRef<Path>>(&mut self, path: T) {
@@ -699,5 +712,15 @@ mod tests {
         assert!(app.client_state().error.is_some());
         app.acknowledge_error();
         assert!(app.client_state().error.is_none());
+    }
+
+    #[test]
+    fn can_open_and_close_about_dialog() {
+        let app = TigerAppMock::new();
+        assert!(!app.client_state().about_dialog_open);
+        app.open_about_dialog();
+        assert!(app.client_state().about_dialog_open);
+        app.close_about_dialog();
+        assert!(!app.client_state().about_dialog_open);
     }
 }

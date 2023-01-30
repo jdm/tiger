@@ -195,6 +195,16 @@ pub fn new_document(app: tauri::AppHandle, path: PathBuf) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
+pub fn open_about_dialog(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.open_about_dialog()
+}
+
+#[tauri::command]
+pub fn close_about_dialog(app: tauri::AppHandle) -> Result<Patch, ()> {
+    app.close_about_dialog()
+}
+
+#[tauri::command]
 pub async fn open_documents(app: tauri::AppHandle, paths: Vec<&Path>) -> Result<Patch, ()> {
     app.open_documents(paths).await
 }

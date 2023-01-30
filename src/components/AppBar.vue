@@ -21,7 +21,7 @@
 import { computed, reactive } from "vue"
 import { useStateStore } from "@/stores/state"
 import { useDevStore } from "@/stores/dev"
-import { closeAllDocuments, closeCurrentDocument, revealInExplorer, saveAll, beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut, newDocument, openDocument, openDocuments, saveAs } from "@/backend/api"
+import { closeAllDocuments, closeCurrentDocument, revealInExplorer, saveAll, beginExportAs, doExport, centerWorkbench, redo, resetTimelineZoom, resetWorkbenchZoom, save, undo, zoomInTimeline, zoomInWorkbench, zoomOutTimeline, zoomOutWorkbench, copy, paste, cut, newDocument, openDocument, openDocuments, saveAs, openAboutDialog } from "@/backend/api"
 import MenuBar, { MenuBarEntry, MenuEntry, Separator } from "@/components/basic/MenuBar.vue"
 import WindowTitleBar from "@/components/basic/WindowTitleBar.vue"
 
@@ -92,6 +92,7 @@ const helpMenuEntries = computed((): (MenuEntry|Separator)[] => reactive([
 	{ name: "Documentation…", url: "https://agersant.github.io/tiger" },
 	{ name: "Report a Bug…", url: "https://github.com/agersant/tiger/issues/new" },
 	{ name: "Share Ideas and Feedback…", url: "https://github.com/agersant/tiger/discussions/new/choose" },
+	{ name: "About Tiger…", action: openAboutDialog },
 ]));
 
 const menuEntries = computed((): MenuBarEntry[] => {

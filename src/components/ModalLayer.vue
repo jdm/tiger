@@ -5,6 +5,7 @@
 			<div v-if="activeModalId" :key="activeModalId"
 				class="absolute inset-0 pointer-events-auto flex items-center justify-center">
 				<ErrorDialog v-if="state.error" :error="state.error" />
+				<AboutDialog v-else-if="state.aboutDialogOpen" />
 				<UnsavedChangesDialog v-else-if="state.currentDocument?.wasCloseRequested" />
 				<RelocateFramesDialog v-else-if="!!state.currentDocument?.framesBeingRelocated" />
 			</div>
@@ -16,6 +17,7 @@
 import { computed } from "vue"
 import { useStateStore } from "@/stores/state"
 import ScreenCover from "@/components/basic/ScreenCover.vue"
+import AboutDialog from "@/components/dialogs/AboutDialog.vue"
 import ErrorDialog from "@/components/dialogs/ErrorDialog.vue"
 import RelocateFramesDialog from "@/components/dialogs/RelocateFramesDialog.vue"
 import UnsavedChangesDialog from "@/components/dialogs/UnsavedChangesDialog.vue"
@@ -24,11 +26,13 @@ const state = useStateStore();
 
 const activeModalId = computed(() => {
 	if (state.error != null) {
-	return state.error.key;
+		return state.error.key;
+	} else if (state.aboutDialogOpen) {
+		return "about_dialog";
 	} else if (state.currentDocument?.wasCloseRequested) {
-	return "closing_" + state.currentDocument.path;
+		return "closing_" + state.currentDocument.path;
 	} else if (!!state.currentDocument?.framesBeingRelocated) {
-	return "relocating_" + state.currentDocument.path;
+		return "relocating_" + state.currentDocument.path;
 	}
 	return null;
 });

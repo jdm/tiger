@@ -24,6 +24,8 @@ export const useStateStore = defineStore("state", {
       startupFinalized: false,
       onboardingStep: OnboardingStep.NotStarted,
       updateStep: UpdateStep.Idle,
+      aboutDialogOpen: false,
+      commitHash: null,
     } as State),
   actions: {
     patch(patch: Patch) {

@@ -75,6 +75,7 @@ fn main() {
             // App
             app::tauri::acknowledge_error,
             app::tauri::cancel_close_document,
+            app::tauri::close_about_dialog,
             app::tauri::close_all_documents,
             app::tauri::close_current_document,
             app::tauri::close_document,
@@ -84,6 +85,7 @@ fn main() {
             app::tauri::focus_previous_document,
             app::tauri::get_state,
             app::tauri::new_document,
+            app::tauri::open_about_dialog,
             app::tauri::open_documents,
             app::tauri::open_startup_documents,
             app::tauri::request_exit,

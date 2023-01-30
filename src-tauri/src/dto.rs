@@ -33,6 +33,8 @@ pub struct State {
     pub startup_finalized: bool,
     pub onboarding_step: OnboardingStep,
     pub update_step: UpdateStep,
+    pub about_dialog_open: bool,
+    pub commit_hash: Option<String>,
 }
 
 #[derive(Clone, Debug, Deserialize, Serialize, Eq, PartialEq)]
@@ -399,6 +401,8 @@ impl state::State {
             startup_finalized: self.is_startup_finalized(),
             onboarding_step: (&self.onboarding_step()).into(),
             update_step: (&self.update_step()).into(),
+            about_dialog_open: self.is_about_dialog_open(),
+            commit_hash: std::option_env!("TIGER_COMMIT_SHA").map(String::from),
         }
     }
 }

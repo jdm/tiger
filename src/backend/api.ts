@@ -44,6 +44,16 @@ export async function acknowledgeError(): Promise<void> {
   appStore.patch(await invoke("acknowledge_error"));
 }
 
+export async function openAboutDialog(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("open_about_dialog"));
+}
+
+export async function closeAboutDialog(): Promise<void> {
+  const appStore = useStateStore();
+  appStore.patch(await invoke("close_about_dialog"));
+}
+
 export async function newDocument() {
   const path = await saveFileDialog({
     filters: [{ name: "Spritesheet Files", extensions: ["tiger"] }],

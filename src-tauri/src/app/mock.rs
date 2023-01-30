@@ -345,6 +345,10 @@ impl TigerAppMock {
         self.apply_patch(Api::clear_selection(self).unwrap());
     }
 
+    pub fn close_about_dialog(&self) {
+        self.apply_patch(Api::close_about_dialog(self).unwrap());
+    }
+
     pub fn close_all_documents(&self) {
         self.apply_patch(Api::close_all_documents(self).unwrap());
     }
@@ -539,6 +543,10 @@ impl TigerAppMock {
 
     pub fn nudge_selection(&self, direction: dto::NudgeDirection, large_nudge: bool) {
         self.apply_patch(Api::nudge_selection(self, direction, large_nudge).unwrap());
+    }
+
+    pub fn open_about_dialog(&self) {
+        self.apply_patch(Api::open_about_dialog(self).unwrap());
     }
 
     pub async fn open_documents<P: Into<PathBuf> + Send + Sync>(&self, paths: Vec<P>) {

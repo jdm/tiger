@@ -12,6 +12,8 @@ export type State = {
   startupFinalized: boolean;
   onboardingStep: OnboardingStep;
   updateStep: UpdateStep;
+  aboutDialogOpen: boolean;
+  commitHash: String | null;
 };
 
 export type RecentDocument = {

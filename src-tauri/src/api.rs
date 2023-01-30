@@ -52,6 +52,7 @@ pub trait Api {
     fn cancel_rename(&self) -> Result<Patch, ()>;
     fn center_workbench(&self) -> Result<Patch, ()>;
     fn clear_selection(&self) -> Result<Patch, ()>;
+    fn close_about_dialog(&self) -> Result<Patch, ()>;
     fn close_all_documents(&self) -> Result<Patch, ()>;
     fn close_current_document(&self) -> Result<Patch, ()>;
     fn close_document<P: AsRef<Path>>(&self, path: P) -> Result<Patch, ()>;
@@ -110,6 +111,7 @@ pub trait Api {
         direction: dto::NudgeDirection,
         large_nudge: bool,
     ) -> Result<Patch, ()>;
+    fn open_about_dialog(&self) -> Result<Patch, ()>;
     async fn open_documents<P: Into<PathBuf> + Send + Sync>(
         &self,
         paths: Vec<P>,
@@ -426,6 +428,12 @@ impl<A: TigerApp + Sync> Api for A {
             if let Some(document) = state.current_document_mut() {
                 document.process_command(Command::ClearSelection).ok();
             }
+        }))
+    }
+
+    fn close_about_dialog(&self) -> Result<Patch, ()> {
+        Ok(self.patch(StateTrim::NoDocuments, |state| {
+            state.close_about_dialog();
         }))
     }
 
@@ -886,6 +894,12 @@ impl<A: TigerApp + Sync> Api for A {
                     })
                     .ok();
             }
+        }))
+    }
+
+    fn open_about_dialog(&self) -> Result<Patch, ()> {
+        Ok(self.patch(StateTrim::NoDocuments, |state| {
+            state.open_about_dialog();
         }))
     }
 

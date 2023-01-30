@@ -65,6 +65,7 @@ jobs:
       - name: Build binaries
         uses: tauri-apps/tauri-action@v0
         env:
+          TIGER_COMMIT_SHA: ${{ github.sha }}
           TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
           TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
       - name: Upload binaries
