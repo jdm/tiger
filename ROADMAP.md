@@ -16,6 +16,7 @@
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
+- [ ] Clarify what MIT license applies to in readme
 - [x] `.tiger` file association
 - [x] Opening files from Windows Explorer re-uses existing instance
 - [x] Webview cache is now stored alongside application files under `%LocalAppData%/Tiger`
@@ -31,7 +32,6 @@
 - [ ] Logo in readme
 - [ ] Gif/video in readme
 - [ ] Remove under-development warning from readme
-- [ ] Clarify what MIT license applies to in readme
 - [ ] Logo in documentation
 - [ ] Favicon in documentation
 - [ ] Branding in installer and installer icon
