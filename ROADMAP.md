@@ -31,6 +31,7 @@
 - [ ] Logo in readme
 - [ ] Gif/video in readme
 - [ ] Remove under-development warning from readme
+- [ ] Clarify what MIT license applies to in readme
 - [ ] Logo in documentation
 - [ ] Favicon in documentation
 - [ ] Branding in installer and installer icon
