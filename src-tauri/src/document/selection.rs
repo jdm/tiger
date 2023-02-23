@@ -465,6 +465,7 @@ impl Document {
         self.sheet
             .sorted_frames()
             .into_iter()
+            .filter(|f| !self.is_frame_filtered_out(f.source()))
             .map(|f| f.source().to_owned())
             .collect()
     }
@@ -473,6 +474,7 @@ impl Document {
         self.sheet
             .sorted_animations()
             .into_iter()
+            .filter(|(n, _)| !self.is_animation_filtered_out(n))
             .map(|(n, _)| n.clone())
             .collect()
     }
@@ -1159,6 +1161,20 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn browsing_animations_respects_filter() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+
+        app.filter_animations("a k");
+        app.select_animation("attack", false, false);
+        app.select_all();
+        assert_eq!(
+            app.document().selected_animations(),
+            HashSet::from_iter(["attack".to_owned(), "walk".to_owned()])
+        );
+    }
+
+    #[tokio::test]
     async fn can_browse_frames_as_a_list() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/flame.tiger"]).await;
@@ -1235,6 +1251,18 @@ mod tests {
         check_selection(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c", "2d"]);
         app.browse_selection(dto::BrowseDirection::Left, true);
         check_selection(vec!["0d", "1a", "1b", "1c", "1d", "2a", "2b", "2c"]);
+    }
+
+    #[tokio::test]
+    async fn browsing_frames_respects_filter() {
+        let app = TigerAppMock::new();
+        app.open_documents(vec!["test-data/samurai.tiger"]).await;
+        let attack_east = PathBuf::from("test-data/samurai/attack-east.png").resolve();
+
+        app.filter_frames("east");
+        app.select_frame(attack_east, false, false);
+        app.select_all();
+        assert_eq!(app.document().selected_frames().len(), 6);
     }
 
     #[tokio::test]
