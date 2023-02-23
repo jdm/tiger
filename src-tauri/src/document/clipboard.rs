@@ -169,7 +169,7 @@ mod tests {
             app.document()
                 .keyframe("walk", dto::Direction::West, 0)
                 .frame,
-            PathBuf::from("test-data/samurai-walk-east-0.png").resolve()
+            PathBuf::from("test-data/samurai/walk-east-0.png").resolve()
         );
     }
 

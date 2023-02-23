@@ -427,7 +427,7 @@ mod tests {
         type Test = fn(e: Option<ExportSettingsError>) -> bool;
         let test_table: Vec<(&str, Test)> = vec![
             ("test-data/export.template", |e| e.is_none()),
-            ("test-data/samurai-dead-all.png", |e| {
+            ("test-data/samurai/dead-all.png", |e| {
                 matches!(e, Some(ExportSettingsError::TemplateError(_)))
             }),
         ];

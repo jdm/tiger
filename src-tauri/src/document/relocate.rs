@@ -81,10 +81,10 @@ mod tests {
 
     #[test]
     fn can_relocate_frames() {
-        let bad_dead = PathBuf::from("samurai-dead-all.png").resolve();
-        let bad_idle = PathBuf::from("samurai-idle-west.png").resolve();
-        let good_dead = PathBuf::from("test-data/samurai-dead-all.png").resolve();
-        let good_idle = PathBuf::from("test-data/samurai-idle-west.png").resolve();
+        let bad_dead = PathBuf::from("dead-all.png").resolve();
+        let bad_idle = PathBuf::from("idle-west.png").resolve();
+        let good_dead = PathBuf::from("test-data/samurai/dead-all.png").resolve();
+        let good_idle = PathBuf::from("test-data/samurai/idle-west.png").resolve();
         let unrelated = PathBuf::from("unrelated.png").resolve();
 
         let app = TigerAppMock::new();
@@ -93,10 +93,10 @@ mod tests {
         let has_frame = |p: &PathBuf| app.document().sheet.frames.iter().any(|f| &f.path == p);
 
         let detected_missing_frames = retry(Fixed::from_millis(500).take(10), || {
-            if !app.document().frame("samurai-dead-all").missing_on_disk {
-                Err("samurai-dead-all not detected as missing")
-            } else if !app.document().frame("samurai-idle-west").missing_on_disk {
-                Err("samurai-idle-west not detected as missing")
+            if !app.document().frame("dead-all").missing_on_disk {
+                Err("dead-all not detected as missing")
+            } else if !app.document().frame("idle-west").missing_on_disk {
+                Err("idle-west not detected as missing")
             } else {
                 Ok(())
             }

@@ -866,8 +866,8 @@ mod tests {
 
     #[tokio::test]
     async fn keeps_track_of_frames_being_dragged() {
-        let frame_0 = PathBuf::from("test-data/samurai-walk-south-0.png").resolve();
-        let frame_1 = PathBuf::from("test-data/samurai-walk-south-1.png").resolve();
+        let frame_0 = PathBuf::from("test-data/samurai/walk-south-0.png").resolve();
+        let frame_1 = PathBuf::from("test-data/samurai/walk-south-1.png").resolve();
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
@@ -904,10 +904,10 @@ mod tests {
         assert_eq!(
             keyframes,
             vec![
-                PathBuf::from("test-data/samurai-walk-south-1.png").resolve(),
-                PathBuf::from("test-data/samurai-walk-south-0.png").resolve(),
-                PathBuf::from("test-data/samurai-walk-south-2.png").resolve(),
-                PathBuf::from("test-data/samurai-walk-south-3.png").resolve()
+                PathBuf::from("test-data/samurai/walk-south-1.png").resolve(),
+                PathBuf::from("test-data/samurai/walk-south-0.png").resolve(),
+                PathBuf::from("test-data/samurai/walk-south-2.png").resolve(),
+                PathBuf::from("test-data/samurai/walk-south-3.png").resolve()
             ]
         );
     }
@@ -932,10 +932,10 @@ mod tests {
         assert_eq!(
             keyframes,
             vec![
-                PathBuf::from("test-data/samurai-walk-south-2.png").resolve(),
-                PathBuf::from("test-data/samurai-walk-south-0.png").resolve(),
-                PathBuf::from("test-data/samurai-walk-south-1.png").resolve(),
-                PathBuf::from("test-data/samurai-walk-south-3.png").resolve()
+                PathBuf::from("test-data/samurai/walk-south-2.png").resolve(),
+                PathBuf::from("test-data/samurai/walk-south-0.png").resolve(),
+                PathBuf::from("test-data/samurai/walk-south-1.png").resolve(),
+                PathBuf::from("test-data/samurai/walk-south-3.png").resolve()
             ]
         );
     }
@@ -961,8 +961,8 @@ mod tests {
             assert_eq!(
                 keyframes,
                 vec![
-                    PathBuf::from("test-data/samurai-walk-north-0.png").resolve(),
-                    PathBuf::from("test-data/samurai-walk-north-3.png").resolve()
+                    PathBuf::from("test-data/samurai/walk-north-0.png").resolve(),
+                    PathBuf::from("test-data/samurai/walk-north-3.png").resolve()
                 ]
             );
         }
@@ -978,12 +978,12 @@ mod tests {
             assert_eq!(
                 keyframes,
                 vec![
-                    PathBuf::from("test-data/samurai-walk-north-1.png").resolve(),
-                    PathBuf::from("test-data/samurai-walk-north-2.png").resolve(),
-                    PathBuf::from("test-data/samurai-walk-south-0.png").resolve(),
-                    PathBuf::from("test-data/samurai-walk-south-1.png").resolve(),
-                    PathBuf::from("test-data/samurai-walk-south-2.png").resolve(),
-                    PathBuf::from("test-data/samurai-walk-south-3.png").resolve()
+                    PathBuf::from("test-data/samurai/walk-north-1.png").resolve(),
+                    PathBuf::from("test-data/samurai/walk-north-2.png").resolve(),
+                    PathBuf::from("test-data/samurai/walk-south-0.png").resolve(),
+                    PathBuf::from("test-data/samurai/walk-south-1.png").resolve(),
+                    PathBuf::from("test-data/samurai/walk-south-2.png").resolve(),
+                    PathBuf::from("test-data/samurai/walk-south-3.png").resolve()
                 ]
             );
         }

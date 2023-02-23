@@ -113,8 +113,8 @@ mod tests {
     fn emits_invalidate_event_on_file_change() {
         let dir = std::env::current_dir().unwrap();
         let frame = dir.join("test-output/emits_invalidate_event_on_file_change.png");
-        let before_frame = dir.join("test-data/samurai-dead-all.png");
-        let after_frame = dir.join("test-data/samurai-attack-north.png");
+        let before_frame = dir.join("test-data/samurai/dead-all.png");
+        let after_frame = dir.join("test-data/samurai/attack-north.png");
 
         std::fs::copy(before_frame, &frame).unwrap();
 
@@ -140,7 +140,7 @@ mod tests {
     fn emits_invalidate_event_on_file_add() {
         let dir = std::env::current_dir().unwrap();
         let frame = dir.join("test-output/emits_invalidate_event_on_file_add.png");
-        let source_frame = dir.join("test-data/samurai-dead-all.png");
+        let source_frame = dir.join("test-data/samurai/dead-all.png");
 
         std::fs::remove_file(&frame).ok();
 

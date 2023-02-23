@@ -437,11 +437,11 @@ mod tests {
     async fn can_filter_frames() {
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
-        assert!(!app.document().frame("samurai-dead-all").filtered_out);
-        assert!(!app.document().frame("samurai-attack-west").filtered_out);
+        assert!(!app.document().frame("dead-all").filtered_out);
+        assert!(!app.document().frame("attack-west").filtered_out);
         app.filter_frames("a ack");
-        assert!(app.document().frame("samurai-dead-all").filtered_out);
-        assert!(!app.document().frame("samurai-attack-west").filtered_out);
+        assert!(app.document().frame("dead-all").filtered_out);
+        assert!(!app.document().frame("attack-west").filtered_out);
     }
 
     #[tokio::test]

@@ -149,7 +149,7 @@ mod tests {
 
     #[tokio::test]
     async fn follows_frame_additions_and_removals() {
-        let frame_path = PathBuf::from("test-data/samurai-dead-all.png").resolve();
+        let frame_path = PathBuf::from("test-data/samurai/dead-all.png").resolve();
         let app = TigerAppMock::new();
 
         let is_cached = |app: &TigerAppMock| app.texture_cache().lock().contains_key(&frame_path);
@@ -175,8 +175,8 @@ mod tests {
     #[tokio::test]
     async fn detects_texture_changes() {
         let frame = PathBuf::from("test-output/detects_texture_changes.png").resolve();
-        let before_frame = PathBuf::from("test-data/samurai-dead-all.png").resolve();
-        let after_frame = PathBuf::from("test-data/samurai-attack-north.png").resolve();
+        let before_frame = PathBuf::from("test-data/samurai/dead-all.png").resolve();
+        let after_frame = PathBuf::from("test-data/samurai/attack-north.png").resolve();
 
         let app = TigerAppMock::new();
         app.open_documents(vec!["test-data/samurai.tiger"]).await;
