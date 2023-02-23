@@ -3,241 +3,247 @@
   "sheet": {
     "frames": [
       {
-        "source": "attack_000.png"
+        "source": "voiceofthewind/attack_000.png"
       },
       {
-        "source": "attack_001.png"
+        "source": "voiceofthewind/attack_001.png"
       },
       {
-        "source": "attack_002.png"
+        "source": "voiceofthewind/attack_002.png"
       },
       {
-        "source": "attack_003.png"
+        "source": "voiceofthewind/attack_003.png"
       },
       {
-        "source": "attack_004.png"
+        "source": "voiceofthewind/attack_004.png"
       },
       {
-        "source": "attack_005.png"
+        "source": "voiceofthewind/attack_005.png"
       },
       {
-        "source": "attack_006.png"
+        "source": "voiceofthewind/attack_006.png"
       },
       {
-        "source": "attack_007.png"
+        "source": "voiceofthewind/attack_007.png"
       },
       {
-        "source": "attack_008.png"
+        "source": "voiceofthewind/attack_008.png"
       },
       {
-        "source": "attack_009.png"
+        "source": "voiceofthewind/attack_009.png"
       },
       {
-        "source": "attack_010.png"
+        "source": "voiceofthewind/attack_010.png"
       },
       {
-        "source": "attack_011.png"
+        "source": "voiceofthewind/attack_011.png"
       },
       {
-        "source": "attack_012.png"
+        "source": "voiceofthewind/attack_012.png"
       },
       {
-        "source": "attack_013.png"
+        "source": "voiceofthewind/attack_013.png"
       },
       {
-        "source": "attack_014.png"
+        "source": "voiceofthewind/attack_014.png"
       },
       {
-        "source": "attack_015.png"
+        "source": "voiceofthewind/attack_015.png"
       },
       {
-        "source": "attack_016.png"
+        "source": "voiceofthewind/attack_016.png"
       },
       {
-        "source": "attack_017.png"
+        "source": "voiceofthewind/attack_017.png"
       },
       {
-        "source": "attack_018.png"
+        "source": "voiceofthewind/attack_018.png"
       },
       {
-        "source": "attack_019.png"
+        "source": "voiceofthewind/attack_019.png"
       },
       {
-        "source": "attack_020.png"
+        "source": "voiceofthewind/attack_020.png"
       },
       {
-        "source": "attack_021.png"
+        "source": "voiceofthewind/breathing_000.png"
       },
       {
-        "source": "attack_022.png"
+        "source": "voiceofthewind/breathing_001.png"
       },
       {
-        "source": "attack_023.png"
+        "source": "voiceofthewind/breathing_002.png"
       },
       {
-        "source": "breathing_000.png"
+        "source": "voiceofthewind/breathing_003.png"
       },
       {
-        "source": "breathing_001.png"
+        "source": "voiceofthewind/breathing_004.png"
       },
       {
-        "source": "breathing_002.png"
+        "source": "voiceofthewind/breathing_005.png"
       },
       {
-        "source": "breathing_003.png"
+        "source": "voiceofthewind/breathing_006.png"
       },
       {
-        "source": "breathing_004.png"
+        "source": "voiceofthewind/breathing_007.png"
       },
       {
-        "source": "breathing_005.png"
+        "source": "voiceofthewind/breathing_008.png"
       },
       {
-        "source": "breathing_006.png"
+        "source": "voiceofthewind/breathing_009.png"
       },
       {
-        "source": "breathing_007.png"
+        "source": "voiceofthewind/breathing_010.png"
       },
       {
-        "source": "breathing_008.png"
+        "source": "voiceofthewind/breathing_011.png"
       },
       {
-        "source": "breathing_009.png"
+        "source": "voiceofthewind/breathing_012.png"
       },
       {
-        "source": "breathing_010.png"
+        "source": "voiceofthewind/breathing_013.png"
       },
       {
-        "source": "breathing_011.png"
+        "source": "voiceofthewind/death_000.png"
       },
       {
-        "source": "breathing_012.png"
+        "source": "voiceofthewind/death_001.png"
       },
       {
-        "source": "breathing_013.png"
+        "source": "voiceofthewind/death_002.png"
       },
       {
-        "source": "death_000.png"
+        "source": "voiceofthewind/death_003.png"
       },
       {
-        "source": "death_001.png"
+        "source": "voiceofthewind/death_004.png"
       },
       {
-        "source": "death_002.png"
+        "source": "voiceofthewind/death_005.png"
       },
       {
-        "source": "death_003.png"
+        "source": "voiceofthewind/death_006.png"
       },
       {
-        "source": "death_004.png"
+        "source": "voiceofthewind/death_007.png"
       },
       {
-        "source": "death_005.png"
+        "source": "voiceofthewind/death_008.png"
       },
       {
-        "source": "death_006.png"
+        "source": "voiceofthewind/death_009.png"
       },
       {
-        "source": "death_007.png"
+        "source": "voiceofthewind/death_010.png"
       },
       {
-        "source": "death_008.png"
+        "source": "voiceofthewind/death_011.png"
       },
       {
-        "source": "death_009.png"
+        "source": "voiceofthewind/death_012.png"
       },
       {
-        "source": "death_010.png"
+        "source": "voiceofthewind/death_013.png"
       },
       {
-        "source": "death_011.png"
+        "source": "voiceofthewind/death_014.png"
       },
       {
-        "source": "death_012.png"
+        "source": "voiceofthewind/death_015.png"
       },
       {
-        "source": "death_013.png"
+        "source": "voiceofthewind/death_016.png"
       },
       {
-        "source": "death_014.png"
+        "source": "voiceofthewind/death_017.png"
       },
       {
-        "source": "death_015.png"
+        "source": "voiceofthewind/death_018.png"
       },
       {
-        "source": "death_016.png"
+        "source": "voiceofthewind/hit_000.png"
       },
       {
-        "source": "death_017.png"
+        "source": "voiceofthewind/hit_001.png"
       },
       {
-        "source": "hit_000.png"
+        "source": "voiceofthewind/hit_002.png"
       },
       {
-        "source": "hit_001.png"
+        "source": "voiceofthewind/idle_000.png"
       },
       {
-        "source": "hit_002.png"
+        "source": "voiceofthewind/idle_001.png"
       },
       {
-        "source": "idle_000.png"
+        "source": "voiceofthewind/idle_002.png"
       },
       {
-        "source": "idle_001.png"
+        "source": "voiceofthewind/idle_003.png"
       },
       {
-        "source": "idle_002.png"
+        "source": "voiceofthewind/idle_004.png"
       },
       {
-        "source": "idle_003.png"
+        "source": "voiceofthewind/idle_005.png"
       },
       {
-        "source": "idle_004.png"
+        "source": "voiceofthewind/idle_006.png"
       },
       {
-        "source": "idle_005.png"
+        "source": "voiceofthewind/idle_007.png"
       },
       {
-        "source": "idle_006.png"
+        "source": "voiceofthewind/idle_008.png"
       },
       {
-        "source": "idle_007.png"
+        "source": "voiceofthewind/idle_009.png"
       },
       {
-        "source": "idle_008.png"
+        "source": "voiceofthewind/idle_010.png"
       },
       {
-        "source": "idle_009.png"
+        "source": "voiceofthewind/idle_011.png"
       },
       {
-        "source": "idle_010.png"
+        "source": "voiceofthewind/idle_012.png"
       },
       {
-        "source": "idle_011.png"
+        "source": "voiceofthewind/idle_013.png"
       },
       {
-        "source": "run_000.png"
+        "source": "voiceofthewind/idle_014.png"
       },
       {
-        "source": "run_001.png"
+        "source": "voiceofthewind/idle_015.png"
       },
       {
-        "source": "run_002.png"
+        "source": "voiceofthewind/run_000.png"
       },
       {
-        "source": "run_003.png"
+        "source": "voiceofthewind/run_001.png"
       },
       {
-        "source": "run_004.png"
+        "source": "voiceofthewind/run_002.png"
       },
       {
-        "source": "run_005.png"
+        "source": "voiceofthewind/run_003.png"
       },
       {
-        "source": "run_006.png"
+        "source": "voiceofthewind/run_004.png"
       },
       {
-        "source": "run_007.png"
+        "source": "voiceofthewind/run_005.png"
+      },
+      {
+        "source": "voiceofthewind/run_006.png"
+      },
+      {
+        "source": "voiceofthewind/run_007.png"
       }
     ],
     "animations": {
@@ -246,219 +252,192 @@
           "East": {
             "keyframes": [
               {
-                "frame": "attack_000.png",
+                "frame": "voiceofthewind/attack_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_001.png",
+                "frame": "voiceofthewind/attack_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_002.png",
+                "frame": "voiceofthewind/attack_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_003.png",
+                "frame": "voiceofthewind/attack_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_004.png",
+                "frame": "voiceofthewind/attack_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_005.png",
+                "frame": "voiceofthewind/attack_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_006.png",
+                "frame": "voiceofthewind/attack_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_007.png",
+                "frame": "voiceofthewind/attack_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_008.png",
+                "frame": "voiceofthewind/attack_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_009.png",
+                "frame": "voiceofthewind/attack_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_010.png",
+                "frame": "voiceofthewind/attack_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_011.png",
+                "frame": "voiceofthewind/attack_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_012.png",
+                "frame": "voiceofthewind/attack_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_013.png",
+                "frame": "voiceofthewind/attack_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_014.png",
+                "frame": "voiceofthewind/attack_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_015.png",
+                "frame": "voiceofthewind/attack_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_016.png",
+                "frame": "voiceofthewind/attack_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_017.png",
+                "frame": "voiceofthewind/attack_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_018.png",
+                "frame": "voiceofthewind/attack_018.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_019.png",
+                "frame": "voiceofthewind/attack_019.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "attack_020.png",
+                "frame": "voiceofthewind/attack_020.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
-                ]
-              },
-              {
-                "frame": "attack_021.png",
-                "hitboxes": {},
-                "duration_millis": 75,
-                "offset": [
-                  0,
-                  -40
-                ]
-              },
-              {
-                "frame": "attack_022.png",
-                "hitboxes": {},
-                "duration_millis": 75,
-                "offset": [
-                  0,
-                  -40
-                ]
-              },
-              {
-                "frame": "attack_023.png",
-                "hitboxes": {},
-                "duration_millis": 75,
-                "offset": [
-                  0,
-                  -40
+                  -30
                 ]
               }
             ]
@@ -474,129 +453,129 @@
           "East": {
             "keyframes": [
               {
-                "frame": "breathing_000.png",
+                "frame": "voiceofthewind/breathing_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_001.png",
+                "frame": "voiceofthewind/breathing_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_002.png",
+                "frame": "voiceofthewind/breathing_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_003.png",
+                "frame": "voiceofthewind/breathing_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_004.png",
+                "frame": "voiceofthewind/breathing_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_005.png",
+                "frame": "voiceofthewind/breathing_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_006.png",
+                "frame": "voiceofthewind/breathing_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_007.png",
+                "frame": "voiceofthewind/breathing_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_008.png",
+                "frame": "voiceofthewind/breathing_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_009.png",
+                "frame": "voiceofthewind/breathing_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_010.png",
+                "frame": "voiceofthewind/breathing_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_011.png",
+                "frame": "voiceofthewind/breathing_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_012.png",
+                "frame": "voiceofthewind/breathing_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "breathing_013.png",
+                "frame": "voiceofthewind/breathing_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               }
             ]
@@ -612,165 +591,174 @@
           "East": {
             "keyframes": [
               {
-                "frame": "death_000.png",
+                "frame": "voiceofthewind/death_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_001.png",
+                "frame": "voiceofthewind/death_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_002.png",
+                "frame": "voiceofthewind/death_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_003.png",
+                "frame": "voiceofthewind/death_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_004.png",
+                "frame": "voiceofthewind/death_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_005.png",
+                "frame": "voiceofthewind/death_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_006.png",
+                "frame": "voiceofthewind/death_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_007.png",
+                "frame": "voiceofthewind/death_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_008.png",
+                "frame": "voiceofthewind/death_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_009.png",
+                "frame": "voiceofthewind/death_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_010.png",
+                "frame": "voiceofthewind/death_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_011.png",
+                "frame": "voiceofthewind/death_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_012.png",
+                "frame": "voiceofthewind/death_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_013.png",
+                "frame": "voiceofthewind/death_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_014.png",
+                "frame": "voiceofthewind/death_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_015.png",
+                "frame": "voiceofthewind/death_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_016.png",
+                "frame": "voiceofthewind/death_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "death_017.png",
+                "frame": "voiceofthewind/death_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
+                ]
+              },
+              {
+                "frame": "voiceofthewind/death_018.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -30
                 ]
               }
             ]
@@ -779,37 +767,37 @@
             "keyframes": []
           }
         },
-        "is_looping": false
+        "is_looping": true
       },
       "hit": {
         "sequences": {
           "East": {
             "keyframes": [
               {
-                "frame": "hit_000.png",
+                "frame": "voiceofthewind/hit_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "hit_001.png",
+                "frame": "voiceofthewind/hit_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "hit_002.png",
+                "frame": "voiceofthewind/hit_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               }
             ]
@@ -825,111 +813,147 @@
           "East": {
             "keyframes": [
               {
-                "frame": "idle_000.png",
+                "frame": "voiceofthewind/idle_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_001.png",
+                "frame": "voiceofthewind/idle_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_002.png",
+                "frame": "voiceofthewind/idle_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_003.png",
+                "frame": "voiceofthewind/idle_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_004.png",
+                "frame": "voiceofthewind/idle_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_005.png",
+                "frame": "voiceofthewind/idle_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_006.png",
+                "frame": "voiceofthewind/idle_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_007.png",
+                "frame": "voiceofthewind/idle_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_008.png",
+                "frame": "voiceofthewind/idle_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_009.png",
+                "frame": "voiceofthewind/idle_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_010.png",
+                "frame": "voiceofthewind/idle_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "idle_011.png",
+                "frame": "voiceofthewind/idle_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
+                ]
+              },
+              {
+                "frame": "voiceofthewind/idle_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": "voiceofthewind/idle_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": "voiceofthewind/idle_014.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -30
+                ]
+              },
+              {
+                "frame": "voiceofthewind/idle_015.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -30
                 ]
               }
             ]
@@ -945,75 +969,75 @@
           "East": {
             "keyframes": [
               {
-                "frame": "run_000.png",
+                "frame": "voiceofthewind/run_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_001.png",
+                "frame": "voiceofthewind/run_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_002.png",
+                "frame": "voiceofthewind/run_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_003.png",
+                "frame": "voiceofthewind/run_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_004.png",
+                "frame": "voiceofthewind/run_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_005.png",
+                "frame": "voiceofthewind/run_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_006.png",
+                "frame": "voiceofthewind/run_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               },
               {
-                "frame": "run_007.png",
+                "frame": "voiceofthewind/run_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -40
+                  -30
                 ]
               }
             ]

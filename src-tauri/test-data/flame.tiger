@@ -3,28 +3,28 @@
   "sheet": {
     "frames": [
       {
-        "source": "flame-hit-0.png"
+        "source": "flame/hit-0.png"
       },
       {
-        "source": "flame-hit-1.png"
+        "source": "flame/hit-1.png"
       },
       {
-        "source": "flame-hit-2.png"
+        "source": "flame/hit-2.png"
       },
       {
-        "source": "flame-idle-0.png"
+        "source": "flame/idle-0.png"
       },
       {
-        "source": "flame-idle-1.png"
+        "source": "flame/idle-1.png"
       },
       {
-        "source": "flame-idle-2.png"
+        "source": "flame/idle-2.png"
       },
       {
-        "source": "flame-idle-3.png"
+        "source": "flame/idle-3.png"
       },
       {
-        "source": "flame-idle-4.png"
+        "source": "flame/idle-4.png"
       }
     ],
     "animations": {
@@ -33,7 +33,7 @@
           "North": {
             "keyframes": [
               {
-                "frame": "flame-hit-0.png",
+                "frame": "flame/hit-0.png",
                 "hitboxes": {},
                 "duration_millis": 100,
                 "offset": [
@@ -42,7 +42,7 @@
                 ]
               },
               {
-                "frame": "flame-hit-1.png",
+                "frame": "flame/hit-1.png",
                 "hitboxes": {},
                 "duration_millis": 100,
                 "offset": [
@@ -51,7 +51,7 @@
                 ]
               },
               {
-                "frame": "flame-hit-2.png",
+                "frame": "flame/hit-2.png",
                 "hitboxes": {},
                 "duration_millis": 100,
                 "offset": [
@@ -69,7 +69,7 @@
           "North": {
             "keyframes": [
               {
-                "frame": "flame-idle-0.png",
+                "frame": "flame/idle-0.png",
                 "hitboxes": {
                   "hit": {
                     "geometry": {
@@ -93,7 +93,7 @@
                 ]
               },
               {
-                "frame": "flame-idle-1.png",
+                "frame": "flame/idle-1.png",
                 "hitboxes": {
                   "hit": {
                     "geometry": {
@@ -117,7 +117,7 @@
                 ]
               },
               {
-                "frame": "flame-idle-2.png",
+                "frame": "flame/idle-2.png",
                 "hitboxes": {
                   "hit": {
                     "geometry": {
@@ -141,7 +141,7 @@
                 ]
               },
               {
-                "frame": "flame-idle-3.png",
+                "frame": "flame/idle-3.png",
                 "hitboxes": {
                   "hit": {
                     "geometry": {
@@ -165,7 +165,7 @@
                 ]
               },
               {
-                "frame": "flame-idle-4.png",
+                "frame": "flame/idle-4.png",
                 "hitboxes": {
                   "hit": {
                     "geometry": {

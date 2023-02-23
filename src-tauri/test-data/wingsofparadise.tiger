@@ -3,247 +3,274 @@
   "sheet": {
     "frames": [
       {
-        "source": "attack_000.png"
+        "source": "wingsofparadise/attack_000.png"
       },
       {
-        "source": "attack_001.png"
+        "source": "wingsofparadise/attack_001.png"
       },
       {
-        "source": "attack_002.png"
+        "source": "wingsofparadise/attack_002.png"
       },
       {
-        "source": "attack_003.png"
+        "source": "wingsofparadise/attack_003.png"
       },
       {
-        "source": "attack_004.png"
+        "source": "wingsofparadise/attack_004.png"
       },
       {
-        "source": "attack_005.png"
+        "source": "wingsofparadise/attack_005.png"
       },
       {
-        "source": "attack_006.png"
+        "source": "wingsofparadise/attack_006.png"
       },
       {
-        "source": "attack_007.png"
+        "source": "wingsofparadise/attack_007.png"
       },
       {
-        "source": "attack_008.png"
+        "source": "wingsofparadise/attack_008.png"
       },
       {
-        "source": "attack_009.png"
+        "source": "wingsofparadise/attack_009.png"
       },
       {
-        "source": "attack_010.png"
+        "source": "wingsofparadise/attack_010.png"
       },
       {
-        "source": "attack_011.png"
+        "source": "wingsofparadise/attack_011.png"
       },
       {
-        "source": "attack_012.png"
+        "source": "wingsofparadise/attack_012.png"
       },
       {
-        "source": "attack_013.png"
+        "source": "wingsofparadise/attack_013.png"
       },
       {
-        "source": "attack_014.png"
+        "source": "wingsofparadise/attack_014.png"
       },
       {
-        "source": "attack_015.png"
+        "source": "wingsofparadise/attack_015.png"
       },
       {
-        "source": "attack_016.png"
+        "source": "wingsofparadise/attack_016.png"
       },
       {
-        "source": "attack_017.png"
+        "source": "wingsofparadise/attack_017.png"
       },
       {
-        "source": "attack_018.png"
+        "source": "wingsofparadise/attack_018.png"
       },
       {
-        "source": "attack_019.png"
+        "source": "wingsofparadise/attack_019.png"
       },
       {
-        "source": "attack_020.png"
+        "source": "wingsofparadise/attack_020.png"
       },
       {
-        "source": "breathing_000.png"
+        "source": "wingsofparadise/attack_021.png"
       },
       {
-        "source": "breathing_001.png"
+        "source": "wingsofparadise/attack_022.png"
       },
       {
-        "source": "breathing_002.png"
+        "source": "wingsofparadise/attack_023.png"
       },
       {
-        "source": "breathing_003.png"
+        "source": "wingsofparadise/attack_024.png"
       },
       {
-        "source": "breathing_004.png"
+        "source": "wingsofparadise/attack_025.png"
       },
       {
-        "source": "breathing_005.png"
+        "source": "wingsofparadise/attack_026.png"
       },
       {
-        "source": "breathing_006.png"
+        "source": "wingsofparadise/attack_027.png"
       },
       {
-        "source": "breathing_007.png"
+        "source": "wingsofparadise/attack_028.png"
       },
       {
-        "source": "breathing_008.png"
+        "source": "wingsofparadise/breathing_000.png"
       },
       {
-        "source": "breathing_009.png"
+        "source": "wingsofparadise/breathing_001.png"
       },
       {
-        "source": "breathing_010.png"
+        "source": "wingsofparadise/breathing_002.png"
       },
       {
-        "source": "breathing_011.png"
+        "source": "wingsofparadise/breathing_003.png"
       },
       {
-        "source": "breathing_012.png"
+        "source": "wingsofparadise/breathing_004.png"
       },
       {
-        "source": "breathing_013.png"
+        "source": "wingsofparadise/breathing_005.png"
       },
       {
-        "source": "death_000.png"
+        "source": "wingsofparadise/breathing_006.png"
       },
       {
-        "source": "death_001.png"
+        "source": "wingsofparadise/breathing_007.png"
       },
       {
-        "source": "death_002.png"
+        "source": "wingsofparadise/breathing_008.png"
       },
       {
-        "source": "death_003.png"
+        "source": "wingsofparadise/breathing_009.png"
       },
       {
-        "source": "death_004.png"
+        "source": "wingsofparadise/breathing_010.png"
       },
       {
-        "source": "death_005.png"
+        "source": "wingsofparadise/breathing_011.png"
       },
       {
-        "source": "death_006.png"
+        "source": "wingsofparadise/breathing_012.png"
       },
       {
-        "source": "death_007.png"
+        "source": "wingsofparadise/breathing_013.png"
       },
       {
-        "source": "death_008.png"
+        "source": "wingsofparadise/death_000.png"
       },
       {
-        "source": "death_009.png"
+        "source": "wingsofparadise/death_001.png"
       },
       {
-        "source": "death_010.png"
+        "source": "wingsofparadise/death_002.png"
       },
       {
-        "source": "death_011.png"
+        "source": "wingsofparadise/death_003.png"
       },
       {
-        "source": "death_012.png"
+        "source": "wingsofparadise/death_004.png"
       },
       {
-        "source": "death_013.png"
+        "source": "wingsofparadise/death_005.png"
       },
       {
-        "source": "death_014.png"
+        "source": "wingsofparadise/death_006.png"
       },
       {
-        "source": "death_015.png"
+        "source": "wingsofparadise/death_007.png"
       },
       {
-        "source": "death_016.png"
+        "source": "wingsofparadise/death_008.png"
       },
       {
-        "source": "death_017.png"
+        "source": "wingsofparadise/death_009.png"
       },
       {
-        "source": "death_018.png"
+        "source": "wingsofparadise/death_010.png"
       },
       {
-        "source": "hit_000.png"
+        "source": "wingsofparadise/death_011.png"
       },
       {
-        "source": "hit_001.png"
+        "source": "wingsofparadise/death_012.png"
       },
       {
-        "source": "hit_002.png"
+        "source": "wingsofparadise/death_013.png"
       },
       {
-        "source": "idle_000.png"
+        "source": "wingsofparadise/death_014.png"
       },
       {
-        "source": "idle_001.png"
+        "source": "wingsofparadise/death_015.png"
       },
       {
-        "source": "idle_002.png"
+        "source": "wingsofparadise/death_016.png"
       },
       {
-        "source": "idle_003.png"
+        "source": "wingsofparadise/death_017.png"
       },
       {
-        "source": "idle_004.png"
+        "source": "wingsofparadise/death_018.png"
       },
       {
-        "source": "idle_005.png"
+        "source": "wingsofparadise/death_019.png"
       },
       {
-        "source": "idle_006.png"
+        "source": "wingsofparadise/death_020.png"
       },
       {
-        "source": "idle_007.png"
+        "source": "wingsofparadise/death_021.png"
       },
       {
-        "source": "idle_008.png"
+        "source": "wingsofparadise/hit_000.png"
       },
       {
-        "source": "idle_009.png"
+        "source": "wingsofparadise/hit_001.png"
       },
       {
-        "source": "idle_010.png"
+        "source": "wingsofparadise/hit_002.png"
       },
       {
-        "source": "idle_011.png"
+        "source": "wingsofparadise/idle_000.png"
       },
       {
-        "source": "idle_012.png"
+        "source": "wingsofparadise/idle_001.png"
       },
       {
-        "source": "idle_013.png"
+        "source": "wingsofparadise/idle_002.png"
       },
       {
-        "source": "idle_014.png"
+        "source": "wingsofparadise/idle_003.png"
       },
       {
-        "source": "idle_015.png"
+        "source": "wingsofparadise/idle_004.png"
       },
       {
-        "source": "run_000.png"
+        "source": "wingsofparadise/idle_005.png"
       },
       {
-        "source": "run_001.png"
+        "source": "wingsofparadise/idle_006.png"
       },
       {
-        "source": "run_002.png"
+        "source": "wingsofparadise/idle_007.png"
       },
       {
-        "source": "run_003.png"
+        "source": "wingsofparadise/idle_008.png"
       },
       {
-        "source": "run_004.png"
+        "source": "wingsofparadise/idle_009.png"
       },
       {
-        "source": "run_005.png"
+        "source": "wingsofparadise/idle_010.png"
       },
       {
-        "source": "run_006.png"
+        "source": "wingsofparadise/idle_011.png"
       },
       {
-        "source": "run_007.png"
+        "source": "wingsofparadise/idle_012.png"
+      },
+      {
+        "source": "wingsofparadise/idle_013.png"
+      },
+      {
+        "source": "wingsofparadise/run_000.png"
+      },
+      {
+        "source": "wingsofparadise/run_001.png"
+      },
+      {
+        "source": "wingsofparadise/run_002.png"
+      },
+      {
+        "source": "wingsofparadise/run_003.png"
+      },
+      {
+        "source": "wingsofparadise/run_004.png"
+      },
+      {
+        "source": "wingsofparadise/run_005.png"
+      },
+      {
+        "source": "wingsofparadise/run_006.png"
+      },
+      {
+        "source": "wingsofparadise/run_007.png"
       }
     ],
     "animations": {
@@ -252,192 +279,264 @@
           "East": {
             "keyframes": [
               {
-                "frame": "attack_000.png",
+                "frame": "wingsofparadise/attack_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_001.png",
+                "frame": "wingsofparadise/attack_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_002.png",
+                "frame": "wingsofparadise/attack_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_003.png",
+                "frame": "wingsofparadise/attack_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_004.png",
+                "frame": "wingsofparadise/attack_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_005.png",
+                "frame": "wingsofparadise/attack_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_006.png",
+                "frame": "wingsofparadise/attack_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_007.png",
+                "frame": "wingsofparadise/attack_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_008.png",
+                "frame": "wingsofparadise/attack_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_009.png",
+                "frame": "wingsofparadise/attack_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_010.png",
+                "frame": "wingsofparadise/attack_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_011.png",
+                "frame": "wingsofparadise/attack_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_012.png",
+                "frame": "wingsofparadise/attack_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_013.png",
+                "frame": "wingsofparadise/attack_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_014.png",
+                "frame": "wingsofparadise/attack_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_015.png",
+                "frame": "wingsofparadise/attack_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_016.png",
+                "frame": "wingsofparadise/attack_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_017.png",
+                "frame": "wingsofparadise/attack_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_018.png",
+                "frame": "wingsofparadise/attack_018.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_019.png",
+                "frame": "wingsofparadise/attack_019.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "attack_020.png",
+                "frame": "wingsofparadise/attack_020.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_021.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_022.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_023.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_024.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_025.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_026.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_027.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/attack_028.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
                 ]
               }
             ]
@@ -453,134 +552,140 @@
           "East": {
             "keyframes": [
               {
-                "frame": "breathing_000.png",
+                "frame": "wingsofparadise/breathing_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_001.png",
+                "frame": "wingsofparadise/breathing_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_002.png",
+                "frame": "wingsofparadise/breathing_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_003.png",
+                "frame": "wingsofparadise/breathing_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_004.png",
+                "frame": "wingsofparadise/breathing_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_005.png",
+                "frame": "wingsofparadise/breathing_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_006.png",
+                "frame": "wingsofparadise/breathing_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_007.png",
+                "frame": "wingsofparadise/breathing_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_008.png",
+                "frame": "wingsofparadise/breathing_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_009.png",
+                "frame": "wingsofparadise/breathing_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_010.png",
+                "frame": "wingsofparadise/breathing_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_011.png",
+                "frame": "wingsofparadise/breathing_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_012.png",
+                "frame": "wingsofparadise/breathing_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "breathing_013.png",
+                "frame": "wingsofparadise/breathing_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               }
             ]
           },
+          "North": {
+            "keyframes": []
+          },
           "West": {
+            "keyframes": []
+          },
+          "South": {
             "keyframes": []
           }
         },
@@ -591,218 +696,257 @@
           "East": {
             "keyframes": [
               {
-                "frame": "death_000.png",
+                "frame": "wingsofparadise/death_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_001.png",
+                "frame": "wingsofparadise/death_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_002.png",
+                "frame": "wingsofparadise/death_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_003.png",
+                "frame": "wingsofparadise/death_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_004.png",
+                "frame": "wingsofparadise/death_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_005.png",
+                "frame": "wingsofparadise/death_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_006.png",
+                "frame": "wingsofparadise/death_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_007.png",
+                "frame": "wingsofparadise/death_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_008.png",
+                "frame": "wingsofparadise/death_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_009.png",
+                "frame": "wingsofparadise/death_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_010.png",
+                "frame": "wingsofparadise/death_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_011.png",
+                "frame": "wingsofparadise/death_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_012.png",
+                "frame": "wingsofparadise/death_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_013.png",
+                "frame": "wingsofparadise/death_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_014.png",
+                "frame": "wingsofparadise/death_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_015.png",
+                "frame": "wingsofparadise/death_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_016.png",
+                "frame": "wingsofparadise/death_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_017.png",
+                "frame": "wingsofparadise/death_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "death_018.png",
+                "frame": "wingsofparadise/death_018.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/death_019.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/death_020.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
+                ]
+              },
+              {
+                "frame": "wingsofparadise/death_021.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -35
                 ]
               }
             ]
           },
+          "North": {
+            "keyframes": []
+          },
           "West": {
+            "keyframes": []
+          },
+          "South": {
             "keyframes": []
           }
         },
-        "is_looping": true
+        "is_looping": false
       },
       "hit": {
         "sequences": {
           "East": {
             "keyframes": [
               {
-                "frame": "hit_000.png",
+                "frame": "wingsofparadise/hit_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "hit_001.png",
+                "frame": "wingsofparadise/hit_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "hit_002.png",
+                "frame": "wingsofparadise/hit_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               }
             ]
           },
+          "North": {
+            "keyframes": []
+          },
           "West": {
+            "keyframes": []
+          },
+          "South": {
             "keyframes": []
           }
         },
@@ -813,147 +957,129 @@
           "East": {
             "keyframes": [
               {
-                "frame": "idle_000.png",
+                "frame": "wingsofparadise/idle_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_001.png",
+                "frame": "wingsofparadise/idle_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_002.png",
+                "frame": "wingsofparadise/idle_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_003.png",
+                "frame": "wingsofparadise/idle_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_004.png",
+                "frame": "wingsofparadise/idle_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_005.png",
+                "frame": "wingsofparadise/idle_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_006.png",
+                "frame": "wingsofparadise/idle_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_007.png",
+                "frame": "wingsofparadise/idle_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_008.png",
+                "frame": "wingsofparadise/idle_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_009.png",
+                "frame": "wingsofparadise/idle_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_010.png",
+                "frame": "wingsofparadise/idle_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_011.png",
+                "frame": "wingsofparadise/idle_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_012.png",
+                "frame": "wingsofparadise/idle_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "idle_013.png",
+                "frame": "wingsofparadise/idle_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
-                ]
-              },
-              {
-                "frame": "idle_014.png",
-                "hitboxes": {},
-                "duration_millis": 75,
-                "offset": [
-                  0,
-                  -30
-                ]
-              },
-              {
-                "frame": "idle_015.png",
-                "hitboxes": {},
-                "duration_millis": 75,
-                "offset": [
-                  0,
-                  -30
+                  -35
                 ]
               }
             ]
@@ -969,80 +1095,86 @@
           "East": {
             "keyframes": [
               {
-                "frame": "run_000.png",
+                "frame": "wingsofparadise/run_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_001.png",
+                "frame": "wingsofparadise/run_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_002.png",
+                "frame": "wingsofparadise/run_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_003.png",
+                "frame": "wingsofparadise/run_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_004.png",
+                "frame": "wingsofparadise/run_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_005.png",
+                "frame": "wingsofparadise/run_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_006.png",
+                "frame": "wingsofparadise/run_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               },
               {
-                "frame": "run_007.png",
+                "frame": "wingsofparadise/run_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
                   0,
-                  -30
+                  -35
                 ]
               }
             ]
           },
+          "North": {
+            "keyframes": []
+          },
           "West": {
+            "keyframes": []
+          },
+          "South": {
             "keyframes": []
           }
         },

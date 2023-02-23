@@ -1170,14 +1170,14 @@ mod tests {
             );
         };
 
-        let hit_0 = PathBuf::from("test-data/flame-hit-0.png").resolve();
-        let hit_1 = PathBuf::from("test-data/flame-hit-1.png").resolve();
-        let hit_2 = PathBuf::from("test-data/flame-hit-2.png").resolve();
-        let idle_0 = PathBuf::from("test-data/flame-idle-0.png").resolve();
-        let idle_1 = PathBuf::from("test-data/flame-idle-1.png").resolve();
-        let idle_2 = PathBuf::from("test-data/flame-idle-2.png").resolve();
-        let idle_3 = PathBuf::from("test-data/flame-idle-3.png").resolve();
-        let idle_4 = PathBuf::from("test-data/flame-idle-4.png").resolve();
+        let hit_0 = PathBuf::from("test-data/flame/hit-0.png").resolve();
+        let hit_1 = PathBuf::from("test-data/flame/hit-1.png").resolve();
+        let hit_2 = PathBuf::from("test-data/flame/hit-2.png").resolve();
+        let idle_0 = PathBuf::from("test-data/flame/idle-0.png").resolve();
+        let idle_1 = PathBuf::from("test-data/flame/idle-1.png").resolve();
+        let idle_2 = PathBuf::from("test-data/flame/idle-2.png").resolve();
+        let idle_3 = PathBuf::from("test-data/flame/idle-3.png").resolve();
+        let idle_4 = PathBuf::from("test-data/flame/idle-4.png").resolve();
 
         app.set_frames_list_mode(dto::ListMode::Linear);
         app.select_frame(&hit_0, false, false);
