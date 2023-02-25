@@ -762,7 +762,7 @@ pub fn set_keyframe_offset_x(app: tauri::AppHandle, x: i32) -> Result<Patch, ()>
 
 #[tauri::command]
 pub fn set_keyframe_offset_y(app: tauri::AppHandle, y: i32) -> Result<Patch, ()> {
-    app.set_keyframe_offset_x(y)
+    app.set_keyframe_offset_y(y)
 }
 
 #[tauri::command]

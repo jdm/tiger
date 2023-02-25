@@ -24,6 +24,7 @@
 - [x] Registry keys are now written under `HKCU\Software\Tiger` instead of `HKCU\Software\com.agersant.tiger`
 - [x] Fixed a bug where keyboard navigation did not respect search filters for frames and animations
 - [x] Fixed a bug where units were missing from keyframe details panel
+- [x] Fixed a bug where Y offset field in keyframe details was manipulating X offset
 
 ## Tiger 1.0
 
