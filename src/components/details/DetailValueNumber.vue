@@ -1,5 +1,5 @@
 <template>
-	<DetailValueString :values="values" @update="onUpdate" />
+	<DetailValueString :values="values" @update="onUpdate" :unit="unit" />
 </template>
 
 <script setup lang="ts">

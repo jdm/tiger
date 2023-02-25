@@ -23,6 +23,7 @@
 - [x] Application files are now stored under `%LocalAppData%/Tiger` instead of `%LocalAppData%/Permafrost/Tiger` (this directory can safely be deleted manually)
 - [x] Registry keys are now written under `HKCU\Software\Tiger` instead of `HKCU\Software\com.agersant.tiger`
 - [x] Fixed a bug where keyboard navigation did not respect search filters for frames and animations
+- [x] Fixed a bug where units were missing from keyframe details panel
 
 ## Tiger 1.0
 
