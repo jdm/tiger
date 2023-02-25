@@ -3,241 +3,478 @@
   "sheet": {
     "frames": [
       {
-        "source": "skywing/attack_000.png"
+        "source": "skywing/attack_left_000.png"
       },
       {
-        "source": "skywing/attack_001.png"
+        "source": "skywing/attack_left_001.png"
       },
       {
-        "source": "skywing/attack_002.png"
+        "source": "skywing/attack_left_002.png"
       },
       {
-        "source": "skywing/attack_003.png"
+        "source": "skywing/attack_left_003.png"
       },
       {
-        "source": "skywing/attack_004.png"
+        "source": "skywing/attack_left_004.png"
       },
       {
-        "source": "skywing/attack_005.png"
+        "source": "skywing/attack_left_005.png"
       },
       {
-        "source": "skywing/attack_006.png"
+        "source": "skywing/attack_left_006.png"
       },
       {
-        "source": "skywing/attack_007.png"
+        "source": "skywing/attack_left_007.png"
       },
       {
-        "source": "skywing/attack_008.png"
+        "source": "skywing/attack_left_008.png"
       },
       {
-        "source": "skywing/attack_009.png"
+        "source": "skywing/attack_left_009.png"
       },
       {
-        "source": "skywing/attack_010.png"
+        "source": "skywing/attack_left_010.png"
       },
       {
-        "source": "skywing/attack_011.png"
+        "source": "skywing/attack_left_011.png"
       },
       {
-        "source": "skywing/attack_012.png"
+        "source": "skywing/attack_left_012.png"
       },
       {
-        "source": "skywing/attack_013.png"
+        "source": "skywing/attack_left_013.png"
       },
       {
-        "source": "skywing/attack_014.png"
+        "source": "skywing/attack_left_014.png"
       },
       {
-        "source": "skywing/attack_015.png"
+        "source": "skywing/attack_left_015.png"
       },
       {
-        "source": "skywing/attack_016.png"
+        "source": "skywing/attack_left_016.png"
       },
       {
-        "source": "skywing/attack_017.png"
+        "source": "skywing/attack_left_017.png"
       },
       {
-        "source": "skywing/attack_018.png"
+        "source": "skywing/attack_left_018.png"
       },
       {
-        "source": "skywing/attack_019.png"
+        "source": "skywing/attack_left_019.png"
       },
       {
-        "source": "skywing/attack_020.png"
+        "source": "skywing/attack_left_020.png"
       },
       {
-        "source": "skywing/attack_021.png"
+        "source": "skywing/attack_left_021.png"
       },
       {
-        "source": "skywing/attack_022.png"
+        "source": "skywing/attack_left_022.png"
       },
       {
-        "source": "skywing/attack_023.png"
+        "source": "skywing/attack_left_023.png"
       },
       {
-        "source": "skywing/breathing_000.png"
+        "source": "skywing/attack_right_000.png"
       },
       {
-        "source": "skywing/breathing_001.png"
+        "source": "skywing/attack_right_001.png"
       },
       {
-        "source": "skywing/breathing_002.png"
+        "source": "skywing/attack_right_002.png"
       },
       {
-        "source": "skywing/breathing_003.png"
+        "source": "skywing/attack_right_003.png"
       },
       {
-        "source": "skywing/breathing_004.png"
+        "source": "skywing/attack_right_004.png"
       },
       {
-        "source": "skywing/breathing_005.png"
+        "source": "skywing/attack_right_005.png"
       },
       {
-        "source": "skywing/breathing_006.png"
+        "source": "skywing/attack_right_006.png"
       },
       {
-        "source": "skywing/breathing_007.png"
+        "source": "skywing/attack_right_007.png"
       },
       {
-        "source": "skywing/breathing_008.png"
+        "source": "skywing/attack_right_008.png"
       },
       {
-        "source": "skywing/breathing_009.png"
+        "source": "skywing/attack_right_009.png"
       },
       {
-        "source": "skywing/breathing_010.png"
+        "source": "skywing/attack_right_010.png"
       },
       {
-        "source": "skywing/breathing_011.png"
+        "source": "skywing/attack_right_011.png"
       },
       {
-        "source": "skywing/breathing_012.png"
+        "source": "skywing/attack_right_012.png"
       },
       {
-        "source": "skywing/breathing_013.png"
+        "source": "skywing/attack_right_013.png"
       },
       {
-        "source": "skywing/death_000.png"
+        "source": "skywing/attack_right_014.png"
       },
       {
-        "source": "skywing/death_001.png"
+        "source": "skywing/attack_right_015.png"
       },
       {
-        "source": "skywing/death_002.png"
+        "source": "skywing/attack_right_016.png"
       },
       {
-        "source": "skywing/death_003.png"
+        "source": "skywing/attack_right_017.png"
       },
       {
-        "source": "skywing/death_004.png"
+        "source": "skywing/attack_right_018.png"
       },
       {
-        "source": "skywing/death_005.png"
+        "source": "skywing/attack_right_019.png"
       },
       {
-        "source": "skywing/death_006.png"
+        "source": "skywing/attack_right_020.png"
       },
       {
-        "source": "skywing/death_007.png"
+        "source": "skywing/attack_right_021.png"
       },
       {
-        "source": "skywing/death_008.png"
+        "source": "skywing/attack_right_022.png"
       },
       {
-        "source": "skywing/death_009.png"
+        "source": "skywing/attack_right_023.png"
       },
       {
-        "source": "skywing/death_010.png"
+        "source": "skywing/breathing_left_000.png"
       },
       {
-        "source": "skywing/death_011.png"
+        "source": "skywing/breathing_left_001.png"
       },
       {
-        "source": "skywing/death_012.png"
+        "source": "skywing/breathing_left_002.png"
       },
       {
-        "source": "skywing/death_013.png"
+        "source": "skywing/breathing_left_003.png"
       },
       {
-        "source": "skywing/death_014.png"
+        "source": "skywing/breathing_left_004.png"
       },
       {
-        "source": "skywing/death_015.png"
+        "source": "skywing/breathing_left_005.png"
       },
       {
-        "source": "skywing/death_016.png"
+        "source": "skywing/breathing_left_006.png"
       },
       {
-        "source": "skywing/death_017.png"
+        "source": "skywing/breathing_left_007.png"
       },
       {
-        "source": "skywing/hit_000.png"
+        "source": "skywing/breathing_left_008.png"
       },
       {
-        "source": "skywing/hit_001.png"
+        "source": "skywing/breathing_left_009.png"
       },
       {
-        "source": "skywing/hit_002.png"
+        "source": "skywing/breathing_left_010.png"
       },
       {
-        "source": "skywing/idle_000.png"
+        "source": "skywing/breathing_left_011.png"
       },
       {
-        "source": "skywing/idle_001.png"
+        "source": "skywing/breathing_left_012.png"
       },
       {
-        "source": "skywing/idle_002.png"
+        "source": "skywing/breathing_left_013.png"
       },
       {
-        "source": "skywing/idle_003.png"
+        "source": "skywing/breathing_right_000.png"
       },
       {
-        "source": "skywing/idle_004.png"
+        "source": "skywing/breathing_right_001.png"
       },
       {
-        "source": "skywing/idle_005.png"
+        "source": "skywing/breathing_right_002.png"
       },
       {
-        "source": "skywing/idle_006.png"
+        "source": "skywing/breathing_right_003.png"
       },
       {
-        "source": "skywing/idle_007.png"
+        "source": "skywing/breathing_right_004.png"
       },
       {
-        "source": "skywing/idle_008.png"
+        "source": "skywing/breathing_right_005.png"
       },
       {
-        "source": "skywing/idle_009.png"
+        "source": "skywing/breathing_right_006.png"
       },
       {
-        "source": "skywing/idle_010.png"
+        "source": "skywing/breathing_right_007.png"
       },
       {
-        "source": "skywing/idle_011.png"
+        "source": "skywing/breathing_right_008.png"
       },
       {
-        "source": "skywing/run_000.png"
+        "source": "skywing/breathing_right_009.png"
       },
       {
-        "source": "skywing/run_001.png"
+        "source": "skywing/breathing_right_010.png"
       },
       {
-        "source": "skywing/run_002.png"
+        "source": "skywing/breathing_right_011.png"
       },
       {
-        "source": "skywing/run_003.png"
+        "source": "skywing/breathing_right_012.png"
       },
       {
-        "source": "skywing/run_004.png"
+        "source": "skywing/breathing_right_013.png"
       },
       {
-        "source": "skywing/run_005.png"
+        "source": "skywing/death_left_000.png"
       },
       {
-        "source": "skywing/run_006.png"
+        "source": "skywing/death_left_001.png"
       },
       {
-        "source": "skywing/run_007.png"
+        "source": "skywing/death_left_002.png"
+      },
+      {
+        "source": "skywing/death_left_003.png"
+      },
+      {
+        "source": "skywing/death_left_004.png"
+      },
+      {
+        "source": "skywing/death_left_005.png"
+      },
+      {
+        "source": "skywing/death_left_006.png"
+      },
+      {
+        "source": "skywing/death_left_007.png"
+      },
+      {
+        "source": "skywing/death_left_008.png"
+      },
+      {
+        "source": "skywing/death_left_009.png"
+      },
+      {
+        "source": "skywing/death_left_010.png"
+      },
+      {
+        "source": "skywing/death_left_011.png"
+      },
+      {
+        "source": "skywing/death_left_012.png"
+      },
+      {
+        "source": "skywing/death_left_013.png"
+      },
+      {
+        "source": "skywing/death_left_014.png"
+      },
+      {
+        "source": "skywing/death_left_015.png"
+      },
+      {
+        "source": "skywing/death_left_016.png"
+      },
+      {
+        "source": "skywing/death_left_017.png"
+      },
+      {
+        "source": "skywing/death_right_000.png"
+      },
+      {
+        "source": "skywing/death_right_001.png"
+      },
+      {
+        "source": "skywing/death_right_002.png"
+      },
+      {
+        "source": "skywing/death_right_003.png"
+      },
+      {
+        "source": "skywing/death_right_004.png"
+      },
+      {
+        "source": "skywing/death_right_005.png"
+      },
+      {
+        "source": "skywing/death_right_006.png"
+      },
+      {
+        "source": "skywing/death_right_007.png"
+      },
+      {
+        "source": "skywing/death_right_008.png"
+      },
+      {
+        "source": "skywing/death_right_009.png"
+      },
+      {
+        "source": "skywing/death_right_010.png"
+      },
+      {
+        "source": "skywing/death_right_011.png"
+      },
+      {
+        "source": "skywing/death_right_012.png"
+      },
+      {
+        "source": "skywing/death_right_013.png"
+      },
+      {
+        "source": "skywing/death_right_014.png"
+      },
+      {
+        "source": "skywing/death_right_015.png"
+      },
+      {
+        "source": "skywing/death_right_016.png"
+      },
+      {
+        "source": "skywing/death_right_017.png"
+      },
+      {
+        "source": "skywing/hit_left_000.png"
+      },
+      {
+        "source": "skywing/hit_left_001.png"
+      },
+      {
+        "source": "skywing/hit_left_002.png"
+      },
+      {
+        "source": "skywing/hit_right_000.png"
+      },
+      {
+        "source": "skywing/hit_right_001.png"
+      },
+      {
+        "source": "skywing/hit_right_002.png"
+      },
+      {
+        "source": "skywing/idle_left_000.png"
+      },
+      {
+        "source": "skywing/idle_left_001.png"
+      },
+      {
+        "source": "skywing/idle_left_002.png"
+      },
+      {
+        "source": "skywing/idle_left_003.png"
+      },
+      {
+        "source": "skywing/idle_left_004.png"
+      },
+      {
+        "source": "skywing/idle_left_005.png"
+      },
+      {
+        "source": "skywing/idle_left_006.png"
+      },
+      {
+        "source": "skywing/idle_left_007.png"
+      },
+      {
+        "source": "skywing/idle_left_008.png"
+      },
+      {
+        "source": "skywing/idle_left_009.png"
+      },
+      {
+        "source": "skywing/idle_left_010.png"
+      },
+      {
+        "source": "skywing/idle_left_011.png"
+      },
+      {
+        "source": "skywing/idle_right_000.png"
+      },
+      {
+        "source": "skywing/idle_right_001.png"
+      },
+      {
+        "source": "skywing/idle_right_002.png"
+      },
+      {
+        "source": "skywing/idle_right_003.png"
+      },
+      {
+        "source": "skywing/idle_right_004.png"
+      },
+      {
+        "source": "skywing/idle_right_005.png"
+      },
+      {
+        "source": "skywing/idle_right_006.png"
+      },
+      {
+        "source": "skywing/idle_right_007.png"
+      },
+      {
+        "source": "skywing/idle_right_008.png"
+      },
+      {
+        "source": "skywing/idle_right_009.png"
+      },
+      {
+        "source": "skywing/idle_right_010.png"
+      },
+      {
+        "source": "skywing/idle_right_011.png"
+      },
+      {
+        "source": "skywing/run_left_000.png"
+      },
+      {
+        "source": "skywing/run_left_001.png"
+      },
+      {
+        "source": "skywing/run_left_002.png"
+      },
+      {
+        "source": "skywing/run_left_003.png"
+      },
+      {
+        "source": "skywing/run_left_004.png"
+      },
+      {
+        "source": "skywing/run_left_005.png"
+      },
+      {
+        "source": "skywing/run_left_006.png"
+      },
+      {
+        "source": "skywing/run_left_007.png"
+      },
+      {
+        "source": "skywing/run_right_000.png"
+      },
+      {
+        "source": "skywing/run_right_001.png"
+      },
+      {
+        "source": "skywing/run_right_002.png"
+      },
+      {
+        "source": "skywing/run_right_003.png"
+      },
+      {
+        "source": "skywing/run_right_004.png"
+      },
+      {
+        "source": "skywing/run_right_005.png"
+      },
+      {
+        "source": "skywing/run_right_006.png"
+      },
+      {
+        "source": "skywing/run_right_007.png"
       }
     ],
     "animations": {
@@ -246,7 +483,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "skywing/attack_000.png",
+                "frame": "skywing/attack_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -255,7 +492,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_001.png",
+                "frame": "skywing/attack_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -264,7 +501,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_002.png",
+                "frame": "skywing/attack_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -273,7 +510,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_003.png",
+                "frame": "skywing/attack_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -282,7 +519,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_004.png",
+                "frame": "skywing/attack_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -291,7 +528,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_005.png",
+                "frame": "skywing/attack_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -300,7 +537,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_006.png",
+                "frame": "skywing/attack_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -309,7 +546,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_007.png",
+                "frame": "skywing/attack_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -318,7 +555,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_008.png",
+                "frame": "skywing/attack_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -327,7 +564,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_009.png",
+                "frame": "skywing/attack_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -336,7 +573,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_010.png",
+                "frame": "skywing/attack_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -345,7 +582,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_011.png",
+                "frame": "skywing/attack_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -354,7 +591,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_012.png",
+                "frame": "skywing/attack_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -363,7 +600,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_013.png",
+                "frame": "skywing/attack_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -372,7 +609,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_014.png",
+                "frame": "skywing/attack_right_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -381,7 +618,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_015.png",
+                "frame": "skywing/attack_right_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -390,7 +627,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_016.png",
+                "frame": "skywing/attack_right_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -399,7 +636,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_017.png",
+                "frame": "skywing/attack_right_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -408,7 +645,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_018.png",
+                "frame": "skywing/attack_right_018.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -417,7 +654,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_019.png",
+                "frame": "skywing/attack_right_019.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -426,7 +663,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_020.png",
+                "frame": "skywing/attack_right_020.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -435,7 +672,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_021.png",
+                "frame": "skywing/attack_right_021.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -444,7 +681,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_022.png",
+                "frame": "skywing/attack_right_022.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -453,7 +690,7 @@
                 ]
               },
               {
-                "frame": "skywing/attack_023.png",
+                "frame": "skywing/attack_right_023.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -464,7 +701,224 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "skywing/attack_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_014.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_015.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_016.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_017.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_018.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_019.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_020.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_021.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_022.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/attack_left_023.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              }
+            ]
           }
         },
         "is_looping": false
@@ -474,7 +928,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "skywing/breathing_000.png",
+                "frame": "skywing/breathing_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -483,7 +937,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_001.png",
+                "frame": "skywing/breathing_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -492,7 +946,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_002.png",
+                "frame": "skywing/breathing_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -501,7 +955,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_003.png",
+                "frame": "skywing/breathing_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -510,7 +964,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_004.png",
+                "frame": "skywing/breathing_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -519,7 +973,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_005.png",
+                "frame": "skywing/breathing_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -528,7 +982,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_006.png",
+                "frame": "skywing/breathing_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -537,7 +991,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_007.png",
+                "frame": "skywing/breathing_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -546,7 +1000,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_008.png",
+                "frame": "skywing/breathing_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -555,7 +1009,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_009.png",
+                "frame": "skywing/breathing_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -564,7 +1018,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_010.png",
+                "frame": "skywing/breathing_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -573,7 +1027,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_011.png",
+                "frame": "skywing/breathing_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -582,7 +1036,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_012.png",
+                "frame": "skywing/breathing_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -591,7 +1045,7 @@
                 ]
               },
               {
-                "frame": "skywing/breathing_013.png",
+                "frame": "skywing/breathing_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -602,7 +1056,134 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "skywing/breathing_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/breathing_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              }
+            ]
           }
         },
         "is_looping": true
@@ -612,7 +1193,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "skywing/death_000.png",
+                "frame": "skywing/death_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -621,7 +1202,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_001.png",
+                "frame": "skywing/death_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -630,7 +1211,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_002.png",
+                "frame": "skywing/death_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -639,7 +1220,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_003.png",
+                "frame": "skywing/death_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -648,7 +1229,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_004.png",
+                "frame": "skywing/death_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -657,7 +1238,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_005.png",
+                "frame": "skywing/death_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -666,7 +1247,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_006.png",
+                "frame": "skywing/death_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -675,7 +1256,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_007.png",
+                "frame": "skywing/death_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -684,7 +1265,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_008.png",
+                "frame": "skywing/death_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -693,7 +1274,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_009.png",
+                "frame": "skywing/death_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -702,7 +1283,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_010.png",
+                "frame": "skywing/death_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -711,7 +1292,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_011.png",
+                "frame": "skywing/death_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -720,7 +1301,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_012.png",
+                "frame": "skywing/death_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -729,7 +1310,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_013.png",
+                "frame": "skywing/death_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -738,7 +1319,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_014.png",
+                "frame": "skywing/death_right_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -747,7 +1328,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_015.png",
+                "frame": "skywing/death_right_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -756,7 +1337,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_016.png",
+                "frame": "skywing/death_right_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -765,7 +1346,7 @@
                 ]
               },
               {
-                "frame": "skywing/death_017.png",
+                "frame": "skywing/death_right_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -776,7 +1357,170 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "skywing/death_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_014.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_015.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_016.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/death_left_017.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              }
+            ]
           }
         },
         "is_looping": false
@@ -786,7 +1530,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "skywing/hit_000.png",
+                "frame": "skywing/hit_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -795,7 +1539,7 @@
                 ]
               },
               {
-                "frame": "skywing/hit_001.png",
+                "frame": "skywing/hit_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -804,7 +1548,7 @@
                 ]
               },
               {
-                "frame": "skywing/hit_002.png",
+                "frame": "skywing/hit_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -815,7 +1559,35 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "skywing/hit_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/hit_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/hit_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              }
+            ]
           }
         },
         "is_looping": false
@@ -825,7 +1597,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "skywing/idle_000.png",
+                "frame": "skywing/idle_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -834,7 +1606,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_001.png",
+                "frame": "skywing/idle_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -843,7 +1615,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_002.png",
+                "frame": "skywing/idle_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -852,7 +1624,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_003.png",
+                "frame": "skywing/idle_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -861,7 +1633,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_004.png",
+                "frame": "skywing/idle_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -870,7 +1642,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_005.png",
+                "frame": "skywing/idle_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -879,7 +1651,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_006.png",
+                "frame": "skywing/idle_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -888,7 +1660,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_007.png",
+                "frame": "skywing/idle_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -897,7 +1669,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_008.png",
+                "frame": "skywing/idle_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -906,7 +1678,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_009.png",
+                "frame": "skywing/idle_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -915,7 +1687,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_010.png",
+                "frame": "skywing/idle_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -924,7 +1696,7 @@
                 ]
               },
               {
-                "frame": "skywing/idle_011.png",
+                "frame": "skywing/idle_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -935,7 +1707,116 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "skywing/idle_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/idle_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              }
+            ]
           }
         },
         "is_looping": true
@@ -945,7 +1826,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "skywing/run_000.png",
+                "frame": "skywing/run_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -954,7 +1835,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_001.png",
+                "frame": "skywing/run_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -963,7 +1844,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_002.png",
+                "frame": "skywing/run_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -972,7 +1853,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_003.png",
+                "frame": "skywing/run_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -981,7 +1862,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_004.png",
+                "frame": "skywing/run_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -990,7 +1871,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_005.png",
+                "frame": "skywing/run_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -999,7 +1880,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_006.png",
+                "frame": "skywing/run_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1008,7 +1889,7 @@
                 ]
               },
               {
-                "frame": "skywing/run_007.png",
+                "frame": "skywing/run_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1019,7 +1900,80 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "skywing/run_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              },
+              {
+                "frame": "skywing/run_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -40
+                ]
+              }
+            ]
           }
         },
         "is_looping": true

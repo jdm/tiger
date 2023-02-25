@@ -3,271 +3,538 @@
   "sheet": {
     "frames": [
       {
-        "source": "frostdrake/attack_000.png"
+        "source": "frostdrake/attack_left_000.png"
       },
       {
-        "source": "frostdrake/attack_001.png"
+        "source": "frostdrake/attack_left_001.png"
       },
       {
-        "source": "frostdrake/attack_002.png"
+        "source": "frostdrake/attack_left_002.png"
       },
       {
-        "source": "frostdrake/attack_003.png"
+        "source": "frostdrake/attack_left_003.png"
       },
       {
-        "source": "frostdrake/attack_004.png"
+        "source": "frostdrake/attack_left_004.png"
       },
       {
-        "source": "frostdrake/attack_005.png"
+        "source": "frostdrake/attack_left_005.png"
       },
       {
-        "source": "frostdrake/attack_006.png"
+        "source": "frostdrake/attack_left_006.png"
       },
       {
-        "source": "frostdrake/attack_007.png"
+        "source": "frostdrake/attack_left_007.png"
       },
       {
-        "source": "frostdrake/attack_008.png"
+        "source": "frostdrake/attack_left_008.png"
       },
       {
-        "source": "frostdrake/attack_009.png"
+        "source": "frostdrake/attack_left_009.png"
       },
       {
-        "source": "frostdrake/attack_010.png"
+        "source": "frostdrake/attack_left_010.png"
       },
       {
-        "source": "frostdrake/attack_011.png"
+        "source": "frostdrake/attack_left_011.png"
       },
       {
-        "source": "frostdrake/attack_012.png"
+        "source": "frostdrake/attack_left_012.png"
       },
       {
-        "source": "frostdrake/attack_013.png"
+        "source": "frostdrake/attack_left_013.png"
       },
       {
-        "source": "frostdrake/attack_014.png"
+        "source": "frostdrake/attack_left_014.png"
       },
       {
-        "source": "frostdrake/attack_015.png"
+        "source": "frostdrake/attack_left_015.png"
       },
       {
-        "source": "frostdrake/attack_016.png"
+        "source": "frostdrake/attack_left_016.png"
       },
       {
-        "source": "frostdrake/attack_017.png"
+        "source": "frostdrake/attack_left_017.png"
       },
       {
-        "source": "frostdrake/attack_018.png"
+        "source": "frostdrake/attack_left_018.png"
       },
       {
-        "source": "frostdrake/attack_019.png"
+        "source": "frostdrake/attack_left_019.png"
       },
       {
-        "source": "frostdrake/attack_020.png"
+        "source": "frostdrake/attack_left_020.png"
       },
       {
-        "source": "frostdrake/attack_021.png"
+        "source": "frostdrake/attack_left_021.png"
       },
       {
-        "source": "frostdrake/attack_022.png"
+        "source": "frostdrake/attack_left_022.png"
       },
       {
-        "source": "frostdrake/attack_023.png"
+        "source": "frostdrake/attack_left_023.png"
       },
       {
-        "source": "frostdrake/attack_024.png"
+        "source": "frostdrake/attack_left_024.png"
       },
       {
-        "source": "frostdrake/attack_025.png"
+        "source": "frostdrake/attack_left_025.png"
       },
       {
-        "source": "frostdrake/attack_026.png"
+        "source": "frostdrake/attack_left_026.png"
       },
       {
-        "source": "frostdrake/attack_027.png"
+        "source": "frostdrake/attack_left_027.png"
       },
       {
-        "source": "frostdrake/breathing_000.png"
+        "source": "frostdrake/attack_right_000.png"
       },
       {
-        "source": "frostdrake/breathing_001.png"
+        "source": "frostdrake/attack_right_001.png"
       },
       {
-        "source": "frostdrake/breathing_002.png"
+        "source": "frostdrake/attack_right_002.png"
       },
       {
-        "source": "frostdrake/breathing_003.png"
+        "source": "frostdrake/attack_right_003.png"
       },
       {
-        "source": "frostdrake/breathing_004.png"
+        "source": "frostdrake/attack_right_004.png"
       },
       {
-        "source": "frostdrake/breathing_005.png"
+        "source": "frostdrake/attack_right_005.png"
       },
       {
-        "source": "frostdrake/breathing_006.png"
+        "source": "frostdrake/attack_right_006.png"
       },
       {
-        "source": "frostdrake/breathing_007.png"
+        "source": "frostdrake/attack_right_007.png"
       },
       {
-        "source": "frostdrake/breathing_008.png"
+        "source": "frostdrake/attack_right_008.png"
       },
       {
-        "source": "frostdrake/breathing_009.png"
+        "source": "frostdrake/attack_right_009.png"
       },
       {
-        "source": "frostdrake/breathing_010.png"
+        "source": "frostdrake/attack_right_010.png"
       },
       {
-        "source": "frostdrake/breathing_011.png"
+        "source": "frostdrake/attack_right_011.png"
       },
       {
-        "source": "frostdrake/breathing_012.png"
+        "source": "frostdrake/attack_right_012.png"
       },
       {
-        "source": "frostdrake/breathing_013.png"
+        "source": "frostdrake/attack_right_013.png"
       },
       {
-        "source": "frostdrake/death_000.png"
+        "source": "frostdrake/attack_right_014.png"
       },
       {
-        "source": "frostdrake/death_001.png"
+        "source": "frostdrake/attack_right_015.png"
       },
       {
-        "source": "frostdrake/death_002.png"
+        "source": "frostdrake/attack_right_016.png"
       },
       {
-        "source": "frostdrake/death_003.png"
+        "source": "frostdrake/attack_right_017.png"
       },
       {
-        "source": "frostdrake/death_004.png"
+        "source": "frostdrake/attack_right_018.png"
       },
       {
-        "source": "frostdrake/death_005.png"
+        "source": "frostdrake/attack_right_019.png"
       },
       {
-        "source": "frostdrake/death_006.png"
+        "source": "frostdrake/attack_right_020.png"
       },
       {
-        "source": "frostdrake/death_007.png"
+        "source": "frostdrake/attack_right_021.png"
       },
       {
-        "source": "frostdrake/death_008.png"
+        "source": "frostdrake/attack_right_022.png"
       },
       {
-        "source": "frostdrake/death_009.png"
+        "source": "frostdrake/attack_right_023.png"
       },
       {
-        "source": "frostdrake/death_010.png"
+        "source": "frostdrake/attack_right_024.png"
       },
       {
-        "source": "frostdrake/death_011.png"
+        "source": "frostdrake/attack_right_025.png"
       },
       {
-        "source": "frostdrake/death_012.png"
+        "source": "frostdrake/attack_right_026.png"
       },
       {
-        "source": "frostdrake/death_013.png"
+        "source": "frostdrake/attack_right_027.png"
       },
       {
-        "source": "frostdrake/death_014.png"
+        "source": "frostdrake/breathing_left_000.png"
       },
       {
-        "source": "frostdrake/death_015.png"
+        "source": "frostdrake/breathing_left_001.png"
       },
       {
-        "source": "frostdrake/death_016.png"
+        "source": "frostdrake/breathing_left_002.png"
       },
       {
-        "source": "frostdrake/death_017.png"
+        "source": "frostdrake/breathing_left_003.png"
       },
       {
-        "source": "frostdrake/hit_000.png"
+        "source": "frostdrake/breathing_left_004.png"
       },
       {
-        "source": "frostdrake/hit_001.png"
+        "source": "frostdrake/breathing_left_005.png"
       },
       {
-        "source": "frostdrake/hit_002.png"
+        "source": "frostdrake/breathing_left_006.png"
       },
       {
-        "source": "frostdrake/idle_000.png"
+        "source": "frostdrake/breathing_left_007.png"
       },
       {
-        "source": "frostdrake/idle_001.png"
+        "source": "frostdrake/breathing_left_008.png"
       },
       {
-        "source": "frostdrake/idle_002.png"
+        "source": "frostdrake/breathing_left_009.png"
       },
       {
-        "source": "frostdrake/idle_003.png"
+        "source": "frostdrake/breathing_left_010.png"
       },
       {
-        "source": "frostdrake/idle_004.png"
+        "source": "frostdrake/breathing_left_011.png"
       },
       {
-        "source": "frostdrake/idle_005.png"
+        "source": "frostdrake/breathing_left_012.png"
       },
       {
-        "source": "frostdrake/idle_006.png"
+        "source": "frostdrake/breathing_left_013.png"
       },
       {
-        "source": "frostdrake/idle_007.png"
+        "source": "frostdrake/breathing_right_000.png"
       },
       {
-        "source": "frostdrake/idle_008.png"
+        "source": "frostdrake/breathing_right_001.png"
       },
       {
-        "source": "frostdrake/idle_009.png"
+        "source": "frostdrake/breathing_right_002.png"
       },
       {
-        "source": "frostdrake/idle_010.png"
+        "source": "frostdrake/breathing_right_003.png"
       },
       {
-        "source": "frostdrake/idle_011.png"
+        "source": "frostdrake/breathing_right_004.png"
       },
       {
-        "source": "frostdrake/idle_012.png"
+        "source": "frostdrake/breathing_right_005.png"
       },
       {
-        "source": "frostdrake/idle_013.png"
+        "source": "frostdrake/breathing_right_006.png"
       },
       {
-        "source": "frostdrake/idle_014.png"
+        "source": "frostdrake/breathing_right_007.png"
       },
       {
-        "source": "frostdrake/idle_015.png"
+        "source": "frostdrake/breathing_right_008.png"
       },
       {
-        "source": "frostdrake/idle_016.png"
+        "source": "frostdrake/breathing_right_009.png"
       },
       {
-        "source": "frostdrake/idle_017.png"
+        "source": "frostdrake/breathing_right_010.png"
       },
       {
-        "source": "frostdrake/run_000.png"
+        "source": "frostdrake/breathing_right_011.png"
       },
       {
-        "source": "frostdrake/run_001.png"
+        "source": "frostdrake/breathing_right_012.png"
       },
       {
-        "source": "frostdrake/run_002.png"
+        "source": "frostdrake/breathing_right_013.png"
       },
       {
-        "source": "frostdrake/run_003.png"
+        "source": "frostdrake/death_left_000.png"
       },
       {
-        "source": "frostdrake/run_004.png"
+        "source": "frostdrake/death_left_001.png"
       },
       {
-        "source": "frostdrake/run_005.png"
+        "source": "frostdrake/death_left_002.png"
       },
       {
-        "source": "frostdrake/run_006.png"
+        "source": "frostdrake/death_left_003.png"
       },
       {
-        "source": "frostdrake/run_007.png"
+        "source": "frostdrake/death_left_004.png"
+      },
+      {
+        "source": "frostdrake/death_left_005.png"
+      },
+      {
+        "source": "frostdrake/death_left_006.png"
+      },
+      {
+        "source": "frostdrake/death_left_007.png"
+      },
+      {
+        "source": "frostdrake/death_left_008.png"
+      },
+      {
+        "source": "frostdrake/death_left_009.png"
+      },
+      {
+        "source": "frostdrake/death_left_010.png"
+      },
+      {
+        "source": "frostdrake/death_left_011.png"
+      },
+      {
+        "source": "frostdrake/death_left_012.png"
+      },
+      {
+        "source": "frostdrake/death_left_013.png"
+      },
+      {
+        "source": "frostdrake/death_left_014.png"
+      },
+      {
+        "source": "frostdrake/death_left_015.png"
+      },
+      {
+        "source": "frostdrake/death_left_016.png"
+      },
+      {
+        "source": "frostdrake/death_left_017.png"
+      },
+      {
+        "source": "frostdrake/death_right_000.png"
+      },
+      {
+        "source": "frostdrake/death_right_001.png"
+      },
+      {
+        "source": "frostdrake/death_right_002.png"
+      },
+      {
+        "source": "frostdrake/death_right_003.png"
+      },
+      {
+        "source": "frostdrake/death_right_004.png"
+      },
+      {
+        "source": "frostdrake/death_right_005.png"
+      },
+      {
+        "source": "frostdrake/death_right_006.png"
+      },
+      {
+        "source": "frostdrake/death_right_007.png"
+      },
+      {
+        "source": "frostdrake/death_right_008.png"
+      },
+      {
+        "source": "frostdrake/death_right_009.png"
+      },
+      {
+        "source": "frostdrake/death_right_010.png"
+      },
+      {
+        "source": "frostdrake/death_right_011.png"
+      },
+      {
+        "source": "frostdrake/death_right_012.png"
+      },
+      {
+        "source": "frostdrake/death_right_013.png"
+      },
+      {
+        "source": "frostdrake/death_right_014.png"
+      },
+      {
+        "source": "frostdrake/death_right_015.png"
+      },
+      {
+        "source": "frostdrake/death_right_016.png"
+      },
+      {
+        "source": "frostdrake/death_right_017.png"
+      },
+      {
+        "source": "frostdrake/hit_left_000.png"
+      },
+      {
+        "source": "frostdrake/hit_left_001.png"
+      },
+      {
+        "source": "frostdrake/hit_left_002.png"
+      },
+      {
+        "source": "frostdrake/hit_right_000.png"
+      },
+      {
+        "source": "frostdrake/hit_right_001.png"
+      },
+      {
+        "source": "frostdrake/hit_right_002.png"
+      },
+      {
+        "source": "frostdrake/idle_left_000.png"
+      },
+      {
+        "source": "frostdrake/idle_left_001.png"
+      },
+      {
+        "source": "frostdrake/idle_left_002.png"
+      },
+      {
+        "source": "frostdrake/idle_left_003.png"
+      },
+      {
+        "source": "frostdrake/idle_left_004.png"
+      },
+      {
+        "source": "frostdrake/idle_left_005.png"
+      },
+      {
+        "source": "frostdrake/idle_left_006.png"
+      },
+      {
+        "source": "frostdrake/idle_left_007.png"
+      },
+      {
+        "source": "frostdrake/idle_left_008.png"
+      },
+      {
+        "source": "frostdrake/idle_left_009.png"
+      },
+      {
+        "source": "frostdrake/idle_left_010.png"
+      },
+      {
+        "source": "frostdrake/idle_left_011.png"
+      },
+      {
+        "source": "frostdrake/idle_left_012.png"
+      },
+      {
+        "source": "frostdrake/idle_left_013.png"
+      },
+      {
+        "source": "frostdrake/idle_left_014.png"
+      },
+      {
+        "source": "frostdrake/idle_left_015.png"
+      },
+      {
+        "source": "frostdrake/idle_left_016.png"
+      },
+      {
+        "source": "frostdrake/idle_left_017.png"
+      },
+      {
+        "source": "frostdrake/idle_right_000.png"
+      },
+      {
+        "source": "frostdrake/idle_right_001.png"
+      },
+      {
+        "source": "frostdrake/idle_right_002.png"
+      },
+      {
+        "source": "frostdrake/idle_right_003.png"
+      },
+      {
+        "source": "frostdrake/idle_right_004.png"
+      },
+      {
+        "source": "frostdrake/idle_right_005.png"
+      },
+      {
+        "source": "frostdrake/idle_right_006.png"
+      },
+      {
+        "source": "frostdrake/idle_right_007.png"
+      },
+      {
+        "source": "frostdrake/idle_right_008.png"
+      },
+      {
+        "source": "frostdrake/idle_right_009.png"
+      },
+      {
+        "source": "frostdrake/idle_right_010.png"
+      },
+      {
+        "source": "frostdrake/idle_right_011.png"
+      },
+      {
+        "source": "frostdrake/idle_right_012.png"
+      },
+      {
+        "source": "frostdrake/idle_right_013.png"
+      },
+      {
+        "source": "frostdrake/idle_right_014.png"
+      },
+      {
+        "source": "frostdrake/idle_right_015.png"
+      },
+      {
+        "source": "frostdrake/idle_right_016.png"
+      },
+      {
+        "source": "frostdrake/idle_right_017.png"
+      },
+      {
+        "source": "frostdrake/run_left_000.png"
+      },
+      {
+        "source": "frostdrake/run_left_001.png"
+      },
+      {
+        "source": "frostdrake/run_left_002.png"
+      },
+      {
+        "source": "frostdrake/run_left_003.png"
+      },
+      {
+        "source": "frostdrake/run_left_004.png"
+      },
+      {
+        "source": "frostdrake/run_left_005.png"
+      },
+      {
+        "source": "frostdrake/run_left_006.png"
+      },
+      {
+        "source": "frostdrake/run_left_007.png"
+      },
+      {
+        "source": "frostdrake/run_right_000.png"
+      },
+      {
+        "source": "frostdrake/run_right_001.png"
+      },
+      {
+        "source": "frostdrake/run_right_002.png"
+      },
+      {
+        "source": "frostdrake/run_right_003.png"
+      },
+      {
+        "source": "frostdrake/run_right_004.png"
+      },
+      {
+        "source": "frostdrake/run_right_005.png"
+      },
+      {
+        "source": "frostdrake/run_right_006.png"
+      },
+      {
+        "source": "frostdrake/run_right_007.png"
       }
     ],
     "animations": {
@@ -276,7 +543,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "frostdrake/attack_000.png",
+                "frame": "frostdrake/attack_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -285,7 +552,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_001.png",
+                "frame": "frostdrake/attack_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -294,7 +561,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_002.png",
+                "frame": "frostdrake/attack_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -303,7 +570,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_003.png",
+                "frame": "frostdrake/attack_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -312,7 +579,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_004.png",
+                "frame": "frostdrake/attack_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -321,7 +588,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_005.png",
+                "frame": "frostdrake/attack_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -330,7 +597,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_006.png",
+                "frame": "frostdrake/attack_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -339,7 +606,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_007.png",
+                "frame": "frostdrake/attack_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -348,7 +615,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_008.png",
+                "frame": "frostdrake/attack_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -357,7 +624,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_009.png",
+                "frame": "frostdrake/attack_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -366,7 +633,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_010.png",
+                "frame": "frostdrake/attack_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -375,7 +642,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_011.png",
+                "frame": "frostdrake/attack_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -384,7 +651,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_012.png",
+                "frame": "frostdrake/attack_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -393,7 +660,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_013.png",
+                "frame": "frostdrake/attack_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -402,7 +669,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_014.png",
+                "frame": "frostdrake/attack_right_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -411,7 +678,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_015.png",
+                "frame": "frostdrake/attack_right_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -420,7 +687,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_016.png",
+                "frame": "frostdrake/attack_right_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -429,7 +696,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_017.png",
+                "frame": "frostdrake/attack_right_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -438,7 +705,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_018.png",
+                "frame": "frostdrake/attack_right_018.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -447,7 +714,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_019.png",
+                "frame": "frostdrake/attack_right_019.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -456,7 +723,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_020.png",
+                "frame": "frostdrake/attack_right_020.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -465,7 +732,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_021.png",
+                "frame": "frostdrake/attack_right_021.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -474,7 +741,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_022.png",
+                "frame": "frostdrake/attack_right_022.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -483,7 +750,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_023.png",
+                "frame": "frostdrake/attack_right_023.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -492,7 +759,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_024.png",
+                "frame": "frostdrake/attack_right_024.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -501,7 +768,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_025.png",
+                "frame": "frostdrake/attack_right_025.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -510,7 +777,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_026.png",
+                "frame": "frostdrake/attack_right_026.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -519,7 +786,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/attack_027.png",
+                "frame": "frostdrake/attack_right_027.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -530,7 +797,260 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "frostdrake/attack_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_014.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_015.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_016.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_017.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_018.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_019.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_020.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_021.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_022.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_023.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_024.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_025.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_026.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/attack_left_027.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              }
+            ]
           }
         },
         "is_looping": false
@@ -540,7 +1060,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "frostdrake/breathing_000.png",
+                "frame": "frostdrake/breathing_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -549,7 +1069,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_001.png",
+                "frame": "frostdrake/breathing_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -558,7 +1078,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_002.png",
+                "frame": "frostdrake/breathing_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -567,7 +1087,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_003.png",
+                "frame": "frostdrake/breathing_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -576,7 +1096,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_004.png",
+                "frame": "frostdrake/breathing_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -585,7 +1105,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_005.png",
+                "frame": "frostdrake/breathing_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -594,7 +1114,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_006.png",
+                "frame": "frostdrake/breathing_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -603,7 +1123,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_007.png",
+                "frame": "frostdrake/breathing_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -612,7 +1132,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_008.png",
+                "frame": "frostdrake/breathing_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -621,7 +1141,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_009.png",
+                "frame": "frostdrake/breathing_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -630,7 +1150,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_010.png",
+                "frame": "frostdrake/breathing_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -639,7 +1159,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_011.png",
+                "frame": "frostdrake/breathing_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -648,7 +1168,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_012.png",
+                "frame": "frostdrake/breathing_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -657,7 +1177,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/breathing_013.png",
+                "frame": "frostdrake/breathing_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -668,7 +1188,134 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "frostdrake/breathing_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/breathing_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              }
+            ]
           }
         },
         "is_looping": true
@@ -678,7 +1325,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "frostdrake/death_000.png",
+                "frame": "frostdrake/death_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -687,7 +1334,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_001.png",
+                "frame": "frostdrake/death_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -696,7 +1343,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_002.png",
+                "frame": "frostdrake/death_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -705,7 +1352,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_003.png",
+                "frame": "frostdrake/death_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -714,7 +1361,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_004.png",
+                "frame": "frostdrake/death_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -723,7 +1370,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_005.png",
+                "frame": "frostdrake/death_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -732,7 +1379,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_006.png",
+                "frame": "frostdrake/death_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -741,7 +1388,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_007.png",
+                "frame": "frostdrake/death_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -750,7 +1397,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_008.png",
+                "frame": "frostdrake/death_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -759,7 +1406,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_009.png",
+                "frame": "frostdrake/death_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -768,7 +1415,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_010.png",
+                "frame": "frostdrake/death_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -777,7 +1424,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_011.png",
+                "frame": "frostdrake/death_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -786,7 +1433,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_012.png",
+                "frame": "frostdrake/death_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -795,7 +1442,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_013.png",
+                "frame": "frostdrake/death_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -804,7 +1451,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_014.png",
+                "frame": "frostdrake/death_right_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -813,7 +1460,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_015.png",
+                "frame": "frostdrake/death_right_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -822,7 +1469,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_016.png",
+                "frame": "frostdrake/death_right_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -831,7 +1478,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/death_017.png",
+                "frame": "frostdrake/death_right_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -842,7 +1489,170 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "frostdrake/death_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_014.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_015.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_016.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/death_left_017.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              }
+            ]
           }
         },
         "is_looping": false
@@ -852,7 +1662,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "frostdrake/hit_000.png",
+                "frame": "frostdrake/hit_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -861,7 +1671,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/hit_001.png",
+                "frame": "frostdrake/hit_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -870,7 +1680,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/hit_002.png",
+                "frame": "frostdrake/hit_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -881,7 +1691,35 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "frostdrake/hit_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/hit_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/hit_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              }
+            ]
           }
         },
         "is_looping": false
@@ -891,7 +1729,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "frostdrake/idle_000.png",
+                "frame": "frostdrake/idle_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -900,7 +1738,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_001.png",
+                "frame": "frostdrake/idle_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -909,7 +1747,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_002.png",
+                "frame": "frostdrake/idle_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -918,7 +1756,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_003.png",
+                "frame": "frostdrake/idle_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -927,7 +1765,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_004.png",
+                "frame": "frostdrake/idle_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -936,7 +1774,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_005.png",
+                "frame": "frostdrake/idle_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -945,7 +1783,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_006.png",
+                "frame": "frostdrake/idle_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -954,7 +1792,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_007.png",
+                "frame": "frostdrake/idle_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -963,7 +1801,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_008.png",
+                "frame": "frostdrake/idle_right_008.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -972,7 +1810,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_009.png",
+                "frame": "frostdrake/idle_right_009.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -981,7 +1819,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_010.png",
+                "frame": "frostdrake/idle_right_010.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -990,7 +1828,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_011.png",
+                "frame": "frostdrake/idle_right_011.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -999,7 +1837,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_012.png",
+                "frame": "frostdrake/idle_right_012.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1008,7 +1846,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_013.png",
+                "frame": "frostdrake/idle_right_013.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1017,7 +1855,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_014.png",
+                "frame": "frostdrake/idle_right_014.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1026,7 +1864,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_015.png",
+                "frame": "frostdrake/idle_right_015.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1035,7 +1873,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_016.png",
+                "frame": "frostdrake/idle_right_016.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1044,7 +1882,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/idle_017.png",
+                "frame": "frostdrake/idle_right_017.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1055,7 +1893,170 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "frostdrake/idle_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_008.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_009.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_010.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_011.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_012.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_013.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_014.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_015.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_016.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/idle_left_017.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              }
+            ]
           }
         },
         "is_looping": true
@@ -1065,7 +2066,7 @@
           "East": {
             "keyframes": [
               {
-                "frame": "frostdrake/run_000.png",
+                "frame": "frostdrake/run_right_000.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1074,7 +2075,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_001.png",
+                "frame": "frostdrake/run_right_001.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1083,7 +2084,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_002.png",
+                "frame": "frostdrake/run_right_002.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1092,7 +2093,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_003.png",
+                "frame": "frostdrake/run_right_003.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1101,7 +2102,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_004.png",
+                "frame": "frostdrake/run_right_004.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1110,7 +2111,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_005.png",
+                "frame": "frostdrake/run_right_005.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1119,7 +2120,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_006.png",
+                "frame": "frostdrake/run_right_006.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1128,7 +2129,7 @@
                 ]
               },
               {
-                "frame": "frostdrake/run_007.png",
+                "frame": "frostdrake/run_right_007.png",
                 "hitboxes": {},
                 "duration_millis": 75,
                 "offset": [
@@ -1139,7 +2140,80 @@
             ]
           },
           "West": {
-            "keyframes": []
+            "keyframes": [
+              {
+                "frame": "frostdrake/run_left_000.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_001.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_002.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_003.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_004.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_005.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_006.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              },
+              {
+                "frame": "frostdrake/run_left_007.png",
+                "hitboxes": {},
+                "duration_millis": 75,
+                "offset": [
+                  0,
+                  -20
+                ]
+              }
+            ]
           }
         },
         "is_looping": true
