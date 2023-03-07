@@ -16,7 +16,8 @@
 - [x] Add a a help menu with links to issues/discussions/documentation
 - [ ] Add About dialog with version number / license info
 - [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
-- [ ] Clarify what MIT license applies to in readme
+- [x] Logo in readme
+- [x] Clarify what MIT license applies to in readme
 - [x] `.tiger` file association
 - [x] Opening files from Windows Explorer re-uses existing instance
 - [x] Webview cache is now stored alongside application files under `%LocalAppData%/Tiger`
@@ -32,7 +33,6 @@
 - [ ] Re-evaluate https://github.com/1Password/typeshare to auto-generate typescript DTOs
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
-- [ ] Logo in readme
 - [ ] Gif/video in readme
 - [ ] Remove under-development warning from readme
 - [ ] Logo in documentation
