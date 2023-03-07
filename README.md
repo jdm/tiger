@@ -14,8 +14,6 @@ Tiger is a graphical tool to author game spritesheets and their metadata.
 - Source images hot-reload automatically when changed
 - Free and open-source with a permissive license
 
-⚠️ This project is under development.
-
 # Getting Started
 
 Tiger is only supported on Windows and has no dependencies. To install it:
