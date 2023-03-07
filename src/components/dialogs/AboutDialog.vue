@@ -1,6 +1,11 @@
 <template>
 	<FocusTrap @escape="closeAboutDialog">
 		<ModalDialog title="About Tiger" :icon="InformationCircleIcon">
+			<template #icon>
+				<div class="flex-shrink-0">
+					<img src="src/mascot.svg" class="w-[124px]" />
+				</div>
+			</template>
 			<template #body>
 				<div class="flex flex-col gap-4">
 					<div>

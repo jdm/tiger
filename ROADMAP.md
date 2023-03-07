@@ -14,8 +14,8 @@
   - [x] Show notification with changelog link after update
 - [x] Clean up visual jank during app startup
 - [x] Add a a help menu with links to issues/discussions/documentation
-- [ ] Add About dialog with version number / license info
-- [ ] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
+- [x] Add About dialog with version number / license info
+- [x] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
 - [x] Logo in readme
 - [x] Clarify what MIT license applies to in readme
 - [x] `.tiger` file association
