@@ -3,7 +3,7 @@
 		<ModalDialog title="About Tiger" :icon="InformationCircleIcon">
 			<template #icon>
 				<div class="flex-shrink-0">
-					<img src="src/mascot.svg" class="w-[124px]" />
+					<img src="/mascot.svg" class="w-[124px]" />
 				</div>
 			</template>
 			<template #body>

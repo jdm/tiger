@@ -2,7 +2,7 @@
 	<div class="flex h-full justify-center pt-40">
 		<div class="flex flex-col gap-8">
 			<div class="flex items-center justify-center py-6 bg-amber-400 rounded-md">
-				<img src="src/logo.svg" class="h-20" />
+				<img src="/logo.svg" class="h-20" />
 			</div>
 			<div class="flex items-stretch gap-8 text-plastic-200">
 				<Pane class="w-72 p-8">
