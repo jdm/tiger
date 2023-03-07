@@ -2,8 +2,7 @@
 	<WindowTitleBar>
 		<template #left>
 			<div class="h-full flex items-center">
-				<div class="pl-5 pr-3">🐯</div>
-				<MenuBar :entries="menuEntries" class="h-full" />
+				<MenuBar :entries="menuEntries" class="pl-4 h-full" />
 			</div>
 		</template>
 		<template #right>
