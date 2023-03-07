@@ -1,5 +1,32 @@
 # Changelog
 
+## Tiger 0.9.0
+
+- [x] Document keyboard shortcuts
+- [x] More template file examples in documentation
+- [x] Documentation about use of file paths in .tiger files
+- [x] Auto-updates
+  - [x] Show banner when new version is available
+  - [x] Can install new version
+  - [x] Generate `update-manifest.json` during release process
+  - [x] `tauri.conf.json` points to latest release's `update-manifest.json`
+  - [x] Offer to save modified files before applying update
+  - [x] Show notification with changelog link after update
+- [x] Clean up visual jank during app startup
+- [x] Add a a help menu with links to issues/discussions/documentation
+- [x] Add About dialog with version number / license info
+- [x] Add landing screen with links to new/open/recent/github/docs-home/keyboard-docs
+- [x] Add logo in readme
+- [x] Clarify what MIT license applies to in readme
+- [x] `.tiger` file association
+- [x] Opening files from Windows Explorer re-uses existing instance
+- [x] Webview cache is now stored alongside application files under `%LocalAppData%/Tiger`
+- [x] Application files are now stored under `%LocalAppData%/Tiger` instead of `%LocalAppData%/Permafrost/Tiger` (this directory can safely be deleted manually)
+- [x] Registry keys are now written under `HKCU\Software\Tiger` instead of `HKCU\Software\com.agersant.tiger`
+- [x] Fixed a bug where keyboard navigation did not respect search filters for frames and animations
+- [x] Fixed a bug where units were missing from keyframe details panel
+- [x] Fixed a bug where Y offset field in keyframe details was manipulating X offset
+
 ## Tiger 0.8.0
 
 - [x] Missing frame files are detected and can be relocated
