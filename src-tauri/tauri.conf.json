@@ -69,6 +69,8 @@
         "digestAlgorithm": "sha256",
         "timestampUrl": "",
         "wix": {
+          "bannerPath": "distribution/msi-wix-banner.bmp",
+          "dialogImagePath": "distribution/msi-wix-background.bmp",
           "template": "distribution/msi-wix-template.wxs"
         }
       }

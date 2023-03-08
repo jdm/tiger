@@ -9,7 +9,7 @@
 - [x] Remove under-development warning from readme
 - [x] Logo in documentation
 - [x] Favicon in documentation
-- [ ] Branding in installer and installer icon
+- [x] Branding in installer
 - [x] App icon (file explorer, taskbar, add/remove programs)
 - [x] Github social media preview image (in repo settings)
 - [ ] Itch.io or other distribution method
