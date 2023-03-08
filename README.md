@@ -2,7 +2,7 @@
 
 ![Tiger Logo](res/readme/logo.svg?raw=true "Tiger")
 
-Tiger is a graphical tool to author game spritesheets and their metadata.
+Tiger is a visual tool to author game animations and their metadata.
 
 # Key Features
 
