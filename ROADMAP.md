@@ -11,7 +11,7 @@
 - [x] Favicon in documentation
 - [ ] Branding in installer and installer icon
 - [x] App icon (file explorer, taskbar, add/remove programs)
-- [ ] Github social media preview image (in repo settings)
+- [x] Github social media preview image (in repo settings)
 - [ ] Itch.io or other distribution method
 
 ## Post 1.0
