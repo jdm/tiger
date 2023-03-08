@@ -7,8 +7,8 @@
 - [ ] Remove support for pre-1.0 versions of Tiger file format
 - [ ] Gif/video in readme
 - [x] Remove under-development warning from readme
-- [ ] Logo in documentation
-- [ ] Favicon in documentation
+- [x] Logo in documentation
+- [x] Favicon in documentation
 - [ ] Branding in installer and installer icon
 - [x] App icon (file explorer, taskbar, add/remove programs)
 - [ ] Github social media preview image (in repo settings)
