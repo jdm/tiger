@@ -14,6 +14,13 @@ Tiger is a graphical tool to author game spritesheets and their metadata.
 - Source images hot-reload automatically when changed
 - Free and open-source with a permissive license
 
+# Screenshots
+
+|                                                                                                             |                                                                                                           |
+| :---------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------: |
+|          [![](res/readme/screenshot-1.0.0.png?raw=true)](res/readme/screenshot-1.0.0.png?raw=true)          |  [![](res/readme/screenshot-1.0.0-export.png?raw=true)](res/readme/screenshot-1.0.0-export.png?raw=true)  |
+| [![](res/readme/screenshot-1.0.0-relocate.png?raw=true)](res/readme/screenshot-1.0.0-relocate.png?raw=true) | [![](res/readme/screenshot-1.0.0-startup.png?raw=true)](res/readme/screenshot-1.0.0-startup.png?raw=true) |
+
 # Getting Started
 
 Tiger is only supported on Windows and has no dependencies. To install it:
@@ -24,10 +31,6 @@ Tiger is only supported on Windows and has no dependencies. To install it:
 4. That's it, you're done!
 
 To learn how to integrate Tiger sheets into your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
-
-# Screenshots
-
-![Tiger](res/readme/screenshot-0.4.0.png?raw=true "Tiger")
 
 # Contributing
 

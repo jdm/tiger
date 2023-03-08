@@ -5,7 +5,7 @@
 - [x] Review all TODO
 - [ ] Tiger file format uses semver
 - [ ] Remove support for pre-1.0 versions of Tiger file format
-- [ ] Gif/video in readme
+- [x] Up-to-date screenshots in readme
 - [x] Remove under-development warning from readme
 - [x] Logo in documentation
 - [x] Favicon in documentation
