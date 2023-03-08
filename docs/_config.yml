@@ -2,7 +2,7 @@ title: Tiger
 lang: en
 
 remote_theme: just-the-docs/just-the-docs
-color_scheme: dark
+logo: "/media/logo.svg"
 
 plugins:
   - jemoji
