@@ -13,9 +13,9 @@ nav_order: 2
   📁 my-documents
     📁 cool-game
       📄 hero.tiger
-	  📁 frames
-	  	🖼 hero-attack.png
-	  	🖼 hero-jump.png
+      📁 frames
+        🖼 hero-attack.png
+        🖼 hero-jump.png
 ```
 
 In this example, `hero.tiger` stores references to the `.png` files as `frames/hero-attack.png` and `frames/hero-jump.png` - omitting `C:\my-documents\cool-game`.
