@@ -18,9 +18,9 @@ Tiger is a graphical tool to author game spritesheets and their metadata.
 
 Tiger is only supported on Windows and has no dependencies. To install it:
 
-1. Go to the [latest release](https://github.com/agersant/tiger/releases/latest) page
-2. Download the `.msi` installer
-3. Run the installer
+1. Go to the [latest release](https://github.com/agersant/tiger/releases/latest) page.
+2. Download the `.msi` installer.
+3. Run the installer. This will install Tiger and Microsoft Edge Webview (if necessary).
 4. That's it, you're done!
 
 To learn how to integrate Tiger sheets into your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
