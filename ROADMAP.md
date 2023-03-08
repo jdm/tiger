@@ -10,7 +10,7 @@
 - [ ] Logo in documentation
 - [ ] Favicon in documentation
 - [ ] Branding in installer and installer icon
-- [ ] App icon (file explorer, taskbar, add/remove programs)
+- [x] App icon (file explorer, taskbar, add/remove programs)
 - [ ] Github social media preview image (in repo settings)
 - [ ] Itch.io or other distribution method
 
