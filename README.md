@@ -8,7 +8,7 @@ Tiger is a visual tool to author game spritesheets and their metadata.
 
 This tool bridges the gap between the work done by an artist and data needed by a game engine. Artists draw animations as images, but game engines need lots of metadata about how to use them correctly. Tiger gives you a simple but versatile interface to organize frames into animations like "run", "idle" or "attack". Tiger can also adjust offsets, timings, and hitboxes for each frame.
 
-After you organize everything in Tiger, it exports a spritesheet containing all the images, plus a metadata file. The exact format of this metadata file is defined by you, using a template system. This makes it easy to integrate Tiger sheets with any game engine.
+After you organize everything in Tiger, it exports a spritesheet containing all the images, plus a metadata file. The exact format of this metadata file is defined by you, using a template system. This makes it easy to integrate Tiger Sheets with any game engine.
 
 # Key Features
 
@@ -44,7 +44,7 @@ Tiger is only supported on Windows. To install it:
 3. Run the installer. This will install Tiger and Microsoft Edge Webview (if necessary).
 4. That's it, you're done!
 
-To learn how to integrate Tiger sheets into your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
+To learn how to integrate Tiger Sheets into your game, please refer to the [Documentation](https://agersant.github.io/tiger/).
 
 # Contributing
 
