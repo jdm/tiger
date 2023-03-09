@@ -28,6 +28,8 @@ Note that Tiger is not:
 
 # Screenshots & Videos
 
+[tiger-demo-2.webm](https://user-images.githubusercontent.com/817256/223934634-59958844-6763-4e87-ad38-6aa69a6480d4.webm)
+
 |                                                                                                             |                                                                                                           |
 | :---------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------: |
 |          [![](res/readme/screenshot-1.0.0.png?raw=true)](res/readme/screenshot-1.0.0.png?raw=true)          |  [![](res/readme/screenshot-1.0.0-export.png?raw=true)](res/readme/screenshot-1.0.0-export.png?raw=true)  |
