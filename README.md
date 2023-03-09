@@ -55,7 +55,7 @@ To learn how to integrate Tiger sheets into your game, please refer to the [Docu
 
 # License
 
-The MIT License in this repository applies to the Tiger _source code_. This does not include the Tiger logo and mascot illustrations. If you operate a public fork of this project, you cannot use the Tiger logo or mascot. For private forks (individual, or distribution internal your team/company), you may use the Tiger logo or mascot.
+The MIT License in this repository applies to the Tiger _source code_. This does not include the Tiger logo and mascot illustrations. If you operate a public fork of this project, you cannot use the Tiger logo or mascot. For private forks (individual, or distribution limited to your team/company), you may use the Tiger logo or mascot.
 
 Sprites in the example screenshots are from [OpenDuelyst](https://github.com/open-duelyst/duelyst) ([License](https://github.com/open-duelyst/duelyst/blob/main/LICENSE)).
 
