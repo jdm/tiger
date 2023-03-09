@@ -1,6 +1,6 @@
 # Changelog
 
-## Tiger 1.0
+## Tiger 1.0.0
 
 - [x] ⚠ Tiger files saved with version 0.7.0 and older are no longer supported
 - [x] Tiger file format version was is now `1.0.0`
