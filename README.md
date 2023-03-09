@@ -17,7 +17,7 @@ After you organize everything in Tiger, it exports a spritesheet containing all 
 - ✅ Source images hot-reload automatically when changed
 - ✅ Packs animation frames into texture atlases
 - ✅ Can add and tag hitboxes
-- ✅ Template system to export animation data in any text-based format
+- ✅ Template system to export metadata in any text-based format
 - ✅ Free and open-source with a permissive license
 
 Note that Tiger is not:
