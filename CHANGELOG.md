@@ -1,5 +1,20 @@
 # Changelog
 
+## Tiger 1.0
+
+- [x] ⚠ Tiger files saved with version 0.7.0 and older are no longer supported
+- [x] Tiger file format version was is now `1.0.0`
+- [x] Add up-to-date screenshots in readme
+- [x] Add video in readme
+- [x] Remove under-development warning from readme
+- [x] Logo in documentation
+- [x] Favicon in documentation
+- [x] Branding in installer
+- [x] App icon (file explorer, taskbar, add/remove programs)
+- [x] Github social media preview image
+- [x] Itch.io distribution
+- [x] Review all TODO
+
 ## Tiger 0.9.0
 
 - [x] Document keyboard shortcuts
