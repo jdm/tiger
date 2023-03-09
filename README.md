@@ -2,7 +2,7 @@
 
 ![Tiger Logo](res/readme/logo.svg?raw=true "Tiger")
 
-# What Does This Tool Do?
+# Overview
 
 Tiger is a visual tool to author game spritesheets and their metadata.
 
@@ -37,7 +37,7 @@ Note that Tiger is not:
 
 # Getting Started
 
-Tiger is only supported on Windows and has no dependencies. To install it:
+Tiger is only supported on Windows. To install it:
 
 1. Go to the [latest release](https://github.com/agersant/tiger/releases/latest) page.
 2. Download the `.msi` installer.
