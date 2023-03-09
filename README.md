@@ -12,13 +12,13 @@ After you organize everything in Tiger, it exports a spritesheet containing all 
 
 # Key Features
 
-- ✅ Easy-to-use timeline to author animations
-- ✅ Supports perspectives for any 2D game (top-down, sidescroller, isometric, etc.)
-- ✅ Automatically hot-reloads source images when they are changed
-- ✅ Packs animation frames into texture atlases
-- ✅ Can add and tag hitboxes
-- ✅ Flexible template system exports metadata in any text-based format
-- ✅ Free and open-source with a permissive license
+- ✅ Easy-to-use timeline to author animations.
+- ✅ Supports perspectives for any 2D game (top-down, sidescroller, isometric, etc.).
+- ✅ Automatically hot-reloads source images when they are changed.
+- ✅ Packs animation frames into texture atlases.
+- ✅ Can add and tag hitboxes.
+- ✅ Flexible template system exports metadata in any text-based format.
+- ✅ Free and open-source with a permissive license.
 
 Note that Tiger is not:
 
