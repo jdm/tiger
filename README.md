@@ -6,7 +6,7 @@
 
 Tiger is a visual tool to author game spritesheets and their metadata.
 
-This tool bridges the gap between the work done by an artist and data needed by a game engine. Artists draw animations as images, but game engines need lots of metadata about how to use them correctly. Tiger gives you a simple interface to organize frames by animation and direction, like `"frames for the hero attack animation when facing right"`. Tiger can also adjust offsets, timings, and hitboxes for each frame.
+This tool bridges the gap between the work done by an artist and data needed by a game engine. Artists draw animations as images, but game engines need lots of metadata about how to use them correctly. Tiger gives you a simple interface to organize frames into animations like "run", "idle" or "attack". Tiger can also adjust offsets, timings, and hitboxes for each frame.
 
 After you organize everything in Tiger, it exports a spritesheet containing all the images, plus a metadata file. The exact format of this metadata file is defined by you, using a template system. This makes it easy to integrate Tiger sheets with any game engine.
 
@@ -26,7 +26,7 @@ Note that Tiger is not:
 - ❌ A skeletal animation program like Spine.
 - ❌ A plug-and-play solution for any specific engine. You will need code to use the output of Tiger in your engine of choice.
 
-# Screenshots
+# Screenshots & Videos
 
 |                                                                                                             |                                                                                                           |
 | :---------------------------------------------------------------------------------------------------------: | :-------------------------------------------------------------------------------------------------------: |
