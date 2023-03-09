@@ -17,19 +17,17 @@ use uuid::Uuid;
 #[cfg(test)]
 use euclid::vec2;
 
-pub(in crate::sheet) mod version1;
-pub(in crate::sheet) mod version2;
-pub(in crate::sheet) mod version3;
-pub(in crate::sheet) mod version4;
-pub(in crate::sheet) mod version5;
+pub(in crate::sheet) mod version_0_5_0;
+pub(in crate::sheet) mod version_1_0_0;
 
-#[derive(Serialize, Deserialize, PartialEq, Eq)]
+#[allow(non_camel_case_types)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 enum Version {
-    Tiger1,
-    Tiger2,
-    Tiger3,
-    Tiger4,
-    Tiger5,
+    #[serde(alias = "Tiger5")]
+    #[serde(rename = "0.5.0")]
+    Tiger_0_5_0,
+    #[serde(rename = "1.0.0")]
+    Tiger_1_0_0,
 }
 
 #[derive(Clone, Debug, Default, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
@@ -54,8 +52,8 @@ impl<P: AsRef<Path>> From<P> for Relative {
     }
 }
 
-const CURRENT_VERSION: Version = Version::Tiger5;
-pub use self::version5::*;
+const CURRENT_VERSION: Version = Version::Tiger_1_0_0;
+pub use self::version_1_0_0::*;
 
 #[derive(Error, Debug)]
 pub enum SheetError {
@@ -79,6 +77,8 @@ pub enum SheetError {
     InvalidFrameIndex(usize),
     #[error("Expected a relative path but got: `{0}`")]
     RelativePathExpected(PathBuf),
+    #[error("Unsupported .tiger file version: `{0}`")]
+    UnsupportedVersion(String),
 }
 
 impl From<SheetError> for String {

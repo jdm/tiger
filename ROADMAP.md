@@ -2,17 +2,18 @@
 
 ## Tiger 1.0
 
-- [x] Review all TODO
-- [ ] Tiger file format uses semver
-- [ ] Remove support for pre-1.0 versions of Tiger file format
-- [x] Up-to-date screenshots in readme
+- [x] ⚠ Tiger files saved with version 0.7.0 and older are no longer supported
+- [x] Tiger file format version was is now `1.0.0`
+- [x] Add up-to-date screenshots in readme
+- [x] Add video in readme
 - [x] Remove under-development warning from readme
 - [x] Logo in documentation
 - [x] Favicon in documentation
 - [x] Branding in installer
 - [x] App icon (file explorer, taskbar, add/remove programs)
-- [x] Github social media preview image (in repo settings)
-- [ ] Itch.io or other distribution method
+- [x] Github social media preview image
+- [x] Itch.io distribution
+- [x] Review all TODO
 
 ## Post 1.0
 
