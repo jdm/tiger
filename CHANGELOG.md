@@ -4,6 +4,7 @@
 
 - [x] ⚠ Tiger files saved with version 0.7.0 and older are no longer supported
 - [x] Tiger file format version was is now `1.0.0`
+- [x] Fixed a bug where on some computers, Tiger wouldn't launch due to missing MSVCP140.dll
 - [x] Add up-to-date screenshots in readme
 - [x] Add video in readme
 - [x] Remove under-development warning from readme

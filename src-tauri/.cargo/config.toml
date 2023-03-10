@@ -1,0 +1,7 @@
+# Statically link C runtime so users don't need MSVCP140.dll (and friends)
+[target.x86_64-pc-windows-msvc]
+rustflags = ["-C","target-feature=+crt-static"]
+
+# Disable tauri feature trying to accomplish the same thing
+[env]
+STATIC_VCRUNTIME = "false"
