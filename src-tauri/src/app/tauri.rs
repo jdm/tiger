@@ -260,11 +260,11 @@ pub fn cancel_close_document(app: tauri::AppHandle) -> Result<Patch, ()> {
 }
 
 #[tauri::command]
-pub fn reveal_in_explorer(path: PathBuf) {
+pub fn reveal_in_explorer(_path: PathBuf) {
     // For future improvements, see https://github.com/tauri-apps/tauri/issues/4062
     #[cfg(windows)]
     std::process::Command::new("explorer")
-        .args(["/select,", path.to_string_lossy().as_ref()]) // The comma after select is not a typo
+        .args(["/select,", _path.to_string_lossy().as_ref()]) // The comma after select is not a typo
         .spawn()
         .unwrap();
 }

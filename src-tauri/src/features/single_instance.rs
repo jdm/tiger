@@ -1,3 +1,6 @@
+#![allow(unused_imports)]
+
+#[cfg(windows)]
 use interprocess::{
     os::windows::named_pipe::{
         MsgReaderPipeStream, MsgWriterPipeStream, PipeListenerOptions, PipeMode,
@@ -12,6 +15,7 @@ use std::{ffi::OsStr, io::Write, sync::Arc, thread};
 
 use crate::{api::Api, app::TigerApp, utils::handle};
 
+#[cfg(windows)]
 static PIPE_NAME: &str = "tiger-named-pipe";
 static LOCK_NAME: &str = "tiger-startup-mutex";
 
@@ -78,6 +82,7 @@ impl Drop for StartupGuard {
     }
 }
 
+#[cfg(windows)]
 pub fn attach_to_primary_instance(
     command_line_arguments: Vec<String>,
     _startup_guard: &StartupGuard,
@@ -93,6 +98,15 @@ pub fn attach_to_primary_instance(
     Ok(true)
 }
 
+#[cfg(not(windows))]
+pub fn attach_to_primary_instance(
+    _command_line_arguments: Vec<String>,
+    _startup_guard: &StartupGuard,
+) -> Result<bool, ()> {
+    Ok(false)
+}
+
+#[cfg(windows)]
 pub fn become_primary_instance<A: TigerApp + Api + Clone + Send + Sync + 'static>(
     app: A,
     _startup_guard: &StartupGuard,
@@ -127,6 +141,14 @@ pub fn become_primary_instance<A: TigerApp + Api + Clone + Send + Sync + 'static
         .unwrap();
 }
 
+#[cfg(not(windows))]
+pub fn become_primary_instance<A: TigerApp + Api + Clone + Send + Sync + 'static>(
+    _app: A,
+    _startup_guard: &StartupGuard,
+) {
+}
+
+#[cfg(windows)]
 fn handle_attached_process<A: TigerApp + Api + Clone>(app: A, mut stream: MsgReaderPipeStream) {
     let mut buffer = Vec::<u8>::new();
     loop {
@@ -153,6 +175,7 @@ fn handle_attached_process<A: TigerApp + Api + Clone>(app: A, mut stream: MsgRea
     }
 }
 
+#[cfg(windows)]
 fn receive_message<A: TigerApp + Api>(app: A, message: Message) {
     match message {
         Message::FocusWindow => app.focus_window(),
@@ -163,6 +186,7 @@ fn receive_message<A: TigerApp + Api>(app: A, message: Message) {
     }
 }
 
+#[cfg(windows)]
 fn send_message(write_pipe: &mut MsgWriterPipeStream, message: &Message) -> Result<(), ()> {
     let message = serde_json::to_string(&message).unwrap();
     match write_pipe.write_all(message.as_bytes()) {
